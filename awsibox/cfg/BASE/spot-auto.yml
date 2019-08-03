@@ -1,0 +1,28 @@
+global:
+  Parameter:
+    - SpotAuto:
+        Description: 'Set ASG TAG for autospotting https://github.com/AutoSpotting/AutoSpotting - empty for default based on env/role'
+        AllowedValues: ['', 'True', 'None']
+    - SpotAutoMinOnDemandNumber:
+        Description: 'Set ASG TAG for autospotting minimum on deman instance to be keept - empty for default based on env/role - None to disable'
+  Condition:
+    - Spot:
+        Or(
+          Condition('SpotAuto'),
+          Condition('SpotPrice'),
+        )
+    - SpotAuto:
+        Or(
+          And(Condition('SpotAutoOverride'),Not(Equals(Ref('SpotAuto'), 'None'))),
+          And(Not(Condition('SpotAutoOverride')),Not(Equals(get_final_value('SpotAuto'), 'None')))
+        )
+    - SpotAutoMinOnDemandNumber:
+        And(
+          Condition('SpotAuto'),
+          Or(
+            And(Condition('SpotAutoMinOnDemandNumberOverride'),Not(Equals(Ref('SpotAutoMinOnDemandNumber'), 'None'))),
+            And(Not(Condition('SpotAutoMinOnDemandNumberOverride')),Not(Equals(get_final_value('SpotAutoMinOnDemandNumber'), 'None')))
+          )
+        )
+  SpotAuto: None
+  SpotAutoMinOnDemandNumber: None

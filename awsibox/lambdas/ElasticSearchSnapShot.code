@@ -1,0 +1,70 @@
+import boto3
+import logging
+import urllib
+import urllib2
+import time
+import os
+import json
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+class MethodRequest(urllib2.Request):
+  def __init__(self, *args, **kwargs):
+    if 'method' in kwargs:
+      self._method = kwargs['method']
+      del kwargs['method']
+    else:
+      self._method = None
+    return urllib2.Request.__init__(self, *args, **kwargs)
+
+  def get_method(self, *args, **kwargs):
+    if self._method is not None:
+      return self._method
+    return urllib2.Request.get_method(self, *args, **kwargs)
+
+def get_autoscale_info(ec2):
+  instance_iterator = ec2.instances.filter(
+    Filters=[
+      {
+        'Name': 'tag:aws:autoscaling:groupName',
+        'Values': [os.environ['AutoScalingGroup']]
+      },
+      {
+        'Name': 'instance-state-name',
+        'Values': ['running']
+      }
+    ]
+  )
+  sorted_instances = sorted(
+    instance_iterator,
+    key=lambda i: (i.launch_time, i.id))
+  return sorted_instances
+
+def lambda_handler(event, context):
+  ec2 = boto3.resource('ec2')
+  sorted_instances = get_autoscale_info(ec2)
+  my_instance = sorted_instances[0]
+  dnsname = my_instance.private_dns_name.partition('.')[0]
+  logger.info(dnsname + ' ' + str(my_instance.launch_time))
+  mydate = time.strftime('%F_%T')
+  req_snap_data = {
+    'type': 's3',
+    'settings': {
+      'bucket': os.environ['BucketElasticSearch'],
+      'region': os.environ['Region'],
+      'base_path': os.environ['StackName']
+    }
+  }
+  req_snap = MethodRequest(
+    'http://' + dnsname + ':9200/_snapshot/s3_repository?pretty',
+    data=json.dumps(req_snap_data),
+    method='PUT',
+    headers={'Content-Type': 'application/json'}
+  )
+  f = urllib2.urlopen(req_snap)
+  logger.info(f.read())
+  time.sleep(3)
+  req = MethodRequest('http://' + dnsname + ':9200/_snapshot/s3_repository/' + mydate, method='PUT')
+  f = urllib2.urlopen(req)
+  logger.info(f.read())
+  return(0)

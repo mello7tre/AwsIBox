@@ -1,0 +1,92 @@
+resources-lambda-01:
+  StackType: res
+  StackName: resources-lambda-01
+  Output:
+    - LambdaECSRunTaskArn:
+        Condition: LambdaECSRunTask
+        Value: GetAtt('LambdaECSRunTask', 'Arn')
+        Export: Export('LambdaECSRunTaskArn')
+    - RoleLambdaECSRunTask:
+        Condition: LambdaECSRunTask
+        Value: Ref('RoleLambdaECSRunTask')
+        Export: Export('RoleLambdaECSRunTask')
+  Lambda:
+    - AtEdgeAddHeaders:
+        Enabled: None
+        AtEdge: True
+        Description: 'Lambda@Edge add Headers'
+        MemorySize: 128
+        Runtime: nodejs8.10
+        Timeout: 10
+        Version: True
+        Variables: []
+    - ECSDrainInstance:
+        Enabled: True
+        Description: 'Gracefully drain ECS tasks from EC2 instances before the instances are terminated by autoscaling.'
+        MemorySize: 128
+        Runtime: python3.6
+        Timeout: 60
+        Variables: []
+    - ECSRunTask:
+        Enabled: True
+        Description: 'Run ECS Task'
+        MemorySize: 128
+        Runtime: python2.7
+        Timeout: 60
+        Variables: []
+  IAMPolicy:
+    - LambdaECSDrainInstance:
+        Condition: LambdaECSDrainInstance
+        Roles:
+          - Ref('RoleLambdaECSDrainInstance')
+        Statement:
+          - 1:
+              Action: 'autoscaling:CompleteLifecycleAction'
+              Resource: '*'
+          - 2:
+              Action: 'ecs:ListContainerInstances'
+              Resource: '*'
+          - 3:
+              Action:
+                - 'ecs:DescribeContainerInstances'
+                - 'ecs:UpdateContainerInstancesState'
+              Resource: '*'
+              #Condition: {'StringEquals': {'ecs:cluster': {'Fn::GetAtt': ['Cluster', 'Arn']}}}
+          - 4:
+              Action: 'sns:Publish'
+              Resource: Ref('SNSTopicECSDrainInstance')
+          - 5:
+              Action: 'cloudformation:ListExports'
+              Resource: '*'
+    - LambdaECSRunTask:
+        Condition: LambdaECSRunTask
+        Roles:
+          - Ref('RoleLambdaECSRunTask')
+        Statement:
+          - 1:
+              Action:
+                - 'ecs:ListContainerInstances'
+                - 'ecs:DescribeContainerInstances'
+              Resource:
+                - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/*')
+                - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:container-instance/*')
+  SNSSubscription:
+    - ECSDrainInstanceLambdaECSDrainInstance:
+        Condition: LambdaECSDrainInstance
+        TopicArn: Ref('SNSTopicECSDrainInstance')
+        Endpoint: GetAtt('LambdaECSDrainInstance', 'Arn')
+        Protocol: lambda
+  SNSTopic:
+    - ECSDrainInstance:
+        Condition: LambdaECSDrainInstance
+        Export: True
+        NOOP: False
+
+us-east-1:
+  Lambda:
+    - AtEdgeAddHeaders:
+        Enabled: True
+    - ECSDrainInstance:
+        Enabled: None
+    - ECSRunTask:
+        Enabled: None

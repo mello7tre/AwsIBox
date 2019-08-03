@@ -1,0 +1,89 @@
+resources-common:
+  StackType: res
+  StackName: resources-common
+  Bucket:
+    - AppRepository:
+        Enabled: True
+        OutputValueRegion: 'AWSRegion'
+        Versioning: Enabled
+    - AppData:
+        Enabled: True
+        Versioning: Enabled
+  IAMPolicy:
+    - BaseInstance:
+        Type: Managed
+        Export: True
+        Description: 'Policy common to all instances'
+        Statement:
+          - 1:
+              Action:
+                - 's3:GetBucketLocation'
+                - 's3:ListAllMyBuckets'
+              Resource: 'arn:aws:s3:::*'
+          - 2:
+              Action:
+                - 's3:Get*'
+                - 's3:List*'
+              Resource:
+                - Sub('arn:aws:s3:::%s' % RP_cmm['BucketAppRepository'])
+                - Sub('arn:aws:s3:::%s/*' % RP_cmm['BucketAppRepository'])
+                - Sub('arn:aws:s3:::%s' % RP_cmm['BucketAppData'])
+                - Sub('arn:aws:s3:::%s/*' % RP_cmm['BucketAppData'])
+                - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}')
+                - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}/*')
+          - 3:
+              Action:
+                - 'elasticloadbalancing:DescribeInstanceHealth'
+                - 'elasticloadbalancing:DescribeTargetHealth'
+                - 'ec2:DescribeInstances'
+              Resource: '*'
+  Role:
+    - CodeDeploy:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole'
+        Principal: codedeploy.amazonaws.com
+    - ECSService:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
+        Principal: ecs.amazonaws.com
+    - EC2ContainerServiceAutoscale:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
+        Principal: application-autoscaling.amazonaws.com
+    - ECSTaskExecution:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+        Principal: ecs-tasks.amazonaws.com
+    - ApiGatewayCloudWatch:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
+        Principal: apigateway.amazonaws.com
+  VPCPeeringConnection: None
+  VPCEndpoint: True
+
+eu-west-1:
+  dev:
+    Bucket:
+      - AppData:
+          Create: True
+      - AppRepository:
+          Create: True
+
+eu-central-1:
+  prd:
+    Bucket:
+      - AppData:
+          Create: True
+      - AppRepository:
+          Create: True
+
+us-east-1:
+  Bucket:
+    - AppRepository: 
+        OutputValueRegion: 'eu-west-1'
+  VPCEndpoint: None

@@ -1,0 +1,7 @@
+global:
+  AllowedIp:
+    - 1:
+        Enabled: True
+        Name: '1'
+        Ip: '127.0.0.1/32'
+  SecurityGroups: 'BaseInstance,None,None,None'

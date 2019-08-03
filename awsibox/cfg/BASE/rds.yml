@@ -1,0 +1,94 @@
+include: !include [
+  securitygroup.yml,
+]
+
+rds:
+  Parameter:
+    - AllocatedStorage:
+        Description: 'Storage Size in GB - empty for default based on env/role'
+    - DBInstanceClass:
+        Description: 'Instance Type - empty for default based on env/role'
+        AllowedValues: [
+          '', 'db.m3.medium', 'db.m3.large', 'db.m3.xlarge', 'db.m3.2xlarge',
+          'db.m4.large', 'db.m4.xlarge', 'db.m4.2xlarge', 'db.m4.4xlarge', 'db.m4.10xlarge',
+          'db.r3.large', 'db.r3.xlarge', 'db.r3.2xlarge', 'db.r3.4xlarge', 'db.r3.8xlarge',
+          'db.t2.micro', 'db.t2.small', 'db.t2.medium', 'db.t2.large'
+        ]
+    - DBName:
+        Description: 'DBName - None for not creating one - empty for default based on env/role'
+    - DBSnapshotIdentifier:
+        Description: 'DB snapshot used to restore the DB instance - None for not using one - empty for default based on env/role'
+    - SourceDBInstanceIdentifier:
+        Description: 'ID of the source DB instance to create ReadReplica - None for not using one - empty for default based on env/role'
+    - Engine:
+        Description: 'Engine - empty for default based on env/role'
+        AllowedValues: [
+          '', 'mysql', 'mariadb', 'oracle-se1', 'oracle-se2', 'oracle-se', 'oracle-ee',
+          'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web', 'postgres', 'aurora'
+        ]
+    - EngineVersion:
+        Description: 'Engine Version - empty for default based on env/role'
+    - MasterUsername:
+        Description: 'Username - empty for default based on env/role'
+    - MasterUserPassword:
+        Description: 'Password - empty for default based on env/role'
+        NoEcho: True
+    - MultiAZ:
+        Description: 'Use multiple Availability Zone - empty for default based on env/role'
+        AllowedValues: ['', 'True', 'False']
+    - RDSAccess:
+        Description: 'Access type public or private - empty for default based on env/role'
+        AllowedValues: ['', 'Private', 'Public']
+    - StorageType:
+        Description: 'StorageType - empty for default based on env/role'
+        AllowedValues: ['', 'standard', 'gp2']
+  Condition:
+    - DBName:
+        Or(
+          And(Condition('DBNameOverride'), Not(Equals(Ref('DBName'), 'None'))),
+          And(Not(Condition('DBNameOverride')), Not(Equals(get_final_value('DBName'), 'None')))
+        )
+    - RDSPublic: Equals(get_final_value('RDSAccess'), 'Public')
+    - DBSnapshotIdentifier:
+        Or(
+          And(Condition('DBSnapshotIdentifierOverride'), Not(Equals(Ref('DBSnapshotIdentifier'), 'None'))),
+          And(Not(Condition('DBSnapshotIdentifierOverride')), Not(Equals(get_final_value('DBSnapshotIdentifier'), 'None')))
+        )
+    - SourceDBInstanceIdentifier:
+        Or(
+          And(Condition('SourceDBInstanceIdentifierOverride'), Not(Equals(Ref('SourceDBInstanceIdentifier'), 'None'))),
+          And(Not(Condition('SourceDBInstanceIdentifierOverride')), Not(Equals(get_final_value('SourceDBInstanceIdentifier'), 'None')))
+        )
+    - DBInstanceSkipProperties: Or(Condition('DBSnapshotIdentifier'), Condition('SourceDBInstanceIdentifier'))
+  Output:
+    - AllocatedStorage:
+        Value: get_final_value('AllocatedStorage')
+    - DBInstanceClass:
+        Value: get_final_value('DBInstanceClass')
+    - DBName:
+        Value: get_final_value('DBName')
+    - DBSnapshotIdentifier:
+        Value: get_final_value('DBSnapshotIdentifier')
+    - Engine:
+        Value: get_final_value('Engine')
+    - EngineVersion:
+        Value: get_final_value('EngineVersion')
+    - MasterUsername:
+        Value: get_final_value('MasterUsername')
+    - MultiAZ:
+        Value: get_final_value('MultiAZ')
+    - RDSAccess:
+        Value: get_final_value('RDSAccess')
+    - RDSScheme:
+        Value: get_final_value('RDSScheme')
+    - SourceDBInstanceIdentifier:
+        Value: get_final_value('SourceDBInstanceIdentifier')
+    - StorageType:
+        Value: get_final_value('StorageType')
+  DBParameterGroup:
+    - 1:
+        character_set_server: utf8
+        collation_server: utf8_general_ci
+        log_bin_trust_function_creators: 1
+  RDSAccess: Public
+  RDSScheme: Internal

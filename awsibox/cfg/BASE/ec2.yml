@@ -1,0 +1,144 @@
+include: !include [
+  autoscaling.yml,
+  loadbalancing.yml,
+  alarms.yml,
+  cloudfront.yml,
+  parameterstore.yml,
+  ssm.yml,
+]
+
+ec2:
+  Parameter:
+    - UpdateMode:
+        Description: 'How to update Instances'
+        AllowedValue: ['None', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
+        Default: 'None'
+    - HealthCheckGracePeriod:
+        Description: 'How long to wait before ASG check instance health - empty for default based on env/role'
+    - SpotPrice:
+        Description: 'Maximum Spot Price of ASG - empty for default based on env/role - 0 to disable'
+  Condition:
+    - RollingUpdate:
+        Equals(Ref('UpdateMode'), 'Rolling')
+    - WillReplace:
+        Equals(Ref('UpdateMode'), 'Replace')
+    - SpotPrice:
+        Or(
+          And(Condition('SpotPriceOverride'),Not(Equals(Ref('SpotPrice'), '0'))),
+          And(Not(Condition('SpotPriceOverride')),Not(Equals(get_final_value('SpotPrice'), '0')))
+        )
+    - Spot:
+        And(
+          Condition('SpotPrice'),
+          Equals('1', '1'),
+        )
+  AdditionalStorage:
+    Mount: True
+    Name: /dev/xvdx
+    Size: 0
+    Type: gp2
+  AlarmCPUBase: &cpu
+    Dimensions:
+      - Autoscaling:
+          Name: AutoScalingGroupName
+          Value: Ref('AutoScalingGroup')
+    Namespace: 'AWS/EC2'
+  Alarm:
+    - CPUHigh:
+        <<: *cpu
+        Enabled: True
+    - CPULow:
+        <<: *cpu
+        Enabled: True
+  AutoscalingCreationTimeout: PT15M
+  CustomUserDataScript: init.sh
+  DeploymentGroup: False
+  HealthCheckType: ELB
+  HealthCheckGracePeriod: 600
+  InstanceMonitoring: False
+  InstanceType: t3.micro
+  LoadBalancer:
+    CookieSticky: None
+    IdleTimeout: 60
+  IAMPolicy:
+    - CloudFormation:
+        Roles:
+          - Ref('RoleInstance')
+        Statement:
+          - 1:
+              Action:
+                - 'cloudformation:DescribeStackResource'
+                - 'cloudformation:SignalResource'
+              Resource: Sub('arn:aws:cloudformation:*:*:stack/${AWS::StackName}/*')
+    - ParameterStore:
+        Roles:
+          - Ref('RoleInstance')
+  Role:
+    - Instance:
+        ManagedPolicyArns:
+          - get_exported_value('IAMPolicyBaseInstance', '')
+        Principal: ec2.amazonaws.com
+  RollingUpdate:
+    MaxBatchSize: 1
+    MinInstancesInService: 1
+    MinSuccessfulInstancesPercent: 100
+    PauseTime: PT20M
+  ScalingPolicyTrackings:
+    - ASCustom:
+        TargetTrackingConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions:
+              - AutoScaling:
+                  Name: AutoScalingGroupName
+                  Value: Ref('AutoScalingGroup')
+  ScheduledAction:
+    - Down:
+        DesiredSize: 'k'
+        MaxSize: 'k'
+    - Up:
+        DesiredSize: CapacityDesired
+        MaxSize: CapacityMax
+        MinSize: CapacityMin
+  SpotPrice: 0
+  Volume:
+    Size: 8
+    Type: gp2
+
+dev: &cfg_dev
+  Alarm:
+    - BackendExternal5XX:
+        EvaluationPeriods: 0
+    - BackendInternal5XX:
+        EvaluationPeriods: 0
+    - TargetEC2External5XX:
+        EvaluationPeriods: 0
+    - TargetEC2Internal5XX:
+        EvaluationPeriods: 0
+  ScheduledAction:
+    - Down:
+        DesiredSize: 0
+        MinSize: 0
+
+stg: *cfg_dev 
+
+prd:
+  ScheduledAction:
+    - Down:
+        MinSize: 2
+
+eu-west-1:
+  ImageId: ami-466768ac
+
+eu-central-1:
+  ImageId: ami-e28d098d
+
+  prd:
+    ScheduledAction:
+      - Down:
+          DesiredSize: 'k'
+          MinSize: 0
+
+includeAfter: !include [
+  spot-auto.yml,
+  #  spot-asg.yml,
+]

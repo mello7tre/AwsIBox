@@ -1,0 +1,105 @@
+include: !include [
+  parameterstore.yml,
+]
+
+global:
+  Parameter:
+    - ClusterStack:
+        Description: 'Cluster Stack Name used to launch service on - - empty for default based on env/role'
+    - Cpu:
+        Description: 'Cpu used by task - empty for default based on env/role'
+        AllowedValues: [
+          '', 'None', '128', '256', '384', '512', '640', '768', '896', '1024',
+          '1152', '1280', '1408', '1536', '1664', '1792', '1920', '2048',
+          '2176', '2304', '2432', '2560', '2688', '2816', '2944', '3072',
+          '3200', '3328', '3456', '3584', '3712', '3840', '3968', '4096',
+        ]
+    - LaunchType:
+        Description: RunTask LaunchType - empty for default based on env/role
+        AllowedValues: ['', 'EC2', 'FARGATE']
+    - LogDriver:
+        Description: 'Log driver for task container - empty for default'
+        AllowedValues: ['', 'None', 'awslogs', 'fluentd', 'gelf', 'journald', 'json-file', 'splunk', 'syslog']
+    - Memory:
+        Description: 'Memory used by task - empty for default based on env/role'
+    - NetworkMode:
+        Description: 'Task NetworkMode - empty for default based on env/role'
+        AllowedValues: ['', 'awsvpc', 'bridge']
+  Condition:
+    - CpuTask:
+        Or(
+          And(Condition('CpuOverride'),Not(Equals(Ref('Cpu'), 'None'))),
+          And(Not(Condition('CpuOverride')),Not(Equals(get_final_value('Cpu'), 'None')))
+        )
+    - LaunchTypeFarGate:
+        Or(
+          And(Condition('LaunchTypeOverride'),Equals(Ref('LaunchType'), 'FARGATE')),
+          And(Not(Condition('LaunchTypeOverride')),Equals(get_final_value('LaunchType'), 'FARGATE'))
+        )
+    - LogConfiguration:
+        Not(Equals(get_final_value('LogDriver'), 'None'))
+    - NetworkModeAwsVpc:
+        Or(
+          And(Condition('NetworkModeOverride'),Equals(Ref('NetworkMode'), 'awsvpc')),
+          And(Not(Condition('NetworkModeOverride')),Equals(get_final_value('NetworkMode'), 'awsvpc')),
+          Condition('LaunchTypeFarGate')
+        )
+    - NetworkModeStandard:
+        Or(
+          And(Condition('NetworkModeOverride'),Not(Equals(Ref('NetworkMode'), 'awsvpc'))),
+          And(Not(Condition('NetworkModeOverride')),Not(Equals(get_final_value('NetworkMode'), 'awsvpc')))
+        )
+  Output:
+    - Cpu:
+        Value: get_final_value('Cpu')
+        Condition: CpuTask
+    - Memory:
+        Value: get_final_value('Memory')
+        Condition: LaunchTypeFarGate
+    - LaunchType:
+        Value: get_final_value('LaunchType')
+    - LogDriver:
+        Value: get_final_value('LogDriver')
+  ContainerDefinitions:
+    - 1:
+        Cpu: 16
+  Cpu: None
+  Log:
+    Driver: awslogs
+    GroupName: Sub('/aws/ecs/${AWS::StackName}')
+    RetentionInDays: 30
+  Memory: 512
+  IAMPolicy:
+    - CloudWatch:
+        Roles:
+          - Ref('RoleTask')
+        Statement:
+          - 1:
+              Action:
+                - 'cloudwatch:PutMetricData'
+              Resource: '*'
+    - ParameterStore:
+        Roles:
+          - Ref('RoleTask')
+  Role:
+    - Task:
+        Principal: ecs-tasks.amazonaws.com
+
+prd:
+  ContainerDefinitions:
+    - 1:
+        Cpu: 256
+
+eu-west-1:
+  dev:
+    ClusterStack: ecs-a-d
+
+  stg:
+    ClusterStack: ecs-a-s
+
+  prd:
+    ClusterStack: ecs-a-p
+
+eu-central-1:
+  prd:
+    ClusterStack: ecs-a-b

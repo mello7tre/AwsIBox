@@ -1,0 +1,129 @@
+# vim: ft=python expandtab shiftwidth=2 softtabstop=2
+from __future__ import print_function
+import json
+import logging
+import os
+import boto3
+import time
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+hostedzonename = os.environ['HostedZoneName'] + '.'
+hostedzoneid = os.environ['HostedZoneId']
+
+
+def publish_to_sns(dnsname, asg_name, e_state):
+  message = {
+    'AutoScalingGroup': asg_name,
+    'Event': 'autoscaling:EC2_INSTANCE_LAUNCH' if e_state == 'runnig' else 'autoscaling:EC2_INSTANCE_TERMINATE',
+    'DnsName': dnsname,
+  }
+  sns = boto3.client('sns')
+  sns.publish(
+    TopicArn=os.environ['Topic'],
+    Subject='ASGNotificationR53',
+    Message=json.dumps(message)
+  )
+
+
+def do_upsert_record_set(route53, instance, zonename, hostedzoneid):
+  r53_response = route53.change_resource_record_sets(
+    HostedZoneId=hostedzoneid,
+    ChangeBatch={'Changes': [{
+      'Action': 'UPSERT',
+      'ResourceRecordSet': {
+        'Name': '{name}.{domain}'.format(name=instance.instance_id, domain=zonename),
+        'Type': 'CNAME',
+         'TTL': 300,
+         'ResourceRecords': [{'Value': instance.private_dns_name}]
+      }
+    }]}
+  )
+
+
+def do_delete_record_set(route53, hostedzoneid, r53_resource_record):
+  r53_response = route53.change_resource_record_sets(
+    HostedZoneId=hostedzoneid,
+    ChangeBatch={'Changes': [{
+      'Action': 'DELETE',
+      'ResourceRecordSet': r53_resource_record
+    }]}
+  )
+
+
+def get_record_set(route53, instance, zonename, hostedzoneid):
+  r53_resource_records = route53.list_resource_record_sets(
+    HostedZoneId=hostedzoneid,
+    StartRecordName='{name}.{domain}'.format(name=instance.instance_id, domain=zonename),
+    StartRecordType='CNAME',
+    MaxItems='1')['ResourceRecordSets']
+
+  if len(r53_resource_records) < 1:
+    return
+
+  r53_resource_record=r53_resource_records[0]
+
+  if r53_resource_record['Name'] != '{name}.{domain}'.format(
+    name=instance.instance_id, domain=zonename):
+    return
+
+  return(r53_resource_record)
+
+
+def get_asg_name(tags):
+  asgName = None
+  stackName = None
+  parsedTags = None
+  while not parsedTags or (stackName and not asgName):
+    time.sleep(0.5)
+    for n in tags:
+      if n['Key'] == 'aws:cloudformation:stack-name':
+        stackName = n['Value']
+      if n['Key'] == 'EnvStackName':
+        stackName = n['Value']
+      if n['Key'] == 'aws:autoscaling:groupName':
+        asgName = n['Value']
+      if n['Key'] == 'launched-for-asg':
+        asgName = n['Value']
+    parsedTags = True
+
+  return asgName
+
+
+def lambda_handler(event, context):
+  e_state = event['detail']['state']
+  ec2id = event['detail']['instance-id']
+  logger.info(e_state + ' ' + ec2id)
+
+  ec2res = boto3.resource('ec2')
+  instance = ec2res.Instance(ec2id)
+  logger.info(instance)
+  if not instance.tags:
+    return
+
+  asg_name = get_asg_name(instance.tags)
+  if not asg_name:
+    return
+  logger.info(asg_name)
+  
+  route53 = boto3.client('route53')
+
+  if e_state == 'running':
+    logger.info('Updating/Creating Route53 Record')
+    do_upsert_record_set(route53, instance, hostedzonename, hostedzoneid)
+
+  if e_state == 'shutting-down':
+    logger.info('Searching for Route53 Record info')
+    r53_resource_record = get_record_set(route53, instance, hostedzonename, hostedzoneid)
+    if not r53_resource_record:
+      return
+
+    logger.info('Publishing to SNS')
+    dnsname = r53_resource_record['ResourceRecords'][0]['Value']
+    publish_to_sns(dnsname, asg_name, e_state)
+
+    logger.info('Deleting Route53 Record: ' + r53_resource_record['Name'])
+    do_delete_record_set(route53, hostedzoneid, r53_resource_record)
+
+  return

@@ -1,0 +1,73 @@
+buildkite:
+  StackType: ecs
+  StackName: bkt
+  CloudFront: SkipClass
+  ScalingPolicyTrackings: SkipClass
+  Capacity:
+    Desired: 3
+    Max: 4
+    Min: 3
+  ContainerDefinitions:
+    - 1:
+        Cpu: 128
+        Envs:
+          - AWSDEFAULTREGION:
+              Name: AWS_DEFAULT_REGION
+              Value: Ref('AWS::Region')
+        Memory: 128
+        MemoryReservation: 64
+        MountPoints:
+          - DockerSock:
+              ContainerPath: /var/run/docker.sock
+  IAMPolicy:
+    - UpdateStack:
+        Roles:
+          - Ref('RoleTask')
+        Statement:
+          - 1:
+              Action:
+                - 's3:Get*'
+                - 's3:List*'
+                - 's3:Put*'
+                - 'iam:PassRole'
+                - 'iam:ListServerCertificates'
+                - 'iam:GetRole'
+                - 'iam:PutRolePolicy'
+                - 'elasticloadbalancing:*'
+                - 'ec2:*'
+                - 'ecs:*'
+                - 'ecr:*'
+                - 'sqs:*'
+                - 'sns:*'
+                - 'cloudwatch:*'
+                - 'autoscaling:*'
+                - 'route53:*'
+                - 'codedeploy:*'
+                - 'acm:*'
+                - 'cloudformation:DescribeStack*'
+                - 'cloudformation:GetTemplate*'
+                - 'cloudformation:ListExports'
+                - 'cloudformation:UpdateStack'
+                - 'cloudformation:ValidateTemplate'
+                - 'cloudfront:GetDistribution*'
+                - 'cloudfront:ListDistributions'
+                - 'cloudfront:ListCloudFrontOriginAccessIdentities'
+                - 'lambda:*'
+                - 'events:*'
+                - 'waf:GetWebACL'
+                - 'waf:ListWebACLs'
+              Resource: '*'
+          - 2:
+              Action: 'sts:AssumeRole'
+              Resource:
+                - 'arn:aws:iam::173707202817:role/buildkite_sa'
+                - 'arn:aws:iam::429548892436:role/buildkite_sa'
+          - 3:
+              Action: 'ssm:GetParameter*'
+              Resource: 
+                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
+                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+  RepoName: get_sub_mapex('${1M}.${2M}.services.buildkite', ['BrandRegion', 'Brand'])
+  Volumes:
+    - DockerSock:
+        SourcePath: '/var/run/docker.sock'

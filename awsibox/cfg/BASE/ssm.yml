@@ -1,0 +1,65 @@
+global:
+  IAMPolicy:
+    - SSM:
+        Roles:
+          - Ref('RoleInstance')
+        Statement:
+          - 1:
+              Action:
+                - 'ssm:DescribeAssociation'
+                - 'ssm:GetDeployablePatchSnapshotForInstance'
+                - 'ssm:GetDocument'
+                - 'ssm:GetManifest'
+                - 'ssm:GetParameters'
+                - 'ssm:ListAssociations'
+                - 'ssm:ListInstanceAssociations'
+                - 'ssm:PutInventory'
+                - 'ssm:PutComplianceItems'
+                - 'ssm:PutConfigurePackageResult'
+                - 'ssm:UpdateAssociationStatus'
+                - 'ssm:UpdateInstanceAssociationStatus'
+                - 'ssm:UpdateInstanceInformation'
+              Resource: '*'
+          - 2:
+              Action:
+                - 'ssmmessages:CreateControlChannel'
+                - 'ssmmessages:CreateDataChannel'
+                - 'ssmmessages:OpenControlChannel'
+                - 'ssmmessages:OpenDataChannel'
+              Resource: '*'
+          - 3:
+              Action:
+                - 'ec2messages:AcknowledgeMessage'
+                - 'ec2messages:DeleteMessage'
+                - 'ec2messages:FailMessage'
+                - 'ec2messages:GetEndpoint'
+                - 'ec2messages:GetMessages'
+                - 'ec2messages:SendReply'
+              Resource: '*'
+          - 4:
+              Action: 'cloudwatch:PutMetricData'
+              Resource: '*'
+          - 5:
+              Action: 'ec2:DescribeInstanceStatus'
+              Resource: '*'
+          - 6:
+              Action:
+                - 'ds:CreateComputer'
+                - 'ds:DescribeDirectories'
+              Resource: '*'
+          - 7:
+              Action:
+                - 'logs:CreateLogGroup'
+                - 'logs:CreateLogStream'
+                - 'logs:DescribeLogGroups'
+                - 'logs:DescribeLogStreams'
+                - 'logs:PutLogEvents'
+              Resource: '*'
+          - 8:
+              Action:
+                - 's3:GetObject'
+              Resource:
+                - Sub('arn:aws:s3:::aws-ssm-${AWS::Region}/*')
+                - Sub('arn:aws:s3:::amazon-ssm-${AWS::Region}/*')
+                - Sub('arn:aws:s3:::amazon-ssm-packages-${AWS::Region}/*')
+                - Sub('arn:aws:s3:::${AWS::Region}-birdwatcher-prod/*')

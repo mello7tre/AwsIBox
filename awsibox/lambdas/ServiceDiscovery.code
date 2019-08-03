@@ -1,0 +1,119 @@
+# vim: ft=python expandtab shiftwidth=2 softtabstop=2
+import boto3
+import logging
+import os
+import json
+import time
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def get_servicename(tags):
+  role = None
+  stackname = None
+  parsedTags = None
+  while not parsedTags or (stackname and not role):
+    time.sleep(0.5)
+    for n in tags:
+      if n['Key'] == 'EnvRole':
+        role = n['Value']
+      if n['Key'] == 'aws:cloudformation:stack-name':
+        stackname = n['Value']
+      if n['Key'] == 'EnvStackName':
+        stackname = n['Value']
+    parsedTags = True
+  if role and stackname:
+    return(stackname + '.' + role)
+
+def get_service(client, namespaceid, servicename):
+  service = {}
+  paginator = client.get_paginator('list_services')
+  response_iterator = paginator.paginate(
+    Filters=[{'Name': 'NAMESPACE_ID', 'Values': [namespaceid]}]
+  )
+  for n in response_iterator:
+    for s in n['Services']:
+      if s['Name'] == servicename:
+        service['Id'] = s['Id']
+        #service['InstanceCount'] = s['InstanceCount']
+        return(service)
+
+def create_service(client, namespaceid, servicename):
+  response = client.create_service(
+    Name=servicename,
+    DnsConfig={
+      'NamespaceId': namespaceid,
+      'DnsRecords': [{'Type': 'A', 'TTL': 300}]
+    }
+  )
+
+  return(response['Service']['Id'])
+
+def register_instance(client, serviceid, instance):
+  response = client.register_instance(
+    ServiceId=serviceid,
+    InstanceId=instance.instance_id,
+    Attributes={
+      'AWS_INSTANCE_IPV4': instance.private_ip_address
+    }
+  )
+
+  return(response)
+
+def do_upsert_record_set(client, aliasname, hostedzoneid, namespace_hostedzoneid, action):
+  response = client.change_resource_record_sets(
+    HostedZoneId=hostedzoneid,
+    ChangeBatch={'Changes': [{
+      'Action': action,
+      'ResourceRecordSet': {
+        'Name': aliasname,
+        'Type': 'A',
+        'AliasTarget': {
+          'DNSName': aliasname,
+          'HostedZoneId': namespace_hostedzoneid,
+          'EvaluateTargetHealth': True,
+        }
+      }
+   }]}
+  )
+
+def lambda_handler(event, context):
+  namespaceid = os.environ['NameSpaceID']
+  e_state = event['detail']['state']
+  ec2id = event['detail']['instance-id']
+  logger.info(e_state + ' ' + ec2id)
+
+  discoveryclient = boto3.client('servicediscovery')
+  r53client = boto3.client('route53')
+  ec2res = boto3.resource('ec2')
+
+  instance = ec2res.Instance(ec2id)
+  logger.info(instance)
+  if not instance.tags:
+    return
+
+  servicename = get_servicename(instance.tags)
+  if not servicename:
+    return
+  logger.info(servicename)
+
+  service = get_service(discoveryclient, namespaceid, servicename)
+  namespace_hostedzoneid = discoveryclient.get_namespace(Id=namespaceid)['Namespace']['Properties']['DnsProperties']['HostedZoneId']
+  hostedzoneid = os.environ['HostedZoneId']
+  aliasname = servicename + '.' + os.environ['PublicDnsNamespaceName']
+
+  if e_state == 'running':
+    serviceid = service['Id'] if service else create_service(discoveryclient, namespaceid, servicename)
+    logger.info(serviceid)
+    do_upsert_record_set(r53client, aliasname, hostedzoneid, namespace_hostedzoneid, 'UPSERT')
+    registration = register_instance(discoveryclient, serviceid, instance)
+    response = discoveryclient.get_operation(OperationId=registration['OperationId'])
+    logger.info(response)
+
+  if service and e_state == 'shutting-down':
+    discoveryclient.deregister_instance(ServiceId=service['Id'], InstanceId=instance.instance_id)
+    service = get_service(discoveryclient, namespaceid, servicename)
+    #if service['InstanceCount'] == 0:
+    #  do_upsert_record_set(r53client, aliasname, hostedzoneid, namespace_hostedzoneid, 'DELETE')
+    #  discoveryclient.delete_service(Id=service['Id'])
+
+  return

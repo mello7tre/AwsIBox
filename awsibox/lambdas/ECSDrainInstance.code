@@ -1,0 +1,111 @@
+# vim: ft=python expandtab shiftwidth=2 softtabstop=2
+import json
+import time
+import boto3
+import os
+from datetime import datetime, timedelta
+
+ECS = boto3.client('ecs')
+ASG = boto3.client('autoscaling')
+SNS = boto3.client('sns')
+CLF = boto3.client('cloudformation')
+
+def find_ecs_instance_info(instance_id, Cluster):
+  paginator = ECS.get_paginator('list_container_instances')
+  for list_resp in paginator.paginate(cluster=Cluster):
+    arns = list_resp['containerInstanceArns']
+    desc_resp = ECS.describe_container_instances(
+      cluster=Cluster,
+      containerInstances=arns)
+    for cI in desc_resp['containerInstances']:
+      if cI['ec2InstanceId'] != instance_id:
+        continue
+      print('Found instance: id=%s, arn=%s, status=%s, runningTasksCount=%s' %
+        (instance_id, cI['containerInstanceArn'], cI['status'], cI['runningTasksCount']))
+      return cI['containerInstanceArn'], cI['status'], cI['runningTasksCount']
+  return None, None, 0
+
+def instance_has_running_tasks(instance_id, Cluster):
+  (instance_arn, container_status, running_tasks) = find_ecs_instance_info(instance_id, Cluster)
+  if instance_arn is None:
+    print('Could not find instance ID %s.' % (instance_id))
+    return False
+  if container_status != 'DRAINING':
+    print('Setting container instance %s (%s) to DRAINING' % (instance_id, instance_arn))
+    ECS.update_container_instances_state(cluster=Cluster,
+      containerInstances=[instance_arn],
+      status='DRAINING')
+  return running_tasks > 0
+
+def getClfExports():
+  exports = {}
+  paginator = CLF.get_paginator('list_exports')
+  responseIterator = paginator.paginate()
+  for e in responseIterator:
+    for export in e['Exports']:
+      name = export['Name']
+      value = export['Value']
+      exports[name] = value
+  return exports
+
+
+def findEcsCluster(asgName):
+  asgTags = ASG.describe_auto_scaling_groups(AutoScalingGroupNames=[asgName])['AutoScalingGroups'][0]['Tags']
+  stackName = None
+  for n in asgTags:
+    if n['Key'] == 'aws:cloudformation:stack-name':
+      stackName = n['Value']
+  if stackName:
+    try:
+      return getClfExports()['Cluster-' + stackName]
+    except:
+      pass
+
+def getHeartbeatTimeout(asgName, lchName):
+  heartbeatTimeout = 900
+  try:
+    heartbeatTimeout = ASG.describe_lifecycle_hooks(AutoScalingGroupName=asgName,
+      LifecycleHookNames=[lchName])['LifecycleHooks'][0]['HeartbeatTimeout']
+  except:
+    pass
+
+  return heartbeatTimeout
+
+def lambda_handler(event, context):
+  time_format = '%Y-%m-%dT%H:%M:%S.%fZ'
+  topicArn = event['Records'][0]['Sns']['TopicArn']
+  msg = json.loads(event['Records'][0]['Sns']['Message'])
+
+  if 'LifecycleTransition' not in msg.keys() or \
+    msg['LifecycleTransition'].find('autoscaling:EC2_INSTANCE_TERMINATING') == -1:
+    return
+
+  autoScalingGroupName = msg['AutoScalingGroupName']
+  lifecycleHookName = msg['LifecycleHookName']
+  instanceId = msg['EC2InstanceId']
+
+  ecsCluster = findEcsCluster(autoScalingGroupName)
+  print('Cluster: %s' % (ecsCluster))
+  heartbeatTimeout = getHeartbeatTimeout(autoScalingGroupName, lifecycleHookName)
+  print('HB: %s' % (heartbeatTimeout))
+
+  if not ecsCluster or instance_has_running_tasks(instanceId, ecsCluster):
+    if 'EndTime' in msg:
+      if datetime.utcnow() > datetime.strptime(msg['EndTime'], time_format):
+        print('End HeartbeatTimeout')
+        return
+    else:
+        endtime = datetime.strptime(msg['Time'], time_format) + timedelta(seconds=heartbeatTimeout)
+        msg['EndTime'] = endtime.strftime(time_format)
+    print('Tasks running on %s; posting to SNS topic %s' % (instanceId, topicArn))
+    time.sleep(20)
+    sns_resp = SNS.publish(TopicArn=topicArn,
+      Message=json.dumps(msg),
+      Subject='Publishing SNS msg to invoke Lambda again.')
+    print('Posted msg %s to SNS topic.' % (sns_resp['MessageId']))
+  else:
+    print('No tasks running on %s; completing lifecycle' % (instanceId))
+    ASG.complete_lifecycle_action(LifecycleHookName=lifecycleHookName,
+      AutoScalingGroupName=autoScalingGroupName,
+      LifecycleActionResult='CONTINUE',
+      InstanceId=instanceId)

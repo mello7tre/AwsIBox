@@ -1,0 +1,9 @@
+agw:
+  ApiKeySourceType: HEADER
+  BinaryMediaTypes:
+    - '*/*'
+  CloudFront: True
+  Description: 'Api-Gateway Description is missing'
+  EndpointConfiguration:
+    - REGIONAL
+  Name: 'Api-Gateway Name is missing'

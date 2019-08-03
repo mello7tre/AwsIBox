@@ -1,0 +1,9 @@
+include: !include [
+  loadbalancing.yml,
+]
+
+ecs-alb:
+  StackType: alb
+  StackName: alb
+  LoadBalancerApplication: ['External', 'Internal']
+  RecordSet: []

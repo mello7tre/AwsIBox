@@ -1,0 +1,94 @@
+import boto3
+import logging
+import os
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def get_autoscale_info():
+  ec2 = boto3.resource('ec2')
+  instance_iterator = ec2.instances.filter(
+    Filters=[
+      {
+        'Name': 'tag:EnvStackName',
+        'Values': [cw_event['ECSInstancesStackName']]
+      },
+      {
+        'Name': 'instance-state-name',
+        'Values': ['running']
+      }
+    ]
+  )
+  sorted_instances = sorted(
+    instance_iterator,
+    key=lambda i: (i.launch_time, i.id),
+    reverse=True
+  )
+  return sorted_instances
+
+def get_container_instance(ecs, id):
+  response = ecs.list_container_instances(
+    cluster=cw_event['Cluster'],
+    status='ACTIVE'
+  )
+  for c in response['containerInstanceArns']:
+    resp = ecs.describe_container_instances(
+      cluster=cw_event['Cluster'],
+      containerInstances=[c]
+    )
+    if resp['containerInstances'][0]['ec2InstanceId'] == id:
+      return c
+
+def manage_attribute(ecs, action, id=None):
+  kwargs = {
+    'cluster': cw_event['Cluster'],
+    'attributes': [{
+      'name': 'LambdaRunTask'
+    }]
+  }
+  if action == 'put':
+    kwargs['attributes']['targetType'] = 'container-instance'
+    kwargs['attributes']['targetId'] = id
+    ecs.put_attributes(**kwargs)
+  else:
+    ecs.delete_attributes(**kwargs)
+
+def lambda_handler(event, context):
+  global cw_event
+  cw_event = event
+  logger.info(cw_event)
+  ecs = boto3.client('ecs')
+  kwargs = {
+    'taskDefinition': cw_event['TaskDefinition'],
+    'cluster': cw_event['Cluster'],
+    #'placementConstraints': [{
+    #  'type': 'memberOf',
+    #  'expression': 'attribute:LambdaRunTask exists',
+    #}],
+  }
+  if 'NetworkModeAwsVpc' in cw_event:
+    kwargs['networkConfiguration'] = {
+      'awsvpcConfiguration': {
+        'subnets': cw_event['Subnets'].split(','),
+        'securityGroups': cw_event['SecurityGroups'].split(),
+        'assignPublicIp': 'DISABLED',
+      }
+    }
+  if cw_event['LaunchType'] == 'EC2':
+    #manage_attribute(ecs, 'delete')
+    sorted_instances = get_autoscale_info()
+    my_instance = sorted_instances[0].id
+    my_container_instance = get_container_instance(ecs, my_instance)
+    logger.info(my_instance)
+    logger.info(my_container_instance)
+    #manage_attribute(ecs, 'put', my_container_instance)
+    kwargs['containerInstances'] = [my_container_instance]
+    response = ecs.start_task(**kwargs)
+  else:
+    kwargs['count'] = 1
+    kwargs['launchType'] = 'FARGATE'
+    response = ecs.run_task(**kwargs)
+  if 'failures' in response and len(response['failures']) > 0:
+    logger.info(response)
+    return(1)
+  else:
+    return(0)

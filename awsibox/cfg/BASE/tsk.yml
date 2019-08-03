@@ -1,0 +1,58 @@
+include: !include [
+  ecs-task.yml,
+  securitygroup.yml,
+]
+
+tsk:
+  EventsRule:
+    - ECSRunTask:
+        Description: 'Periodically invoke LambdaECSRunTask'
+        State: 'ENABLED'
+        Targets:
+          - LambdaECSRunTask:
+              Arn: get_exported_value('LambdaECSRunTaskArn')
+              Id: 'TargetFunction-01'
+              Input: Join('"', [
+                  '{',
+                  'Cluster":', get_exported_value('Cluster', 'ClusterStack'), ',',
+                  'ECSInstancesStackName":', get_final_value('ClusterStack'), ',',
+                  'LaunchType":', get_final_value('LaunchType'), ',',
+                  If('NetworkModeAwsVpc', 'NetworkModeAwsVpc":"awsvpc",', Ref('AWS::NoValue')),
+                  'TaskDefinition":', Ref('TaskDefinition'), ',',
+                  'Subnets":', get_exported_value('SubnetsPrivate'), ',',
+                  'SecurityGroups":', Join(' ', SG_SecurityGroupsTSK().SecurityGroups),
+                  '}',
+                ])
+  LambdaDISABLEDUseCommonOneInResourcesLambda01:
+    - ECSRunTask:
+        Description: 'Run ECS Task'
+        MemorySize: 128
+        Runtime: python2.7
+        Timeout: 10
+        Variables:
+          - Cluster: get_exported_value('Cluster', 'ClusterStack')
+          - ECSInstancesStackName: get_final_value('ClusterStack')
+          - LaunchType: get_final_value('LaunchType')
+          - NetworkModeAwsVpc: If('NetworkModeAwsVpc','awsvpc',Ref('AWS::NoValue'))
+          - TaskDefinition: Ref('TaskDefinition')
+          - Subnets: get_exported_value('SubnetsPrivate')
+          - SecurityGroups: Join(' ', SG_SecurityGroupsTSK().SecurityGroups)
+  LaunchType: EC2
+  NetworkMode: awsvpc
+  IAMPolicy:
+    - LambdaECSRunTaskTrigger:
+        Roles:
+          - get_exported_value('RoleLambdaECSRunTask')
+        Statement:
+          - 1:
+              Action:
+                - 'ecs:RunTask'
+                - 'ecs:StartTask'
+              Resource: Ref('TaskDefinition')
+          - 2:
+              Action:
+                - 'iam:GetRole'
+                - 'iam:PassRole'
+              Resource: 
+                - GetAtt('RoleTask', 'Arn')
+                - get_exported_value('RoleECSTaskExecution')

@@ -1,0 +1,36 @@
+from __future__ import print_function
+import json
+import logging
+import os
+import boto3
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+
+def send_to_sqs(dnsname):
+  client = boto3.client('sqs')
+  client.send_message(
+    QueueUrl = os.environ['SQSQueue'],
+    MessageBody='{"Subject": "delete rabbitmq node ' + dnsname + '","Message": "' + dnsname + '"}'
+  )
+
+def lambda_handler(event, context):
+  logger.info(json.dumps(event))
+
+  sns_message = event['Records'][0]['Sns']
+
+  message = json.loads(sns_message['Message'])
+
+  asg_name = message['AutoScalingGroupName']
+  asg_event = message['Event']
+  dnsname = message['DnsName']
+
+  if asg_name != os.environ['AutoScalingGroup']:
+    return(0)
+
+  if asg_event == 'EC2_INSTANCE_TERMINATE':
+    logger.info('Sending message to SQS')
+    send_to_sqs(dnsname)
+
+ return(0)

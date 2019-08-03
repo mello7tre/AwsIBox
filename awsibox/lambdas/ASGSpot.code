@@ -1,0 +1,42 @@
+# vim: ft=python
+import boto3
+import datetime
+import os
+import json
+
+ASGSPOT = os.environ['ASGSpot']
+ASGONDEMAND = os.environ['ASGOnDemand']
+
+def lambda_handler(event, context):
+    client = boto3.client('autoscaling')
+    resp_getasg = client.describe_auto_scaling_groups(
+        AutoScalingGroupNames=[ASGONDEMAND],
+        MaxRecords=1,
+    )
+    AsgOnDemand = resp_getasg['AutoScalingGroups'][0]
+    DesiredOnDemand = AsgOnDemand['DesiredCapacity']
+    MinOnDemand = AsgOnDemand['MinSize']
+    MaxOnDemand = AsgOnDemand['MaxSize']
+    print('ASGONDEMAND: ' + 'Min: %s - Desired: %s' % (MinOnDemand, DesiredOnDemand))
+    if 'Records' in event and len(event['Records']) > 0:
+        message = event['Records'][0]['Sns']['Message']
+        NewStateReason = json.loads(message)['NewStateReason']
+        datapoints = NewStateReason[NewStateReason.find('[')+1:NewStateReason.rfind(']')]
+        lastdatapoint = datapoints.split(',')[-1].strip()
+        CurrentValue = lastdatapoint.split('.')[0]
+        try:
+            CurrentValue = int(CurrentValue)
+        except:
+            return False
+        DesiredOnDemandNew = DesiredOnDemand + CurrentValue
+        if DesiredOnDemandNew < MinOnDemand:
+            DesiredOnDemandNew = MinOnDemand
+        if DesiredOnDemandNew > MaxOnDemand:
+            DesiredOnDemandNew = MaxOnDemand
+        print('DesiredOnDemandNew: %s' % (DesiredOnDemandNew))
+        resp = client.set_desired_capacity(
+            AutoScalingGroupName=ASGONDEMAND,
+            DesiredCapacity=DesiredOnDemandNew,
+            HonorCooldown=False,
+        )
+        print(resp)

@@ -1,0 +1,63 @@
+res:
+  BucketBase: &bucketbase
+    Enabled: None
+    Create: None
+    AccountsRO: {}
+    Cors: None
+    CloudFrontOriginAccessIdentityExtra:
+      - Dev: None
+      - Stg: None
+      - Prd: None
+    ReplicaDstRegion: None
+    ReplicaDstOwner: None
+    ReplicaSrcAccount: None
+    Versioning: None
+
+  Bucket:
+    - AppRepository:
+        <<: *bucketbase
+        AccountsRO:
+          - dev: None
+          - stg: None
+          - prd: None
+    - AppData:
+        <<: *bucketbase
+        AccountsRO:
+          - dev: None
+          - stg: None
+          - prd: None
+    - Logs:
+        <<: *bucketbase
+    - Images:
+        <<: *bucketbase
+    - PortalStatic:
+        <<: *bucketbase
+        AccountsRO:
+          - dev: None
+          - stg: None
+          - prd: None
+    - ElasticSearch:
+        <<: *bucketbase
+        AccountsRO:
+          - dev: None
+          - stg: None
+          - prd: None
+    - Tile:
+        <<: *bucketbase
+    - Dwh:
+        <<: *bucketbase
+    - WebFiles:
+        <<: *bucketbase
+    - WebApp:
+        <<: *bucketbase
+    - PortalRedirect:
+        <<: *bucketbase
+    - MachineLearning:
+        <<: *bucketbase
+  EcrAccount:
+    - Stg:
+        Id: None
+        Policy: ['Pull', 'Push']
+    - Prd:
+        Id: None
+        Policy: ['Pull']

@@ -1,0 +1,44 @@
+import boto3
+import logging
+import os
+import json
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+
+def get_services(client):
+  services = []
+  paginator = client.get_paginator('list_services')
+  response_iterator = paginator.paginate(
+    cluster=os.environ['Cluster'],
+    launchType=os.environ['LaunchType'],
+  )
+
+  for n in response_iterator:
+    for s in n['serviceArns']:
+      services.append(s)
+
+  return services
+
+
+def update_desiredcount(client, servicearn, desired):
+  response = client.update_service(
+    cluster=os.environ['Cluster'],
+    service=servicearn.split('/')[1],
+    desiredCount=desired
+  )
+
+  return response
+
+
+def lambda_handler(event, context):
+  desiredcount = event['DesiredCount']
+  ecsclient = boto3.client('ecs')
+  services = get_services(ecsclient)
+
+  logger.info(services)
+
+  for n in services:
+    response = update_desiredcount(ecsclient, n, desiredcount)
+
+  return 0

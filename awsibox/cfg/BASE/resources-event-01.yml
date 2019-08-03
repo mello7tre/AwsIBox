@@ -1,0 +1,65 @@
+resources-event-01:
+  StackType: res
+  StackName: r-event-01
+  EventsRule:
+    - EC2StartTagged:
+        Description: 'Cron based invocation of LambdaEC2StartStopTagged - Start'
+        State: 'DISABLED'
+        ScheduleExpression: 'cron(00 6 ? * mon-fri *)'
+        Targets:
+          - LambdaEC2StartStopTagged:
+              Arn: GetAtt('LambdaEC2StartStopTagged', 'Arn')
+              Id: 'TargetFunction-01'
+              Input: '{"Action": "start"}'
+    - EC2StopTagged:
+        Description: 'Cron based invocation of LambdaEC2StartStopTagged - Stop'
+        State: 'DISABLED'
+        ScheduleExpression: 'cron(0 19 * * ? *)'
+        Targets:
+          - LambdaEC2StartStopTagged:
+              Arn: GetAtt('LambdaEC2StartStopTagged', 'Arn')
+              Id: 'TargetFunction-01'
+              Input: '{"Action": "stop"}'
+    - EC2Notification:
+        Description: 'EC2 Instance State-change Notification'
+        State: 'ENABLED'
+        EventPattern: >
+            eval('{
+              "source": [
+                "aws.ec2"
+              ],
+              "detail-type": [
+                "EC2 Instance State-change Notification"
+              ],
+              "detail": {
+                "state": [
+                  "running",
+                  "shutting-down"
+                ]
+              }
+            }')
+        Targets:
+          - LambdaServiceDiscovery:
+              Arn: get_exported_value('LambdaServiceDiscovery')
+              Id: 'TargetFunction-01'
+          - LambdaR53RecordInstanceId:
+              Arn: get_exported_value('LambdaR53RecordInstanceId')
+              Id: 'TargetFunction-02'
+  Lambda:
+    - EC2StartStopTagged:
+        Description: 'Start and Stop EC2 Tagged Instances'
+        MemorySize: 128
+        Runtime: python2.7
+        Timeout: 10
+        Variables:
+          - TagName: 'AutoStartStop'
+  IAMPolicy:
+    - LambdaEC2StartStopTagged:
+        Roles:
+          - Ref('RoleLambdaEC2StartStopTagged')
+        Statement:
+          - 1:
+              Action:
+                - 'ec2:StartInstances'
+                - 'ec2:StopInstances'
+              Resource: 'arn:aws:ec2:*:*:instance/*'

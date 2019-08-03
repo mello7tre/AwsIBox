@@ -1,0 +1,27 @@
+global:
+  IAMPolicy:
+    - SQSASGNotificationR53:
+        Roles:
+          - Ref('RoleInstance')
+        Statement:
+          - 1:
+              Action:
+                - 'sqs:DeleteMessage'
+                - 'sqs:GetQueueUrl'
+                - 'sqs:ListQueues'
+                - 'sqs:ReceiveMessage'
+              Resource: GetAtt('SQSQueueASGNotificationR53', 'Arn')
+          - 2:
+              Action:
+                - 'sqs:GetQueueAttributes'
+                - 'sqs:ListQueues'
+              Resource: '*'
+  SQSQueue:
+    - ASGNotificationR53:
+        MessageRetentionPeriod: 360
+        TopicArn: get_exported_value('SNSTopicASGNotificationR53')
+  SNSSubscription:
+    - ASGNotificationR53SQSASGNotificationR53:
+        TopicArn: get_exported_value('SNSTopicASGNotificationR53')
+        Endpoint: GetAtt('SQSQueueASGNotificationR53', 'Arn')
+        Protocol: sqs

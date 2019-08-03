@@ -1,0 +1,188 @@
+resources-iam-01:
+  StackType: res
+  StackName: resources-iam-01
+  IAMUser: {}
+  IAMGroup:
+    - Base:
+        Enabled: True
+        ManagedPolicyArns:
+          - IAMUserManageOwn
+          - S3ListBuckets
+          - LogGroupsDescribe
+    - Power:
+        Enabled: True
+        ManagedPolicyArns:
+          - IAMUserManageOwn
+          - PowerUserAccessNoSSM
+          - SSMParameterStoreBase
+    - Developer:
+        Enabled: True
+        ManagedPolicyArns:
+          - SSMParameterStoreBase
+          - LogRead
+          - ECRRead
+          - MetricRead
+        User:
+          - 0: None
+    - BackEndDeveloper:
+        Enabled: True
+        ManagedPolicyArns:
+          - BackEndDeveloper
+        User:
+          - 0: None
+    - CloudWatchRead:
+        Enabled: True
+        ManagedPolicyArns:
+          - LogRead
+          - MetricRead
+        User:
+          - 0: None
+    - CloudWatchReadJoker01:
+        Enabled: True
+        ManagedPolicyArns:
+          - LogReadJoker01
+        User:
+          - 0: None
+  IAMPolicy:
+    - IAMUserManageOwn:
+        Type: Managed
+        Description: 'Manage Own IAM resources'
+        Statement:
+          - 1:
+              Action:
+                - 'iam:*LoginProfile'
+                - 'iam:*AccessKey*'
+                - 'iam:*AccessKey*'
+                - 'iam:*SSHPublicKey*'
+                - 'iam:GenerateCredentialReport'
+                - 'iam:GenerateServiceLastAccessedDetails'
+                - 'iam:ChangePassword'
+              Resource: 'arn:aws:iam::*:user/${aws:username}'
+          - 2:
+              Action:
+                - 'iam:ListUsers'
+              Resource: '*'
+    - S3ListBuckets:
+        Type: Managed
+        Description: 'List Buckets'
+        Statement:
+          - 1:
+              Action:
+                - 's3:GetBucketLocation'
+                - 's3:ListAllMyBuckets'
+              Resource: 'arn:aws:s3:::*'
+    - PowerUserAccessNoSSM:
+        Type: Managed
+        Description: 'Provides full access apart management of Users and groups, Direct Access to SSM Parameters.'
+        Statement:
+          - 1:
+              Action:
+                - 'iam:CreateServiceLinkedRole'
+                - 'iam:DeleteServiceLinkedRole'
+                - 'iam:Get*'
+                - 'iam:List*'
+                - 'iam:SimulateCustomPolicy'
+                - 'iam:SimulatePrincipalPolicy'
+                - 'iam:PassRole'
+                - 'organizations:DescribeOrganization'
+              Resource: '*'
+          - 2:
+              NotAction:
+                - 'iam:*'
+                - 'organizations:*'
+                - 'ssm:*'
+              Resource: '*'
+          - 3:
+              Action:
+                - 'ssm:GetParameter*'
+              Resource:
+                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
+                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+    - SSMParameterStoreBase:
+        Type: Managed
+        Description: 'Describe all SSM Parameters and read KMS Key'
+        Statement:
+          - 1:
+              Action:
+                - 'ssm:DescribeParameters'
+              Resource: '*'
+          - 2:
+              Action:
+                - 'kms:Decrypt'
+                - 'kms:Encrypt'
+              Resource: get_exported_value('KeyParameterStore')
+          - 3:
+              Action:
+                - 'kms:ListAliases'
+              Resource: '*'
+    - STSAssumeRoleOwn:
+        Type: Managed
+        Description: 'Assume UserName Role'
+        Statement:
+          - 1:
+              Action:
+                - 'sts:AssumeRole'
+              Resource: 'arn:aws:iam::*:role/${aws:username}'
+    - LogRead:
+        Type: Managed
+        Description: 'Read CloudWatch Logs'
+        Statement:
+          - 1:
+              Action:
+                - 'logs:Describe*'
+                - 'logs:TestMetricFilter'
+                - 'logs:FilterLogEvents'
+                - 'logs:Get*'
+              Resource: '*'
+    - LogGroupsDescribe:
+        Type: Managed
+        Description: 'Describe CloudWatch Log Groups'
+        Statement:
+          - 1:
+              Action:
+                - 'logs:DescribeLogGroups'
+              Resource: '*'
+    - LogReadJoker01:
+        Type: Managed
+        Description: 'Read CloudWatch Logs - Joker'
+        Statement:
+          - 1:
+              Action:
+                - 'logs:Describe*'
+                - 'logs:FilterLogEvents'
+                - 'logs:Get*'
+    - MetricRead:
+        Type: Managed
+        Description: 'Read CloudWatch Metrics and DashBoard'
+        Statement:
+          - 1:
+              Action:
+                - 'cloudwatch:GetDashboard'
+                - 'cloudwatch:GetMetricData'
+                - 'cloudwatch:ListDashboards'
+                - 'cloudwatch:GetMetricStatistics'
+                - 'cloudwatch:ListMetrics'
+              Resource: '*'
+    - ECRRead:
+        Type: Managed
+        Description: 'Read Grant to All Ecr Repos'
+        Statement:
+          - 1:
+              Action:
+                - 'ecr:GetAuthorizationToken'
+                - 'ecr:DescribeRepositories'
+                - 'ecr:ListImages'
+              Resource: '*'
+    - CloudFrontInvalidate:
+        Type: Managed
+        Description: 'CloudFront Console ReadAccess and Create Invalidations'
+        Statement:
+          - 1:
+              Action:
+                - 'acm:ListCertificates'
+                - 'cloudfront:List*'
+                - 'cloudfront:Get*'
+                - 'cloudfront:CreateInvalidation'
+                - 'waf:GetWebACL'
+                - 'waf:ListWebACLs'
+              Resource: '*' 

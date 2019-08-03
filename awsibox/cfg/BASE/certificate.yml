@@ -1,0 +1,46 @@
+global:
+  Certificate:
+    - LoadBalancerAdHocExternal:
+        Enabled: False
+        Condition: LoadBalancerSslCertificateAdHoc
+        DomainName: Sub('${AWS::StackName}.${EnvRole}' + RP_cmm['HostedZoneNameRegionEnv'])
+        DomainValidationOptions:
+          - Full:
+              DomainName: Sub('${AWS::StackName}.${EnvRole}' + RP_cmm['HostedZoneNameRegionEnv'])
+              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+          - EnvRole:
+              DomainName: Sub('${EnvRole}.' + RP_cmm['HostedZoneNameEnv'])
+              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+          - Region:
+              DomainName: Sub('${EnvRole}.' + RP_cmm['HostedZoneNameRegionEnv'])
+              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+        SubjectAlternativeNames:
+          - Sub('${EnvRole}.' + RP_cmm['HostedZoneNameEnv'])
+          - Sub('${EnvRole}.' + RP_cmm['HostedZoneNameRegionEnv'])
+        ValidationMethod: 'EMAIL'
+    - LoadBalancerExternal:
+        Enabled: False
+        DomainName: Sub('*.' + RP_cmm['HostedZoneNameRegionEnv'])
+        DomainValidationOptions:
+          - Region:
+              DomainName: Sub('*.' + RP_cmm['HostedZoneNameRegionEnv'])
+              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+          - Origin:
+              DomainName: Sub('*.origin.' + RP_cmm['HostedZoneNameEnv'])
+              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+          - Cdn:
+              DomainName: Sub('*.cdn.' + RP_cmm['HostedZoneNameEnv'])
+              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+          - Env:
+              DomainName: Sub('*.' + RP_cmm['HostedZoneNameEnv'])
+              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+          - Zone:
+              DomainName: Sub(RP_cmm['HostedZoneNameEnv'])
+              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+        SubjectAlternativeNames:
+          - Sub('*.origin.' + RP_cmm['HostedZoneNameEnv'])
+          - Sub('*.cdn.' + RP_cmm['HostedZoneNameEnv'])
+          - Sub('*.' + RP_cmm['HostedZoneNameEnv'])
+          - Sub(RP_cmm['HostedZoneNameEnv'])
+        ValidationMethod: 'EMAIL'
+        #ValidationMethod: 'DNS'

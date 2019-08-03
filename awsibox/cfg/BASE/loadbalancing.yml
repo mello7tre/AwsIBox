@@ -1,0 +1,53 @@
+include: !include [
+  securitygroup.yml,
+  certificate.yml,
+]
+
+global:
+  Parameter:
+    - ListenerLoadBalancerHttpPort:
+        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
+    - ListenerLoadBalancerHttpsPort:
+        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
+    - LoadBalancerSslCertificate:
+        Description: 'Load Balancer External Ssl Certificate - None to disable - empty for default based on env/role'
+  Condition:
+    - ListenerLoadBalancerHttpPort:
+        Or(
+          And(Condition('ListenerLoadBalancerHttpPortOverride'),Not(Equals(Ref('ListenerLoadBalancerHttpPort'), 'None'))),
+          And(Not(Condition('ListenerLoadBalancerHttpPortOverride')),Not(Equals(get_final_value('ListenerLoadBalancerHttpPort'), 'None'))),
+        )
+    - ListenerLoadBalancerHttpsPort:
+        Or(
+          And(Condition('ListenerLoadBalancerHttpsPortOverride'),Not(Equals(Ref('ListenerLoadBalancerHttpsPort'), 'None'))),
+          And(Not(Condition('ListenerLoadBalancerHttpsPortOverride')),Not(Equals(get_final_value('ListenerLoadBalancerHttpsPort'), 'None'))),
+        )
+    - LoadBalancerSslCertificateAdHoc:
+        And(
+          Condition('ListenerLoadBalancerHttpsPort'),
+          Equals(get_final_value('LoadBalancerSslCertificate'), 'None')
+        )
+  Output:
+    - LoadBalancerSslCertificate:
+        Value: get_final_value('LoadBalancerSslCertificate')
+  Certificate:
+    - LoadBalancerAdHocExternal:
+        Enabled: True
+  HealthCheckIntervalSeconds: 30
+  HealthCheckTimeoutSeconds: 6
+  HealthyThresholdCount: 2
+  ListenerLoadBalancerHttpPort: 80
+  ListenerLoadBalancerHttpsPort: 443
+  LoadBalancerAccess: Public
+  LoadBalancerLog: None
+  LoadBalancerHttp2: True
+  LoadBalancerSslCertificate: True
+  TargetGroupDeregistrationDelay: '30'
+  TargetGroupCookieSticky: None
+  UnhealthyThresholdCount: 3
+
+eu-west-1:
+  HostedZoneIdLB: Z32O12XQLNTSW2
+
+eu-central-1:
+  HostedZoneIdLB: Z215JYRZR1TBD5

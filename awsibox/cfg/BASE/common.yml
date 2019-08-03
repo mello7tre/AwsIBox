@@ -1,0 +1,29 @@
+global:
+  Parameter:
+    - Env:
+        Description: Environment
+        AllowedValues: ['dev', 'stg', 'prod']
+        Default: dev
+    - EnvShort:
+        Description: 'Environment Short - NEVER CHANGE!'
+        AllowedValues: ['dev', 'stg', 'prd']
+        Default: dev
+    - EnvRole:
+        Description: 'Service Role'
+        AllowedPattern: '^[a-zA-Z0-9-_.]*$'
+    - EnvStackVersion:
+        Description: 'Stack version, if changed with UpdateMode=Cfn triggers cfn-hup'
+        Default: '1'
+  Output:
+    - BrandDomain:
+        Value: get_final_value('BrandDomain')
+    - Env:
+        Value: Ref('Env')
+    - EnvRole:
+        Value: Ref('EnvRole')
+    - EnvStackVersion:
+        Value: Ref('EnvStackVersion')
+    - StackType:
+        Value: cfg.stacktype
+  HostedZoneIdCF: Z2FDTNDATAQYW2
+  RecordSet: ['Internal', 'External']

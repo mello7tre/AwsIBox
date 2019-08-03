@@ -1,0 +1,81 @@
+global:
+  ASScalingPolicyTrackings: &astracking
+    Enabled: None
+    AutoScalingGroupName: Ref('AutoScalingGroup')
+    EstimatedInstanceWarmup: 120
+    PolicyType: TargetTrackingScaling
+
+  APPScalingPolicyTrackings: &apptracking
+    Enabled: None
+    ScalingTargetId: Ref('ScalableTarget')
+    PolicyType: TargetTrackingScaling
+
+  ASScalingPolicyTrackingsCpu: &astrackingcpu
+    <<: *astracking
+    Type: Cpu
+    TargetTrackingConfiguration:
+      PredefinedMetricType: 'ASGAverageCPUUtilization'
+      TargetValue: 70
+
+  ASScalingPolicyTrackingsCustom: &astrackingcustom
+    <<: *astracking
+    Type: Custom
+    TargetTrackingConfiguration:
+      CustomizedMetricSpecification:
+        Dimensions: []
+        Namespace: 'AWS/EC2'
+
+  APPScalingPolicyTrackingsCpu: &apptrackingcpu
+    <<: *apptracking
+    Type: Cpu
+    TargetTrackingScalingPolicyConfiguration:
+      PredefinedMetricSpecification:
+        PredefinedMetricType: 'ECSServiceAverageCPUUtilization'
+      ScaleInCooldown: 60
+      ScaleOutCooldown: 60
+      TargetValue: 80
+
+  Capacity:
+    Desired: 1
+    Min: 1
+    Max: 1
+  ScalingPolicyUp:
+    EstimatedInstanceWarmup: 600
+    MetricIntervalLowerBound1: 0
+    MetricIntervalUpperBound1: 10
+    ScalingAdjustment1: 1
+    MetricIntervalLowerBound2: 10
+    MetricIntervalUpperBound2: 20
+    ScalingAdjustment2: 2
+    MetricIntervalLowerBound3: 20
+    ScalingAdjustment3: 2
+  ScalingPolicyDown:
+    EstimatedInstanceWarmup: 600
+    MetricIntervalLowerBound1: -10
+    MetricIntervalUpperBound1: 0
+    ScalingAdjustment1: -1
+    MetricIntervalLowerBound2: -20
+    MetricIntervalUpperBound2: -10
+    ScalingAdjustment2: -2
+    MetricIntervalUpperBound3: -20
+    ScalingAdjustment3: -2
+  ScalingPolicyTrackings:
+    - ASCpu:
+        <<: *astrackingcpu
+    - ASCustom:
+        <<: *astrackingcustom
+    - APPCpu:
+        <<: *apptrackingcpu
+        PolicyName: ScalingPolicyTrackingsAPPCpu
+
+prd:
+  Capacity:
+    Desired: 2
+    Min: 2
+    Max: 9
+
+eu-central-1:
+  prd:
+    Capacity:
+      Desired: 0
+      Min: 0

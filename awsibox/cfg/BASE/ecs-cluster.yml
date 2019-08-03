@@ -1,0 +1,165 @@
+ecs-cluster:
+  StackType: ec2
+  StackName: ecs
+  Parameter:
+    - ImageIdLatest:
+        Description: 'Latest ecs ami available from SSM'
+        Default: '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+        AllowedValues:
+          - '/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
+          - '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+        Type: 'AWS::SSM::Parameter::Value<String>'
+    - ASGLifecycleHookECSDrainInstanceHeartbeatTimeout:
+        Description: 'ECSDrainInstance ASGLifecycleHook and Lambda HeartbeatTimeout - empty for default based on env/role'
+    - GPUInstance:
+        Description: 'Install Coda and nvidia-docker2'
+        AllowedValues: ['True', 'None']
+        Default: 'None'
+  Condition:
+    - GPUInstance:
+        Equals(Ref('GPUInstance'), 'True')
+    - ImageIdLatest:
+        Or(
+          And(Condition('ImageIdOverride'),Equals(Ref('ImageId'), 'latest')),
+          And(Not(Condition('ImageIdOverride')),Equals(get_final_value('ImageId'), 'latest'))
+        )
+  Output:
+    - Cluster:
+        Value: Ref('Cluster')
+        Export: Export(Sub('Cluster-${AWS::StackName}'))
+  Alarm:
+    - CPUHigh:
+        Enabled: None
+    - CPULow:
+        Enabled: None
+  ASGLifecycleHook:
+    - ECSDrainInstance:
+        DependsOn: 'IAMPolicyASGLifecycleHookECSDrainInstance'
+        DefaultResult: 'ABANDON'
+        HeartbeatTimeout: 3600
+        LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
+        NotificationTargetARN: get_exported_value('SNSTopicECSDrainInstance')
+        RoleARN: GetAtt('RoleASGLifecycleHookECSDrainInstance', 'Arn') 
+  CloudFront: SkipClass
+  Apps: []
+  Cluster: True
+  HealthCheckType: EC2
+  Listeners: []
+  IAMPolicy:
+    - Ecs:
+        Roles:
+          - Ref('RoleInstance')
+        Statement:
+          - 1:
+              Action:
+                - 'ecs:CreateCluster'
+                - 'ecs:DeregisterContainerInstance'
+                - 'ecs:DiscoverPollEndpoint'
+                - 'ecs:Poll'
+                - 'ecs:RegisterContainerInstance'
+                - 'ecs:StartTelemetrySession'
+                - 'ecs:Submit*'
+                - 'ecs:UpdateContainerInstancesState'
+                - 'logs:CreateLogStream'
+                - 'logs:PutLogEvents'
+                - 'ecr:BatchCheckLayerAvailability'
+                - 'ecr:BatchGetImage'
+                - 'ecr:GetDownloadUrlForLayer'
+                - 'ecr:GetAuthorizationToken'
+              Resource: '*'
+    - ASGLifecycleHookECSDrainInstance:
+        Roles:
+          - Ref('RoleASGLifecycleHookECSDrainInstance')
+        Statement:
+          - 1:
+              Action: 'sns:Publish'
+              Resource: get_exported_value('SNSTopicECSDrainInstance')
+  RecordSet: []
+  SecurityGroupIngress:
+    - ContainerInstanceExternal:
+        FromPort: 32768
+        GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
+        SourceSecurityGroupId: get_exported_value('SecurityGroupLoadBalancerApplicationExternal')
+        ToPort: 60999
+    - EcsHttpExternal:
+        CidrIp: '0.0.0.0/0'
+        FromPort: 80
+        GroupId: get_exported_value('SecurityGroupLoadBalancerApplicationExternal')
+        ToPort: 80
+    - EcsHttpsExternal:
+        CidrIp: '0.0.0.0/0'
+        FromPort: 443
+        GroupId: get_exported_value('SecurityGroupLoadBalancerApplicationExternal')
+        ToPort: 443
+    - ContainerInstanceInternal:
+        FromPort: 32768
+        GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
+        SourceSecurityGroupId: get_exported_value('SecurityGroupLoadBalancerApplicationInternal')
+        ToPort: 60999
+    - EcsHttpInternal:
+        CidrIp: '0.0.0.0/0'
+        FromPort: 80
+        GroupId: get_exported_value('SecurityGroupLoadBalancerApplicationInternal')
+        ToPort: 80
+    - EcsHttpsInternal:
+        CidrIp: '0.0.0.0/0'
+        FromPort: 443
+        GroupId: get_exported_value('SecurityGroupLoadBalancerApplicationInternal')
+        ToPort: 443
+  Role:
+    - ASGLifecycleHookECSDrainInstance:
+        Principal: 'autoscaling.amazonaws.com'
+  ScalingPolicyUpScalingAdjustment1: SkipClass
+  ScalingPolicyTrackings:
+    - ASCustom:
+        Enabled: True
+        EstimatedInstanceWarmup: 60
+        TargetTrackingConfiguration:
+          CustomizedMetricSpecification:
+            MetricName: CPUUtilization
+            Statistic: Maximum
+            Unit: Percent
+          TargetValue: 60
+  ScheduledAction:
+    - Rotate:
+        DesiredSize: 3
+        MaxSize: 3
+        MinSize: CapacityMin
+        Recurrence: '45 5 * * *'
+  VolumeSize: 100
+
+dev: &cfg_dev
+  CapacityMax: 3
+  ASGLifecycleHook:
+    - ECSDrainInstance:
+        HeartbeatTimeout: 900
+  InstanceType: t3.large
+  ScheduledAction:
+    - Rotate:
+        DesiredSize: 0
+        MaxSize: 0
+        MinSize: 0
+
+stg: *cfg_dev
+
+prd:
+  InstanceType: c5.xlarge
+  ScheduledAction:
+    - Down:
+        MinSize: 2
+        Recurrence: '0 22 * * *'
+    - Up:
+        Recurrence: '00 6 * * *'
+  VolumeSize: 50
+
+eu-west-1:
+  ImageId: ami-05b65c0f6a75c1c64
+
+  dev:
+    ImageId: latest
+
+  stg:
+    ImageId: latest
+
+eu-central-1:
+  ImageId: ami-4255d32d

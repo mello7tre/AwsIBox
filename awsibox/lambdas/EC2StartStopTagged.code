@@ -1,0 +1,23 @@
+# vim: ft=python
+import boto3
+import datetime
+import os
+import json
+
+TAGNAME = os.environ['TagName']
+
+def lambda_handler(event, context):
+    ec2 = boto3.resource('ec2')
+    client = boto3.client('ec2')
+    action = event['Action']
+
+    #filter for instances with the correct tag
+    #instances = ec2.instances.filter(Filters=[{'Name': 'tag-key', 'Values':[TAGNAME]}])
+    instances = ec2.instances.filter(Filters=[{'Name': 'tag:' + TAGNAME, 'Values': ['1']}])
+
+    for instance in instances:
+        if action == 'start':
+            client.start_instances(InstanceIds=[instance.id])
+        if action == 'stop':
+            client.stop_instances(InstanceIds=[instance.id])
+        print(instance.id + ' ' + action)

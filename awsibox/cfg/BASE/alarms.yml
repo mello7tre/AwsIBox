@@ -1,0 +1,180 @@
+global:
+  AlarmCPUBase: &cpu
+    Enabled: None
+    ActionsEnabled: True
+    EvaluationPeriods: 5
+    MetricName: 'CPUUtilization'
+    Statistic: 'Average'
+    Period: 60
+    Namespace: ''
+    Unit: Percent
+    Dimensions: []
+
+  AlarmTarget5XX: &target5xx
+    Enabled: None
+    AlarmActions: [get_exported_value('SNSTopicCloudWatchAlarm')]
+    ActionsEnabled: True
+    EvaluationPeriods: 2
+    MetricName: HTTPCode_Target_5XX_Count
+    Statistic: Sum
+    Period: 60
+    ComparisonOperator: 'GreaterThanThreshold'
+    Threshold: '50'
+    TreatMissingData: 'notBreaching'
+    Namespace: 'AWS/ApplicationELB'
+    Dimensions: []
+
+  AlarmBackend5XX: &backend5xx
+    Enabled: None
+    AlarmActions: [get_exported_value('SNSTopicCloudWatchAlarm')]
+    ActionsEnabled: True
+    EvaluationPeriods: 2
+    MetricName: HTTPCode_Backend_5XX
+    Statistic: Sum
+    Period: 60
+    ComparisonOperator: GreaterThanThreshold
+    Threshold: '50'
+    TreatMissingData: 'notBreaching'
+    Namespace: 'AWS/ELB'
+    Dimensions: []
+
+  AlarmASGSpot: &asgspot
+    Enabled: None
+    Condition: SpotASG
+    AlarmActions: [Ref('SNSTopicASGSpot')]
+    ActionsEnabled: True
+    Period: 60
+    Metrics: &asgspotmetrics
+      - Expression:
+      - MinOnDemand:
+          ReturnData: False
+          Id: m1
+          MetricStat:
+            Metric:
+              Namespace: AWS/AutoScaling
+              Dimensions:
+                - ASGOnDemand:
+                    Name: AutoScalingGroupName
+                    Value: Ref('AutoScalingGroup')
+              MetricName: GroupMinSize
+            Stat: Average
+            Period: 60
+      - InServiceDemand:
+          ReturnData: False
+          Id: m2
+          MetricStat:
+            Metric:
+              Namespace: AWS/AutoScaling
+              Dimensions:
+                - ASGOnDemand:
+                    Name: AutoScalingGroupName
+                    Value: Ref('AutoScalingGroup')
+              MetricName: GroupInServiceInstances
+            Stat: Average
+            Period: 60
+      - DesiredSpot:
+          ReturnData: False
+          Id: m3
+          MetricStat:
+            Metric:
+              Namespace: AWS/AutoScaling
+              Dimensions:
+                - ASGOnDemand:
+                    Name: AutoScalingGroupName
+                    Value: Ref('AutoScalingGroupSpot')
+              MetricName: GroupDesiredCapacity
+            Stat: Average
+            Period: 60
+      - InServiceSpot:
+          ReturnData: False
+          Id: m4
+          MetricStat:
+            Metric:
+              Namespace: AWS/AutoScaling
+              Dimensions:
+                - ASGOnDemand:
+                    Name: AutoScalingGroupName
+                    Value: Ref('AutoScalingGroupSpot')
+              MetricName: GroupInServiceInstances
+            Stat: Average
+            Period: 60
+
+  Alarm:
+    - CPUHigh:
+        <<: *cpu
+        AlarmActions: [Ref('ScalingPolicyUp')]
+        AlarmDescription: 'Alarm if CPU too High'
+        ComparisonOperator: 'GreaterThanThreshold'
+        Threshold: '60'
+    - CPULow:
+        <<: *cpu
+        AlarmActions: [Ref('ScalingPolicyDown')]
+        AlarmDescription: 'Alarm if CPU too Low'
+        ComparisonOperator: 'LessThanOrEqualToThreshold'
+        Threshold: '30'
+    - TargetExternal5XX:
+        <<: *target5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: get_exported_value('LoadBalancerApplicationExternalFullName', 'LoadBalancerApplicationStack')
+          - TargetGroup:
+              Name: TargetGroup
+              Value: Sub('${TargetGroupExternal.TargetGroupFullName}')
+    - TargetInternal5XX:
+        <<: *target5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: get_exported_value('LoadBalancerApplicationInternalFullName', 'LoadBalancerApplicationStack')
+          - TargetGroup:
+              Name: TargetGroup
+              Value: Sub('${TargetGroupInternal.TargetGroupFullName}')
+    - TargetEC2External5XX:
+        <<: *target5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: Sub('${LoadBalancerApplicationExternal.LoadBalancerFullName}')
+    - TargetEC2Internal5XX:
+        <<: *target5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: Sub('${LoadBalancerApplicationInternal.LoadBalancerFullName}')
+    - BackendExternal5XX:
+        <<: *backend5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancerName
+              Value: Ref('LoadBalancerClassicExternal')
+    - BackendInternal5XX:
+        <<: *backend5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancerName
+              Value: Ref('LoadBalancerClassicInternal')
+    - ASGSpotNotAvailable:
+        <<: *asgspot
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        EvaluationPeriods: 3
+        Metrics:
+          <<: *asgspotmetrics
+          Expression:
+            ReturnData: True
+            Expression: m1 - m2 + m3 - m4
+            Id: e1
+            Label: SpotNotAvailable
+        Threshold: 1
+    - ASGOnDemandInExcess:
+        <<: *asgspot
+        ComparisonOperator: LessThanOrEqualToThreshold
+        EvaluationPeriods: 7
+        Metrics:
+          <<: *asgspotmetrics
+          Expression:
+            ReturnData: True
+            Expression: m1 - m2 + m3 - m4
+            Id: e1
+            Label: OnDemandInExcess
+        Threshold: -1

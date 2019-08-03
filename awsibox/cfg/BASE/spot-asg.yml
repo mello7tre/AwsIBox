@@ -1,0 +1,96 @@
+global:
+  Parameter:
+    - SpotASG:
+        Description: 'Create SpotASG / Create SpotASG as Main ASG - empty for default based on env/role'
+        AllowedValues: ['', 'True', 'Main', 'None']
+  Condition:
+    - RollingUpdate:
+        And(
+          Not(Condition('ASGMainIsSpot')),
+          Equals(Ref('UpdateMode'), 'Rolling')
+        )
+    - WillReplace:
+        And(
+          Not(Condition('ASGMainIsSpot')),
+          Equals(Ref('UpdateMode'), 'Replace')
+        )
+    - RollingUpdateSpot:
+        And(
+          Condition('ASGMainIsSpot'),
+          Equals(Ref('UpdateMode'), 'Rolling')
+        )
+    - WillReplaceSpot:
+        And(
+          Condition('ASGMainIsSpot'),
+          Equals(Ref('UpdateMode'), 'Replace')
+        )
+    - SpotASG:
+        And(
+          Condition('SpotPrice'),
+          Or(
+            And(Condition('SpotASGOverride'),Not(Equals(Ref('SpotASG'), 'None'))),
+            And(Not(Condition('SpotASGOverride')),Not(Equals(get_final_value('SpotASG'), 'None')))
+          )
+        )
+    - ASGMainIsSpot:
+        And(
+          Condition('SpotASG'),
+          Or(
+            And(Condition('SpotASGOverride'),Equals(Ref('SpotASG'), 'Main')),
+            And(Not(Condition('SpotASGOverride')),Equals(get_final_value('SpotASG'), 'Main'))
+          )
+        )
+  Alarm:
+    - ASGSpotNotAvailable:
+        Enabled: True
+    - ASGOnDemandInExcess:
+        Enabled: True
+  IAMPolicy:
+    - SNSTopicASGSpot:
+        Condition: SpotASG
+        Roles:
+          - Ref('RoleInstance')
+        Statement:
+          - 1:
+              Action: 'sns:Publish'
+              Resource: Ref('SNSTopicASGSpot')
+    - LambdaASGSpot:
+        Condition: SpotASG
+        Roles:
+          - Ref('RoleLambdaASGSpot')
+        Statement:
+          - 1:
+              Action: 'autoscaling:SetDesiredCapacity'
+              Resource: Sub('arn:aws:autoscaling:*:*:autoScalingGroup:*:autoScalingGroupName/${AutoScalingGroup}')
+  Lambda:
+    - ASGSpot:
+        Condition: SpotASG
+        Description: 'Rebalance Spot and OnDeman AutoScalingGroup'
+        MemorySize: 128
+        ReservedConcurrentExecutions: 1
+        Runtime: python2.7
+        Timeout: 60
+        Variables:
+          - ASGOnDemand: Ref('AutoScalingGroup')
+          - ASGSpot: Ref('AutoScalingGroupSpot')
+  ScalingPolicyTrackings:
+    - ASCpu:
+        AutoScalingGroupName: If('SpotASG', Ref('AutoScalingGroupSpot'), Ref('AutoScalingGroup'))
+    - ASCustom:
+        AutoScalingGroupName: If('SpotASG', Ref('AutoScalingGroupSpot'), Ref('AutoScalingGroup'))
+        TargetTrackingConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions:
+              - AutoScaling:
+                  Name: AutoScalingGroupName
+                  Value: If('ASGMainIsSpot', Ref('AutoScalingGroupSpot'), Ref('AutoScalingGroup'))
+  SNSSubscription:
+    - ASGSpotLambdaASGSpot:
+        Condition: SpotASG
+        TopicArn: Ref('SNSTopicASGSpot')
+        Endpoint: GetAtt('LambdaASGSpot', 'Arn')
+        Protocol: lambda
+  SNSTopic:
+    - ASGSpot:
+        Condition: SpotASG
+  SpotASG: None

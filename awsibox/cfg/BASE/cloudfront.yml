@@ -1,0 +1,68 @@
+global:
+  Parameter:
+    - CloudFrontWebACLId:
+        Description: 'CloudFront WebACLId - empty for default based on env/role'
+  Condition:
+    - CloudFrontWebACLId:
+        Or(
+          And(Condition('CloudFrontWebACLIdOverride'),Not(Equals(Ref('CloudFrontWebACLId'), 'None'))),
+          And(Not(Condition('CloudFrontWebACLIdOverride')),Not(Equals(get_final_value('CloudFrontWebACLId'), 'None')))
+        )
+  Output:
+    - CloudFrontWebACLId:
+        Value: get_final_value('CloudFrontWebACLId')
+  CloudFront: None
+  CloudFrontAcmCertificate: True
+  CloudFrontAliasExtra:
+    - 1: None
+    - 2: None
+  CloudFrontAliasZone: None
+  CloudFrontCacheBehaviors:
+    - 0:
+        AllowedMethods: ['HEAD', 'GET']
+        CachedMethods: ['HEAD', 'GET']
+        Compress: True
+        CookiesForward: none
+        CookiesWhitelistedNames: ''
+        DefaultTTL: 0
+        Headers: []
+        MaxTTL: 31536000
+        MinTTL: 0
+        QueryString: True
+        QueryStringCacheKeys: []
+        ViewerProtocolPolicy: allow-all
+  CloudFrontHttpVersion: 'http2'
+  CloudFrontLogging: None
+  CloudFrontOriginAdHoc: False
+  CloudFrontOriginPath: ''
+  CloudFrontOriginProtocolPolicy: https-only
+  CloudFrontOriginKeepaliveTimeout: 5
+  CloudFrontOriginReadTimeout: 30
+  CustomErrorResponses:
+    - 1:
+        ErrorCode: 404
+        ErrorCachingMinTTL: 0
+    - 2:
+        ErrorCode: 500
+        ErrorCachingMinTTL: 300
+        ResponsePagePath: '/error-pages/500.html'
+        ResponseCode: 500
+    - 3:
+        ErrorCode: 502
+        ErrorCachingMinTTL: 10
+        ResponsePagePath: '/error-pages/502.html'
+        ResponseCode: 502
+    - 4:
+        ErrorCode: 503
+        ErrorCachingMinTTL: 300
+        ResponsePagePath: '/error-pages/503.html'
+        ResponseCode: 503
+    - 5:
+        ErrorCode: 504
+        ErrorCachingMinTTL: 300
+        ResponsePagePath: '/error-pages/504.html'
+        ResponseCode: 504
+  RecordSetCloudFront: None
+
+eu-central-1:
+  CloudFront: None

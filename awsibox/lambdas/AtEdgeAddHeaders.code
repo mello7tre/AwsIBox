@@ -1,0 +1,20 @@
+'use strict';
+
+const headerCacheControl = [{ key: 'cache-control', value: 'max-age=2592000' }];
+const headerXRobotsTag = [{ key: 'x-robots-tag', value: 'noindex, follow' }];
+
+exports.lambda_handler = (event, context, callback) => {
+    const response = event.Records[0].cf.response;
+    const request = event.Records[0].cf.request;
+    const headers = response.headers;
+
+    if ( response.status.startsWith('2') ) {
+      if ( request.uri.startsWith('/sitemap/') ) {
+        headers['x-robots-tag'] = headerXRobotsTag;
+      } else {
+        headers['cache-control'] = headerCacheControl;
+      }
+    }
+
+    callback(null, response);
+};

@@ -1,0 +1,5 @@
+bin/ export-ignore
+etc/ export-ignore
+templates/** export-ignore
+templates/*/ -export-ignore
+templates/*/*.json -export-ignore
