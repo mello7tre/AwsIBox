@@ -361,10 +361,14 @@ for n, v in cfg.RP_cmm.iteritems():
     setattr(cfg, n, v)
 
 # set generic attribute based on condition:
-if any(hasattr(cfg, a) for a in ['LoadBalancerClassic', 'LoadBalancerApplication']):
-    cfg.LoadBalancer = True
-else:
-    cfg.LoadBalancer = None
+
+cfg.LoadBalancer = None
+for n in ['LoadBalancerClassic', 'LoadBalancerApplication']:
+    try: getattr(cfg, n)
+    except:
+        pass
+    else:
+        cfg.LoadBalancer = True
 
 cfg.LoadBalancerClassicExternal = None
 cfg.LoadBalancerClassicInternal = None
