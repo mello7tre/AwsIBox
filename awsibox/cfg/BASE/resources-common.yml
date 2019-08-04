@@ -25,10 +25,10 @@ resources-common:
                 - 's3:Get*'
                 - 's3:List*'
               Resource:
-                - Sub('arn:aws:s3:::%s' % RP_cmm['BucketAppRepository'])
-                - Sub('arn:aws:s3:::%s/*' % RP_cmm['BucketAppRepository'])
-                - Sub('arn:aws:s3:::%s' % RP_cmm['BucketAppData'])
-                - Sub('arn:aws:s3:::%s/*' % RP_cmm['BucketAppData'])
+                - Sub('arn:aws:s3:::%s' % cfg.BucketAppRepository)
+                - Sub('arn:aws:s3:::%s/*' % cfg.BucketAppRepository)
+                - Sub('arn:aws:s3:::%s' % cfg.BucketAppData)
+                - Sub('arn:aws:s3:::%s/*' % cfg.BucketAppData)
                 - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}')
                 - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}/*')
           - 3:

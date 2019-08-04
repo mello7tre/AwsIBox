@@ -35,12 +35,14 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
             self.UpdatePolicy = ASUpdatePolicy()
 
         self.AvailabilityZones = GetAZs()
+
         if 'SpotASG' in RP_cmm:
             self.DesiredCapacity = If('ASGMainIsSpot', CapacityDesiredASGMainIsSpot, CapacityDesiredASGMainIsNotSpot)
             self.MinSize = If('ASGMainIsSpot', CapacityMinASGMainIsSpot, CapacityMinASGMainIsNotSpot)
         else:
             self.DesiredCapacity = get_final_value('CapacityDesired')
             self.MinSize = get_final_value('CapacityMin')
+
         self.CreationPolicy = pol.CreationPolicy(
             ResourceSignal=pol.ResourceSignal(
                 Count=self.DesiredCapacity,

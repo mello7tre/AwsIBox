@@ -3,44 +3,44 @@ global:
     - LoadBalancerAdHocExternal:
         Enabled: False
         Condition: LoadBalancerSslCertificateAdHoc
-        DomainName: Sub('${AWS::StackName}.${EnvRole}' + RP_cmm['HostedZoneNameRegionEnv'])
+        DomainName: Sub('${AWS::StackName}.${EnvRole}%s' % cfg.HostedZoneNameRegionEnv)
         DomainValidationOptions:
           - Full:
-              DomainName: Sub('${AWS::StackName}.${EnvRole}' + RP_cmm['HostedZoneNameRegionEnv'])
-              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+              DomainName: Sub('${AWS::StackName}.${EnvRole}%s' % cfg.HostedZoneNameRegionEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
           - EnvRole:
-              DomainName: Sub('${EnvRole}.' + RP_cmm['HostedZoneNameEnv'])
-              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+              DomainName: Sub('${EnvRole}.%s' % cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
           - Region:
-              DomainName: Sub('${EnvRole}.' + RP_cmm['HostedZoneNameRegionEnv'])
-              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+              DomainName: Sub('${EnvRole}.%s' % cfg.HostedZoneNameRegionEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
         SubjectAlternativeNames:
-          - Sub('${EnvRole}.' + RP_cmm['HostedZoneNameEnv'])
-          - Sub('${EnvRole}.' + RP_cmm['HostedZoneNameRegionEnv'])
+          - Sub('${EnvRole}.%s' % cfg.HostedZoneNameEnv)
+          - Sub('${EnvRole}.%s' % cfg.HostedZoneNameRegionEnv)
         ValidationMethod: 'EMAIL'
     - LoadBalancerExternal:
         Enabled: False
-        DomainName: Sub('*.' + RP_cmm['HostedZoneNameRegionEnv'])
+        DomainName: Sub('*.%s' % cfg.HostedZoneNameRegionEnv)
         DomainValidationOptions:
           - Region:
-              DomainName: Sub('*.' + RP_cmm['HostedZoneNameRegionEnv'])
-              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+              DomainName: Sub('*.%s' % cfg.HostedZoneNameRegionEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
           - Origin:
-              DomainName: Sub('*.origin.' + RP_cmm['HostedZoneNameEnv'])
-              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+              DomainName: Sub('*.origin.%s' % cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
           - Cdn:
-              DomainName: Sub('*.cdn.' + RP_cmm['HostedZoneNameEnv'])
-              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+              DomainName: Sub('*.cdn.%s' % cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
           - Env:
-              DomainName: Sub('*.' + RP_cmm['HostedZoneNameEnv'])
-              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+              DomainName: Sub('*.%s' % cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
           - Zone:
-              DomainName: Sub(RP_cmm['HostedZoneNameEnv'])
-              ValidationDomain: Sub(RP_cmm['HostedZoneNameEnv'])
+              DomainName: Sub(cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
         SubjectAlternativeNames:
-          - Sub('*.origin.' + RP_cmm['HostedZoneNameEnv'])
-          - Sub('*.cdn.' + RP_cmm['HostedZoneNameEnv'])
-          - Sub('*.' + RP_cmm['HostedZoneNameEnv'])
-          - Sub(RP_cmm['HostedZoneNameEnv'])
+          - Sub('*.origin.%s' % cfg.HostedZoneNameEnv)
+          - Sub('*.cdn.%s' % cfg.HostedZoneNameEnv)
+          - Sub('*.%s' % cfg.HostedZoneNameEnv)
+          - Sub(cfg.HostedZoneNameEnv)
         ValidationMethod: 'EMAIL'
         #ValidationMethod: 'DNS'

@@ -356,4 +356,8 @@ if cfg.debug:
 
 cfg.RP = RP
 cfg.RP_cmm = RP['cmm']['cmm']
+
+for n, v in cfg.RP_cmm.iteritems():
+    setattr(cfg, n, v)
+
 cfg.stacktype = stacktype

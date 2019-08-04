@@ -11,7 +11,7 @@ class ApiGatewayAccount(agw.Account):
 class ApiGatewayResource(agw.Resource):
     def setup(self, key, stage):
         mapname = 'ApiGatewayStage' + stage + 'ApiGatewayResource'
-        stagekey = RP_cmm['ApiGatewayStage'][stage]['ApiGatewayResource']
+        stagekey = cfg.ApiGatewayStage[stage]['ApiGatewayResource']
         auto_get_props(self, key)
         self.RestApiId = Ref('ApiGatewayRestApi')
         auto_get_props(self, stagekey, mapname=mapname, recurse=True, rootkey=key, rootname=self.title)
@@ -20,7 +20,7 @@ class ApiGatewayResource(agw.Resource):
 class ApiGatewayMethod(agw.Method):
     def setup(self, key, basename, name, stage):
         mapname = 'ApiGatewayStage' + stage + 'ApiGatewayResource' + basename + 'Method' + name
-        stagekey = RP_cmm['ApiGatewayStage'][stage]['ApiGatewayResource'][basename]['Method'][name] 
+        stagekey = cfg.ApiGatewayStage[stage]['ApiGatewayResource'][basename]['Method'][name] 
         auto_get_props(self, key, recurse=True)
         self.RestApiId = Ref('ApiGatewayRestApi')
         self.ResourceId = Ref('ApiGatewayResource' + basename)
@@ -42,8 +42,8 @@ class ApiGatewayStage(agw.Stage):
 
 class ApiGatewayDeployment(agw.Deployment):
     def setup(self, name, key):
-        lastresource = next(reversed(RP_cmm['ApiGatewayResource']))
-        lastmethod = next(reversed(RP_cmm['ApiGatewayResource'][lastresource]['Method']))
+        lastresource = next(reversed(cfg.ApiGatewayResource))
+        lastmethod = next(reversed(cfg.ApiGatewayResource[lastresource]['Method']))
         self.DependsOn = 'ApiGatewayResource' + lastresource + 'Method' + lastmethod
         self.Description = Ref('Deployment' + name + 'Description')
         self.RestApiId = Ref('ApiGatewayRestApi')
@@ -51,7 +51,7 @@ class ApiGatewayDeployment(agw.Deployment):
 
 class AGW_Stages(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             # parameters
             p_DeploymentDescription = Parameter('Deployment' + n + 'Description')
             p_DeploymentDescription.Description = 'Deployment' + n + ' Description'
@@ -89,9 +89,9 @@ class AGW_RestApi(object):
             R_Account,
         ])
 
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n
-            agw_stage = RP_cmm['Stage']
+            agw_stage = cfg.Stage
             r_Resource = ApiGatewayResource(resname)
             r_Resource.setup(key=v, stage=agw_stage)
 
@@ -104,7 +104,7 @@ class AGW_RestApi(object):
                     r_Method,
                 ])
 
-        for l, w in RP_cmm['Lambda'].iteritems():
+        for l, w in cfg.Lambda.iteritems():
             r_LambdaPermission = LambdaPermissionApiGateway('LambdaPermission' + l)
             r_LambdaPermission.setup(
                 name=Ref('Lambda' + l),
