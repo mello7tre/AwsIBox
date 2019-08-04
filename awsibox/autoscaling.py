@@ -36,12 +36,13 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
 
         self.AvailabilityZones = GetAZs()
 
-        if 'SpotASG' in RP_cmm:
-            self.DesiredCapacity = If('ASGMainIsSpot', CapacityDesiredASGMainIsSpot, CapacityDesiredASGMainIsNotSpot)
-            self.MinSize = If('ASGMainIsSpot', CapacityMinASGMainIsSpot, CapacityMinASGMainIsNotSpot)
-        else:
+        try: cfg.SpotASG
+        except:
             self.DesiredCapacity = get_final_value('CapacityDesired')
             self.MinSize = get_final_value('CapacityMin')
+        else:
+            self.DesiredCapacity = If('ASGMainIsSpot', CapacityDesiredASGMainIsSpot, CapacityDesiredASGMainIsNotSpot)
+            self.MinSize = If('ASGMainIsSpot', CapacityMinASGMainIsSpot, CapacityMinASGMainIsNotSpot)
 
         self.CreationPolicy = pol.CreationPolicy(
             ResourceSignal=pol.ResourceSignal(
@@ -120,7 +121,7 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             'ImageIdLatest',
             Ref('ImageIdLatest'),
             get_final_value('ImageId'),
-        ) if 'ImageIdLatest' in RP_cmm['Parameter'] else get_final_value('ImageId')
+        ) if 'ImageIdLatest' in cfg.Parameter else get_final_value('ImageId')
         self.InstanceMonitoring = get_final_value('InstanceMonitoring')
         self.InstanceType = get_final_value('InstanceType')
         self.KeyName = get_final_value('KeyName')
@@ -178,10 +179,13 @@ class ASScheduledAction(asg.ScheduledAction):
     def setup(self):
         name = self.title
         self.Condition = name
-        if 'SpotASG' in RP_cmm:
-            self.AutoScalingGroupName = If('ASGMainIsSpot', Ref('AutoScalingGroupSpot'), Ref('AutoScalingGroup'))
-        else:
+
+        try: cfg.SpotASG
+        except:
             self.AutoScalingGroupName = Ref('AutoScalingGroup')
+        else:
+            self.AutoScalingGroupName = If('ASGMainIsSpot', Ref('AutoScalingGroupSpot'), Ref('AutoScalingGroup'))
+
         self.DesiredCapacity = If(
             name + 'CapacityDesiredSize',
             get_final_value('CapacityDesired'),
@@ -357,14 +361,24 @@ class ASUpdatePolicy(pol.UpdatePolicy):
 
 class ASInitConfigSets(cfm.InitConfigSets):
     def setup(self):
+        if cfg.Apps:
+            CODEDEPLOY = If('DeploymentGroup', 'CODEDEPLOY', Ref('AWS::NoValue'))
+        else:
+            CODEDEPLOY = Ref('AWS::NoValue')
+
+        if cfg.LoadBalancer:
+            ELBWAITER = 'ELBWAITER'
+        else:
+            ELBWAITER = Ref('AWS::NoValue')
+
         self.data = {
             'default': [
                 'REPOSITORIES',
                 'PACKAGES',
                 'SETUP',
-                If('DeploymentGroup', 'CODEDEPLOY', Ref('AWS::NoValue')) if RP_cmm['Apps'] else Ref('AWS::NoValue'),
+                CODEDEPLOY,
                 'SERVICES',
-                'ELBWAITER' if 'LoadBalancerClassic' in RP_cmm or 'LoadBalancerApplication' in RP_cmm else Ref('AWS::NoValue')
+                ELBWAITER,
             ],
             'buildami': [
                 'REPOSITORIES',
@@ -424,7 +438,7 @@ class ASInitConfigSetup(cfm.InitConfig):
             },
             '/usr/local/bin/chamber': {
                 'mode': '000755',
-                'source': Sub('https://' + RP_cmm['BucketAppRepository'] + '.s3.${AWS::Region}.amazonaws.com/ibox-tools/chamber'),
+                'source': Sub('https://' + cfg.BucketAppRepository + '.s3.${AWS::Region}.amazonaws.com/ibox-tools/chamber'),
                 'owner': 'root',
                 'group': 'root',
             },
@@ -781,7 +795,7 @@ class AS_ScheduledAction(object):
 
 class AS_ScheduledActionsEC2(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + str(n)
             # parameters
             p_DesiredSize = Parameter(resname + 'DesiredSize')
@@ -832,7 +846,7 @@ class AS_ScheduledActionsEC2(object):
 class AS_ScheduledActionsECS(object):
     def __init__(self, key):
         ScheduledActions = []
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + str(n)
             # conditions
             do_no_override(True)
@@ -895,7 +909,7 @@ class AS_ScalingPoliciesTracking(object):
     def __init__(self, key):
         ScalingPolicyTrackings_Out_String = []
         ScalingPolicyTrackings_Out_Map = {}
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
             resname = key + str(n)
@@ -1124,7 +1138,7 @@ class AS_LaunchConfiguration(object):
         Tags = []
         UserDataApp = []
 
-        for n in RP_cmm['Apps']:
+        for n in cfg.Apps:
             name = 'Apps' + str(n)  # Ex. Apps1
             envname = 'EnvApp' + str(n) + 'Version'  # Ex EnvApp1Version
             reponame = name + 'RepoName'  # Ex Apps1RepoName
@@ -1191,7 +1205,7 @@ class AS_LaunchConfiguration(object):
 
             # resources
             # FOR MULTIAPP CODEDEPLOY
-            if len(RP_cmm['Apps']) > 1:
+            if len(cfg.Apps) > 1:
                 r_DeploymentGroup = CDDeploymentGroup('DeploymentGroup' + name)
                 r_DeploymentGroup.setup(index=n)
 
@@ -1215,19 +1229,23 @@ class AS_LaunchConfiguration(object):
 
         CfmInitArgs['SETUP'] = InitConfigSetup
 
-        if RP_cmm['Apps']:
+        if cfg.Apps:
             CfmInitArgs['CODEDEPLOY'] = InitConfigCodeDeploy
             CD_DeploymentGroup()
 
-        if 'LoadBalancerClassic' in RP_cmm:
-            if 'External' in RP_cmm['LoadBalancerClassic']:
-                InitConfigELBExternal = ASInitConfigELBClassicExternal()
-                InitConfigELBExternal.setup()
-                CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
-            if 'Internal' in RP_cmm['LoadBalancerClassic']:
-                InitConfigELBInternal = ASInitConfigELBClassicInternal()
-                InitConfigELBInternal.setup()
-                CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
+
+        # LoadBalancerClassic External
+        if cfg.LoadBalancerClassicExternal:
+            InitConfigELBExternal = ASInitConfigELBClassicExternal()
+            InitConfigELBExternal.setup()
+            CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
+
+        # LoadBalancerClassic Internal
+        if cfg.LoadBalancerClassicInternal:
+            InitConfigELBInternal = ASInitConfigELBClassicInternal()
+            InitConfigELBInternal.setup()
+            CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
+
         if 'LoadBalancerApplication' in RP_cmm:
             if 'External' in RP_cmm['LoadBalancerApplication']:
                 InitConfigELBExternal = ASInitConfigELBApplicationExternal()

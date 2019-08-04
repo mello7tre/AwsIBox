@@ -360,4 +360,32 @@ cfg.RP_cmm = RP['cmm']['cmm']
 for n, v in cfg.RP_cmm.iteritems():
     setattr(cfg, n, v)
 
+# set generic attribute based on condition:
+if any(hasattr(cfg, a) for a in ['LoadBalancerClassic', 'LoadBalancerApplication']):
+    cfg.LoadBalancer = True
+else:
+    cfg.LoadBalancer = None
+
+cfg.LoadBalancerClassicExternal = None
+cfg.LoadBalancerClassicInternal = None
+try: cfg.LoadBalancerClassic
+except:
+    pass
+else:
+    if 'External' in cfg.LoadBalancerClassic:
+        cfg.LoadBalancerClassicExternal = True
+    if 'Internal' in cfg.LoadBalancerClassic:
+        cfg.LoadBalancerClassicInternal = True
+
+cfg.LoadBalancerApplicationExternal = None
+cfg.LoadBalancerApplicationInternal = None
+try: cfg.LoadBalancerApplication
+except:
+    pass
+else:
+    if 'External' in cfg.LoadBalancerApplication:
+        cfg.LoadBalancerApplicationExternal = True
+    if 'Internal' in cfg.LoadBalancerApplication:
+        cfg.LoadBalancerApplicationInternal = True
+
 cfg.stacktype = stacktype
