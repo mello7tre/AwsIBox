@@ -117,6 +117,7 @@ resources-iam-common:
                 - 'logs:Describe*'
                 - 'logs:FilterLogEvents'
                 - 'logs:Get*'
+              Resource: '*'
     - MetricRead:
         Export: True
         Type: Managed

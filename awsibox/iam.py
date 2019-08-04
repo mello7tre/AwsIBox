@@ -230,7 +230,7 @@ class IAM_Users(object):
                             ManagedPolicyArns.append(
                                 If(
                                     condname,
-                                    Ref('IAMPolicy' + p),
+                                    ImportValue('IAMPolicy' + p),
                                     Ref('AWS::NoValue')
                                 )
                             )
@@ -285,7 +285,7 @@ class IAM_Groups(object):
                 if m.startswith('arn'):
                     ManagedPolicyArns.append(m)
                 else:
-                    ManagedPolicyArns.append(Ref('IAMPolicy' + m))
+                    ManagedPolicyArns.append(ImportValue('IAMPolicy' + m))
 
             Users = []
             for m, w in v['User'].iteritems():
