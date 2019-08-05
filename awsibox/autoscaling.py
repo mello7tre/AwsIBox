@@ -36,13 +36,12 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
 
         self.AvailabilityZones = GetAZs()
 
-        try: cfg.SpotASG
-        except:
-            self.DesiredCapacity = get_final_value('CapacityDesired')
-            self.MinSize = get_final_value('CapacityMin')
-        else:
+        if cfg.SpotASG:
             self.DesiredCapacity = If('ASGMainIsSpot', CapacityDesiredASGMainIsSpot, CapacityDesiredASGMainIsNotSpot)
             self.MinSize = If('ASGMainIsSpot', CapacityMinASGMainIsSpot, CapacityMinASGMainIsNotSpot)
+        else:
+            self.DesiredCapacity = get_final_value('CapacityDesired')
+            self.MinSize = get_final_value('CapacityMin')
 
         self.CreationPolicy = pol.CreationPolicy(
             ResourceSignal=pol.ResourceSignal(
@@ -135,7 +134,6 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             'export BASH_ENV=/etc/profile.d/ibox_env.sh\n',
             'export ENV=$BASH_ENV\n',
             'yum -C list installed aws-cfn-bootstrap || yum install -y aws-cfn-bootstrap\n',
-            #'#', Ref('EnvApp1Version') if 1 in RP_cmm['Apps'] else '', '\n',
             Sub(''.join(UserDataApp)),
             'cfn-init -v',
             ' --stack ', Ref('AWS::StackName'),
@@ -180,11 +178,10 @@ class ASScheduledAction(asg.ScheduledAction):
         name = self.title
         self.Condition = name
 
-        try: cfg.SpotASG
-        except:
-            self.AutoScalingGroupName = Ref('AutoScalingGroup')
-        else:
+        if cfg.SpotASG:
             self.AutoScalingGroupName = If('ASGMainIsSpot', Ref('AutoScalingGroupSpot'), Ref('AutoScalingGroup'))
+        else:
+            self.AutoScalingGroupName = Ref('AutoScalingGroup')
 
         self.DesiredCapacity = If(
             name + 'CapacityDesiredSize',
@@ -366,7 +363,7 @@ class ASInitConfigSets(cfm.InitConfigSets):
         else:
             CODEDEPLOY = Ref('AWS::NoValue')
 
-        if cfg.LoadBalancer:
+        if cfg.LoadBalancerClassic or cfg.LoadBalancerApplication:
             ELBWAITER = 'ELBWAITER'
         else:
             ELBWAITER = Ref('AWS::NoValue')
@@ -1246,15 +1243,16 @@ class AS_LaunchConfiguration(object):
             InitConfigELBInternal.setup()
             CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
-        if 'LoadBalancerApplication' in RP_cmm:
-            if 'External' in RP_cmm['LoadBalancerApplication']:
-                InitConfigELBExternal = ASInitConfigELBApplicationExternal()
-                InitConfigELBExternal.setup()
-                CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
-            if 'Internal' in RP_cmm['LoadBalancerApplication']:
-                InitConfigELBInternal = ASInitConfigELBApplicationInternal()
-                InitConfigELBInternal.setup()
-                CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
+        # LoadBalancerApplication External
+        if cfg.LoadBalancerApplicationExternal:
+            InitConfigELBExternal = ASInitConfigELBApplicationExternal()
+            InitConfigELBExternal.setup()
+            CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
+
+        # LoadBalancerApplication Internal
+            InitConfigELBInternal = ASInitConfigELBApplicationInternal()
+            InitConfigELBInternal.setup()
+            CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
         SecurityGroups = SG_SecurityGroupsEC2().SecurityGroups
 
@@ -1298,7 +1296,7 @@ class AS_LaunchConfiguration(object):
             R_InstanceProfile,
         ])
 
-        if 'SpotASG' in RP_cmm:
+        if cfg.SpotASG:
             cfg.Resources.append(R_LaunchConfigurationSpot)
 
         self.LaunchConfiguration = R_LaunchConfiguration
@@ -1343,14 +1341,12 @@ class AS_AutoscalingEC2(AS_Autoscaling):
         super(AS_AutoscalingEC2, self).__init__()
 
         LoadBalancers = []
-        if 'LoadBalancerClassic' in RP_cmm:
-            for n in RP_cmm['LoadBalancerClassic']:
-                LoadBalancers.append(Ref('LoadBalancerClassic' + n))
+        for n in cfg.LoadBalancerClassic:
+            LoadBalancers.append(Ref('LoadBalancerClassic' + n))
 
         TargetGroups = []
-        if 'LoadBalancerApplication' in RP_cmm:
-            for n in RP_cmm['LoadBalancerApplication']:
-                TargetGroups.append(Ref('TargetGroup' + n))
+        for n in cfg.LoadBalancerApplication:
+            TargetGroups.append(Ref('TargetGroup' + n))
 
         # Resources
         AS_ScheduledActionsEC2('ScheduledAction')

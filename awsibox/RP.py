@@ -362,6 +362,17 @@ for n, v in cfg.RP_cmm.iteritems():
 
 # set generic attribute based on condition:
 
+# LoadBalancerClassic
+try: cfg.LoadBalancerClassic
+except:
+    cfg.LoadBalancerClassic = []
+
+# LoadBalancerApplication
+try: cfg.LoadBalancerApplication
+except:
+    cfg.LoadBalancerApplication = []
+
+# LoadBalancer
 cfg.LoadBalancer = None
 for n in ['LoadBalancerClassic', 'LoadBalancerApplication']:
     try: getattr(cfg, n)
@@ -370,6 +381,7 @@ for n in ['LoadBalancerClassic', 'LoadBalancerApplication']:
     else:
         cfg.LoadBalancer = True
 
+# LoadBalancerClassicExternal LoadBalancerClassicInternal
 cfg.LoadBalancerClassicExternal = None
 cfg.LoadBalancerClassicInternal = None
 try: cfg.LoadBalancerClassic
@@ -381,6 +393,7 @@ else:
     if 'Internal' in cfg.LoadBalancerClassic:
         cfg.LoadBalancerClassicInternal = True
 
+# LoadBalancerApplicationExternal LoadBalancerApplicationInternal
 cfg.LoadBalancerApplicationExternal = None
 cfg.LoadBalancerApplicationInternal = None
 try: cfg.LoadBalancerApplication
@@ -391,5 +404,10 @@ else:
         cfg.LoadBalancerApplicationExternal = True
     if 'Internal' in cfg.LoadBalancerApplication:
         cfg.LoadBalancerApplicationInternal = True
+
+# SpotASG
+try: cfg.SpotASG
+except:
+    cfg.SpotASG = None
 
 cfg.stacktype = stacktype
