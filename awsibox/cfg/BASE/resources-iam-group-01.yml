@@ -1,7 +1,6 @@
-resources-iam-01:
+resources-iam-group-01:
   StackType: res
-  StackName: resources-iam-01
-  IAMUser: {}
+  StackName: iam-g-01
   IAMGroup:
     - Base:
         Enabled: True
@@ -22,24 +21,16 @@ resources-iam-01:
           - LogRead
           - ECRRead
           - MetricRead
-        User:
-          - 0: None
     - BackEndDeveloper:
         Enabled: True
         ManagedPolicyArns:
           - BackEndDeveloper
-        User:
-          - 0: None
     - CloudWatchRead:
         Enabled: True
         ManagedPolicyArns:
           - LogRead
           - MetricRead
-        User:
-          - 0: None
     - CloudWatchReadJoker01:
         Enabled: True
         ManagedPolicyArns:
           - LogReadJoker01
-        User:
-          - 0: None

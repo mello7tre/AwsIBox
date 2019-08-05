@@ -1,6 +1,6 @@
-resources-iam-common:
+resources-iam-policy-01:
   StackType: res
-  StackName: resources-iam-common
+  StackName: iam-p-01
   IAMPolicy:
     - IAMUserManageOwn:
         Export: True

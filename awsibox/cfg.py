@@ -137,6 +137,7 @@ CFG_TO_CLASS = OrderedDict([
     ('IAMPolicy', 'IAM_Policies'),
     ('IAMUser', 'IAM_Users'),
     ('IAMGroup', 'IAM_Groups'),
+    ('IAMUserToGroupAddition', 'IAM_UserToGroupAdditions'),
     ('KMSKey', 'KMS_Keys'),
     ('Lambda', 'LBD_Lambdas'),
     ('LoadBalancerApplication', 'LB_ElasticLoadBalancing'),

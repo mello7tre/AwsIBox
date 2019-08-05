@@ -22,8 +22,8 @@ class IAMGroup(iam.Group):
 
 class IAMUserToGroupAddition(iam.UserToGroupAddition):
     def setup(self, key, name):
-        self.Condition = name
-        self.GroupName = Ref(name)
+        # self.Condition = name
+        self.GroupName = name
 
 
 class IAMPolicy(iam.PolicyType):
@@ -224,9 +224,12 @@ class IAM_Users(object):
                             Ref('AWS::NoValue')
                         )
                     )
-    
-                    if m in RP_cmm['IAMGroup']:
-                        for p in RP_cmm['IAMGroup'][m]['ManagedPolicyArns']:
+   
+                    try: policy_arns = RP_cmm['IAMGroup'][m]['ManagedPolicyArns']
+                    except:
+                        pass
+                    else:
+                        for p in policy_arns:
                             ManagedPolicyArns.append(
                                 If(
                                     condname,
@@ -267,6 +270,44 @@ class IAM_Users(object):
             ])
 
 
+class IAM_UserToGroupAdditions(object):
+    def __init__(self, key):
+        for n, v in RP_cmm[key].iteritems():
+            resname = key + n  # Ex. IAMUserToGroupAdditionBase
+
+            Users = []
+            for m, w in v['User'].iteritems():
+                condname = resname + 'User' + str(m)
+                # conditions
+                do_no_override(True)
+                c_User = {condname: Not(
+                    Equals(get_final_value(condname), 'None') 
+                )}
+                cfg.Conditions.append(c_User)
+                do_no_override(False)
+
+                Users.append(
+                    If(
+                        condname,
+                        # for user defined in the same yaml file
+                        # Ref('IAMUser' + m) if m in RP_cmm['IAMUser'] else get_final_value(condname),
+                        get_final_value(condname),
+                        Ref('AWS::NoValue')
+                    )
+                )
+
+
+            # resources
+            r_GroupAdd = IAMUserToGroupAddition('IAMUserToGroupAddition' + n)
+            r_GroupAdd.setup(key=v, name=n)
+            r_GroupAdd.Users = Users
+
+            cfg.Resources.extend([
+                r_GroupAdd,
+            ])
+
+
+
 class IAM_Groups(object):
     def __init__(self, key):
         for n, v in RP_cmm[key].iteritems():
@@ -287,37 +328,14 @@ class IAM_Groups(object):
                 else:
                     ManagedPolicyArns.append(ImportValue('IAMPolicy' + m))
 
-            Users = []
-            for m, w in v['User'].iteritems():
-                condname = resname + 'User' + str(m)
-                # conditions
-                do_no_override(True)
-                c_User = {condname: Not(
-                    Equals(get_final_value(condname), 'None') 
-                )}
-                cfg.Conditions.append(c_User)
-                do_no_override(False)
-
-                Users.append(
-                    If(
-                        condname,
-                        Ref('IAMUser' + m) if m in RP_cmm['IAMUser'] else get_final_value(condname),
-                        Ref('AWS::NoValue')
-                    )
-                )
 
             # resources
             r_Group = IAMGroup(resname)
             r_Group.setup(key=v, name=n)
             r_Group.ManagedPolicyArns = ManagedPolicyArns
 
-            r_GroupAdd = IAMUserToGroupAddition('IAMUserToGroupAddition' + n)
-            r_GroupAdd.setup(key=v, name=resname)
-            r_GroupAdd.Users = Users
-
             cfg.Resources.extend([
                 r_Group,
-                r_GroupAdd,
             ])
 
 
