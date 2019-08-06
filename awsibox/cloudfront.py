@@ -119,7 +119,7 @@ class CFDistributionConfig(clf.DistributionConfig):
     def setup(self):
         self.Enabled = 'True'
         DefaultCacheBehavior = CFDefaultCacheBehavior('CloudFrontCacheBehaviors0')
-        DefaultCacheBehavior.setup(key=RP_cmm['CloudFrontCacheBehaviors'][0])
+        DefaultCacheBehavior.setup(key=cfg.CloudFrontCacheBehaviors[0])
         self.DefaultCacheBehavior = DefaultCacheBehavior
         self.HttpVersion = get_final_value('CloudFrontHttpVersion')
         self.Logging = If(
@@ -177,7 +177,7 @@ class CFOriginCustomHeader(clf.OriginCustomHeader):
 class CFOriginCLF(clf.Origin):
     def setup(self, index):
         name = self.title
-        key = RP_cmm['CloudFrontOrigins'][index]
+        key = cfg.CloudFrontOrigins[index]
 
         CustomHeaders = []
         if 'Headers' in key:
@@ -215,8 +215,11 @@ class CFOriginFixed(clf.Origin):
         self.Id = self.DomainName
         self.OriginPath = get_final_value('CloudFrontOriginPath')
 
-        if 'CloudFrontOriginCustomHeaders' in RP_cmm:
-            for n in RP_cmm['CloudFrontOriginCustomHeaders']:
+        try: custom_headers = cfg.CloudFrontOriginCustomHeaders
+        except:
+            pass
+        else:
+            for n in custom_headers:
                 name = 'CloudFrontOriginCustomHeaders' + str(n)
                 cloudfrontorigincustomheaders.append(
                     If(
@@ -252,16 +255,16 @@ class CFOriginFixed(clf.Origin):
 
 
 class CFCustomErrorResponse(clf.CustomErrorResponse):
-    def setup(self):
+    def setup(self, key):
         name = self.title  # Ex. CustomErrorResponses1
-        label = name.rstrip('0987654321')
-        index = int(name.lstrip(label))
 
         self.ErrorCode = get_final_value(name + 'ErrorCode')
         self.ErrorCachingMinTTL = get_final_value(name + 'ErrorCachingMinTTL')
-        if 'ResponsePagePath' in RP_cmm[label][index]:
+
+        if 'ResponsePagePath' in key:
             self.ResponsePagePath = get_final_value(name + 'ResponsePagePath')
-        if 'ResponseCode' in RP_cmm[label][index]:
+
+        if 'ResponseCode' in key:
             self.ResponseCode = get_final_value(name + 'ResponseCode')
 # E - CLOUDFRONT #
 
@@ -317,7 +320,7 @@ class CF_CloudFront(object):
 
         cachebehaviors = []
         sortedcachebehaviors = sorted(
-            RP_cmm['CloudFrontCacheBehaviors'].iteritems(),
+            cfg.CloudFrontCacheBehaviors.iteritems(),
             key=lambda (x, y): (
                 (y['Order']*1000) - len(y['PathPattern']) if 'PathPattern' in y else 0
             ) if 'Order' in y else x
@@ -356,7 +359,7 @@ class CF_CloudFront(object):
         DistributionConfig.CacheBehaviors = cachebehaviors
 
         cloudfrontaliasextra = []
-        for n in RP_cmm['CloudFrontAliasExtra']:
+        for n in cfg.CloudFrontAliasExtra:
             name = 'CloudFrontAliasExtra' + str(n)
 
             # parameters
@@ -495,7 +498,7 @@ class CF_CloudFrontCLF(CF_CloudFront):
         super(CF_CloudFrontCLF, self).__init__()
 
         Origins = []
-        for n, v in RP_cmm['CloudFrontOrigins'].iteritems():
+        for n, v in cfg.CloudFrontOrigins.iteritems():
             name = 'CloudFrontOrigins' + str(n)
             
             # parameters
@@ -515,11 +518,11 @@ class CF_CloudFrontCLF(CF_CloudFront):
             Origins.append(Origin)
 
         CustomErrorResponses = []
-        if hasattr(RP_cmm['CustomErrorResponses'], 'iteritems'):
-            for n in RP_cmm['CustomErrorResponses']:
+        if hasattr(cfg.CustomErrorResponses, 'iteritems'):
+            for n, v in cfg.CustomErrorResponses.iteritems():
                 name = 'CustomErrorResponses' + str(n)
                 CustomErrorResponse = CFCustomErrorResponse(name)
-                CustomErrorResponse.setup()
+                CustomErrorResponse.setup(key=v)
                 CustomErrorResponses.append(CustomErrorResponse)
 
         self.CloudFrontDistribution.DistributionConfig.Origins = Origins

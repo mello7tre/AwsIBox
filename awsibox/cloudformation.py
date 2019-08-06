@@ -3,7 +3,7 @@ from shared import *
 
 class CFM_Parameters(object):
     def __init__(self, key):
-        auto_build_obj(Parameter(''), RP_cmm[key], obj_list=cfg.Parameters)
+        auto_build_obj(Parameter(''), getattr(cfg, key), obj_list=cfg.Parameters)
 
 
 class CFM_Conditions(object):
@@ -18,7 +18,7 @@ class CFM_Conditions(object):
 
 class CFM_Outputs(object):
     def __init__(self, key):
-        auto_build_obj(Output(''), RP_cmm[key], obj_list=cfg.Outputs)
+        auto_build_obj(Output(''), getattr(cfg, key), obj_list=cfg.Outputs)
 
 # Need to stay as last lines
 import_modules(globals())

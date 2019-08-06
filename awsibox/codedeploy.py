@@ -70,7 +70,7 @@ class CD_DeploymentGroup(object):
 
         # Resources
         # FOR SINGLEAPP CODEDEPLOY
-        if len(RP_cmm['Apps']) == 1:
+        if len(cfg.Apps) == 1:
             R_DeploymentGroup = CDDeploymentGroup('DeploymentGroup')
             R_DeploymentGroup.setup(index=1)
 
@@ -79,7 +79,7 @@ class CD_DeploymentGroup(object):
 
 class CD_Applications(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             App = cdd.Application(key + n)
             App.ApplicationName = get_final_value(key + n)
 

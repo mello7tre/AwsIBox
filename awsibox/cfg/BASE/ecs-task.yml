@@ -81,9 +81,12 @@ global:
     - ParameterStore:
         Roles:
           - Ref('RoleTask')
+  Image: None
+  RepoName: None
   Role:
     - Task:
         Principal: ecs-tasks.amazonaws.com
+  Volumes: []
 
 prd:
   ContainerDefinitions:

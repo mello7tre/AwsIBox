@@ -8,7 +8,7 @@ class S3Bucket(s3.Bucket):
         name = self.title  # Ex. BucketPortalStatic
         auto_get_props(self, key, recurse=True)
         self.Condition = name
-        self.BucketName = Sub(RP_cmm[name])
+        self.BucketName = Sub(bucket_name)
         self.CorsConfiguration = If(
             name + 'Cors',
             s3.CorsConfiguration(
@@ -33,7 +33,7 @@ class S3Bucket(s3.Bucket):
                             Bucket=get_sub_mapex(
                                 'arn:aws:s3:::${1M}', '%sReplicaDstBucket' % name
                             ) if 'ReplicaDstBucket' in key else get_sub_mapex(
-                                'arn:aws:s3:::${1M}-%s' % RP_cmm[name].replace('${AWS::Region}-', '', 1),
+                                'arn:aws:s3:::${1M}-%s' % bucket_name.replace('${AWS::Region}-', '', 1),
                                 '%sReplicaDstRegion' % name,
                             ),
                             AccessControlTranslation=If(
@@ -81,7 +81,7 @@ def S3BucketPolicyStatementBase(bucket):
             's3:GetBucketLocation'
         ],
         'Effect': 'Allow',
-        'Resource': Sub('arn:aws:s3:::%s' % RP_cmm[bucket]),
+        'Resource': Sub('arn:aws:s3:::%s' % bucket_name),
         'Principal': {
             'AWS': Sub('arn:aws:iam::${AWS::AccountId}:root')
         },
@@ -102,7 +102,7 @@ def S3BucketPolicyStatementReplica(bucket):
             ],
         'Effect': 'Allow',
         'Resource': [
-            Sub('arn:aws:s3:::%s/*' % RP_cmm[bucket])
+            Sub('arn:aws:s3:::%s/*' % bucket_name)
         ],
         'Principal': {
             'AWS': [
@@ -132,7 +132,7 @@ def S3BucketPolicyStatementCFOriginAccessIdentity(bucket, identity):
         ],
         'Effect': 'Allow',
         'Resource': [
-            Sub('arn:aws:s3:::%s/*' % RP_cmm[bucket])
+            Sub('arn:aws:s3:::%s/*' % bucket_name)
         ],
         'Principal': {
             'CanonicalUser': GetAtt(identity, 'S3CanonicalUserId')
@@ -145,7 +145,7 @@ def S3BucketPolicyStatementCFOriginAccessIdentity(bucket, identity):
                 #    ],
                 #    'Effect': 'Allow',
                 #    'Resource': [
-                #        Sub('arn:aws:s3:::${AWS::Region}-' + RP_cmm[bucket])
+                #        Sub('arn:aws:s3:::${AWS::Region}-' + bucket_name)
                 #    ],
                 #    'Principal': {
                 #        'CanonicalUser': GetAtt(identity, 'S3CanonicalUserId')
@@ -163,7 +163,7 @@ def S3BucketPolicyStatementCFOriginAccessIdentity(bucket, principal):
             ],
             'Effect': 'Allow',
             'Resource': [
-                Sub('arn:aws:s3:::%s/*' % RP_cmm[bucket])
+                Sub('arn:aws:s3:::%s/*' % bucket_name)
             ],
             'Principal': {
                 'AWS': principal
@@ -187,7 +187,7 @@ def S3BucketPolicyStatementRO(bucket, principal):
         ],
         'Effect': 'Allow',
         'Resource': [
-            Sub('arn:aws:s3:::%s' % RP_cmm[bucket])
+            Sub('arn:aws:s3:::%s' % bucket_name)
         ],
         'Principal': {
             'AWS': principal
@@ -201,7 +201,7 @@ def S3BucketPolicyStatementRO(bucket, principal):
         ],
         'Effect': 'Allow',
         'Resource': [
-            Sub('arn:aws:s3:::%s/*' % RP_cmm[bucket])
+            Sub('arn:aws:s3:::%s/*' % bucket_name)
         ],
         'Principal': {
             'AWS': principal
@@ -227,11 +227,14 @@ def S3BucketPolicyStatementRO(bucket, principal):
 
 class S3_Buckets(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        global bucket_name
+
+        for n, v in getattr(cfg, key).iteritems():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
             name = n  # Ex. AppData
             resname = key + name  # Ex. BucketAppData
+            bucket_name = getattr(cfg, resname)
             # parameters
             p_ReplicaDstRegion = Parameter(resname + 'ReplicaDstRegion')
             p_ReplicaDstRegion.Description = 'Region to Replicate Bucket - None to disable - empty for default based on env/role'
@@ -314,7 +317,7 @@ class S3_Buckets(object):
             r_Policy = S3BucketPolicy('BucketPolicy%s' % name)
             r_Policy.setup(key=v)
             r_Policy.Condition = resname
-            r_Policy.Bucket = Sub(RP_cmm[resname])
+            r_Policy.Bucket = Sub(bucket_name)
             r_Policy.PolicyDocument['Statement'] = BucketPolicyStatement
 
             # At least one statement must be always present, create a simple one with no conditions
@@ -411,7 +414,7 @@ class S3_Buckets(object):
             ])
 
             # outputs
-            outvaluebase = Sub(RP_cmm[resname])
+            outvaluebase = Sub(bucket_name)
             if 'OutputValueRegion' in v:
                 condname = resname + 'OutputValueRegion'
                 # conditions
@@ -425,7 +428,7 @@ class S3_Buckets(object):
 
                 outvaluebase = If(
                     condname,
-                    Sub('${Region}-%s' % RP_cmm[resname].replace('${AWS::Region}-', '', 1), **{'Region': get_final_value(condname)}),
+                    Sub('${Region}-%s' % bucket_name.replace('${AWS::Region}-', '', 1), **{'Region': get_final_value(condname)}),
                     outvaluebase
                 )
 
@@ -443,9 +446,10 @@ class S3_Buckets(object):
             ])
 
 
+# no more used
 class S3_BucketPolicies(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n
             Statements = []
             for m, w  in v['Statement'].iteritems():

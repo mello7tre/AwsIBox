@@ -7,8 +7,9 @@ from shared import *
 class ECSService(ecs.Service):
     def setup(self, scheme):
         self.Cluster = get_exported_value('Cluster', 'ClusterStack')
+
         # DAEMON MODE DO NOT SUPPORT DESIRED OR PLACEMENT STRATEGIES, IS SIMPLY ONE TASK FOR CONTAINER INSTANCE
-        if 'SchedulingStrategy' not in RP_cmm or RP_cmm['SchedulingStrategy'] == 'REPLICA':
+        if cfg.SchedulingStrategy == 'REPLICA':
             self.DesiredCount = get_final_value('CapacityDesired')
             self.DeploymentConfiguration = ecs.DeploymentConfiguration(
                 MaximumPercent = get_final_value('DeploymentConfigurationMaximumPercent'),
@@ -28,12 +29,14 @@ class ECSService(ecs.Service):
                     )
                 ]
             )
-        elif RP_cmm['SchedulingStrategy'] == 'DAEMON':
+        elif cfg.SchedulingStrategy == 'DAEMON':
             self.SchedulingStrategy = 'DAEMON'
 
         self.LaunchType = get_final_value('LaunchType')
-        if 'HealthCheckGracePeriodSeconds' in RP_cmm:
+
+        if cfg.HealthCheckGracePeriodSeconds != 0:
             self.HealthCheckGracePeriodSeconds = get_final_value('HealthCheckGracePeriodSeconds')
+
         if scheme:
             self.LoadBalancers = [
                 ecs.LoadBalancer(
@@ -60,23 +63,25 @@ class ECSTaskDefinition(ecs.TaskDefinition):
             Ref('AWS::NoValue')
         )
         self.TaskRoleArn = Ref('RoleTask')
-        if 'Cpu' in RP_cmm:
-            self.Cpu = If(
-                'CpuTask',
-                get_final_value('Cpu'),
-                Ref('AWS::NoValue')
-            )
-        if 'Memory' in RP_cmm:
-            self.Memory = If(
-                'LaunchTypeFarGate',
-                get_final_value('Memory'),
-                Ref('AWS::NoValue')
-            )
+
+        self.Cpu = If(
+            'CpuTask',
+            get_final_value('Cpu'),
+            Ref('AWS::NoValue')
+        )
+
+        self.Memory = If(
+            'LaunchTypeFarGate',
+            get_final_value('Memory'),
+            Ref('AWS::NoValue')
+        )
+
         self.NetworkMode = If(
             'NetworkModeAwsVpc',
             'awsvpc',
             Ref('AWS::NoValue')
         )
+
         self.RequiresCompatibilities = If(
             'LaunchTypeFarGate',
             ['EC2', 'FARGATE'],
@@ -141,7 +146,7 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
 
         self.Essential = True
 
-        if len(RP_cmm['ContainerDefinitions']) == 1:
+        if len(cfg.ContainerDefinitions) == 1:
             self.Cpu = If(
                 'CpuTask',
                 get_final_value('Cpu'),
@@ -159,12 +164,12 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
                 ['EcrAccount', name + 'RepoName']
             )
         # use the same EnvApp version for all containers
-        elif 'RepoName' in RP_cmm:
+        elif cfg.RepoName != 'None':
             self.Image=get_sub_mapex(
                 '${1M}.dkr.ecr.${AWS::Region}.amazonaws.com/${2M}:${EnvApp1Version}',
                 ['EcrAccount', 'RepoName']
             )
-        elif 'Image' in RP_cmm:
+        elif cfg.Image != 'None':
             self.Image=get_final_value('Image')
 
         self.LogConfiguration=If(
@@ -332,7 +337,7 @@ class ECS_TaskDefinition(object):
         ])
 
         Containers = []
-        for n, v in RP_cmm['ContainerDefinitions'].iteritems():
+        for n, v in cfg.ContainerDefinitions.iteritems():
             Environments = []
             MountPoints = []
 
@@ -355,7 +360,7 @@ class ECS_TaskDefinition(object):
                 o_EnvAppOut.Value = Ref(nameenvapp)
 
                 # and use different output for RepoName
-                if 'RepoName' in RP_cmm:
+                if cfg.RepoName != 'None':
                     if 'RepoName' in v:
                         o_Repo = Output(name + 'RepoName')
                         o_Repo.Value = get_final_value(name + 'RepoName')
@@ -462,9 +467,9 @@ class ECS_TaskDefinition(object):
         R_TaskDefinition.setup()
         R_TaskDefinition.ContainerDefinitions = Containers
 
-        if 'Volumes' in RP_cmm:
+        if cfg.Volumes:
             Volumes = []
-            for n, v in RP_cmm['Volumes'].iteritems():
+            for n, v in cfg.Volumes.iteritems():
                 Volume = ECSVolume(n, key=v)
                 Volumes.append(Volume)
 
@@ -495,20 +500,19 @@ class ECS_Service(object):
 
         R_Service = ECSService('Service')
 
-        if 'LoadBalancerApplication' in RP_cmm:
-            if 'External' in RP_cmm['LoadBalancerApplication']:
-                R_Service.setup(scheme='External')
+        if cfg.LoadBalancerApplicationExternal:
+            R_Service.setup(scheme='External')
 
-                SGRule = SecurityGroupRuleEcsService()
-                SGRule.setup(scheme='External')
-                R_SG.SecurityGroupIngress.append(SGRule)
+            SGRule = SecurityGroupRuleEcsService()
+            SGRule.setup(scheme='External')
+            R_SG.SecurityGroupIngress.append(SGRule)
 
-            if 'Internal' in RP_cmm['LoadBalancerApplication']:
-                R_Service.setup(scheme='Internal')
+        if cfg.LoadBalancerApplicationInternal:
+            R_Service.setup(scheme='Internal')
 
-                SGRule = SecurityGroupRuleEcsService()
-                SGRule.setup(scheme='Internal')
-                R_SG.SecurityGroupIngress.append(SGRule)
+            SGRule = SecurityGroupRuleEcsService()
+            SGRule.setup(scheme='Internal')
+            R_SG.SecurityGroupIngress.append(SGRule)
         else:
             R_Service.setup(scheme='')
 
@@ -548,7 +552,7 @@ class ECS_Service(object):
 class ECR_Repositories(object):
     def __init__(self, key):
         PolicyStatementAccounts = []
-        for n, v in RP_cmm['EcrAccount'].iteritems():
+        for n, v in cfg.EcrAccount.iteritems():
             mapname = 'EcrAccount' + n  + 'Id'  # Ex. EcrAccountPrdId
             # conditions
             do_no_override(True)
@@ -582,7 +586,7 @@ class ECR_Repositories(object):
                 )
 
         # Resources
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             Repo = ECRRepositories(key + n)  # Ex. RepositoryApiLocationHierarchy
             Repo.setup()
             Repo.RepositoryPolicyText['Statement'].extend(PolicyStatementAccounts)

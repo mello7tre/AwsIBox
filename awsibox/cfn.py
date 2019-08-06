@@ -60,7 +60,7 @@ def cfn_ecs_cluster():
                         '#setup ibox extra environment variables\n',
                         'SNSTopicASGSpot=', Ref('SNSTopicASGSpot'), '\n',
                     ])
-                }, Ref('AWS::NoValue')) if 'SpotASG' in RP_cmm else Ref('AWS::NoValue'),
+                }, Ref('AWS::NoValue')) if cfg.SpotASG else Ref('AWS::NoValue'),
                 '/etc/systemd/system/spot-instance-drainer.service': If('SpotPrice', {
                     'content': Join('\n', [
                         '[Unit]',

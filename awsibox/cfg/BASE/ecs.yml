@@ -28,6 +28,7 @@ ecs:
   DeploymentConfiguration:
     MaximumPercent: 200
     MinimumHealthyPercent: 100
+  HealthCheckGracePeriodSeconds: 0
   ScalingPolicyUpScalingAdjustment1: SkipClass
   ListenerRules:
     - 1:
@@ -43,6 +44,7 @@ ecs:
     - Up:
         MaxSize: k
         MinSize: k
+  SchedulingStrategy: REPLICA
   Service: True
 
 dev: &cfg_dev

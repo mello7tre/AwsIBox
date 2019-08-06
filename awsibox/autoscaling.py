@@ -1389,7 +1389,7 @@ class AS_AutoscalingEC2(AS_Autoscaling):
             R_ASG,
         ])
 
-        if 'SpotASG' in RP_cmm:
+        if cfg.SpotASG:
             cfg.Resources.append(R_ASGSpot)
 
         self.LaunchConfiguration = LaunchConfiguration
@@ -1418,7 +1418,7 @@ class AS_AutoscalingECS(AS_Autoscaling):
 
 class AS_LifecycleHook(object):
     def __init__(self,key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + str(n)
 
             # resources
@@ -1434,7 +1434,7 @@ class AS_LifecycleHook(object):
                 r_Hook,
             ])
 
-            if 'SpotASG' in RP_cmm:
+            if cfg.SpotASG:
                 cfg.Resources.append(r_HookSpot)
             
 # Need to stay as last lines

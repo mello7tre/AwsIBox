@@ -5,7 +5,7 @@ from shared import *
 
 class CW_Alarms(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
             resname = key + str(n)

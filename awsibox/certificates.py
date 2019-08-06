@@ -14,7 +14,7 @@ class CRMCertificate(crm.Certificate):
 
 class CRM_Certificate(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             if 'Enabled' in v and not v['Enabled']:
                 continue
             # resources
@@ -41,13 +41,13 @@ class CRM_Certificate(object):
 
 class CRM_CertificateEC2(object):
     def __init__(self, key):
-        if RP_cmm['ListenerLoadBalancerHttpsPort'] != 'None':
+        if cfg.ListenerLoadBalancerHttpsPort != 'None':
             CRM_Certificate(key)
 
 
 class CRM_CertificateECS(object):
     def __init__(self, key):
-        if RP_cmm['ListenerLoadBalancerHttpsPort'] != 443:
+        if cfg.ListenerLoadBalancerHttpsPort != 443:
             CRM_Certificate(key)
 
 
