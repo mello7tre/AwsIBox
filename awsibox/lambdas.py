@@ -67,7 +67,7 @@ class LambdaFunction(lbd.Function):
 class LBD_Lambdas(object):
     def __init__(self, key):
         # Resources
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n
             r_Lambda = LambdaFunction(resname)
             r_Lambda.setup(key=v, name=n)

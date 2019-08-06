@@ -55,7 +55,6 @@ class R53RecordSetEC2LoadBalancerInternal(R53RecordSetLoadBalancer, R53RecordSet
 class R53RecordSetECSLoadBalancer(R53RecordSetLoadBalancer):
     def setup(self, scheme):
         super(R53RecordSetECSLoadBalancer, self).setup()
-        #scheme = RP_cmm['LoadBalancerApplication']
         self.AliasTarget.DNSName = get_sub_mapex(
             'dualstack.${1E}',
             'LoadBalancerApplication' + scheme + 'DNS',
@@ -106,9 +105,9 @@ class R53RecordSetCCH(R53RecordSet):
         super(R53RecordSetCCH, self).setup()
         self.Condition = 'CacheEnabled'
         self.Type = 'CNAME'
-        if RP_cmm['Engine'] == 'memcached':
+        if cfg.Engine == 'memcached':
             self.ResourceRecords = [GetAtt('CacheCluster', 'ConfigurationEndpoint.Address')]
-        if RP_cmm['Engine'] == 'redis':
+        if cfg.Engine == 'redis':
             self.ResourceRecords = [GetAtt('CacheCluster', 'RedisEndpoint.Address')]
         self.TTL = '300'
 
@@ -124,7 +123,7 @@ class R53RecordSetCCHInternal(R53RecordSetCCH, R53RecordSetZoneInternal):
 class R53RecordSetNSServiceDiscovery(R53RecordSet):
     def setup(self):
         self.HostedZoneId = Ref('HostedZoneEnv')
-        self.Name = Sub('find.' + RP_cmm['HostedZoneNameEnv'])
+        self.Name = Sub('find.' + cfg.HostedZoneNameEnv)
         self.ResourceRecords = GetAtt('PublicDnsNamespace', 'NameServers')
         self.Type = 'NS'
         self.TTL = '300'
@@ -203,19 +202,23 @@ class R53_RecordSetCloudFront(object):
 class R53_RecordSetEC2LoadBalancer(object):
     def __init__(self):
         # Resources
-        if 'External' in RP_cmm['RecordSet']:
+
+        # RecordSet External
+        if cfg.RecordSetExternal:
             R_External = R53RecordSetEC2LoadBalancerExternal('RecordSetExternal')
             R_External.setup()
-            if 'LoadBalancerClassic' in RP_cmm:
-                if 'External' in RP_cmm['LoadBalancerClassic']:
-                    R_External.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerClassicExternal.DNSName}')
-                elif 'Internal' in RP_cmm['LoadBalancerClassic']:
-                    R_External.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerClassicInternal.DNSName}')
-            if 'LoadBalancerApplication' in RP_cmm:
-                if 'External' in RP_cmm['LoadBalancerApplication']:
-                    R_External.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationExternal.DNSName}')
-                elif 'Internal' in RP_cmm['LoadBalancerApplication']:
-                    R_External.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationInternal.DNSName}')
+
+            # LoadBalancerClassic
+            if cfg.LoadBalancerClassicExternal:
+                R_External.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerClassicExternal.DNSName}')
+            elif cfg.LoadBalancerClassicInternal:
+                R_External.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerClassicInternal.DNSName}')
+
+            # LoadBalancerApplication
+            if cfg.LoadBalancerApplicationExternal:
+                R_External.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationExternal.DNSName}')
+            elif cfg.LoadBalancerApplicationInternal:
+                R_External.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationInternal.DNSName}')
 
             cfg.Resources.append(R_External)
 
@@ -225,19 +228,22 @@ class R53_RecordSetEC2LoadBalancer(object):
 
             cfg.Outputs.append(O_External)
 
-        if 'Internal' in RP_cmm['RecordSet']:
+        # RecordSet Internal
+        if cfg.RecordSetInternal:
             R_Internal = R53RecordSetEC2LoadBalancerInternal('RecordSetInternal')
             R_Internal.setup()
-            if 'LoadBalancerClassic' in RP_cmm:
-                if 'Internal' in RP_cmm['LoadBalancerClassic']:
-                    R_Internal.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerClassicInternal.DNSName}')
-                elif 'External' in RP_cmm['LoadBalancerClassic']:
-                    R_Internal.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerClassicExternal.DNSName}')
-            if 'LoadBalancerApplication' in RP_cmm:
-                if 'Internal' in RP_cmm['LoadBalancerApplication']:
-                    R_Internal.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationInternal.DNSName}')
-                elif 'External' in RP_cmm['LoadBalancerApplication']:
-                    R_Internal.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationExternal.DNSName}')
+
+            # LoadBalancerClassic
+            if cfg.LoadBalancerClassicInternal:
+                R_Internal.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerClassicInternal.DNSName}')
+            elif cfg.LoadBalancerClassicExternal:
+                R_Internal.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerClassicExternal.DNSName}')
+
+            # LoadBalancerApplication
+            if cfg.LoadBalancerApplicationInternal:
+                R_Internal.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationInternal.DNSName}')
+            elif cfg.LoadBalancerApplicationExternal:
+                R_Internal.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationExternal.DNSName}')
 
             cfg.Resources.append(R_Internal)
 
@@ -252,10 +258,10 @@ class R53_RecordSetEC2LoadBalancer(object):
 class R53_RecordSetECSLoadBalancer(object):
     def __init__(self):
         # Resources
-        if 'External' in RP_cmm['RecordSet']:
+        if cfg.RecordSetExternal:
             R_External = R53RecordSetECSLoadBalancerApplicationExternal('RecordSetExternal')
 
-            if 'External' in RP_cmm['LoadBalancerApplication']:
+            if cfg.LoadBalancerApplicationExternal:
                 R_External.setup(scheme='External')
             else:
                 R_External.setup(scheme='Internal')
@@ -268,10 +274,10 @@ class R53_RecordSetECSLoadBalancer(object):
 
             cfg.Outputs.append(O_External)
 
-        if 'Internal' in RP_cmm['RecordSet']:
+        if cfg.RecordSetInternal:
             R_Internal = R53RecordSetECSLoadBalancerApplicationInternal('RecordSetInternal')
 
-            if 'Internal' in RP_cmm['LoadBalancerApplication']:
+            if cfg.LoadBalancerApplicationInternal:
                 R_Internal.setup(scheme='Internal')
             else:
                 R_Internal.setup(scheme='External')
@@ -288,7 +294,7 @@ class R53_RecordSetECSLoadBalancer(object):
 class R53_RecordSetRDS(object):
     def __init__(self):
         # Resources
-        if 'External' in RP_cmm['RecordSet']:
+        if cfg.RecordSetExternal:
             R_External = R53RecordSetRDSExternal('RecordSetExternal')
             R_External.setup()
             cfg.Resources.append(R_External)
@@ -299,7 +305,7 @@ class R53_RecordSetRDS(object):
 
             cfg.Outputs.append(O_External)
 
-        if 'Internal' in RP_cmm['RecordSet']:
+        if cfg.RecordSetInternal:
             R_Internal = R53RecordSetRDSInternal('RecordSetInternal')
             R_Internal.setup()
             cfg.Resources.append(R_Internal)
@@ -314,7 +320,7 @@ class R53_RecordSetRDS(object):
 class R53_RecordSetCCH(object):
     def __init__(self):
         # Resources
-        if 'External' in RP_cmm['RecordSet']:
+        if cfg.RecordSetExternal:
             R_External = R53RecordSetCCHExternal('RecordSetExternal')
             R_External.setup()
             cfg.Resources.append(R_External)
@@ -326,7 +332,7 @@ class R53_RecordSetCCH(object):
 
             cfg.Outputs.append(O_External)
 
-        if 'Internal' in RP_cmm['RecordSet']:
+        if cfg.RecordSetInternal:
             R_Internal = R53RecordSetCCHInternal('RecordSetInternal')
             R_Internal.setup()
             cfg.Resources.append(R_Internal)

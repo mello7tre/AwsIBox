@@ -410,4 +410,12 @@ try: cfg.SpotASG
 except:
     cfg.SpotASG = None
 
+# RecordSet
+cfg.RecordSetExternal = None
+cfg.RecordSetInternal = None
+if 'External' in cfg.RecordSet:
+    cfg.RecordSetExternal = True
+if 'Internal' in cfg.RecordSet:
+    cfg.RecordSetInternal = True
+
 cfg.stacktype = stacktype

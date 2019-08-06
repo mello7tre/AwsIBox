@@ -6,7 +6,7 @@ from shared import *
 class ServiceDiscoveryPublicDnsNamespace(srvd.PublicDnsNamespace):
     def setup(self):
         self.Description = 'Service Discovery'
-        self.Name = Sub('find.' + RP_cmm['HostedZoneNameEnv'])
+        self.Name = Sub('find.' + cfg.HostedZoneNameEnv)
 
 
 class SRVD_ServiceDiscoveryRES(object):

@@ -45,7 +45,7 @@ class IAMManagedPolicy(iam.ManagedPolicy):
 
 
 class IAMPolicyBucketReplica(iam.PolicyType):
-    def setup(self, bucket, key):
+    def setup(self, bucket, bucket_name, key):
         name = self.title  # Ex. IAMPolicyReplicaBucketElasticSearch
         self.Condition = bucket + 'Replica'
         self.PolicyName = self.title
@@ -59,7 +59,7 @@ class IAMPolicyBucketReplica(iam.PolicyType):
                     ],
                     'Effect': 'Allow',
                     'Resource': [
-                        Sub('arn:aws:s3:::%s' % RP_cmm[bucket])
+                        Sub('arn:aws:s3:::%s' % bucket_name)
                     ]
                 },
                 {
@@ -70,7 +70,7 @@ class IAMPolicyBucketReplica(iam.PolicyType):
                     ],
                     'Effect': 'Allow',
                     'Resource': [
-                        Sub('arn:aws:s3:::%s/*' % RP_cmm[bucket]) 
+                        Sub('arn:aws:s3:::%s/*' % bucket_name) 
                     ]
                 },
                 {
@@ -85,7 +85,7 @@ class IAMPolicyBucketReplica(iam.PolicyType):
                         get_sub_mapex(
                             'arn:aws:s3:::${1M} + /*', '%sReplicaDstBucket' % bucket
                         ) if 'ReplicaDstBucket' in key else get_sub_mapex(
-                            'arn:aws:s3:::${1M}-%s/*' % RP_cmm[bucket].replace('${AWS::Region}-', '', 1),
+                            'arn:aws:s3:::${1M}-%s/*' % bucket_name.replace('${AWS::Region}-', '', 1),
                             '%sReplicaDstRegion' % bucket,
                         )
                     ]
@@ -176,7 +176,7 @@ def IAMPolicyStatement(key):
 
 class IAM_Users(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n  # Ex. IAMUserPincoPalla
 
             # parameters
@@ -225,7 +225,7 @@ class IAM_Users(object):
                         )
                     )
    
-                    try: policy_arns = RP_cmm['IAMGroup'][m]['ManagedPolicyArns']
+                    try: policy_arns = cfg.IAMGroup[m]['ManagedPolicyArns']
                     except:
                         pass
                     else:
@@ -272,7 +272,7 @@ class IAM_Users(object):
 
 class IAM_UserToGroupAdditions(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n  # Ex. IAMUserToGroupAdditionBase
 
             Users = []
@@ -290,7 +290,7 @@ class IAM_UserToGroupAdditions(object):
                     If(
                         condname,
                         # for user defined in the same yaml file
-                        # Ref('IAMUser' + m) if m in RP_cmm['IAMUser'] else get_final_value(condname),
+                        # Ref('IAMUser' + m) if m in cfg.IAMUser else get_final_value(condname),
                         get_final_value(condname),
                         Ref('AWS::NoValue')
                     )
@@ -310,7 +310,7 @@ class IAM_UserToGroupAdditions(object):
 
 class IAM_Groups(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n  # Ex. IAMGroupBase
 
             # conditions
@@ -342,7 +342,7 @@ class IAM_Groups(object):
 class IAM_Policies(object):
     def __init__(self, key):
         # Resources
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n  # Ex. IAMPolicyLambdaR53RecordInstanceId
             Statement = []
             for m, w  in v['Statement'].iteritems():
@@ -369,7 +369,7 @@ class IAM_Policies(object):
 class IAM_Roles(object):
     def __init__(self, key):
         # Resources
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n  # Ex. RoleECSService
             r_Role = IAMRole(resname)
             r_Role.setup(key=v)

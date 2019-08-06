@@ -19,7 +19,7 @@ class EVETarget(eve.Target):
 
 class EVE_EventRules(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n  # Ex. EventsRuleElasticSearchSnapShot
             # parameters
             p_State = Parameter(resname + 'State')

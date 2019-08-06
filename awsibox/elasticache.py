@@ -40,9 +40,9 @@ class CCHCacheSubnetGroupPublic(cch.SubnetGroup):
 class CCH_Cache(object):
     def __init__(self, key):
         # Resources
-        if RP_cmm['CCHScheme'] == 'External':
+        if cfg.CCHScheme == 'External':
             R_Cache = CCHCacheClusterPublic('CacheCluster')
-        if RP_cmm['CCHScheme'] == 'Internal':
+        if cfg.CCHScheme == 'Internal':
             R_Cache = CCHCacheClusterPrivate('CacheCluster')
 
         R_Cache.setup()

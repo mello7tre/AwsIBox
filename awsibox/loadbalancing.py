@@ -113,7 +113,7 @@ class ELBV2TargetGroup(elbv2.TargetGroup):
     def setup(self):
         self.HealthCheckIntervalSeconds = get_final_value('HealthCheckIntervalSeconds')
         self.HealthCheckTimeoutSeconds = get_final_value('HealthCheckTimeoutSeconds')
-        if 'HealthCheckPath' in RP_cmm:
+        if cfg.HealthCheckPath != 'None':
             self.HealthCheckPath = get_final_value('HealthCheckPath')
         self.HealthyThresholdCount = get_final_value('HealthyThresholdCount')
         self.UnhealthyThresholdCount = get_final_value('UnhealthyThresholdCount')
@@ -272,7 +272,7 @@ class LB_Listeners(object):
     def __init__(self):
         # Conditions
         do_no_override(True)
-        for i in RP_cmm['AllowedIp']:
+        for i in cfg.AllowedIp:
             condname = 'AllowedIp' + str(i)  # Ex. AllowedIp1
             cfg.Conditions.append({
                 condname: Not(Equals(get_final_value(condname + 'Enabled'), 'None'))
@@ -287,14 +287,15 @@ class LB_ListenersEC2(LB_Listeners):
         Listeners = []
         Securitygroup_Rules = []
         SecuritygroupIngress_InstanceRules = []
-        for n, v in RP_cmm['Listeners'].iteritems():
+        for n, v in cfg.Listeners.iteritems():
             mapname = 'Listeners' + str(n)  # Ex Listeners1
-            if 'LoadBalancerClassic' in RP_cmm:
+
+            if cfg.LoadBalancerClassic:
                 Listener = ELBListener(mapname)
                 Listener.setup(key=v)
                 Listeners.append(Listener)
 
-            for i in RP_cmm['AllowedIp']:
+            for i in cfg.AllowedIp:
                 ipname = 'AllowedIp' + str(i)  # Ex. AllowedIp1
                 condnameprivate = 'SecurityGroupRulePrivate' + mapname + ipname  # Ex. SecurityGroupRulePrivateListeners1AllowedIp1
                 condnamepublic = 'SecurityGroupRulePublic' + mapname # Ex. SecurityGroupRulePublicListeners1
@@ -393,8 +394,8 @@ class LB_ListenerRulesExternalInternal(object):
         R_RuleHttps.Condition = 'ListenerLoadBalancerHttpsPort'
 
         # Create ListenerRule only in stack's specific new Listener
-        ListenerHttpPort = RP_cmm['ListenerLoadBalancerHttpPort']
-        ListenerHttpsPort = RP_cmm['ListenerLoadBalancerHttpsPort']
+        ListenerHttpPort = cfg.ListenerLoadBalancerHttpPort
+        ListenerHttpsPort = cfg.ListenerLoadBalancerHttpsPort
         Protocol = key['Protocol'] if 'Protocol' in key else ''
         RuleHttpAdd = None
         RuleHttpsAdd = None
@@ -425,7 +426,7 @@ class LB_ListenerRulesExternalInternal(object):
 
 class LB_ListenerRules(object):
     def __init__(self):
-        for n, v in RP_cmm['ListenerRules'].iteritems():
+        for n, v in cfg.ListenerRules.iteritems():
             mapname = 'ListenerRules' + str(n)  # Ex. ListenerRules1
 
             # parameters
@@ -462,10 +463,10 @@ class LB_ListenerRules(object):
                 })
 
             # resources
-            if 'External' in RP_cmm['LoadBalancerApplication']:
+            if cfg.LoadBalancerApplicationExternal:
                 LB_ListenerRulesExternalInternal(index=str(n), key=v, mapname=mapname, scheme='External')
 
-            if 'Internal' in RP_cmm['LoadBalancerApplication']:
+            if cfg.LoadBalancerApplicationInternal:
                 LB_ListenerRulesExternalInternal(index=str(n), key=v, mapname=mapname, scheme='Internal')
 
             # outputs
@@ -509,7 +510,7 @@ class LB_ListenersV2ExternalInternal(object):
             R_SGIHttpsPublic,
         ])
 
-        for i in RP_cmm['AllowedIp']:
+        for i in cfg.AllowedIp:
             ipname = 'AllowedIp' + str(i)  # Ex. AllowedIp1
             condnamehttpprivate = 'SecurityGroupIngressPrivateLoadBalancerHttp' + scheme + ipname
             condnamehttpsprivate = 'SecurityGroupIngressPrivateLoadBalancerHttps' + scheme + ipname
@@ -542,14 +543,14 @@ class LB_ListenersV2ExternalInternal(object):
                 SGIHttpsPrivate,
             ])
 
-        if RP_cmm['ListenerLoadBalancerHttpPort'] != 80:
+        if cfg.ListenerLoadBalancerHttpPort != 80:
             R_ListenerHttp = ELBV2ListenerHttp('ListenerHttp' + scheme)  # Ex. ListenerHttpExternal
             R_ListenerHttp.setup(scheme=scheme)
             R_ListenerHttp.LoadBalancerArn = get_exported_value('LoadBalancerApplication' + scheme, 'LoadBalancerApplicationStack')
 
             cfg.Resources.append(R_ListenerHttp)
 
-        if RP_cmm['ListenerLoadBalancerHttpsPort'] != 443:
+        if cfg.ListenerLoadBalancerHttpsPort != 443:
             R_ListenerHttps = ELBV2ListenerHttps('ListenerHttps' + scheme)
             R_ListenerHttps.setup(scheme=scheme)
             R_ListenerHttps.Condition = 'ListenerLoadBalancerHttpsPort'
@@ -562,7 +563,7 @@ class LB_ListenersV2EC2(LB_ListenersEC2):
     def __init__(self):
         super(LB_ListenersV2EC2, self).__init__()
         # Resources
-        if 'External' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationExternal:
             R_ListenerHttpExternal = ELBV2ListenerHttp('ListenerHttpExternal')
             R_ListenerHttpExternal.setup(scheme='External')
             R_ListenerHttpExternal.Condition = 'ListenerLoadBalancerHttpPort'
@@ -575,8 +576,8 @@ class LB_ListenersV2EC2(LB_ListenersEC2):
                 R_ListenerHttpExternal,
                 R_ListenerHttpsExternal,
             ])
-        
-        if 'Internal' in RP_cmm['LoadBalancerApplication']:
+
+        if cfg.LoadBalancerApplicationInternal:
             R_ListenerHttpInternal = ELBV2ListenerHttp('ListenerHttpInternal')
             R_ListenerHttpInternal.setup(scheme='Internal')
             R_ListenerHttpInternal.Condition = 'ListenerLoadBalancerHttpPort'
@@ -603,10 +604,10 @@ class LB_ListenersV2ECS(LB_Listeners):
         do_no_override(False)
 
         # Resources
-        if 'External' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationExternal:
             LB_ListenersV2ExternalInternal(scheme='External')
 
-        if 'Internal' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationInternal:
             LB_ListenersV2ExternalInternal(scheme='Internal')
 
         LB_TargetGroupsECS()
@@ -638,7 +639,7 @@ class LB_ListenersV2ALB(object):
         ])
 
         # Resources
-        if 'External' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationExternal:
             # CREATE SPECIFIC CLASS - EXTERNAL INTERNAL AS PARAMETER
             R_ListenerHttp = ELBV2ListenerHttp('ListenerHttpDefaultExternal')
             R_ListenerHttp.setup(scheme='External')
@@ -672,7 +673,7 @@ class LB_ListenersV2ALB(object):
                 O_ListenerHttps,
             ])
 
-        if 'Internal' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationInternal:
             R_ListenerHttp = ELBV2ListenerHttp('ListenerHttpDefaultInternal')
             R_ListenerHttp.setup(scheme='Internal')
             R_ListenerHttp.DefaultActions[0].TargetGroupArn=Ref('TargetGroupDefaultInternal')
@@ -711,55 +712,55 @@ class LB_TargetGroupsEC2(LB_TargetGroups):
     def __init__(self):
         super(LB_TargetGroupsEC2, self).__init__()
         # Resources
-        if 'External' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationExternal:
             R_TargetGroup = ELBV2TargetGroupEC2('TargetGroupExternal')
             R_TargetGroup.setup()
 
             cfg.Resources.append(R_TargetGroup)
 
-            RP_cmm['Alarm']['TargetEC2External5XX']['Enabled'] = True
+            cfg.Alarm['TargetEC2External5XX']['Enabled'] = True
 
-        if 'Internal' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationInternal:
             R_TargetGroup = ELBV2TargetGroupEC2('TargetGroupInternal')
             R_TargetGroup.setup()
 
             cfg.Resources.append(R_TargetGroup)
             
-            RP_cmm['Alarm']['TargetEC2Internal5XX']['Enabled'] = True
+            cfg.Alarm['TargetEC2Internal5XX']['Enabled'] = True
 
 
 class LB_TargetGroupsECS(LB_TargetGroups):
     def __init__(self):
         super(LB_TargetGroupsECS, self).__init__()
         # Resources
-        if 'External' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationExternal:
             R_TargetGroup = ELBV2TargetGroupECS('TargetGroupExternal')
             R_TargetGroup.setup()
 
             cfg.Resources.append(R_TargetGroup)
 
-            RP_cmm['Alarm']['TargetExternal5XX']['Enabled'] = True
+            cfg.Alarm['TargetExternal5XX']['Enabled'] = True
 
-        if 'Internal' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationInternal:
             R_TargetGroup = ELBV2TargetGroupECS('TargetGroupInternal')
             R_TargetGroup.setup()
 
             cfg.Resources.append(R_TargetGroup)
             
-            RP_cmm['Alarm']['TargetInternal5XX']['Enabled'] = True
+            cfg.Alarm['TargetInternal5XX']['Enabled'] = True
 
 
 class LB_TargetGroupsALB(object):
     def __init__(self):
         # Resources
-        if 'External' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationExternal:
             R_TargetGroup = ELBV2TargetGroupALB('TargetGroupDefaultExternal')
             R_TargetGroup.Condition = 'LoadBalancerApplicationExternal'
             R_TargetGroup.setup()
 
             cfg.Resources.append(R_TargetGroup)
 
-        if 'Internal' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationInternal:
             R_TargetGroup = ELBV2TargetGroupALB('TargetGroupDefaultInternal')
             R_TargetGroup.Condition = 'LoadBalancerApplicationInternal'
             R_TargetGroup.setup()
@@ -848,23 +849,23 @@ class LB_ElasticLoadBalancingClassicEC2(LB_ListenersEC2):
         do_no_override(False)
 
         # Resources
-        if 'External' in RP_cmm['LoadBalancerClassic']:
+        if cfg.LoadBalancerClassicExternal:
             R_ELBExternal = ELBLoadBalancerExternal('LoadBalancerClassicExternal')
             R_ELBExternal.setup()
             R_ELBExternal.Listeners = self.Listeners
 
             cfg.Resources.append(R_ELBExternal)
             
-            RP_cmm['Alarm']['BackendExternal5XX']['Enabled'] = True
+            cfg.Alarm['BackendExternal5XX']['Enabled'] = True
 
-        if 'Internal' in RP_cmm['LoadBalancerClassic']:
+        if cfg.LoadBalancerClassicInternal:
             R_ELBInternal = ELBLoadBalancerInternal('LoadBalancerClassicInternal')
             R_ELBInternal.setup()
             R_ELBInternal.Listeners = self.Listeners
 
             cfg.Resources.append(R_ELBInternal)
             
-            RP_cmm['Alarm']['BackendInternal5XX']['Enabled'] = True
+            cfg.Alarm['BackendInternal5XX']['Enabled'] = True
 
         # Outputs
         O_HealthCheck = Output('HealthCheck')
@@ -872,7 +873,7 @@ class LB_ElasticLoadBalancingClassicEC2(LB_ListenersEC2):
             'Type=${Type},Target=${Target},Interval=${Interval},Timeout=${Timeout},Healthy=${Healthy},Unhealthy=${Unhealthy}',
             **{
                 'Type': get_final_value('HealthCheckType'),
-                'Target': get_final_value('HealthCheckTarget') if 'HealthCheckTarget' in RP_cmm else '',
+                'Target': get_final_value('HealthCheckTarget') if cfg.HealthCheckTarget != 'None' else '',
                 'Interval': get_final_value('HealthCheckIntervalSeconds'),
                 'Timeout': get_final_value('HealthCheckTimeoutSeconds'),
                 'Healthy': get_final_value('HealthyThresholdCount'),
@@ -889,15 +890,15 @@ class LB_ElasticLoadBalancingApplicationEC2(object):
     def __init__(self):
         LB_ElasticLoadBalancingApplication()
         # Resources
-        if 'External' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationExternal:
             R_ELBExternal = ELBV2LoadBalancerExternal('LoadBalancerApplicationExternal')
             R_ELBExternal.setup()
 
             cfg.Resources.extend([
                 R_ELBExternal,
             ])
-        
-        if 'Internal' in RP_cmm['LoadBalancerApplication']:
+       
+        if cfg.LoadBalancerApplicationInternal:
             R_ELBInternal = ELBV2LoadBalancerInternal('LoadBalancerApplicationInternal')
             R_ELBInternal.setup()
 
@@ -913,7 +914,7 @@ class LB_ElasticLoadBalancingApplicationEC2(object):
             'Type=${Type},Path=${Path},Interval=${Interval},Timeout=${Timeout},Healthy=${Healthy},Unhealthy=${Unhealthy}',
             **{
                 'Type': get_final_value('HealthCheckType'),
-                'Path': get_final_value('HealthCheckPath') if 'HealthCheckPath' in RP_cmm else '',
+                'Path': get_final_value('HealthCheckPath') if cfg.HealthCheckPath != 'None' else '',
                 'Interval': get_final_value('HealthCheckIntervalSeconds'),
                 'Timeout': get_final_value('HealthCheckTimeoutSeconds'),
                 'Healthy': get_final_value('HealthyThresholdCount'),
@@ -933,10 +934,10 @@ class LB_ElasticLoadBalancingEC2(LB_ElasticLoadBalancing):
         # Resources
         R53_RecordSetEC2LoadBalancer()
         
-        if 'LoadBalancerClassic' in RP_cmm:
+        if cfg.LoadBalancerClassic:
             LB_ElasticLoadBalancingClassicEC2()
 
-        if 'LoadBalancerApplication' in RP_cmm:
+        if cfg.LoadBalancerApplication:
             LB_ElasticLoadBalancingApplicationEC2()
 
 
@@ -971,7 +972,7 @@ class LB_ElasticLoadBalancingALB(LB_ElasticLoadBalancing):
         ])
         do_no_override(False)
 
-        if 'External' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationExternal:
             # Resources
             R_ELB = ELBV2LoadBalancerExternalALB('LoadBalancerApplicationExternal')
             R_ELB.setup()
@@ -1000,7 +1001,7 @@ class LB_ElasticLoadBalancingALB(LB_ElasticLoadBalancing):
                 O_ELBFullName,
             ])
 
-        if 'Internal' in RP_cmm['LoadBalancerApplication']:
+        if cfg.LoadBalancerApplicationInternal:
             # Resources
             R_ELB = ELBV2LoadBalancerInternalALB('LoadBalancerApplicationInternal')
             R_ELB.setup()

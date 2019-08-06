@@ -9,7 +9,7 @@ class CFM_Parameters(object):
 class CFM_Conditions(object):
     def __init__(self, key):
         do_no_override(True)
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             c_Condition = {n: eval(v)}
 
             cfg.Conditions.append(c_Condition)

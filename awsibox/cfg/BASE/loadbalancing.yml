@@ -35,6 +35,8 @@ global:
         Enabled: True
   HealthCheckIntervalSeconds: 30
   HealthCheckTimeoutSeconds: 6
+  HealthCheckPath: None
+  HealthCheckTarget: None
   HealthyThresholdCount: 2
   ListenerLoadBalancerHttpPort: 80
   ListenerLoadBalancerHttpsPort: 443

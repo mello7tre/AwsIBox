@@ -18,7 +18,7 @@ class SNSTopic(sns.Topic):
 class SNS_Topics(object):
     def __init__(self, key):
         # Resources
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n  # Ex. SNSTopicASGNotification
             r_Topic = SNSTopic(resname)
             r_Topic.setup(name=n)
@@ -41,7 +41,7 @@ class SNS_Topics(object):
 class SNS_Subscriptions(object):
     def __init__(self, key):
         # Resources
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             if 'Enabled' in v and not v['Enabled']:
                 continue
             resname = key + n  # Ex. SNSSubscriptionASGNotificationLambdaR53RecordInstanceId

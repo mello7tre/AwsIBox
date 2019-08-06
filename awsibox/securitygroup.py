@@ -167,7 +167,7 @@ class SG_SecurityGroupsExtra(object):
 
 class SG_SecurityGroupIngressesExtra(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + n
             r_SGI = SecurityGroupIngress(resname)
             auto_get_props(r_SGI, v)
@@ -230,7 +230,7 @@ class SG_SecurityGroupsTSK(object):
 
 class SG_SecurityGroupRES(object):
     def __init__(self, key):
-        for n, v in RP_cmm['SecurityGroupBase'].iteritems():
+        for n, v in cfg.SecurityGroupBase.iteritems():
             name = 'SecurityGroup%s' % n  # Ex. SecurityGroupElasticSearchClient
             outname = name if n != 'ElasticSearchClient' else 'SecurityGroup' + n.replace('Client', '')  # Ex. SecurityGroupElasticSearch
             # resources
@@ -248,7 +248,7 @@ class SG_SecurityGroupRES(object):
             cfg.Outputs.append(o_Base)
 
         Securitygroup_Rules = []
-        for n, v in RP_cmm['AllowedIp'].iteritems():
+        for n, v in cfg.AllowedIp.iteritems():
             name = 'AllowedIp%s' % n
             # conditions
             do_no_override(True)
@@ -304,9 +304,9 @@ class SG_SecurityGroupRES(object):
 class SG_SecurityGroupIngressesExtraService(object):
     def __init__(self, key, service):  # Ex service=RDS
         Securitygroup_Rules = []
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             name = str(v['FromPort'])  # Ex 3306
-            for i in RP_cmm['AllowedIp']:
+            for i in cfg.AllowedIp:
                 ipname = 'AllowedIp' + str(i)  # Ex. AllowedIp1
                 condnameprivate = 'SecurityGroupRulePrivatePort' + name + ipname  # Ex. SecurityGroupRulePrivatePorts3306AllowedIp1
 

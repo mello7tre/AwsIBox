@@ -125,7 +125,7 @@ class WAFWebACLRule(waf.Rules, wafr.Rules):
 
 class WAF_IPSets(object):
     def __init__(self, key, wtype=''):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             name = key.replace('Waf', wtype)  # Ex. RegionalIPSet
             resname = 'Waf' + name + n  # Ex. WafRegionalIPSetAwsNat 
             mapname = key + n  # Ex. WafIPSetAwsNat
@@ -160,7 +160,7 @@ class WAF_IPSets(object):
 
 class WAF_ByteMatchSets(object):
     def __init__(self, key, wtype=''):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             name = key.replace('Waf', wtype)  # Ex. RegionalByteMatchSet
             resname = 'Waf' + name + n
             mapname = key + n
@@ -198,7 +198,7 @@ class WAF_ByteMatchSets(object):
 
 class WAF_Rules(object):
     def __init__(self, key, wtype=''):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             name = key.replace('Waf', wtype)  # Ex. RegionalIPSet
             resname = 'Waf' + name + n  # Ex. WafRegionalIPSetAwsNat 
             mapname = key + n  # Ex. WafIPSetAwsNat
@@ -254,7 +254,7 @@ class WAF_Rules(object):
 
 class WAF_WebAcls(object):
     def __init__(self, key, wtype=''):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             name = key.replace('Waf', wtype)  # Ex. RegionalIPSet
             resname = 'Waf' + name + n  # Ex. WafRegionalIPSetAwsNat 
             mapname = key + n  # Ex. WafIPSetAwsNat

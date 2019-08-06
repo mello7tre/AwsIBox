@@ -337,7 +337,7 @@ class S3_Buckets(object):
             #r_PolicyRO.setup(bucket=resname, principal=PolicyROPrincipal)
 
             r_IAMPolicyReplica = IAMPolicyBucketReplica('IAMPolicyReplicaBucket' + name)
-            r_IAMPolicyReplica.setup(bucket=resname, key=v)
+            r_IAMPolicyReplica.setup(bucket=resname, bucket_name=bucket_name, key=v)
 
             if 'WebsiteConfiguration' in v:
                 r_Bucket.WebsiteConfiguration = s3.WebsiteConfiguration(resname + 'WebsiteConfiguration')

@@ -130,7 +130,7 @@ class RDSDBSubnetGroupPublic(rds.DBSubnetGroup):
 
 class RDS_ParameterGroups(object):
     def __init__(self, key):
-        for n, v in RP_cmm[key].iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             resname = key + str(n)
             # Resources
             r_PG = RDSDBParameterGroup(resname)
@@ -143,9 +143,9 @@ class RDS_ParameterGroups(object):
 class RDS_DB(object):
     def __init__(self, key):
         # Resources
-        if RP_cmm['RDSScheme'] == 'External':
+        if cfg.RDSScheme == 'External':
             R_DB = RDSDBInstancePublic('DBInstance')
-        if RP_cmm['RDSScheme'] == 'Internal':
+        if cfg.RDSScheme == 'Internal':
             R_DB = RDSDBInstancePrivate('DBInstance')
 
         R_DB.setup()
