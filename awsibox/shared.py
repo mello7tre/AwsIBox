@@ -188,7 +188,7 @@ def get_exported_value(param, stack=False, prefix=''):
     v = ''
     if stack:
         v = ImportValue(
-            Sub(param + '-${' + stack + '}', **{stack: get_final_value(stack)})
+            Sub('%s-${%s}' % (param, stack), **{stack: get_final_value(stack)})
         )
     elif not isinstance(param, str):
         v = ImportValue(

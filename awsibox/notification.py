@@ -10,7 +10,7 @@ class SNSSubscription(sns.SubscriptionResource):
 
 class SNSTopic(sns.Topic):
     def setup(self, name):
-        self.DisplayName = Sub('${AWS::StackName}.${EnvRole}' + '-' + 'SNS' + name)
+        self.DisplayName = Sub('${AWS::StackName}.${EnvRole}-SNS%s' % name)
 
 ##
 ##

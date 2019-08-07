@@ -160,7 +160,7 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
 
         if 'RepoName' in key:
             self.Image=get_sub_mapex(
-                '${1M}.dkr.ecr.${AWS::Region}.amazonaws.com/${2M}:${EnvApp' + str(index) + 'Version}',
+                '${1M}.dkr.ecr.${AWS::Region}.amazonaws.com/${2M}:${EnvApp%sVersion}' % index,
                 ['EcrAccount', name + 'RepoName']
             )
         # use the same EnvApp version for all containers
@@ -341,12 +341,12 @@ class ECS_TaskDefinition(object):
             Environments = []
             MountPoints = []
 
-            name = 'ContainerDefinitions' + str(n)  # Ex. ContainerDefinitions1
+            name = 'ContainerDefinitions%s' % n  # Ex. ContainerDefinitions1
 
             # parameters
             # if ContainerDefinitions have RepoName use different EnvApp version
             if n == 1 or 'RepoName' in v:  
-                nameenvapp = 'EnvApp' + str(n) + 'Version'  # Ex. EnvApp1Version
+                nameenvapp = 'EnvApp%sVersion' % n  # Ex. EnvApp1Version
 
                 EnvApp = Parameter(nameenvapp)
                 EnvApp.Description = nameenvapp
@@ -379,10 +379,10 @@ class ECS_TaskDefinition(object):
             EnvValue_Out_Map = {}
             if 'Envs' in v:
                 for m, w in v['Envs'].iteritems():
-                    envname = name + 'Envs' + str(m)
+                    envname = '%sEnvs%s' % (name, m)
                     # parameters
                     EnvValue = Parameter(envname + 'Value')
-                    EnvValue.Description = w['Name']  + ' - empty for default based on env/role'
+                    EnvValue.Description = '%s - empty for default based on env/role' % w['Name']
 
                     cfg.Parameters.append(EnvValue)
 
@@ -391,7 +391,7 @@ class ECS_TaskDefinition(object):
                     Environments.append(Environment)
 
                     # outputs
-                    EnvValue_Out_String.append(w['Name'] + '=${' + w['Name'] + '}')
+                    EnvValue_Out_String.append('%s=${%s}' % (w['Name'], w['Name']))
                     EnvValue_Out_Map.update({
                         w['Name']: Environment.Value
                     })

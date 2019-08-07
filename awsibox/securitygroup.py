@@ -91,8 +91,8 @@ class SG_SecurityGroupsExtra(object):
     def __init__(self, Out_String, Out_Map):
         # Parameters
         P_SecurityGroups = Parameter('SecurityGroups')
-        P_SecurityGroups.Description = 'SecurityGroups List Extra - ' + SECURITY_GROUPS_DEFAULT + ' for default based on env/role'
-        P_SecurityGroups.AllowedPattern = '^(\w*,\w*){' + str(MAX_SECURITY_GROUPS - 1) + '}$'
+        P_SecurityGroups.Description = 'SecurityGroups List Extra - %s for default based on env/role' % SECURITY_GROUPS_DEFAULT
+        P_SecurityGroups.AllowedPattern = '^(\w*,\w*){%s}$' % (MAX_SECURITY_GROUPS - 1)
         P_SecurityGroups.Default = SECURITY_GROUPS_DEFAULT
 
         cfg.Parameters.extend([
@@ -113,10 +113,10 @@ class SG_SecurityGroupsExtra(object):
         SecurityGroups = []
 
         for n in range(MAX_SECURITY_GROUPS):
-            name = 'SecurityGroup' + str(n)  # Ex SecurityGroup1
+            name = 'SecurityGroup%s' % n  # Ex SecurityGroup1
             value = Select(n, Split(',', get_final_value('SecurityGroups')))  # Ex. ElasticSearch
-            outnamename = 'SecurityGroupName' + str(n)  # Ex. SecurityGroupName1
-            outvaluename = 'SecurityGroupValue' + str(n)  # Ex. SecurityGroupValue1
+            outnamename = 'SecurityGroupName%s' % n  # Ex. SecurityGroupName1
+            outvaluename = 'SecurityGroupValue%s' % n  # Ex. SecurityGroupValue1
 
             # conditions
             do_no_override(True)
@@ -142,7 +142,7 @@ class SG_SecurityGroupsExtra(object):
             ))
 
             # outputs
-            Out_String.append('${' + outnamename + '}=${' + outvaluename + '}')
+            Out_String.append('${%s}=${%s}' % (outnamename, outvaluename))
             Out_Map.update({
                 outnamename: value,
                 outvaluename: If(
@@ -307,7 +307,7 @@ class SG_SecurityGroupIngressesExtraService(object):
         for n, v in getattr(cfg, key).iteritems():
             name = str(v['FromPort'])  # Ex 3306
             for i in cfg.AllowedIp:
-                ipname = 'AllowedIp' + str(i)  # Ex. AllowedIp1
+                ipname = 'AllowedIp%s' % i  # Ex. AllowedIp1
                 condnameprivate = 'SecurityGroupRulePrivatePort' + name + ipname  # Ex. SecurityGroupRulePrivatePorts3306AllowedIp1
 
                 # conditions

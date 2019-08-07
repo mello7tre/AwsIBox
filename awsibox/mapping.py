@@ -44,7 +44,7 @@ def get_mapping_env_region(MP, RP, e, r, p):
             elif not p:
                 get_mapping_env_region(mappings, v, e, r, i)
             else:
-                get_mapping_env_region(mappings, v, e, r, str(p) + str(i))
+                get_mapping_env_region(mappings, v, e, r, '%s%s' % (p, i))
     else:
         if p in mappings['cmm']['cmm'] and RP == mappings['cmm']['cmm'][p]:
             pass

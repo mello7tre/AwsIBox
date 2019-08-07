@@ -12,8 +12,8 @@ class CDEc2TagFilters(cdd.Ec2TagFilters):
 
 class CDDeploymentGroup(cdd.DeploymentGroup):
     def setup(self, index):
-        appreponame = 'Apps' + str(index) + 'RepoName'
-        appenvname = 'EnvApp' + str(index) + 'Version'
+        appreponame = 'Apps%sRepoName' % index
+        appenvname = 'EnvApp%sVersion' % index
         self.Condition = 'DeploymentGroup'
         self.ApplicationName = get_final_value(appreponame)
         # Uncomment for old behaviour where codedeploy prepare at boot autoscalinggroup's instances (do not work with autospot)
@@ -36,7 +36,7 @@ class CDDeploymentGroup(cdd.DeploymentGroup):
                     S3Location=cdd.S3Location(
                         Bucket=Sub(get_final_value('BucketAppRepository')),
                         BundleType='tgz',
-                        Key=get_sub_mapex('${1M}/${1M}-${' + appenvname + '}.tar.gz', appreponame)
+                        Key=get_sub_mapex('${1M}/${1M}-${%s}.tar.gz' % appenvname, appreponame)
                     )   
                 )   
             ),  

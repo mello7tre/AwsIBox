@@ -33,12 +33,12 @@ class EFS_FileStorage(object):
             sgclientname = 'SecurityGroupEFS' + n  # Ex. SecurityGroupEFSWordPress
             sginame = 'SecurityGroupIngressEFS' + n  # Ex. SecurityGroupIngressEFSWordPress
             for i in range(3):
-                mountname = 'EFSMountTarget' + n + str(i)  # Ex. EFSMountTargetWordPress3
+                mountname = 'EFSMountTarget%s%s' % (n, i)  # Ex. EFSMountTargetWordPress3
                 # conditions
                 do_no_override(True)
                 c_FileZone = {mountname: And(
                     Condition(resname),
-                    Equals(FindInMap('AvabilityZones', Ref('AWS::Region'), 'Zone' + str(i)), 'True')
+                    Equals(FindInMap('AvabilityZones', Ref('AWS::Region'), 'Zone%s' % i), 'True')
                 )}
                 cfg.Conditions.append(c_FileZone)
                 do_no_override(False)
@@ -77,8 +77,8 @@ class EFS_FileStorage(object):
                 'Name': sginame,
                 'Condition': resname,
                 'FromPort': 2049,
-                'GroupId': 'Sub(\'${' + sgservername  + '.GroupId}\')',
-                'SourceSecurityGroupId': 'Ref(\'' + sgclientname + '\')',
+                'GroupId': 'Sub(\'${%s.GroupId}\')' % sgservername,
+                'SourceSecurityGroupId': 'Ref(\'%s\')' % sgclientname,
                 'ToPort': 2049
             }
 

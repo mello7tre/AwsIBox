@@ -57,7 +57,7 @@ class R53RecordSetECSLoadBalancer(R53RecordSetLoadBalancer):
         super(R53RecordSetECSLoadBalancer, self).setup()
         self.AliasTarget.DNSName = get_sub_mapex(
             'dualstack.${1E}',
-            'LoadBalancerApplication' + scheme + 'DNS',
+            'LoadBalancerApplication%sDNS' % scheme,
             'LoadBalancerApplicationStack'
         ) 
 
@@ -76,9 +76,9 @@ class R53RecordSetEFS(R53RecordSet):
         condname = 'EFSFileSystem' + efsname  # Ex. EFSFileSystemWordPress
         self.Condition = condname
         self.HostedZoneId = Ref('HostedZonePrivate')
-        self.Name = Sub('efs-' + efsname + '.' + get_final_value('HostedZoneNamePrivate'))
+        self.Name = Sub('efs-%s.%s' % (efsname, get_final_value('HostedZoneNamePrivate')))
         self.ResourceRecords = [
-            Sub('${' + condname + '}.efs.${AWS::Region}.amazonaws.com')
+            Sub('${%s}.efs.${AWS::Region}.amazonaws.com' % condname)
         ]
         self.Type = 'CNAME'
         self.TTL = '300'

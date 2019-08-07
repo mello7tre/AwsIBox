@@ -83,10 +83,11 @@ class IAMPolicyBucketReplica(iam.PolicyType):
                     'Effect': 'Allow',
                     'Resource': [
                         get_sub_mapex(
-                            'arn:aws:s3:::${1M} + /*', '%sReplicaDstBucket' % bucket
+                            'arn:aws:s3:::${1M}/*',
+                            bucket + 'ReplicaDstBucket'
                         ) if 'ReplicaDstBucket' in key else get_sub_mapex(
                             'arn:aws:s3:::${1M}-%s/*' % bucket_name.replace('${AWS::Region}-', '', 1),
-                            '%sReplicaDstRegion' % bucket,
+                            bucket + 'ReplicaDstRegion',
                         )
                     ]
                 }
@@ -277,7 +278,7 @@ class IAM_UserToGroupAdditions(object):
 
             Users = []
             for m, w in v['User'].iteritems():
-                condname = resname + 'User' + str(m)
+                condname = '%sUser%s' % (resname, m)
                 # conditions
                 do_no_override(True)
                 c_User = {condname: Not(

@@ -5,7 +5,7 @@ from shared import *
 
 class CCHCacheCluster(cch.CacheCluster):
     def setup(self):
-        auto_get_props(self, RP_cmm, mapname='')
+        auto_get_props(self, mapname='')
 
 
 class CCHCacheClusterPublic(CCHCacheCluster):

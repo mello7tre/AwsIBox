@@ -79,7 +79,7 @@ class AGW_RestApi(object):
     def __init__(self, key):
         # Resources
         R_RestApi = agw.RestApi('ApiGatewayRestApi')
-        auto_get_props(R_RestApi, RP_cmm, mapname='')
+        auto_get_props(R_RestApi, mapname='')
 
         R_Account = ApiGatewayAccount('ApiGatewayAccount')
         R_Account.setup()

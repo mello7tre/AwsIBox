@@ -42,7 +42,7 @@ cfg.classenvrole = classenvrole
 
 execute_class()
 
-cfg.template.add_description(envrole + ' [' + stacktype + ']')
+cfg.template.add_description('%s [%s]' % (envrole, stacktype))
 cfg.template.add_version('2010-09-09')
 
 print(cfg.template.to_json())

@@ -77,7 +77,7 @@ def cfn_ecs_cluster():
                 }, Ref('AWS::NoValue')),
                 '/usr/local/bin/spot-instance-drainer': If('SpotPrice', {
                     'source': Sub(
-                        'https://' + get_final_value('BucketAppRepository')  + '.s3-${AWS::Region}.amazonaws.com/ibox-tools/spot-instance-drainer'
+                        'https://%s.s3-${AWS::Region}.amazonaws.com/ibox-tools/spot-instance-drainer' % get_final_value('BucketAppRepository')
                     ),
                     'mode': 755
                 }, Ref('AWS::NoValue')),

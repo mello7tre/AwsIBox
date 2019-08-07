@@ -183,7 +183,7 @@ class WAF_ByteMatchSets(object):
             # resources
             ByteMatchTuples = []
             for m, w in v['Matches'].iteritems():
-                matchname = mapname + 'Matches' + str(m)  # Ex. WafByteMatchSets1Matches1
+                matchname = '%sMatches%s' % (mapname, m)  # Ex. WafByteMatchSets1Matches1
                 ByteMatchTuple = WAFByteMatchTuples(matchname)
                 ByteMatchTuple.setup(key=w)
 
@@ -278,7 +278,7 @@ class WAF_WebAcls(object):
             Rules = []
             O_Rules = []
             for w, m in enumerate(v['Rules'], start=1):
-                rulemapname = mapname + 'Rules' + str(m)
+                rulemapname = '%sRules%s' % (mapname, m)
                 ruleresname = m  # Ex. BlockIPsNotAllowed
                 Rule = WAFWebACLRule(ruleresname)
                 Rule.setup(name=rulemapname, index=w, wtype=wtype)
@@ -297,7 +297,7 @@ class WAF_WebAcls(object):
             # outputs
             O_WebACL = Output(mapname + wtype)
             O_WebACL.Condition = resname
-            O_WebACL.Value = Sub('${' + resname + '} - ' + ','.join(O_Rules))
+            O_WebACL.Value = Sub('${%s} - %s' % (resname, ','.join(O_Rules)))
 
             cfg.Outputs.append(O_WebACL)
 

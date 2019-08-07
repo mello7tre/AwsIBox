@@ -170,7 +170,7 @@ class ELBV2TargetGroupECS(ELBV2TargetGroup):
 
 class ELBV2ListernerRuleECS(elbv2.ListenerRule):
     def setup(self, key, index, mapname, scheme):
-        auto_get_props(self, key, mapname='ListenerRules' + str(index), recurse=True)
+        auto_get_props(self, key, mapname='ListenerRules%s' % index, recurse=True)
         if 'Conditions' not in key:
             self.Conditions = []
             if 'HostHeader' in key:
@@ -273,7 +273,7 @@ class LB_Listeners(object):
         # Conditions
         do_no_override(True)
         for i in cfg.AllowedIp:
-            condname = 'AllowedIp' + str(i)  # Ex. AllowedIp1
+            condname = 'AllowedIp%s' % i  # Ex. AllowedIp1
             cfg.Conditions.append({
                 condname: Not(Equals(get_final_value(condname + 'Enabled'), 'None'))
             })
@@ -288,7 +288,7 @@ class LB_ListenersEC2(LB_Listeners):
         Securitygroup_Rules = []
         SecuritygroupIngress_InstanceRules = []
         for n, v in cfg.Listeners.iteritems():
-            mapname = 'Listeners' + str(n)  # Ex Listeners1
+            mapname = 'Listeners%s' % n  # Ex Listeners1
 
             if cfg.LoadBalancerClassic:
                 Listener = ELBListener(mapname)
@@ -296,7 +296,7 @@ class LB_ListenersEC2(LB_Listeners):
                 Listeners.append(Listener)
 
             for i in cfg.AllowedIp:
-                ipname = 'AllowedIp' + str(i)  # Ex. AllowedIp1
+                ipname = 'AllowedIp%s' % i   # Ex. AllowedIp1
                 condnameprivate = 'SecurityGroupRulePrivate' + mapname + ipname  # Ex. SecurityGroupRulePrivateListeners1AllowedIp1
                 condnamepublic = 'SecurityGroupRulePublic' + mapname # Ex. SecurityGroupRulePublicListeners1
 
@@ -427,7 +427,7 @@ class LB_ListenerRulesExternalInternal(object):
 class LB_ListenerRules(object):
     def __init__(self):
         for n, v in cfg.ListenerRules.iteritems():
-            mapname = 'ListenerRules' + str(n)  # Ex. ListenerRules1
+            mapname = 'ListenerRules%s' % n  # Ex. ListenerRules1
 
             # parameters
             p_Priority = Parameter(mapname + 'Priority')
@@ -511,7 +511,7 @@ class LB_ListenersV2ExternalInternal(object):
         ])
 
         for i in cfg.AllowedIp:
-            ipname = 'AllowedIp' + str(i)  # Ex. AllowedIp1
+            ipname = 'AllowedIp%s' % i  # Ex. AllowedIp1
             condnamehttpprivate = 'SecurityGroupIngressPrivateLoadBalancerHttp' + scheme + ipname
             condnamehttpsprivate = 'SecurityGroupIngressPrivateLoadBalancerHttps' + scheme + ipname
             

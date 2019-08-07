@@ -109,7 +109,7 @@ class RDSDBInstancePrivate(RDSDBInstance):
 
 class RDSDBParameterGroup(rds.DBParameterGroup):
     def setup(self):
-        self.Description = Sub('MYSQL ' + self.title + ' - ${AWS::StackName}')
+        self.Description = Sub('MYSQL %s - ${AWS::StackName}' % self.title)
         self.Family = get_sub_mapex('mysql${1M}', 'EngineVersion')
 
 
@@ -131,7 +131,7 @@ class RDSDBSubnetGroupPublic(rds.DBSubnetGroup):
 class RDS_ParameterGroups(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).iteritems():
-            resname = key + str(n)
+            resname = '%s%s' % (key, n)
             # Resources
             r_PG = RDSDBParameterGroup(resname)
             r_PG.setup()

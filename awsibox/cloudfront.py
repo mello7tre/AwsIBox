@@ -182,7 +182,7 @@ class CFOriginCLF(clf.Origin):
         CustomHeaders = []
         if 'Headers' in key:
             for n in key['Headers']:
-                headername = name + 'Headers' + str(n)
+                headername = '%sHeaders%s' % (name, n)
                 CustomHeader = CFOriginCustomHeader(headername)
                 CustomHeader.setup()
 
@@ -220,7 +220,7 @@ class CFOriginFixed(clf.Origin):
             pass
         else:
             for n in custom_headers:
-                name = 'CloudFrontOriginCustomHeaders' + str(n)
+                name = 'CloudFrontOriginCustomHeaders%s' % n
                 cloudfrontorigincustomheaders.append(
                     If(
                         name,
@@ -330,7 +330,7 @@ class CF_CloudFront(object):
         for n, v in itercachebehaviors:
             if not v['PathPattern']:
                 continue
-            name = 'CloudFrontCacheBehaviors' + str(n)
+            name = 'CloudFrontCacheBehaviors%s' % n
 
             cachebehavior = CFCacheBehavior(name)
             cachebehavior.setup(key=v)
@@ -360,7 +360,7 @@ class CF_CloudFront(object):
 
         cloudfrontaliasextra = []
         for n in cfg.CloudFrontAliasExtra:
-            name = 'CloudFrontAliasExtra' + str(n)
+            name = 'CloudFrontAliasExtra%s' % n
 
             # parameters
             p_Alias = Parameter(name)
@@ -459,7 +459,7 @@ class CF_CloudFrontEC2(CF_CloudFront):
             Sub('${EnvRole}${RecordSetCloudFrontSuffix}.' + get_final_value('HostedZoneNameEnv')),
             If(
                 'CloudFrontAliasZone',
-                Sub(get_final_value('CloudFrontAliasZone') + '.' + get_final_value('HostedZoneNameEnv')),
+                Sub('%s.%s' % (get_final_value('CloudFrontAliasZone'), get_final_value('HostedZoneNameEnv'))),
                 Ref('AWS::NoValue')
             )
         ]
@@ -499,7 +499,7 @@ class CF_CloudFrontCLF(CF_CloudFront):
 
         Origins = []
         for n, v in cfg.CloudFrontOrigins.iteritems():
-            name = 'CloudFrontOrigins' + str(n)
+            name = 'CloudFrontOrigins%s' % n
             
             # parameters
             p_Origin = Parameter('CloudFrontOrigins' + n + 'DomainName')
@@ -520,7 +520,7 @@ class CF_CloudFrontCLF(CF_CloudFront):
         CustomErrorResponses = []
         if hasattr(cfg.CustomErrorResponses, 'iteritems'):
             for n, v in cfg.CustomErrorResponses.iteritems():
-                name = 'CustomErrorResponses' + str(n)
+                name = 'CustomErrorResponses%s' % n
                 CustomErrorResponse = CFCustomErrorResponse(name)
                 CustomErrorResponse.setup(key=v)
                 CustomErrorResponses.append(CustomErrorResponse)

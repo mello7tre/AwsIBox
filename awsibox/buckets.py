@@ -360,7 +360,7 @@ class S3_Buckets(object):
                 identityresname = 'CloudFrontOriginAccessIdentity' + identityname
                 
                 PolicyCloudFrontOriginAccessIdentityPrincipal.append(
-                    Sub('arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${' + identityresname + '}')
+                    Sub('arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${%s}' % identityresname)
                 )
 
                 for ixn, ixv in v['CloudFrontOriginAccessIdentityExtra'].iteritems():

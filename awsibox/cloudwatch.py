@@ -8,7 +8,7 @@ class CW_Alarms(object):
         for n, v in getattr(cfg, key).iteritems():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
-            resname = key + str(n)
+            resname = '%s%s' % (key, n)
             # parameters
             p_EvaluationPeriods = Parameter(resname + 'EvaluationPeriods')
             p_EvaluationPeriods.Description = 'Number of periods for alarm evaluation - 0 to disable - empty for default based on env/role'

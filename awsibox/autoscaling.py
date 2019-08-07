@@ -143,7 +143,7 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             If(
                 'DoNotSignal',
                 Ref('AWS::NoValue'),
-                Sub('cfn-signal -e $? --stack ${AWS::StackName} --role ${RoleInstance} --resource ' + AutoScalingGroupName + ' --region ${AWS::Region}\n')
+                Sub('cfn-signal -e $? --stack ${AWS::StackName} --role ${RoleInstance} --resource %s --region ${AWS::Region}\n' % AutoScalingGroupName)
             ),
             'rm /var/lib/cloud/instance/sem/config_scripts_user\n',
         ]))
@@ -435,7 +435,7 @@ class ASInitConfigSetup(cfm.InitConfig):
             },
             '/usr/local/bin/chamber': {
                 'mode': '000755',
-                'source': Sub('https://' + cfg.BucketAppRepository + '.s3.${AWS::Region}.amazonaws.com/ibox-tools/chamber'),
+                'source': Sub('https://%s.s3.${AWS::Region}.amazonaws.com/ibox-tools/chamber' % cfg.BucketAppRepository),
                 'owner': 'root',
                 'group': 'root',
             },
@@ -550,14 +550,14 @@ class ASInitConfigApps(cfm.InitConfig):
         name = self.title  # Ex. Apps1
         reponame = name + 'RepoName'
         n = name.replace('Apps', '')
-        envappversion = 'EnvApp' + str(n) + 'Version'
+        envappversion = 'EnvApp%sVersion' % n
 
         self.sources = {
             '/tmp/ibox/': If(
                 'DeployRevision',
                 Ref('AWS::NoValue'),
                 get_sub_mapex(
-                    'https://' + get_final_value('BucketAppRepository') + '.s3-${AWS::Region}.amazonaws.com/${1M}/${1M}-${' + envappversion + '}.tar.gz',
+                    'https://%s.s3-${AWS::Region}.amazonaws.com/${1M}/${1M}-${%s}.tar.gz' % (get_final_value('BucketAppRepository'), envappversion),
                     reponame, ''
                 )
             )
@@ -568,7 +568,7 @@ class ASInitConfigApps(cfm.InitConfig):
                 Ref('AWS::NoValue'),
                 {
                     'command': get_sub_mapex(
-                        'EnvAppVersion=${' + envappversion + '} EnvRepoName=${1M} /tmp/ibox/bin/setup.sh', reponame
+                        'EnvAppVersion=${%s} EnvRepoName=${1M} /tmp/ibox/bin/setup.sh' % envappversion, reponame
                     )
                 }
             ),
@@ -576,7 +576,7 @@ class ASInitConfigApps(cfm.InitConfig):
                 'DeployRevision',
                 {
                     'command': get_sub_mapex(
-                        'EnvAppVersion=${' + envappversion + '} EnvRepoName=${1M} /opt/ibox/${1M}/live/bin/setup.sh', reponame
+                        'EnvAppVersion=${%s} EnvRepoName=${1M} /opt/ibox/${1M}/live/bin/setup.sh' % envappversion, reponame
                     ),
                     'test': 'test -e /var/lib/cloud/instance/sem/config_ssh_authkey_fingerprints'
                 },
@@ -781,7 +781,7 @@ class AS_ScheduledAction(object):
         out_String = []
         out_Map = {}
         for k in OutKey:
-            out_String.append(k + '=${' + k + '}')  # Ex. 'MinSize=${MinSize}'
+            out_String.append('%s=${%s}' % (k, k))  # Ex. 'MinSize=${MinSize}'
             out_Map.update({k: get_final_value(resname + k) if k != 'StartTime' else Ref(resname + k)})
 
         O_ScheduledAction = Output(resname)
@@ -793,7 +793,7 @@ class AS_ScheduledAction(object):
 class AS_ScheduledActionsEC2(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).iteritems():
-            resname = key + str(n)
+            resname = '%s%s' % (key, n)
             # parameters
             p_DesiredSize = Parameter(resname + 'DesiredSize')
             p_DesiredSize.Description = resname + 'Desired Capacity - k to keep current value - empty for default based on env/role'
@@ -844,7 +844,7 @@ class AS_ScheduledActionsECS(object):
     def __init__(self, key):
         ScheduledActions = []
         for n, v in getattr(cfg, key).iteritems():
-            resname = key + str(n)
+            resname = '%s%s' % (key, n)
             # conditions
             do_no_override(True)
             c_disable = {resname + 'Disable': Or(
@@ -909,7 +909,7 @@ class AS_ScalingPoliciesTracking(object):
         for n, v in getattr(cfg, key).iteritems():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
-            resname = key + str(n)
+            resname = '%s%s' % (key, n)
             # Autoscaling
             if 'TargetTrackingConfiguration' in v:
                 TargetTrackingConfigurationName = 'TargetTrackingConfiguration'
@@ -922,10 +922,10 @@ class AS_ScalingPoliciesTracking(object):
 
             # parameters
             p_Value = Parameter(basename + 'TargetValue')
-            p_Value.Description = 'Tracking ' + n + ' Value - 0 to disable - empty for default based on env/role'
+            p_Value.Description = 'Tracking %s Value - 0 to disable - empty for default based on env/role' % n
             
             p_Statistic = Parameter(basename + 'CustomizedMetricSpecificationStatistic')
-            p_Statistic.Description = 'Tracking ' + n + ' Statistic - 0 to disable - empty for default based on env/role'
+            p_Statistic.Description = 'Tracking %s Statistic - 0 to disable - empty for default based on env/role' % n
 
             cfg.Parameters.extend([
                 p_Value,
@@ -1136,22 +1136,22 @@ class AS_LaunchConfiguration(object):
         UserDataApp = []
 
         for n in cfg.Apps:
-            name = 'Apps' + str(n)  # Ex. Apps1
-            envname = 'EnvApp' + str(n) + 'Version'  # Ex EnvApp1Version
+            name = 'Apps%s' % n  # Ex. Apps1
+            envname = 'EnvApp%sVersion' % n  # Ex EnvApp1Version
             reponame = name + 'RepoName'  # Ex Apps1RepoName
 
-            UserDataApp.extend(['#${' + envname + '}\n'])
+            UserDataApp.extend(['#${%s}\n' % envname])
 
             # parameters
             cfg.Parameters.extend([
                 Parameter(
                     envname,
-                    Description='Application ' + str(n) + ' version',
+                    Description='Application %s version' % n,
                     AllowedPattern='^[a-zA-Z0-9-_.]*$',
                 ),
                 Parameter(
                     reponame,
-                    Description='App ' + str(n) + ' Repo Name - empty for default based on env/role',
+                    Description='App %s Repo Name - empty for default based on env/role' % n,
                     AllowedPattern='^[a-zA-Z0-9-_.]*$',
                 )
             ])
@@ -1186,8 +1186,8 @@ class AS_LaunchConfiguration(object):
             CfmInitArgs[name] = InitConfigAppsBuilAmi
 
             IBoxEnvApp.extend([
-                'export EnvApp' + str(n) + 'Version=', Ref(envname), "\n",
-                'export EnvRepo' + str(n) + 'Name=', get_final_value(reponame), "\n",
+                'export EnvApp%sVersion=' % n, Ref(envname), "\n",
+                'export EnvRepo%sName=' % n, get_final_value(reponame), "\n",
             ])
 
             InitConfigSetsApp = If(name, name, Ref('AWS::NoValue'))
@@ -1419,7 +1419,7 @@ class AS_AutoscalingECS(AS_Autoscaling):
 class AS_LifecycleHook(object):
     def __init__(self,key):
         for n, v in getattr(cfg, key).iteritems():
-            resname = key + str(n)
+            resname = '%s%s' % (key, n)
 
             # resources
             r_Hook = ASLifecycleHook(resname, name=n, key=v)
