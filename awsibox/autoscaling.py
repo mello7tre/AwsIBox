@@ -404,7 +404,7 @@ class ASInitConfigSetup(cfm.InitConfig):
                     'export EnvRegion=', Ref('AWS::Region'), '\n',
                     'export EnvAccountId=', Ref('AWS::AccountId'), '\n',
                     'export EnvRole=', Ref('EnvRole'), '\n',
-                    'export EnvBrand=', get_final_value('BrandDomain'), '\n',
+                    'export EnvBrand=', cfg.BrandDomain, '\n',
                     'export EnvStackName=', Ref('AWS::StackName'), '\n',
                 ] + self.ibox_env_app)
             },
@@ -481,7 +481,7 @@ class ASInitConfigSetup(cfm.InitConfig):
                         '  mkdir -p "/media/${mounts}"\n',
                         '  mountpoint -q "/media/${mounts}" ||',
                         '    mount -t nfs4 -o nfsvers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ',
-                        '    efs-${mounts}.', get_final_value('HostedZoneNamePrivate'), ':/ ',
+                        '    efs-${mounts}.', cfg.HostedZoneNamePrivate, ':/ ',
                         '    /media/${mounts}\n',
                         'done'
                     ]),
@@ -557,7 +557,7 @@ class ASInitConfigApps(cfm.InitConfig):
                 'DeployRevision',
                 Ref('AWS::NoValue'),
                 get_sub_mapex(
-                    'https://%s.s3-${AWS::Region}.amazonaws.com/${1M}/${1M}-${%s}.tar.gz' % (get_final_value('BucketAppRepository'), envappversion),
+                    'https://%s.s3-${AWS::Region}.amazonaws.com/${1M}/${1M}-${%s}.tar.gz' % (cfg.BucketAppRepository, envappversion),
                     reponame, ''
                 )
             )
@@ -1278,8 +1278,8 @@ class AS_LaunchConfiguration(object):
                 'CfnS3Auth': cfm.AuthenticationBlock(
                     type='S3',
                     buckets=[
-                        Sub(get_final_value('BucketAppRepository')),
-                        Sub(get_final_value('BucketAppData'))
+                        Sub(cfg.BucketAppRepository),
+                        Sub(cfg.BucketAppData)
                     ],
                     roleName=Ref('RoleInstance')
                 )

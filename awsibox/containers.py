@@ -312,7 +312,7 @@ class ECS_TaskDefinition(object):
             ),
             ecs.Environment(
                 Name='EnvBrand',
-                Value=get_final_value('BrandDomain')
+                Value=cfg.BrandDomain
             ),
             ecs.Environment(
                 Name='EnvRole',

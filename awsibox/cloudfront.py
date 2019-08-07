@@ -73,7 +73,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
             self.TargetOriginId = If(
                 'CloudFrontOriginAdHoc',
                 Ref('RecordSetExternal'),
-                Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.' + get_final_value('HostedZoneNameEnv'))
+                Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.' + cfg.HostedZoneNameEnv)
             )
 
         if 'MaxTTL' in key:
@@ -125,7 +125,7 @@ class CFDistributionConfig(clf.DistributionConfig):
         self.Logging = If(
             'CloudFrontLogging',
             clf.Logging(
-                Bucket=Sub(get_final_value('BucketLogs') + '.s3.amazonaws.com'),
+                Bucket=Sub(cfg.BucketLogs + '.s3.amazonaws.com'),
                 Prefix=Sub('${EnvRole}.${AWS::StackName}/'),
             ),
             Ref('AWS::NoValue')
@@ -210,7 +210,7 @@ class CFOriginFixed(clf.Origin):
         self.DomainName = If(
             'CloudFrontOriginAdHoc',
             Ref('RecordSetExternal'),
-            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.' + get_final_value('HostedZoneNameEnv'))
+            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.' + cfg.HostedZoneNameEnv)
         )
         self.Id = self.DomainName
         self.OriginPath = get_final_value('CloudFrontOriginPath')
@@ -453,13 +453,13 @@ class CF_CloudFrontEC2(CF_CloudFront):
         self.CloudFrontDistribution.DistributionConfig.Aliases[0:0] = [
             If(
                 'RecordSetCloudFront',
-                Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + get_final_value('HostedZoneNameEnv')),
+                Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + cfg.HostedZoneNameEnv),
                 Ref('RecordSetExternal')
             ),
-            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.' + get_final_value('HostedZoneNameEnv')),
+            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.' + cfg.HostedZoneNameEnv),
             If(
                 'CloudFrontAliasZone',
-                Sub('%s.%s' % (get_final_value('CloudFrontAliasZone'), get_final_value('HostedZoneNameEnv'))),
+                Sub('%s.%s' % (get_final_value('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)),
                 Ref('AWS::NoValue')
             )
         ]

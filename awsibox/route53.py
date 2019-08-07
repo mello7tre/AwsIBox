@@ -13,14 +13,14 @@ class R53RecordSetZoneExternal(R53RecordSet):
     def setup(self):
         super(R53RecordSetZoneExternal, self).setup()
         self.HostedZoneId = get_exported_value('HostedZoneIdEnv')
-        self.Name = Sub('${AWS::StackName}.${EnvRole}.' + get_final_value('HostedZoneNameRegionEnv'))  # Ex. prt-a-d.client-portal.eu-west-1.dev..
+        self.Name = Sub('${AWS::StackName}.${EnvRole}.' + cfg.HostedZoneNameRegionEnv)  # Ex. prt-a-d.client-portal.eu-west-1.dev..
 
 
 class R53RecordSetZoneInternal(R53RecordSet):
     def setup(self):
         super(R53RecordSetZoneInternal, self).setup()
         self.HostedZoneId = get_exported_value('HostedZoneIdPrivate')
-        self.Name = Sub('${AWS::StackName}.${EnvRole}.' + get_final_value('HostedZoneNamePrivate'))  # Ex. prt-a-d.client-portal.internal..
+        self.Name = Sub('${AWS::StackName}.${EnvRole}.' + cfg.HostedZoneNamePrivate)  # Ex. prt-a-d.client-portal.internal..
 
 
 class R53RecordSetCloudFront(R53RecordSetZoneExternal):
@@ -29,9 +29,9 @@ class R53RecordSetCloudFront(R53RecordSetZoneExternal):
         self.Condition = 'RecordSetCloudFront'
         self.AliasTarget = r53.AliasTarget(
             DNSName=GetAtt('CloudFrontDistribution', 'DomainName'),
-            HostedZoneId=get_final_value('HostedZoneIdCF')
+            HostedZoneId=cfg.HostedZoneIdCF
         )
-        self.Name = Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + get_final_value('HostedZoneNameEnv'))  # Ex. client-portal.cdn.dev..
+        self.Name = Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + cfg.HostedZoneNameEnv)  # Ex. client-portal.cdn.dev..
         self.Type = 'A'
 
 
@@ -76,7 +76,7 @@ class R53RecordSetEFS(R53RecordSet):
         condname = 'EFSFileSystem' + efsname  # Ex. EFSFileSystemWordPress
         self.Condition = condname
         self.HostedZoneId = Ref('HostedZonePrivate')
-        self.Name = Sub('efs-%s.%s' % (efsname, get_final_value('HostedZoneNamePrivate')))
+        self.Name = Sub('efs-%s.%s' % (efsname, cfg.HostedZoneNamePrivate))
         self.ResourceRecords = [
             Sub('${%s}.efs.${AWS::Region}.amazonaws.com' % condname)
         ]
@@ -134,7 +134,7 @@ class R53HostedZonePrivate(r53.HostedZone):
         self.HostedZoneConfig = r53.HostedZoneConfiguration(
             Comment=Sub('${EnvShort} private zone ${AWS::Region}')
         )
-        self.Name = Sub(get_final_value('HostedZoneNamePrivate'))
+        self.Name = Sub(cfg.HostedZoneNamePrivate)
         self.VPCs = [
             r53.HostedZoneVPCs(
                 VPCId=get_exported_value('VpcId'),
@@ -149,7 +149,7 @@ class R53HostedZoneEnv(r53.HostedZone):
         self.HostedZoneConfig = r53.HostedZoneConfiguration(
             Comment=Sub('${EnvShort} public zone')
         )
-        self.Name = Sub(get_final_value('HostedZoneNameEnv'))
+        self.Name = Sub(cfg.HostedZoneNameEnv)
 
 
 class R53HostedZoneEnvExtra1(r53.HostedZone):
@@ -386,7 +386,7 @@ class R53_HostedZones(object):
         O_Private.Export = Export('HostedZoneIdPrivate')
 
         O_PrivateName = Output('HostedZoneNamePrivate')
-        O_PrivateName.Value =  Sub(get_final_value('HostedZoneNamePrivate'))
+        O_PrivateName.Value =  Sub(cfg.HostedZoneNamePrivate)
 
         O_Env = Output('HostedZoneIdEnv')
         O_Env.Value = If(
@@ -397,10 +397,10 @@ class R53_HostedZones(object):
         O_Env.Export = Export('HostedZoneIdEnv')
 
         O_EnvName = Output('HostedZoneNameEnv')
-        O_EnvName.Value = Sub(get_final_value('HostedZoneNameEnv'))
+        O_EnvName.Value = Sub(cfg.HostedZoneNameEnv)
 
         O_EnvNameRegion = Output('HostedZoneNameRegionEnv')
-        O_EnvNameRegion.Value = Sub(get_final_value('HostedZoneNameRegionEnv'))
+        O_EnvNameRegion.Value = Sub(cfg.HostedZoneNameRegionEnv)
 
         cfg.Outputs.extend([
             O_Private,

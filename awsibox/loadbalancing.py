@@ -30,7 +30,7 @@ class ELBLoadBalancer(elb.LoadBalancer):
             elb.AccessLoggingPolicy(
                 EmitInterval=get_final_value('LoadBalancerLog'),
                 Enabled=True,
-                S3BucketName=Sub(get_final_value('BucketLogs')),
+                S3BucketName=Sub(cfg.BucketLogs),
                 S3BucketPrefix=''
             ),
             Ref('AWS::NoValue')
@@ -198,7 +198,7 @@ class ELBV2LoadBalancer(elbv2.LoadBalancer):
                 'LoadBalancerLog',
                 {
                     'Key': 'access_logs.s3.bucket',
-                    'Value': Sub(get_final_value('BucketLogs'))
+                    'Value': Sub(cfg.BucketLogs)
                 },
                 Ref('AWS::NoValue')
             ),

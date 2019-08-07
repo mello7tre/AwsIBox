@@ -34,7 +34,7 @@ class CDDeploymentGroup(cdd.DeploymentGroup):
                 Revision=cdd.Revision(
                     RevisionType='S3',
                     S3Location=cdd.S3Location(
-                        Bucket=Sub(get_final_value('BucketAppRepository')),
+                        Bucket=Sub(cfg.BucketAppRepository),
                         BundleType='tgz',
                         Key=get_sub_mapex('${1M}/${1M}-${%s}.tar.gz' % appenvname, appreponame)
                     )   

@@ -16,7 +16,7 @@ global:
         Default: '1'
   Output:
     - BrandDomain:
-        Value: get_final_value('BrandDomain')
+        Value: cfg.BrandDomain
     - Env:
         Value: Ref('Env')
     - EnvRole:
