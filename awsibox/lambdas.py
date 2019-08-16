@@ -58,7 +58,7 @@ class LambdaFunction(lbd.Function):
         if 'Variables' in key:
             self.Environment = lbd.Environment(
                 Variables={
-                    varname: get_final_value(self.title + 'Variables' + varname) for varname in key['Variables']
+                    varname: get_endvalue(self.title + 'Variables' + varname) for varname in key['Variables']
                 }
             )
 ##
@@ -76,7 +76,7 @@ class LBD_Lambdas(object):
                 # conditions
                 do_no_override(True)
                 c_Lambda = {resname: Not(
-                    Equals(get_final_value(resname + 'Enabled'), 'None')
+                    Equals(get_endvalue(resname + 'Enabled'), 'None')
                 )}
 
                 cfg.Conditions.append(c_Lambda)

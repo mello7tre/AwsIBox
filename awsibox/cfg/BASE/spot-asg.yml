@@ -29,7 +29,7 @@ global:
           Condition('SpotPrice'),
           Or(
             And(Condition('SpotASGOverride'),Not(Equals(Ref('SpotASG'), 'None'))),
-            And(Not(Condition('SpotASGOverride')),Not(Equals(get_final_value('SpotASG'), 'None')))
+            And(Not(Condition('SpotASGOverride')),Not(Equals(get_endvalue('SpotASG'), 'None')))
           )
         )
     - ASGMainIsSpot:
@@ -37,7 +37,7 @@ global:
           Condition('SpotASG'),
           Or(
             And(Condition('SpotASGOverride'),Equals(Ref('SpotASG'), 'Main')),
-            And(Not(Condition('SpotASGOverride')),Equals(get_final_value('SpotASG'), 'Main'))
+            And(Not(Condition('SpotASGOverride')),Equals(get_endvalue('SpotASG'), 'Main'))
           )
         )
   Alarm:

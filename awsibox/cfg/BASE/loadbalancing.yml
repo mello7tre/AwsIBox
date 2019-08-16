@@ -15,21 +15,21 @@ global:
     - ListenerLoadBalancerHttpPort:
         Or(
           And(Condition('ListenerLoadBalancerHttpPortOverride'),Not(Equals(Ref('ListenerLoadBalancerHttpPort'), 'None'))),
-          And(Not(Condition('ListenerLoadBalancerHttpPortOverride')),Not(Equals(get_final_value('ListenerLoadBalancerHttpPort'), 'None'))),
+          And(Not(Condition('ListenerLoadBalancerHttpPortOverride')),Not(Equals(get_endvalue('ListenerLoadBalancerHttpPort'), 'None'))),
         )
     - ListenerLoadBalancerHttpsPort:
         Or(
           And(Condition('ListenerLoadBalancerHttpsPortOverride'),Not(Equals(Ref('ListenerLoadBalancerHttpsPort'), 'None'))),
-          And(Not(Condition('ListenerLoadBalancerHttpsPortOverride')),Not(Equals(get_final_value('ListenerLoadBalancerHttpsPort'), 'None'))),
+          And(Not(Condition('ListenerLoadBalancerHttpsPortOverride')),Not(Equals(get_endvalue('ListenerLoadBalancerHttpsPort'), 'None'))),
         )
     - LoadBalancerSslCertificateAdHoc:
         And(
           Condition('ListenerLoadBalancerHttpsPort'),
-          Equals(get_final_value('LoadBalancerSslCertificate'), 'None')
+          Equals(get_endvalue('LoadBalancerSslCertificate'), 'None')
         )
   Output:
     - LoadBalancerSslCertificate:
-        Value: get_final_value('LoadBalancerSslCertificate')
+        Value: get_endvalue('LoadBalancerSslCertificate')
   Certificate:
     - LoadBalancerAdHocExternal:
         Enabled: True

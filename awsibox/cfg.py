@@ -96,12 +96,12 @@ PARAMETERS_SKIP_OVERRIDE_CONDITION = (
 
 EVAL_FUNCTIONS_IN_CFG = (
     'cfg.',
-    'get_exported_value(',
+    'get_expvalue(',
     'Sub(',
     'Ref(',
-    'get_sub_mapex(',
+    'get_subvalue(',
     'GetAtt(',
-    'get_final_value(',
+    'get_endvalue(',
     'Split(',
     'Export(',
     'Join(',

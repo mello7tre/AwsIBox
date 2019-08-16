@@ -25,19 +25,19 @@ cch:
         Description: 'Access type public or private - empty for default based on env/role'
         AllowedValues: ['', 'Private', 'Public']
   Condition:
-    - CCHPublic: Equals(get_final_value('CCHAccess'), 'Public')
+    - CCHPublic: Equals(get_endvalue('CCHAccess'), 'Public')
     - CacheEnabled: Equals(Ref('CacheEnabled'), 'True')
   Output:
     - CacheNodeType:
-        Value: get_final_value('CacheNodeType')
+        Value: get_endvalue('CacheNodeType')
     - Engine:
-        Value: get_final_value('Engine')
+        Value: get_endvalue('Engine')
     - EngineVersion: 
-        Value: get_final_value('EngineVersion')
+        Value: get_endvalue('EngineVersion')
     - CCHAccess:
-        Value: get_final_value('CCHAccess')
+        Value: get_endvalue('CCHAccess')
     - CCHScheme:
-        Value: get_final_value('CCHScheme')
+        Value: get_endvalue('CCHScheme')
   AutoMinorVersionUpgrade: True
   CCHAccess: Public
   CCHScheme: Internal

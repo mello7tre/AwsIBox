@@ -4,7 +4,7 @@ global:
         Statement:
           - 1:
               Action: 'kms:Decrypt'
-              Resource: get_exported_value('KeyParameterStore')
+              Resource: get_expvalue('KeyParameterStore')
           - 2:
               Action: 'ssm:DescribeParameters'
               Resource: Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:*')

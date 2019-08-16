@@ -46,45 +46,45 @@ rds:
     - DBName:
         Or(
           And(Condition('DBNameOverride'), Not(Equals(Ref('DBName'), 'None'))),
-          And(Not(Condition('DBNameOverride')), Not(Equals(get_final_value('DBName'), 'None')))
+          And(Not(Condition('DBNameOverride')), Not(Equals(get_endvalue('DBName'), 'None')))
         )
-    - RDSPublic: Equals(get_final_value('RDSAccess'), 'Public')
+    - RDSPublic: Equals(get_endvalue('RDSAccess'), 'Public')
     - DBSnapshotIdentifier:
         Or(
           And(Condition('DBSnapshotIdentifierOverride'), Not(Equals(Ref('DBSnapshotIdentifier'), 'None'))),
-          And(Not(Condition('DBSnapshotIdentifierOverride')), Not(Equals(get_final_value('DBSnapshotIdentifier'), 'None')))
+          And(Not(Condition('DBSnapshotIdentifierOverride')), Not(Equals(get_endvalue('DBSnapshotIdentifier'), 'None')))
         )
     - SourceDBInstanceIdentifier:
         Or(
           And(Condition('SourceDBInstanceIdentifierOverride'), Not(Equals(Ref('SourceDBInstanceIdentifier'), 'None'))),
-          And(Not(Condition('SourceDBInstanceIdentifierOverride')), Not(Equals(get_final_value('SourceDBInstanceIdentifier'), 'None')))
+          And(Not(Condition('SourceDBInstanceIdentifierOverride')), Not(Equals(get_endvalue('SourceDBInstanceIdentifier'), 'None')))
         )
     - DBInstanceSkipProperties: Or(Condition('DBSnapshotIdentifier'), Condition('SourceDBInstanceIdentifier'))
   Output:
     - AllocatedStorage:
-        Value: get_final_value('AllocatedStorage')
+        Value: get_endvalue('AllocatedStorage')
     - DBInstanceClass:
-        Value: get_final_value('DBInstanceClass')
+        Value: get_endvalue('DBInstanceClass')
     - DBName:
-        Value: get_final_value('DBName')
+        Value: get_endvalue('DBName')
     - DBSnapshotIdentifier:
-        Value: get_final_value('DBSnapshotIdentifier')
+        Value: get_endvalue('DBSnapshotIdentifier')
     - Engine:
-        Value: get_final_value('Engine')
+        Value: get_endvalue('Engine')
     - EngineVersion:
-        Value: get_final_value('EngineVersion')
+        Value: get_endvalue('EngineVersion')
     - MasterUsername:
-        Value: get_final_value('MasterUsername')
+        Value: get_endvalue('MasterUsername')
     - MultiAZ:
-        Value: get_final_value('MultiAZ')
+        Value: get_endvalue('MultiAZ')
     - RDSAccess:
-        Value: get_final_value('RDSAccess')
+        Value: get_endvalue('RDSAccess')
     - RDSScheme:
-        Value: get_final_value('RDSScheme')
+        Value: get_endvalue('RDSScheme')
     - SourceDBInstanceIdentifier:
-        Value: get_final_value('SourceDBInstanceIdentifier')
+        Value: get_endvalue('SourceDBInstanceIdentifier')
     - StorageType:
-        Value: get_final_value('StorageType')
+        Value: get_endvalue('StorageType')
   DBParameterGroup:
     - 1:
         character_set_server: utf8

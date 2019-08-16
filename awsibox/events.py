@@ -59,11 +59,11 @@ class EVE_EventRules(object):
 
             # outputs
             o_State = Output(resname + 'State')
-            o_State.Value = get_final_value(resname + 'State')
+            o_State.Value = get_endvalue(resname + 'State')
    
             if 'ScheduleExpression' in v:
                 o_ScheduleExpression = Output(resname + 'ScheduleExpression')
-                o_ScheduleExpression.Value = get_final_value(resname + 'ScheduleExpression')
+                o_ScheduleExpression.Value = get_endvalue(resname + 'ScheduleExpression')
 
                 cfg.Outputs.append(o_ScheduleExpression)
     

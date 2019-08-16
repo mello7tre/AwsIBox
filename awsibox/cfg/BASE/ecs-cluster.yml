@@ -21,7 +21,7 @@ ecs-cluster:
     - ImageIdLatest:
         Or(
           And(Condition('ImageIdOverride'),Equals(Ref('ImageId'), 'latest')),
-          And(Not(Condition('ImageIdOverride')),Equals(get_final_value('ImageId'), 'latest'))
+          And(Not(Condition('ImageIdOverride')),Equals(get_endvalue('ImageId'), 'latest'))
         )
   Output:
     - Cluster:
@@ -38,7 +38,7 @@ ecs-cluster:
         DefaultResult: 'ABANDON'
         HeartbeatTimeout: 3600
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
-        NotificationTargetARN: get_exported_value('SNSTopicECSDrainInstance')
+        NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
         RoleARN: GetAtt('RoleASGLifecycleHookECSDrainInstance', 'Arn') 
   CloudFront: SkipClass
   Apps: []
@@ -73,38 +73,38 @@ ecs-cluster:
         Statement:
           - 1:
               Action: 'sns:Publish'
-              Resource: get_exported_value('SNSTopicECSDrainInstance')
+              Resource: get_expvalue('SNSTopicECSDrainInstance')
   RecordSet: []
   SecurityGroupIngress:
     - ContainerInstanceExternal:
         FromPort: 32768
         GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
-        SourceSecurityGroupId: get_exported_value('SecurityGroupLoadBalancerApplicationExternal')
+        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal')
         ToPort: 60999
     - EcsHttpExternal:
         CidrIp: '0.0.0.0/0'
         FromPort: 80
-        GroupId: get_exported_value('SecurityGroupLoadBalancerApplicationExternal')
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal')
         ToPort: 80
     - EcsHttpsExternal:
         CidrIp: '0.0.0.0/0'
         FromPort: 443
-        GroupId: get_exported_value('SecurityGroupLoadBalancerApplicationExternal')
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal')
         ToPort: 443
     - ContainerInstanceInternal:
         FromPort: 32768
         GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
-        SourceSecurityGroupId: get_exported_value('SecurityGroupLoadBalancerApplicationInternal')
+        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
         ToPort: 60999
     - EcsHttpInternal:
         CidrIp: '0.0.0.0/0'
         FromPort: 80
-        GroupId: get_exported_value('SecurityGroupLoadBalancerApplicationInternal')
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
         ToPort: 80
     - EcsHttpsInternal:
         CidrIp: '0.0.0.0/0'
         FromPort: 443
-        GroupId: get_exported_value('SecurityGroupLoadBalancerApplicationInternal')
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
         ToPort: 443
   Role:
     - ASGLifecycleHookECSDrainInstance:

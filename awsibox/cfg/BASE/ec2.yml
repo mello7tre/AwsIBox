@@ -25,7 +25,7 @@ ec2:
     - SpotPrice:
         Or(
           And(Condition('SpotPriceOverride'),Not(Equals(Ref('SpotPrice'), '0'))),
-          And(Not(Condition('SpotPriceOverride')),Not(Equals(get_final_value('SpotPrice'), '0')))
+          And(Not(Condition('SpotPriceOverride')),Not(Equals(get_endvalue('SpotPrice'), '0')))
         )
     - Spot:
         And(
@@ -76,7 +76,7 @@ ec2:
   Role:
     - Instance:
         ManagedPolicyArns:
-          - get_exported_value('IAMPolicyBaseInstance', '')
+          - get_expvalue('IAMPolicyBaseInstance', '')
         Principal: ec2.amazonaws.com
   RollingUpdate:
     MaxBatchSize: 1

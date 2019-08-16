@@ -78,51 +78,51 @@ class RDSDBInstance(rds.DBInstance):
 
 
     def setup(self):
-        self.AllocatedStorage = get_final_value('AllocatedStorage')
+        self.AllocatedStorage = get_endvalue('AllocatedStorage')
         self.AllowMajorVersionUpgrade = 'True'
-        self.DBInstanceClass = get_final_value('DBInstanceClass')
-        self.DBName = get_final_value('DBName', nocondition='DBInstanceSkipProperties')
-        self.Engine = get_final_value('Engine')
-        self.EngineVersion = get_final_value('EngineVersion')
-        self.MasterUsername = get_final_value('MasterUsername', nocondition='DBInstanceSkipProperties')
-        self.MasterUserPassword = get_final_value('MasterUserPassword', nocondition='DBInstanceSkipProperties')
-        self.MultiAZ = get_final_value('MultiAZ')
+        self.DBInstanceClass = get_endvalue('DBInstanceClass')
+        self.DBName = get_endvalue('DBName', nocondition='DBInstanceSkipProperties')
+        self.Engine = get_endvalue('Engine')
+        self.EngineVersion = get_endvalue('EngineVersion')
+        self.MasterUsername = get_endvalue('MasterUsername', nocondition='DBInstanceSkipProperties')
+        self.MasterUserPassword = get_endvalue('MasterUserPassword', nocondition='DBInstanceSkipProperties')
+        self.MultiAZ = get_endvalue('MultiAZ')
         self.DBParameterGroupName = Ref('DBParameterGroup1')
-        self.SourceDBInstanceIdentifier = get_final_value('SourceDBInstanceIdentifier', condition=True)
-        self.StorageType = get_final_value('StorageType')
+        self.SourceDBInstanceIdentifier = get_endvalue('SourceDBInstanceIdentifier', condition=True)
+        self.StorageType = get_endvalue('StorageType')
         self.VPCSecurityGroups = [Ref('SecurityGroupRDS')]
 
 
 class RDSDBInstancePublic(RDSDBInstance):
     def setup(self):
         super(RDSDBInstancePublic, self).setup()
-        self.DBSubnetGroupName = get_exported_value('DBSubnetGroupPublic')
+        self.DBSubnetGroupName = get_expvalue('DBSubnetGroupPublic')
         self.PubliclyAccessible = 'True'
 
 
 class RDSDBInstancePrivate(RDSDBInstance):
     def setup(self):
         super(RDSDBInstancePrivate, self).setup()
-        self.DBSubnetGroupName = get_exported_value('DBSubnetGroupPrivate')
+        self.DBSubnetGroupName = get_expvalue('DBSubnetGroupPrivate')
         self.PubliclyAccessible = 'False'
 
 
 class RDSDBParameterGroup(rds.DBParameterGroup):
     def setup(self):
         self.Description = Sub('MYSQL %s - ${AWS::StackName}' % self.title)
-        self.Family = get_sub_mapex('mysql${1M}', 'EngineVersion')
+        self.Family = get_subvalue('mysql${1M}', 'EngineVersion')
 
 
 class RDSDBSubnetGroupPrivate(rds.DBSubnetGroup):
     def setup(self):
         self.DBSubnetGroupDescription = Sub('${EnvShort}-Private')
-        self.SubnetIds=Split(',', get_exported_value('SubnetsPrivate'))
+        self.SubnetIds=Split(',', get_expvalue('SubnetsPrivate'))
 
 
 class RDSDBSubnetGroupPublic(rds.DBSubnetGroup):
     def setup(self):
         self.DBSubnetGroupDescription = Sub('${EnvShort}-Public')
-        self.SubnetIds=Split(',', get_exported_value('SubnetsPublic'))
+        self.SubnetIds=Split(',', get_expvalue('SubnetsPublic'))
 
 # #################################
 # ### START STACK INFRA CLASSES ###

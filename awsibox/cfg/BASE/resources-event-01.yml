@@ -40,10 +40,10 @@ resources-event-01:
             }')
         Targets:
           - LambdaServiceDiscovery:
-              Arn: get_exported_value('LambdaServiceDiscovery')
+              Arn: get_expvalue('LambdaServiceDiscovery')
               Id: 'TargetFunction-01'
           - LambdaR53RecordInstanceId:
-              Arn: get_exported_value('LambdaR53RecordInstanceId')
+              Arn: get_expvalue('LambdaR53RecordInstanceId')
               Id: 'TargetFunction-02'
   Lambda:
     - EC2StartStopTagged:

@@ -15,7 +15,7 @@ class CDDeploymentGroup(cdd.DeploymentGroup):
         appreponame = 'Apps%sRepoName' % index
         appenvname = 'EnvApp%sVersion' % index
         self.Condition = 'DeploymentGroup'
-        self.ApplicationName = get_final_value(appreponame)
+        self.ApplicationName = get_endvalue(appreponame)
         # Uncomment for old behaviour where codedeploy prepare at boot autoscalinggroup's instances (do not work with autospot)
         #self.AutoScalingGroups = If(
         #    'DeployRevision',
@@ -36,14 +36,14 @@ class CDDeploymentGroup(cdd.DeploymentGroup):
                     S3Location=cdd.S3Location(
                         Bucket=Sub(cfg.BucketAppRepository),
                         BundleType='tgz',
-                        Key=get_sub_mapex('${1M}/${1M}-${%s}.tar.gz' % appenvname, appreponame)
+                        Key=get_subvalue('${1M}/${1M}-${%s}.tar.gz' % appenvname, appreponame)
                     )   
                 )   
             ),  
             Ref('AWS::NoValue')
         )   
         self.DeploymentGroupName = Sub('${AWS::StackName}.${EnvRole}')
-        self.ServiceRoleArn = get_exported_value('RoleCodeDeploy', '')
+        self.ServiceRoleArn = get_expvalue('RoleCodeDeploy', '')
 
 # #################################
 # ### START STACK INFRA CLASSES ###
@@ -55,7 +55,7 @@ class CD_DeploymentGroup(object):
         do_no_override(True)
         C_DeploymentGroup = {'DeploymentGroup': And(
             Condition('Apps1'),
-            Equals(get_final_value('DeploymentGroup'), True),
+            Equals(get_endvalue('DeploymentGroup'), True),
         )}
 
         C_DeployRevision = {'DeployRevision': Equals(
@@ -81,7 +81,7 @@ class CD_Applications(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).iteritems():
             App = cdd.Application(key + n)
-            App.ApplicationName = get_final_value(key + n)
+            App.ApplicationName = get_endvalue(key + n)
 
             cfg.Resources.append(App)
 

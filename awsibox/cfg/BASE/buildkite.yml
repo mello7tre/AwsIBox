@@ -67,7 +67,7 @@ buildkite:
               Resource: 
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
-  RepoName: get_sub_mapex('${1M}.${2M}.services.buildkite', ['BrandRegion', 'Brand'])
+  RepoName: get_subvalue('${1M}.${2M}.services.buildkite', ['BrandRegion', 'Brand'])
   Volumes:
     - DockerSock:
         SourcePath: '/var/run/docker.sock'

@@ -5,7 +5,7 @@ from collections import OrderedDict, Mapping
 
 class ApiGatewayAccount(agw.Account):
     def setup(self):
-        self.CloudWatchRoleArn = get_exported_value('RoleApiGatewayCloudWatch')
+        self.CloudWatchRoleArn = get_expvalue('RoleApiGatewayCloudWatch')
 
 
 class ApiGatewayResource(agw.Resource):

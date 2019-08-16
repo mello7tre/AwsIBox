@@ -18,7 +18,7 @@ class EFSMountTarget(efs.MountTarget):
         self.SecurityGroups = [
             Ref(sgname)
         ]
-        self.SubnetId = Select(str(index), Split(',', get_exported_value('SubnetsPrivate')))
+        self.SubnetId = Select(str(index), Split(',', get_expvalue('SubnetsPrivate')))
 
 # #################################
 # ### START STACK INFRA CLASSES ###
@@ -51,7 +51,7 @@ class EFS_FileStorage(object):
             # conditions
             do_no_override(True)
             c_File = {resname: Not(
-                Equals(get_final_value(resname + 'Enabled'), 'None')
+                Equals(get_endvalue(resname + 'Enabled'), 'None')
             )}
             cfg.Conditions.append(c_File)
             do_no_override(False)

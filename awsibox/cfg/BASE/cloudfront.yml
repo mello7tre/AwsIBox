@@ -6,11 +6,11 @@ global:
     - CloudFrontWebACLId:
         Or(
           And(Condition('CloudFrontWebACLIdOverride'),Not(Equals(Ref('CloudFrontWebACLId'), 'None'))),
-          And(Not(Condition('CloudFrontWebACLIdOverride')),Not(Equals(get_final_value('CloudFrontWebACLId'), 'None')))
+          And(Not(Condition('CloudFrontWebACLIdOverride')),Not(Equals(get_endvalue('CloudFrontWebACLId'), 'None')))
         )
   Output:
     - CloudFrontWebACLId:
-        Value: get_final_value('CloudFrontWebACLId')
+        Value: get_endvalue('CloudFrontWebACLId')
   CloudFront: None
   CloudFrontAcmCertificate: True
   CloudFrontAliasExtra:

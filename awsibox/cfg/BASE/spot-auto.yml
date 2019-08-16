@@ -14,14 +14,14 @@ global:
     - SpotAuto:
         Or(
           And(Condition('SpotAutoOverride'),Not(Equals(Ref('SpotAuto'), 'None'))),
-          And(Not(Condition('SpotAutoOverride')),Not(Equals(get_final_value('SpotAuto'), 'None')))
+          And(Not(Condition('SpotAutoOverride')),Not(Equals(get_endvalue('SpotAuto'), 'None')))
         )
     - SpotAutoMinOnDemandNumber:
         And(
           Condition('SpotAuto'),
           Or(
             And(Condition('SpotAutoMinOnDemandNumberOverride'),Not(Equals(Ref('SpotAutoMinOnDemandNumber'), 'None'))),
-            And(Not(Condition('SpotAutoMinOnDemandNumberOverride')),Not(Equals(get_final_value('SpotAutoMinOnDemandNumber'), 'None')))
+            And(Not(Condition('SpotAutoMinOnDemandNumberOverride')),Not(Equals(get_endvalue('SpotAutoMinOnDemandNumber'), 'None')))
           )
         )
   SpotAuto: None

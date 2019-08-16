@@ -12,14 +12,14 @@ class R53RecordSet(r53.RecordSetType):
 class R53RecordSetZoneExternal(R53RecordSet):
     def setup(self):
         super(R53RecordSetZoneExternal, self).setup()
-        self.HostedZoneId = get_exported_value('HostedZoneIdEnv')
+        self.HostedZoneId = get_expvalue('HostedZoneIdEnv')
         self.Name = Sub('${AWS::StackName}.${EnvRole}.' + cfg.HostedZoneNameRegionEnv)  # Ex. prt-a-d.client-portal.eu-west-1.dev..
 
 
 class R53RecordSetZoneInternal(R53RecordSet):
     def setup(self):
         super(R53RecordSetZoneInternal, self).setup()
-        self.HostedZoneId = get_exported_value('HostedZoneIdPrivate')
+        self.HostedZoneId = get_expvalue('HostedZoneIdPrivate')
         self.Name = Sub('${AWS::StackName}.${EnvRole}.' + cfg.HostedZoneNamePrivate)  # Ex. prt-a-d.client-portal.internal..
 
 
@@ -39,7 +39,7 @@ class R53RecordSetLoadBalancer(R53RecordSet):
     def setup(self):
         super(R53RecordSetLoadBalancer, self).setup()
         self.AliasTarget = r53.AliasTarget(
-            HostedZoneId=get_final_value('HostedZoneIdLB')
+            HostedZoneId=get_endvalue('HostedZoneIdLB')
         )
         self.Type = 'A'
 
@@ -55,7 +55,7 @@ class R53RecordSetEC2LoadBalancerInternal(R53RecordSetLoadBalancer, R53RecordSet
 class R53RecordSetECSLoadBalancer(R53RecordSetLoadBalancer):
     def setup(self, scheme):
         super(R53RecordSetECSLoadBalancer, self).setup()
-        self.AliasTarget.DNSName = get_sub_mapex(
+        self.AliasTarget.DNSName = get_subvalue(
             'dualstack.${1E}',
             'LoadBalancerApplication%sDNS' % scheme,
             'LoadBalancerApplicationStack'
@@ -137,7 +137,7 @@ class R53HostedZonePrivate(r53.HostedZone):
         self.Name = Sub(cfg.HostedZoneNamePrivate)
         self.VPCs = [
             r53.HostedZoneVPCs(
-                VPCId=get_exported_value('VpcId'),
+                VPCId=get_expvalue('VpcId'),
                 VPCRegion=Ref('AWS::Region')
             )
         ]
@@ -173,7 +173,7 @@ class R53_RecordSetCloudFront(object):
         C_RecordSet = {'RecordSetCloudFront': And(
             Condition('CloudFrontDistribution'),
             Not(
-                Equals(get_final_value('RecordSetCloudFront'), 'None')
+                Equals(get_endvalue('RecordSetCloudFront'), 'None')
             )
         )}
 
@@ -350,12 +350,12 @@ class R53_HostedZones(object):
         # Conditions
         do_no_override(True)
         C_Env = {'HostedZoneEnv': Not(
-            Equals(get_final_value('HostedZoneEnv'), 'None')
+            Equals(get_endvalue('HostedZoneEnv'), 'None')
         )}
 
         
         C_EnvExtra1 = {'HostedZoneEnvExtra1': Not(
-            Equals(get_final_value('HostedZoneEnvExtra1'), 'None')
+            Equals(get_endvalue('HostedZoneEnvExtra1'), 'None')
         )}
         do_no_override(False)
 
@@ -392,7 +392,7 @@ class R53_HostedZones(object):
         O_Env.Value = If(
             'HostedZoneEnv',
             Ref('HostedZoneEnv'),
-            get_final_value('HostedZoneIdEnv')
+            get_endvalue('HostedZoneIdEnv')
         )
         O_Env.Export = Export('HostedZoneIdEnv')
 

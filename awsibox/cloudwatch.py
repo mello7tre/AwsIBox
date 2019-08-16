@@ -37,7 +37,7 @@ class CW_Alarms(object):
                 ),
                 And(
                     Not(Condition(resname + 'EvaluationPeriodsOverride')),
-                    Not(Equals(get_final_value(resname + 'EvaluationPeriods'), '0')),
+                    Not(Equals(get_endvalue(resname + 'EvaluationPeriods'), '0')),
                 )
             )}
             do_no_override(False)
@@ -56,7 +56,7 @@ class CW_Alarms(object):
 
             # outputs
             o_Alarm = Output(resname)
-            o_Alarm.Value = get_sub_mapex(
+            o_Alarm.Value = get_subvalue(
                 'Period=${1M},EvaluationPeriods=${2M},Threshold=${3M}',
                 [
                     resname + 'Period',

@@ -104,7 +104,7 @@ def import_modules_old():
         globals().update(mod.__dict__)
 
 
-def get_final_value(
+def get_endvalue(
         param,
         ssm=False,
         condition=False,
@@ -184,11 +184,11 @@ def get_final_value(
     return v
 
 
-def get_exported_value(param, stack=False, prefix=''):
+def get_expvalue(param, stack=False, prefix=''):
     v = ''
     if stack:
         v = ImportValue(
-            Sub('%s-${%s}' % (param, stack), **{stack: get_final_value(stack)})
+            Sub('%s-${%s}' % (param, stack), **{stack: get_endvalue(stack)})
         )
     elif not isinstance(param, str):
         v = ImportValue(
@@ -200,7 +200,7 @@ def get_exported_value(param, stack=False, prefix=''):
     return v
 
 
-def get_sub_mapex(substring, subvar, stack=False):
+def get_subvalue(substring, subvar, stack=False):
     submap = {}
     found = substring.find('${')
 
@@ -213,9 +213,9 @@ def get_sub_mapex(substring, subvar, stack=False):
             listitem = subvar[int(myindex) - 1] if isinstance(subvar, list) else subvar
             stackitem = stack[int(myindex) - 1] if isinstance(stack, list) else stack
             if mytype == 'M':
-                submap[listitem] = get_final_value(listitem)
+                submap[listitem] = get_endvalue(listitem)
             else:
-                submap[listitem] = get_exported_value(listitem, stackitem)
+                submap[listitem] = get_expvalue(listitem, stackitem)
             substring = substring.replace('${' + myindex + mytype + '}', '${' + listitem + '}')
         found = substring.find('${', posindex)
 
@@ -275,7 +275,7 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
 
             return prop_list
 
-    return get_final_value(mapname + propname)
+    return get_endvalue(mapname + propname)
 
 
 def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, rootkey=None, rootname=None):
@@ -349,7 +349,7 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
 
         return prop_list
 
-    return get_final_value(mapname + propname)
+    return get_endvalue(mapname + propname)
 
 
 def auto_get_props(obj, key=RP_cmm, del_prefix='', mapname=None, recurse=False, rootkey=None, rootname=None, rootdict=None):
@@ -373,9 +373,9 @@ def auto_get_props(obj, key=RP_cmm, del_prefix='', mapname=None, recurse=False, 
                 value = auto_get_props_recurse(obj, key, obj.props, obj_propname, mapname, propname, rootkey, rootname)
             # needed for lib/efs.py EFS_FileStorage SGIExtra - where is passed as key a new dictionary to parse for parameters
             elif rootdict:
-                value = get_final_value(mapname + propname, mappedvalue=rootdict)
+                value = get_endvalue(mapname + propname, mappedvalue=rootdict)
             else:
-                value = get_final_value(mapname + propname)
+                value = get_endvalue(mapname + propname)
             try:
                 setattr(obj, obj_propname, value)
             except TypeError:

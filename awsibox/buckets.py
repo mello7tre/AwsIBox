@@ -30,9 +30,9 @@ class S3Bucket(s3.Bucket):
                 Rules=[
                     s3.ReplicationConfigurationRules(
                         Destination=s3.ReplicationConfigurationRulesDestination(
-                            Bucket=get_sub_mapex(
+                            Bucket=get_subvalue(
                                 'arn:aws:s3:::${1M}', '%sReplicaDstBucket' % name
-                            ) if 'ReplicaDstBucket' in key else get_sub_mapex(
+                            ) if 'ReplicaDstBucket' in key else get_subvalue(
                                 'arn:aws:s3:::${1M}-%s' % bucket_name.replace('${AWS::Region}-', '', 1),
                                 '%sReplicaDstRegion' % name,
                             ),
@@ -45,7 +45,7 @@ class S3Bucket(s3.Bucket):
                             ),
                             Account=If(
                                 name + 'ReplicaDstOwner',
-                                get_final_value(name + 'ReplicaDstOwner'),
+                                get_endvalue(name + 'ReplicaDstOwner'),
                                 Ref('AWS::NoValue')
                             ),
                         ),
@@ -59,7 +59,7 @@ class S3Bucket(s3.Bucket):
         self.VersioningConfiguration = If(
             name + 'Versioning',
             s3.VersioningConfiguration(
-                Status=get_final_value(name + 'Versioning')
+                Status=get_endvalue(name + 'Versioning')
             ),
             Ref('AWS::NoValue')
         )
@@ -106,7 +106,7 @@ def S3BucketPolicyStatementReplica(bucket):
         ],
         'Principal': {
             'AWS': [
-                get_sub_mapex('arn:aws:iam::${1M}:root', '%sReplicaSrcAccount' % bucket)
+                get_subvalue('arn:aws:iam::${1M}:root', '%sReplicaSrcAccount' % bucket)
             ]
         },
         'Sid': 'AllowReplica'
@@ -249,7 +249,7 @@ class S3_Buckets(object):
                 # conditions
                 do_no_override(True)
                 c_AccountRO = {accountro_name: Not(
-                    Equals(get_final_value(accountro_name), 'None')
+                    Equals(get_endvalue(accountro_name), 'None')
                 )}
 
                 cfg.Conditions.append(c_AccountRO)
@@ -258,7 +258,7 @@ class S3_Buckets(object):
                 PolicyROConditions.append(Condition(accountro_name))
                 PolicyROPrincipal.append(If(
                     accountro_name,
-                    get_sub_mapex('arn:aws:iam::${1M}:root', accountro_name),
+                    get_subvalue('arn:aws:iam::${1M}:root', accountro_name),
                     Ref('AWS::NoValue')
                 ))
 
@@ -276,22 +276,22 @@ class S3_Buckets(object):
             cfg.Conditions.extend([
                 c_PolicyRO,
                 {resname: Not(
-                    Equals(get_final_value(resname + 'Create'), 'None')
+                    Equals(get_endvalue(resname + 'Create'), 'None')
                 )},
                 {resname + 'Versioning': Not(
-                    Equals(get_final_value(resname + 'Versioning'), 'None')
+                    Equals(get_endvalue(resname + 'Versioning'), 'None')
                 )},
                 {resname + 'Cors': Not(
-                    Equals(get_final_value(resname + 'Cors'), 'None')
+                    Equals(get_endvalue(resname + 'Cors'), 'None')
                 )},
                 {resname + 'ReplicaSrcAccount': Not(
-                    Equals(get_final_value(resname + 'ReplicaSrcAccount'), 'None')
+                    Equals(get_endvalue(resname + 'ReplicaSrcAccount'), 'None')
                 )},
                 {resname + 'ReplicaDstOwner': Not(
-                    Equals(get_final_value(resname + 'ReplicaDstOwner'), 'None')
+                    Equals(get_endvalue(resname + 'ReplicaDstOwner'), 'None')
                 )},
                 #{resname + 'AccountRO': Not(
-                #    Equals(get_final_value(resname + 'AccountRO'), 'None')
+                #    Equals(get_endvalue(resname + 'AccountRO'), 'None')
                 #)},
                 {resname + 'Replica': Or(
                     And(
@@ -302,7 +302,7 @@ class S3_Buckets(object):
                     And(
                         Condition(resname),
                         Not(Condition(resname + 'ReplicaDstRegionOverride')),
-                        Not(Equals(get_final_value(resname + 'ReplicaDstRegion'), 'None'))
+                        Not(Equals(get_endvalue(resname + 'ReplicaDstRegion'), 'None'))
                     )
                 )}
             ])
@@ -368,7 +368,7 @@ class S3_Buckets(object):
                     # conditions
                     do_no_override(True)
                     c_CloudFrontOriginAccessIdentityExtra = {ixname: Not(
-                        Equals(get_final_value(ixname), 'None')
+                        Equals(get_endvalue(ixname), 'None')
                     )}
 
                     cfg.Conditions.extend([
@@ -378,7 +378,7 @@ class S3_Buckets(object):
 
                     PolicyCloudFrontOriginAccessIdentityPrincipal.append(If(
                         ixname,
-                        get_sub_mapex('arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${1M}', ixname),
+                        get_subvalue('arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${1M}', ixname),
                         Ref('AWS::NoValue')
                     ))
 
@@ -420,7 +420,7 @@ class S3_Buckets(object):
                 # conditions
                 do_no_override(False)
                 c_OutputValueRegion = {condname: Not(
-                    Equals(get_final_value(condname), 'AWSRegion')
+                    Equals(get_endvalue(condname), 'AWSRegion')
                 )}
 
                 cfg.Conditions.append(c_OutputValueRegion)
@@ -428,7 +428,7 @@ class S3_Buckets(object):
 
                 outvaluebase = If(
                     condname,
-                    Sub('${Region}-%s' % bucket_name.replace('${AWS::Region}-', '', 1), **{'Region': get_final_value(condname)}),
+                    Sub('${Region}-%s' % bucket_name.replace('${AWS::Region}-', '', 1), **{'Region': get_endvalue(condname)}),
                     outvaluebase
                 )
 
@@ -461,7 +461,7 @@ class S3_BucketPolicies(object):
 
             r_Policy = S3BucketPolicy(resname)
             r_Policy.setup(key=v)
-            r_Policy.Bucket = get_final_value(resname + 'Bucket')
+            r_Policy.Bucket = get_endvalue(resname + 'Bucket')
             r_Policy.PolicyDocument['Statement'] = Statement            
 
             cfg.Resources.append(r_Policy)

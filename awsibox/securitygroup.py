@@ -6,7 +6,7 @@ from shared import *
 # S - SECURITY GROUP #
 class SecurityGroup(ec2.SecurityGroup):
     def setup(self):
-        self.VpcId = get_exported_value('VpcId')
+        self.VpcId = get_expvalue('VpcId')
 
 
 class SecurityGroupInstanceRules(SecurityGroup):
@@ -36,8 +36,8 @@ class SecurityGroupIngress(ec2.SecurityGroupIngress):
 class SecurityGroupIngressInstanceELBPorts(SecurityGroupIngress):
     def setup(self, listener):
         name = self.title  # Ex. SecurityGroupIngressListeners1
-        self.FromPort = get_final_value(listener + 'LoadBalancerPort')
-        self.ToPort = get_final_value(listener + 'LoadBalancerPort')
+        self.FromPort = get_endvalue(listener + 'LoadBalancerPort')
+        self.ToPort = get_endvalue(listener + 'LoadBalancerPort')
         self.SourceSecurityGroupId = Ref('SecurityGroupLoadBalancer')
         self.GroupId = GetAtt('SecurityGroupInstancesRules', 'GroupId')
 
@@ -45,8 +45,8 @@ class SecurityGroupIngressInstanceELBPorts(SecurityGroupIngress):
 class SecurityGroupsIngressEcs(SecurityGroupIngress):
     def setup(self, proto, scheme):
         self.Condition = self.title
-        self.GroupId = get_exported_value('SecurityGroupLoadBalancerApplication' + scheme)
-        self.FromPort = get_final_value('ListenerLoadBalancer' + proto + 'Port')
+        self.GroupId = get_expvalue('SecurityGroupLoadBalancerApplication' + scheme)
+        self.FromPort = get_endvalue('ListenerLoadBalancer' + proto + 'Port')
         self.ToPort = self.FromPort
 
 # E - SECURITY GROUP #
@@ -64,8 +64,8 @@ class SecurityGroupRule(ec2.SecurityGroupRule):
 class SecurityGroupRuleELBPorts(SecurityGroupRule):
     def setup(self):
         name = self.title  # Ex. Listeners1
-        self.FromPort = get_final_value(name + 'LoadBalancerPort')
-        self.ToPort = get_final_value(name + 'LoadBalancerPort')
+        self.FromPort = get_endvalue(name + 'LoadBalancerPort')
+        self.ToPort = get_endvalue(name + 'LoadBalancerPort')
 
 
 class SecurityGroupRuleNamePorts(SecurityGroupRule):
@@ -77,8 +77,8 @@ class SecurityGroupRuleNamePorts(SecurityGroupRule):
 
 class SecurityGroupRuleEcsService(SecurityGroupRule):
     def setup(self, scheme):
-        self.SourceSecurityGroupId = get_exported_value('SecurityGroupLoadBalancerApplication' + scheme)
-        self.FromPort = get_final_value('ContainerDefinitions1ContainerPort')
+        self.SourceSecurityGroupId = get_expvalue('SecurityGroupLoadBalancerApplication' + scheme)
+        self.FromPort = get_endvalue('ContainerDefinitions1ContainerPort')
         self.ToPort = self.FromPort
 
 # E - SECURITY GROUP #
@@ -114,7 +114,7 @@ class SG_SecurityGroupsExtra(object):
 
         for n in range(MAX_SECURITY_GROUPS):
             name = 'SecurityGroup%s' % n  # Ex SecurityGroup1
-            value = Select(n, Split(',', get_final_value('SecurityGroups')))  # Ex. ElasticSearch
+            value = Select(n, Split(',', get_endvalue('SecurityGroups')))  # Ex. ElasticSearch
             outnamename = 'SecurityGroupName%s' % n  # Ex. SecurityGroupName1
             outvaluename = 'SecurityGroupValue%s' % n  # Ex. SecurityGroupValue1
 
@@ -128,7 +128,7 @@ class SG_SecurityGroupsExtra(object):
                     ),
                     And(
                         Not(Condition('SecurityGroupsOverride')),
-                        Equals(Select(n, Split(',', get_final_value('SecurityGroups'))), 'None')
+                        Equals(Select(n, Split(',', get_endvalue('SecurityGroups'))), 'None')
                     )
                 )
             )}
@@ -137,7 +137,7 @@ class SG_SecurityGroupsExtra(object):
 
             SecurityGroups.append(If(
                 name,
-                get_exported_value(value, prefix='SecurityGroup'),
+                get_expvalue(value, prefix='SecurityGroup'),
                 Ref('AWS::NoValue')
             ))
 
@@ -147,7 +147,7 @@ class SG_SecurityGroupsExtra(object):
                 outnamename: value,
                 outvaluename: If(
                     name,
-                    get_exported_value(value, prefix='SecurityGroup'),
+                    get_expvalue(value, prefix='SecurityGroup'),
                     'None'
                 )
             })
@@ -236,7 +236,7 @@ class SG_SecurityGroupRES(object):
             # resources
             r_Base = SecurityGroup(name)
             r_Base.setup()
-            r_Base.GroupDescription = get_final_value('SecurityGroupBase' + n)
+            r_Base.GroupDescription = get_endvalue('SecurityGroupBase' + n)
 
             cfg.Resources.append(r_Base)
 
@@ -253,7 +253,7 @@ class SG_SecurityGroupRES(object):
             # conditions
             do_no_override(True)
             cfg.Conditions.append({
-                name: Not(Equals(get_final_value(name + 'Enabled'), 'None'))
+                name: Not(Equals(get_endvalue(name + 'Enabled'), 'None'))
             })
             do_no_override(False)
 
@@ -261,7 +261,7 @@ class SG_SecurityGroupRES(object):
             Rule = SecurityGroupRule()
             Rule.FromPort = '22'
             Rule.ToPort = '22'
-            Rule.CidrIp=get_final_value(name + 'Ip')
+            Rule.CidrIp=get_endvalue(name + 'Ip')
             
             Securitygroup_Rules.append(
                 If(
@@ -313,12 +313,12 @@ class SG_SecurityGroupIngressesExtraService(object):
                 # conditions
                 do_no_override(True)
                 c_AllowedIp = {ipname: Not(
-                    Equals(get_final_value(ipname + 'Enabled'), 'None')
+                    Equals(get_endvalue(ipname + 'Enabled'), 'None')
                 )}
 
                 c_SGRulePrivate = {condnameprivate: And(
                     Condition(ipname),
-                    Equals(get_final_value(service + 'Access'), 'Private')
+                    Equals(get_endvalue(service + 'Access'), 'Private')
                 )}
 
                 cfg.Conditions.extend([
@@ -329,7 +329,7 @@ class SG_SecurityGroupIngressesExtraService(object):
 
                 SGRule = SecurityGroupRuleNamePorts(name)
                 SGRule.setup()
-                SGRule.CidrIp = get_final_value(ipname + 'Ip')
+                SGRule.CidrIp = get_endvalue(ipname + 'Ip')
 
                 Securitygroup_Rules.append(
                     If( 

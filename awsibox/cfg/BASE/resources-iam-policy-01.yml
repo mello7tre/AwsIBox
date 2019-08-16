@@ -72,7 +72,7 @@ resources-iam-policy-01:
               Action:
                 - 'kms:Decrypt'
                 - 'kms:Encrypt'
-              Resource: get_exported_value('KeyParameterStore')
+              Resource: get_expvalue('KeyParameterStore')
           - 3:
               Action:
                 - 'kms:ListAliases'

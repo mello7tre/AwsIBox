@@ -18,57 +18,57 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
     def setup(self, key):
         name = self.title
         if 'AllowedMethods' in key:
-            self.AllowedMethods = get_final_value(name + 'AllowedMethods')
+            self.AllowedMethods = get_endvalue(name + 'AllowedMethods')
 
         if 'CachedMethods' in key:
-            self.CachedMethods = get_final_value(name + 'CachedMethods')
+            self.CachedMethods = get_endvalue(name + 'CachedMethods')
 
         # If not defined default to True
         if 'Compress' in key:
-            self.Compress = get_final_value(name + 'Compress')
+            self.Compress = get_endvalue(name + 'Compress')
         else:
             self.Compress = True
 
         if 'DefaultTTL' in key:
-            self.DefaultTTL = get_final_value(name + 'DefaultTTL')
+            self.DefaultTTL = get_endvalue(name + 'DefaultTTL')
 
         self.ForwardedValues = clf.ForwardedValues()
         # If not defined default to True
         if 'QueryString' in key:
-            self.ForwardedValues.QueryString=get_final_value(name + 'QueryString')
+            self.ForwardedValues.QueryString=get_endvalue(name + 'QueryString')
         else:
             self.ForwardedValues.QueryString=True
 
         if 'CookiesForward' in key:
             self.ForwardedValues.Cookies = clf.Cookies(
-                Forward=get_final_value(name + 'CookiesForward')
+                Forward=get_endvalue(name + 'CookiesForward')
             )
             if 'CookiesWhitelistedNames' in key:
-                self.ForwardedValues.Cookies.WhitelistedNames = get_final_value(name + 'CookiesWhitelistedNames', condition=True)
+                self.ForwardedValues.Cookies.WhitelistedNames = get_endvalue(name + 'CookiesWhitelistedNames', condition=True)
                 # conditions
                 do_no_override(True)
                 cfg.Conditions.append({
-                    name + 'CookiesWhitelistedNames': Equals(get_final_value(name + 'CookiesForward'), 'whitelist')
+                    name + 'CookiesWhitelistedNames': Equals(get_endvalue(name + 'CookiesForward'), 'whitelist')
                 })
                 do_no_override(False)
 
         # If not defined default to 'Host'
         if 'Headers' in key:
-            self.ForwardedValues.Headers = get_final_value(name + 'Headers')
+            self.ForwardedValues.Headers = get_endvalue(name + 'Headers')
         else:
             self.ForwardedValues.Headers = ['Host']
 
         if 'QueryStringCacheKeys' in key:
-            self.ForwardedValues.QueryStringCacheKeys = get_final_value(name + 'QueryStringCacheKeys', condition=True)
+            self.ForwardedValues.QueryStringCacheKeys = get_endvalue(name + 'QueryStringCacheKeys', condition=True)
             # conditions
             do_no_override(True)
             cfg.Conditions.append({
-                name + 'QueryStringCacheKeys': Equals(get_final_value(name + 'QueryString'), True)
+                name + 'QueryStringCacheKeys': Equals(get_endvalue(name + 'QueryString'), True)
             })
             do_no_override(False)
 
         if 'TargetOriginId' in key:
-            self.TargetOriginId = get_final_value(name + 'TargetOriginId')
+            self.TargetOriginId = get_endvalue(name + 'TargetOriginId')
         else:
             self.TargetOriginId = If(
                 'CloudFrontOriginAdHoc',
@@ -77,10 +77,10 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
             )
 
         if 'MaxTTL' in key:
-            self.MaxTTL = get_final_value(name + 'MaxTTL')
+            self.MaxTTL = get_endvalue(name + 'MaxTTL')
 
         if 'MinTTL' in key:
-            self.MinTTL = get_final_value(name + 'MinTTL')
+            self.MinTTL = get_endvalue(name + 'MinTTL')
 
         if 'LambdaFunctionARN' in key:
             condname = name + 'LambdaFunctionARN'
@@ -90,7 +90,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
             # conditions
             do_no_override(True)
             cfg.Conditions.append({
-                condname: Not(Equals(get_final_value(condname), 'None'))
+                condname: Not(Equals(get_endvalue(condname), 'None'))
             })
             do_no_override(False)
             self.LambdaFunctionAssociations = [
@@ -98,21 +98,21 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
                     condname,
                     clf.LambdaFunctionAssociation(
                         EventType=eventType,
-                        LambdaFunctionARN=get_final_value(condname)
+                        LambdaFunctionARN=get_endvalue(condname)
                     ),
                     Ref('AWS::NoValue')
                 )
             ]
 
         if 'ViewerProtocolPolicy' in key:
-            self.ViewerProtocolPolicy = get_final_value(name + 'ViewerProtocolPolicy')
+            self.ViewerProtocolPolicy = get_endvalue(name + 'ViewerProtocolPolicy')
 
 
 class CFCacheBehavior(clf.CacheBehavior, CFDefaultCacheBehavior):
     def setup(self, **kwargs):
         super(CFCacheBehavior, self).setup(**kwargs)
         name = self.title
-        self.PathPattern = get_final_value(name + 'PathPattern')
+        self.PathPattern = get_endvalue(name + 'PathPattern')
 
 
 class CFDistributionConfig(clf.DistributionConfig):
@@ -121,7 +121,7 @@ class CFDistributionConfig(clf.DistributionConfig):
         DefaultCacheBehavior = CFDefaultCacheBehavior('CloudFrontCacheBehaviors0')
         DefaultCacheBehavior.setup(key=cfg.CloudFrontCacheBehaviors[0])
         self.DefaultCacheBehavior = DefaultCacheBehavior
-        self.HttpVersion = get_final_value('CloudFrontHttpVersion')
+        self.HttpVersion = get_endvalue('CloudFrontHttpVersion')
         self.Logging = If(
             'CloudFrontLogging',
             clf.Logging(
@@ -134,7 +134,7 @@ class CFDistributionConfig(clf.DistributionConfig):
         self.ViewerCertificate = clf.ViewerCertificate(
             AcmCertificateArn=If(
                 'CloudFrontAcmCertificate',
-                get_final_value('CloudFrontAcmCertificateArn'),
+                get_endvalue('CloudFrontAcmCertificateArn'),
                 Ref('AWS::NoValue')
             ),
             CloudFrontDefaultCertificate=If(
@@ -148,30 +148,30 @@ class CFDistributionConfig(clf.DistributionConfig):
                 Ref('AWS::NoValue')
             )
         )
-        self.WebACLId = get_final_value('CloudFrontWebACLId', condition=True)
+        self.WebACLId = get_endvalue('CloudFrontWebACLId', condition=True)
 
 
 class CFCustomOrigin(clf.CustomOriginConfig):
     def setup(self, key):
         name = self.title
         if 'HTTPSPort' in key:
-            self.HTTPSPort = get_final_value(name + 'HTTPSPort')
+            self.HTTPSPort = get_endvalue(name + 'HTTPSPort')
         if 'HTTPSort' in key:
-            self.HTTPPort = get_final_value(name + 'HTTPPort')
-        self.OriginProtocolPolicy = get_final_value(name + 'ProtocolPolicy')
+            self.HTTPPort = get_endvalue(name + 'HTTPPort')
+        self.OriginProtocolPolicy = get_endvalue(name + 'ProtocolPolicy')
         if 'SSLProtocols' in key:
-            self.OriginSSLProtocols = get_final_value(name + 'SSLProtocols')
+            self.OriginSSLProtocols = get_endvalue(name + 'SSLProtocols')
         if 'ReadTimeout' in key:
-            self.OriginReadTimeout = get_final_value(name + 'ReadTimeout')
+            self.OriginReadTimeout = get_endvalue(name + 'ReadTimeout')
         if 'KeepaliveTimeout' in key:
-            self.OriginKeepaliveTimeout = get_final_value(name + 'KeepaliveTimeout')
+            self.OriginKeepaliveTimeout = get_endvalue(name + 'KeepaliveTimeout')
 
 
 class CFOriginCustomHeader(clf.OriginCustomHeader):
     def setup(self):
         name = self.title
-        self.HeaderName = get_final_value(name + 'Name')
-        self.HeaderValue = get_final_value(name + 'Value')
+        self.HeaderName = get_endvalue(name + 'Name')
+        self.HeaderValue = get_endvalue(name + 'Value')
 
 
 class CFOriginCLF(clf.Origin):
@@ -195,11 +195,11 @@ class CFOriginCLF(clf.Origin):
         else:
             self.S3OriginConfig = clf.S3OriginConfig()
             if 'OriginAccessIdentity' in key:
-                self.S3OriginConfig.OriginAccessIdentity = get_sub_mapex('origin-access-identity/cloudfront/${1M}', name + 'OriginAccessIdentity')
+                self.S3OriginConfig.OriginAccessIdentity = get_subvalue('origin-access-identity/cloudfront/${1M}', name + 'OriginAccessIdentity')
 
-        self.DomainName = get_final_value(name + 'DomainName')
-        self.OriginPath = get_final_value(name + 'Path')
-        self.Id = get_final_value(name + 'Id')
+        self.DomainName = get_endvalue(name + 'DomainName')
+        self.OriginPath = get_endvalue(name + 'Path')
+        self.Id = get_endvalue(name + 'Id')
         self.OriginCustomHeaders = CustomHeaders
 
 
@@ -213,7 +213,7 @@ class CFOriginFixed(clf.Origin):
             Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.' + cfg.HostedZoneNameEnv)
         )
         self.Id = self.DomainName
-        self.OriginPath = get_final_value('CloudFrontOriginPath')
+        self.OriginPath = get_endvalue('CloudFrontOriginPath')
 
         try: custom_headers = cfg.CloudFrontOriginCustomHeaders
         except:
@@ -225,8 +225,8 @@ class CFOriginFixed(clf.Origin):
                     If(
                         name,
                         clf.OriginCustomHeader(
-                            HeaderName=get_final_value(name + 'HeaderName'),
-                            HeaderValue=get_final_value(name + 'HeaderValue')
+                            HeaderName=get_endvalue(name + 'HeaderName'),
+                            HeaderValue=get_endvalue(name + 'HeaderValue')
                         ),
                         Ref("AWS::NoValue")
                     )
@@ -234,7 +234,7 @@ class CFOriginFixed(clf.Origin):
                 # conditions
                 do_no_override(True)
                 cfg.Conditions.append({
-                    name: Not(Equals(get_final_value(name + 'HeaderName'), ''))
+                    name: Not(Equals(get_endvalue(name + 'HeaderName'), ''))
                 })
                 do_no_override(False)
 
@@ -242,15 +242,15 @@ class CFOriginFixed(clf.Origin):
         self.CustomOriginConfig = clf.CustomOriginConfig(
             HTTPSPort=If(
                 'CloudFrontOriginProtocolHTTPS',
-                get_final_value('ListenerLoadBalancerHttpsPort'),
+                get_endvalue('ListenerLoadBalancerHttpsPort'),
                 Ref('AWS::NoValue')
             ),
             HTTPPort=If(
                 'CloudFrontOriginProtocolHTTP',
-                get_final_value('ListenerLoadBalancerHttpPort'),
+                get_endvalue('ListenerLoadBalancerHttpPort'),
                 Ref('AWS::NoValue')
             ),
-            OriginProtocolPolicy=get_final_value('CloudFrontOriginProtocolPolicy')
+            OriginProtocolPolicy=get_endvalue('CloudFrontOriginProtocolPolicy')
         )
 
 
@@ -258,14 +258,14 @@ class CFCustomErrorResponse(clf.CustomErrorResponse):
     def setup(self, key):
         name = self.title  # Ex. CustomErrorResponses1
 
-        self.ErrorCode = get_final_value(name + 'ErrorCode')
-        self.ErrorCachingMinTTL = get_final_value(name + 'ErrorCachingMinTTL')
+        self.ErrorCode = get_endvalue(name + 'ErrorCode')
+        self.ErrorCachingMinTTL = get_endvalue(name + 'ErrorCachingMinTTL')
 
         if 'ResponsePagePath' in key:
-            self.ResponsePagePath = get_final_value(name + 'ResponsePagePath')
+            self.ResponsePagePath = get_endvalue(name + 'ResponsePagePath')
 
         if 'ResponseCode' in key:
-            self.ResponseCode = get_final_value(name + 'ResponseCode')
+            self.ResponseCode = get_endvalue(name + 'ResponseCode')
 # E - CLOUDFRONT #
 
 
@@ -298,12 +298,12 @@ class CF_CloudFront(object):
             ),
             And(
                 Not(Condition('CloudFrontLoggingOverride')),
-                Not(Equals(get_final_value('CloudFrontLogging'), 'None'))
+                Not(Equals(get_endvalue('CloudFrontLogging'), 'None'))
             )
         )}
 
         C_AcmCertificate = {'CloudFrontAcmCertificate': Not(
-            Equals(get_final_value('CloudFrontAcmCertificate'), 'None')
+            Equals(get_endvalue('CloudFrontAcmCertificate'), 'None')
         )}
 
         cfg.Conditions.extend([
@@ -340,7 +340,7 @@ class CF_CloudFront(object):
                 # conditions
                 do_no_override(True)
                 c_CacheBehavior = {name: Not(
-                    Equals(get_final_value(name + 'PathPattern'), 'None')
+                    Equals(get_endvalue(name + 'PathPattern'), 'None')
                 )}
 
                 cfg.Conditions.append(c_CacheBehavior)
@@ -368,7 +368,7 @@ class CF_CloudFront(object):
 
             cfg.Parameters.append(p_Alias)
             
-            cloudfrontaliasextra.append(get_final_value(name, condition=True))
+            cloudfrontaliasextra.append(get_endvalue(name, condition=True))
 
             # conditions
             do_no_override(True)
@@ -379,7 +379,7 @@ class CF_CloudFront(object):
                 ),
                 And(
                     Not(Condition(name + 'Override')),
-                    Not(Equals(get_final_value(name), 'None'))
+                    Not(Equals(get_endvalue(name), 'None'))
                 )
             )}
 
@@ -412,7 +412,7 @@ class CF_CloudFrontEC2(CF_CloudFront):
         # Conditions
         do_no_override(True)
         C_AliasZone = {'CloudFrontAliasZone': Not(
-            Equals(get_final_value('CloudFrontAliasZone'), 'None')
+            Equals(get_endvalue('CloudFrontAliasZone'), 'None')
         )}
 
         C_Distribution = {'CloudFrontDistribution': Or(
@@ -422,22 +422,22 @@ class CF_CloudFrontEC2(CF_CloudFront):
             ),
             And(
                 Not(Condition('CloudFrontOverride')),
-                Not(Equals(get_final_value('CloudFront'), 'None'))
+                Not(Equals(get_endvalue('CloudFront'), 'None'))
             )
         )}
 
         C_OriginAdHoc = {'CloudFrontOriginAdHoc': Equals(
-            get_final_value('CloudFrontOriginAdHoc'), True
+            get_endvalue('CloudFrontOriginAdHoc'), True
         )}
 
         C_OriginProtocolHTTP = {'CloudFrontOriginProtocolHTTP': And(
             Condition('ListenerLoadBalancerHttpPort'),
-            Not(Equals(get_final_value('CloudFrontOriginProtocolPolicy'), 'https-only'))
+            Not(Equals(get_endvalue('CloudFrontOriginProtocolPolicy'), 'https-only'))
         )}
 
         C_OriginProtocolHTTPS = {'CloudFrontOriginProtocolHTTPS': And(
             Condition('ListenerLoadBalancerHttpsPort'),
-            Not(Equals(get_final_value('CloudFrontOriginProtocolPolicy'), 'http-only'))
+            Not(Equals(get_endvalue('CloudFrontOriginProtocolPolicy'), 'http-only'))
         )}
 
         cfg.Conditions.extend([
@@ -459,7 +459,7 @@ class CF_CloudFrontEC2(CF_CloudFront):
             Sub('${EnvRole}${RecordSetCloudFrontSuffix}.' + cfg.HostedZoneNameEnv),
             If(
                 'CloudFrontAliasZone',
-                Sub('%s.%s' % (get_final_value('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)),
+                Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)),
                 Ref('AWS::NoValue')
             )
         ]
@@ -481,7 +481,7 @@ class CF_CloudFrontEC2(CF_CloudFront):
 
         # Outputs
         O_CloudFront = Output('CloudFront')
-        O_CloudFront.Value = get_final_value('CloudFront')
+        O_CloudFront.Value = get_endvalue('CloudFront')
 
         cfg.Outputs.extend([
             O_CloudFront,
@@ -527,7 +527,7 @@ class CF_CloudFrontCLF(CF_CloudFront):
 
         self.CloudFrontDistribution.DistributionConfig.Origins = Origins
         self.CloudFrontDistribution.DistributionConfig.CustomErrorResponses = CustomErrorResponses
-        self.CloudFrontDistribution.DistributionConfig.Comment = get_final_value('CloudFrontComment')
+        self.CloudFrontDistribution.DistributionConfig.Comment = get_endvalue('CloudFrontComment')
 
         R_CloudFrontDistribution = self.CloudFrontDistribution
 

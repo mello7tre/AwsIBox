@@ -15,7 +15,7 @@ ecs:
     Dimensions:
       - Cluster:
           Name: ClusterName
-          Value: get_exported_value('Cluster', 'ClusterStack')
+          Value: get_expvalue('Cluster', 'ClusterStack')
       - Service:
           Name: ServiceName
           Value: GetAtt('Service', 'Name')

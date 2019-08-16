@@ -6,14 +6,14 @@ from shared import *
 
 class ECSService(ecs.Service):
     def setup(self, scheme):
-        self.Cluster = get_exported_value('Cluster', 'ClusterStack')
+        self.Cluster = get_expvalue('Cluster', 'ClusterStack')
 
         # DAEMON MODE DO NOT SUPPORT DESIRED OR PLACEMENT STRATEGIES, IS SIMPLY ONE TASK FOR CONTAINER INSTANCE
         if cfg.SchedulingStrategy == 'REPLICA':
-            self.DesiredCount = get_final_value('CapacityDesired')
+            self.DesiredCount = get_endvalue('CapacityDesired')
             self.DeploymentConfiguration = ecs.DeploymentConfiguration(
-                MaximumPercent = get_final_value('DeploymentConfigurationMaximumPercent'),
-                MinimumHealthyPercent = get_final_value('DeploymentConfigurationMinimumHealthyPercent'),
+                MaximumPercent = get_endvalue('DeploymentConfigurationMaximumPercent'),
+                MinimumHealthyPercent = get_endvalue('DeploymentConfigurationMinimumHealthyPercent'),
             )
             self.PlacementStrategies = If(
                 'LaunchTypeFarGate',
@@ -32,16 +32,16 @@ class ECSService(ecs.Service):
         elif cfg.SchedulingStrategy == 'DAEMON':
             self.SchedulingStrategy = 'DAEMON'
 
-        self.LaunchType = get_final_value('LaunchType')
+        self.LaunchType = get_endvalue('LaunchType')
 
         if cfg.HealthCheckGracePeriodSeconds != 0:
-            self.HealthCheckGracePeriodSeconds = get_final_value('HealthCheckGracePeriodSeconds')
+            self.HealthCheckGracePeriodSeconds = get_endvalue('HealthCheckGracePeriodSeconds')
 
         if scheme:
             self.LoadBalancers = [
                 ecs.LoadBalancer(
                     ContainerName=Ref('EnvRole'),
-                    ContainerPort=get_final_value('ContainerDefinitions1ContainerPort'),
+                    ContainerPort=get_endvalue('ContainerDefinitions1ContainerPort'),
                     TargetGroupArn=Ref('TargetGroup' + scheme)
                 )
             ]
@@ -50,7 +50,7 @@ class ECSService(ecs.Service):
             self.Role = If(
                 'NetworkModeAwsVpc',
                 Ref('AWS::NoValue'),
-                get_exported_value('RoleECSService')
+                get_expvalue('RoleECSService')
             )
         self.TaskDefinition = Ref('TaskDefinition')
 
@@ -59,20 +59,20 @@ class ECSTaskDefinition(ecs.TaskDefinition):
     def setup(self):
         self.ExecutionRoleArn = If(
             'LaunchTypeFarGate',
-            get_exported_value('RoleECSTaskExecution'),
+            get_expvalue('RoleECSTaskExecution'),
             Ref('AWS::NoValue')
         )
         self.TaskRoleArn = Ref('RoleTask')
 
         self.Cpu = If(
             'CpuTask',
-            get_final_value('Cpu'),
+            get_endvalue('Cpu'),
             Ref('AWS::NoValue')
         )
 
         self.Memory = If(
             'LaunchTypeFarGate',
-            get_final_value('Memory'),
+            get_endvalue('Memory'),
             Ref('AWS::NoValue')
         )
 
@@ -91,7 +91,7 @@ class ECSTaskDefinition(ecs.TaskDefinition):
 
 class ECRRepositories(ecr.Repository):
     def setup(self):
-        self.RepositoryName = get_final_value(self.title)
+        self.RepositoryName = get_endvalue(self.title)
         self.RepositoryPolicyText = {
             'Version': '2012-10-17',
             'Statement': [
@@ -127,8 +127,8 @@ class ECSEnvironment(ecs.Environment):
     def setup(self, key):
         name = self.title
         valuename = name + 'Value'
-        self.Name = get_final_value(name + 'Name')
-        self.Value = get_final_value(valuename)
+        self.Name = get_endvalue(name + 'Name')
+        self.Value = get_endvalue(valuename)
 
 
 class ECSMountPoint(ecs.MountPoint):
@@ -149,35 +149,35 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
         if len(cfg.ContainerDefinitions) == 1:
             self.Cpu = If(
                 'CpuTask',
-                get_final_value('Cpu'),
-                get_final_value(name + 'Cpu')
+                get_endvalue('Cpu'),
+                get_endvalue(name + 'Cpu')
             )
             self.Memory = If(
                 'LaunchTypeFarGate',
-                get_final_value('Memory'),
-                get_final_value(name + 'Memory')
+                get_endvalue('Memory'),
+                get_endvalue(name + 'Memory')
             )
 
         if 'RepoName' in key:
-            self.Image=get_sub_mapex(
+            self.Image=get_subvalue(
                 '${1M}.dkr.ecr.${AWS::Region}.amazonaws.com/${2M}:${EnvApp%sVersion}' % index,
                 ['EcrAccount', name + 'RepoName']
             )
         # use the same EnvApp version for all containers
         elif cfg.RepoName != 'None':
-            self.Image=get_sub_mapex(
+            self.Image=get_subvalue(
                 '${1M}.dkr.ecr.${AWS::Region}.amazonaws.com/${2M}:${EnvApp1Version}',
                 ['EcrAccount', 'RepoName']
             )
         elif cfg.Image != 'None':
-            self.Image=get_final_value('Image')
+            self.Image=get_endvalue('Image')
 
         self.LogConfiguration=If(
             'LogConfiguration',
             ecs.LogConfiguration(
-                LogDriver=get_final_value('LogDriver'),
+                LogDriver=get_endvalue('LogDriver'),
                 Options={
-                    #'awslogs-group': get_final_value('AwsLogsGroup'),
+                    #'awslogs-group': get_endvalue('AwsLogsGroup'),
                     #'awslogs-create-group': True,
                     'awslogs-group': Ref('LogsLogGroup'),
                     'awslogs-region': Ref('AWS::Region'),
@@ -193,7 +193,7 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
             ]
 
         if 'Name' in key:
-            self.Name = get_sub_mapex('${EnvRole}-${1M}', name + 'Name')
+            self.Name = get_subvalue('${EnvRole}-${1M}', name + 'Name')
         else:
             self.Name = Ref('EnvRole')
 
@@ -203,7 +203,7 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
             if 'HostPort' not in key:
                 PortMapping.HostPort = If(
                     'NetworkModeAwsVpc',
-                    get_final_value(name + 'ContainerPort'),
+                    get_endvalue(name + 'ContainerPort'),
                     0
                 )
             self.PortMappings = [PortMapping]
@@ -223,7 +223,7 @@ class ECSAwsvpcConfiguration(ecs.AwsvpcConfiguration):
         self.SecurityGroups = [
             GetAtt('SecurityGroupEcsService', 'GroupId'),
         ]
-        self.Subnets = Split(',', get_exported_value('SubnetsPrivate'))
+        self.Subnets = Split(',', get_expvalue('SubnetsPrivate'))
 
 
 class ECRRepositoryLifecyclePolicy(ecr.LifecyclePolicy):
@@ -262,7 +262,7 @@ def ECRRepositoryPolicyStatementAccountPull(name):
         'Effect': 'Allow',
         'Principal': {
             'AWS': [
-                get_sub_mapex('arn:aws:iam::${1M}:root', name)
+                get_subvalue('arn:aws:iam::${1M}:root', name)
             ]
         },
         'Sid': 'AllowPull'
@@ -282,7 +282,7 @@ def ECRRepositoryPolicyStatementAccountPush(name):
         'Effect': 'Allow',
         'Principal': {
             'AWS': [
-                get_sub_mapex('arn:aws:iam::${1M}:root', name)
+                get_subvalue('arn:aws:iam::${1M}:root', name)
             ]
         },
         'Sid': 'AllowPush'
@@ -324,7 +324,7 @@ class ECS_TaskDefinition(object):
             ),
             ecs.Environment(
                 Name='EnvClusterStackName',
-                Value=get_final_value('ClusterStack')
+                Value=get_endvalue('ClusterStack')
             ),
         ]
 
@@ -363,10 +363,10 @@ class ECS_TaskDefinition(object):
                 if cfg.RepoName != 'None':
                     if 'RepoName' in v:
                         o_Repo = Output(name + 'RepoName')
-                        o_Repo.Value = get_final_value(name + 'RepoName')
+                        o_Repo.Value = get_endvalue(name + 'RepoName')
                     else:
                         o_Repo = Output('RepoName')
-                        o_Repo.Value = get_final_value('RepoName')
+                        o_Repo.Value = get_endvalue('RepoName')
 
                     cfg.Outputs.append(o_Repo)
 
@@ -557,7 +557,7 @@ class ECR_Repositories(object):
             # conditions
             do_no_override(True)
             c_Account = {mapname: Not(
-                Equals(get_final_value(mapname), 'None')
+                Equals(get_endvalue(mapname), 'None')
             )}
 
             cfg.Conditions.extend([

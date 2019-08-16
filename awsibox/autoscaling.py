@@ -19,18 +19,18 @@ except ImportError:
 class ASAutoScalingGroup(asg.AutoScalingGroup):
     def setup(self, spot=None):
         if spot:
-            CapacityDesiredASGMainIsSpot = get_final_value('CapacityDesired')
+            CapacityDesiredASGMainIsSpot = get_endvalue('CapacityDesired')
             CapacityDesiredASGMainIsNotSpot = 0
-            CapacityMinASGMainIsSpot = get_final_value('CapacityMin')
+            CapacityMinASGMainIsSpot = get_endvalue('CapacityMin')
             CapacityMinASGMainIsNotSpot = 0
             self.Condition = 'SpotASG'
             self.LaunchConfigurationName = Ref('LaunchConfigurationSpot')
             self.UpdatePolicy = ASUpdatePolicy(spot=True)
         else:
             CapacityDesiredASGMainIsSpot = 0
-            CapacityDesiredASGMainIsNotSpot = get_final_value('CapacityDesired')
+            CapacityDesiredASGMainIsNotSpot = get_endvalue('CapacityDesired')
             CapacityMinASGMainIsSpot = 0
-            CapacityMinASGMainIsNotSpot = get_final_value('CapacityMin')
+            CapacityMinASGMainIsNotSpot = get_endvalue('CapacityMin')
             self.LaunchConfigurationName = Ref('LaunchConfiguration')
             self.UpdatePolicy = ASUpdatePolicy()
 
@@ -40,18 +40,18 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
             self.DesiredCapacity = If('ASGMainIsSpot', CapacityDesiredASGMainIsSpot, CapacityDesiredASGMainIsNotSpot)
             self.MinSize = If('ASGMainIsSpot', CapacityMinASGMainIsSpot, CapacityMinASGMainIsNotSpot)
         else:
-            self.DesiredCapacity = get_final_value('CapacityDesired')
-            self.MinSize = get_final_value('CapacityMin')
+            self.DesiredCapacity = get_endvalue('CapacityDesired')
+            self.MinSize = get_endvalue('CapacityMin')
 
         self.CreationPolicy = pol.CreationPolicy(
             ResourceSignal=pol.ResourceSignal(
                 Count=self.DesiredCapacity,
-                Timeout=get_final_value('AutoscalingCreationTimeout')
+                Timeout=get_endvalue('AutoscalingCreationTimeout')
             )
         )
-        self.HealthCheckGracePeriod = get_final_value('HealthCheckGracePeriod')
-        self.HealthCheckType = get_final_value('HealthCheckType')
-        self.MaxSize = get_final_value('CapacityMax')
+        self.HealthCheckGracePeriod = get_endvalue('HealthCheckGracePeriod')
+        self.HealthCheckType = get_endvalue('HealthCheckType')
+        self.MaxSize = get_endvalue('CapacityMax')
         self.MetricsCollection = [asg.MetricsCollection(
             Granularity='1Minute'
         )]
@@ -60,7 +60,7 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
             asg.Tag(('EnvStackName'), Ref('AWS::StackName'), True),
         ]
         self.TerminationPolicies = ['OldestInstance']
-        self.VPCZoneIdentifier = Split(',', get_exported_value('SubnetsPrivate'))
+        self.VPCZoneIdentifier = Split(',', get_expvalue('SubnetsPrivate'))
 
 
 class ASLaunchConfiguration(asg.LaunchConfiguration):
@@ -75,17 +75,17 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             asg.BlockDeviceMapping(
                 DeviceName='/dev/xvda',
                 Ebs=asg.EBSBlockDevice(
-                    VolumeSize=get_final_value('VolumeSize'),
-                    VolumeType=get_final_value('VolumeType'),
+                    VolumeSize=get_endvalue('VolumeSize'),
+                    VolumeType=get_endvalue('VolumeType'),
                 )
             ),
             If(
                 'AdditionalStorage',
                 asg.BlockDeviceMapping(
-                    DeviceName=get_final_value('AdditionalStorageName'),
+                    DeviceName=get_endvalue('AdditionalStorageName'),
                     Ebs=asg.EBSBlockDevice(
-                        VolumeSize=get_final_value('AdditionalStorageSize'),
-                        VolumeType=get_final_value('AdditionalStorageType'),
+                        VolumeSize=get_endvalue('AdditionalStorageSize'),
+                        VolumeType=get_endvalue('AdditionalStorageType'),
                     )
                 ),
                 Ref('AWS::NoValue')
@@ -119,15 +119,15 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
         self.ImageId = If(
             'ImageIdLatest',
             Ref('ImageIdLatest'),
-            get_final_value('ImageId'),
-        ) if 'ImageIdLatest' in cfg.Parameter else get_final_value('ImageId')
-        self.InstanceMonitoring = get_final_value('InstanceMonitoring')
-        self.InstanceType = get_final_value('InstanceType')
-        self.KeyName = get_final_value('KeyName')
+            get_endvalue('ImageId'),
+        ) if 'ImageIdLatest' in cfg.Parameter else get_endvalue('ImageId')
+        self.InstanceMonitoring = get_endvalue('InstanceMonitoring')
+        self.InstanceType = get_endvalue('InstanceType')
+        self.KeyName = get_endvalue('KeyName')
         self.SecurityGroups = [
             GetAtt('SecurityGroupInstancesRules', 'GroupId'),
         ]
-        self.SpotPrice = If('SpotPrice', get_final_value('SpotPrice'), Ref('AWS::NoValue'))
+        self.SpotPrice = If('SpotPrice', get_endvalue('SpotPrice'), Ref('AWS::NoValue'))
         self.UserData = Base64(Join('', [
             '#!/bin/bash\n',
             'PATH=/opt/aws/bin:$PATH\n',
@@ -154,21 +154,21 @@ class ASScalingPolicyStep(asg.ScalingPolicy):
         name = self.title  # Ex. ScalingPolicyDown
         self.AdjustmentType = 'ChangeInCapacity'
         self.AutoScalingGroupName = Ref('AutoScalingGroup')
-        self.EstimatedInstanceWarmup = get_final_value(name + 'EstimatedInstanceWarmup')
+        self.EstimatedInstanceWarmup = get_endvalue(name + 'EstimatedInstanceWarmup')
         self.PolicyType = 'StepScaling'
         self.StepAdjustments = [
             asg.StepAdjustments(
-                MetricIntervalLowerBound=get_final_value(name + 'MetricIntervalLowerBound1'),  # Ex. ScalingPolicyDownMetricIntervalLowerBound1
-                MetricIntervalUpperBound=get_final_value(name + 'MetricIntervalUpperBound1'),
-                ScalingAdjustment=get_final_value(name + 'ScalingAdjustment1')  # Ex. ScalingPolicyDownScalingAdjustment1
+                MetricIntervalLowerBound=get_endvalue(name + 'MetricIntervalLowerBound1'),  # Ex. ScalingPolicyDownMetricIntervalLowerBound1
+                MetricIntervalUpperBound=get_endvalue(name + 'MetricIntervalUpperBound1'),
+                ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment1')  # Ex. ScalingPolicyDownScalingAdjustment1
             ),
             asg.StepAdjustments(
-                MetricIntervalLowerBound=get_final_value(name + 'MetricIntervalLowerBound2'),
-                MetricIntervalUpperBound=get_final_value(name + 'MetricIntervalUpperBound2'),
-                ScalingAdjustment=get_final_value(name + 'ScalingAdjustment2')
+                MetricIntervalLowerBound=get_endvalue(name + 'MetricIntervalLowerBound2'),
+                MetricIntervalUpperBound=get_endvalue(name + 'MetricIntervalUpperBound2'),
+                ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment2')
             ),
             asg.StepAdjustments(
-                ScalingAdjustment=get_final_value(name + 'ScalingAdjustment3')
+                ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment3')
             )
         ]
 
@@ -185,20 +185,20 @@ class ASScheduledAction(asg.ScheduledAction):
 
         self.DesiredCapacity = If(
             name + 'CapacityDesiredSize',
-            get_final_value('CapacityDesired'),
-            get_final_value(name + 'DesiredSize', nocondition=name + 'KeepDesiredSize')
+            get_endvalue('CapacityDesired'),
+            get_endvalue(name + 'DesiredSize', nocondition=name + 'KeepDesiredSize')
         )
         self.MinSize = If(
             name + 'CapacityMinSize',
-            get_final_value('CapacityMin'),
-            get_final_value(name + 'MinSize', nocondition=name + 'KeepMinSize')
+            get_endvalue('CapacityMin'),
+            get_endvalue(name + 'MinSize', nocondition=name + 'KeepMinSize')
         )
         self.MaxSize = If(
             name + 'CapacityMaxSize',
-            get_final_value('CapacityMax'),
-            get_final_value(name + 'MaxSize', nocondition=name + 'KeepMaxSize')
+            get_endvalue('CapacityMax'),
+            get_endvalue(name + 'MaxSize', nocondition=name + 'KeepMaxSize')
         )
-        self.Recurrence = get_final_value(name + 'Recurrence')
+        self.Recurrence = get_endvalue(name + 'Recurrence')
         self.StartTime = If(
             name + 'StartTimeOverride',
             Ref(name + 'StartTime'),
@@ -210,7 +210,7 @@ class ASLifecycleHook(asg.LifecycleHook):
     def __init__(self, title, name, key, **kwargs):
         super(asg.LifecycleHook, self).__init__(title, **kwargs)
         auto_get_props(self, key)
-        self.HeartbeatTimeout = get_final_value(title + 'HeartbeatTimeout')
+        self.HeartbeatTimeout = get_endvalue(title + 'HeartbeatTimeout')
 
 # E - AUTOSCALING #
 
@@ -219,14 +219,14 @@ class ASScalingPolicyStepDown(ASScalingPolicyStep):
     def setup(self):
         super(ASScalingPolicyStepDown, self).setup()
         name = self.title
-        self.StepAdjustments[2].MetricIntervalUpperBound = get_final_value(name + 'MetricIntervalUpperBound3')
+        self.StepAdjustments[2].MetricIntervalUpperBound = get_endvalue(name + 'MetricIntervalUpperBound3')
 
 
 class ASScalingPolicyStepUp(ASScalingPolicyStep):
     def setup(self):
         super(ASScalingPolicyStepUp, self).setup()
         name = self.title
-        self.StepAdjustments[2].MetricIntervalLowerBound = get_final_value(name + 'MetricIntervalLowerBound3')
+        self.StepAdjustments[2].MetricIntervalLowerBound = get_endvalue(name + 'MetricIntervalLowerBound3')
 
 
 # S - APPLICATION AUTOSCALING #
@@ -247,17 +247,17 @@ class APPASScalingPolicyStep(APPASScalingPolicy):
             MetricAggregationType='Average',
             StepAdjustments=[
                 aas.StepAdjustment(
-                    MetricIntervalLowerBound=get_final_value(name + 'MetricIntervalLowerBound1'),
-                    MetricIntervalUpperBound=get_final_value(name + 'MetricIntervalUpperBound1'),
-                    ScalingAdjustment=get_final_value(name + 'ScalingAdjustment1')
+                    MetricIntervalLowerBound=get_endvalue(name + 'MetricIntervalLowerBound1'),
+                    MetricIntervalUpperBound=get_endvalue(name + 'MetricIntervalUpperBound1'),
+                    ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment1')
                     ),
                 aas.StepAdjustment(
-                    MetricIntervalLowerBound=get_final_value(name + 'MetricIntervalLowerBound2'),
-                    MetricIntervalUpperBound=get_final_value(name + 'MetricIntervalUpperBound2'),
-                    ScalingAdjustment=get_final_value(name + 'ScalingAdjustment2')
+                    MetricIntervalLowerBound=get_endvalue(name + 'MetricIntervalLowerBound2'),
+                    MetricIntervalUpperBound=get_endvalue(name + 'MetricIntervalUpperBound2'),
+                    ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment2')
                     ),
                 aas.StepAdjustment(
-                    ScalingAdjustment=get_final_value(name + 'ScalingAdjustment3')
+                    ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment3')
                 )
             ]
         )
@@ -267,14 +267,14 @@ class APPASScalingPolicyStepDown(APPASScalingPolicyStep):
     def setup(self):
         super(APPASScalingPolicyStepDown, self).setup()
         name = self.title
-        self.StepScalingPolicyConfiguration.StepAdjustments[2].MetricIntervalUpperBound = get_final_value(name + 'MetricIntervalUpperBound3')
+        self.StepScalingPolicyConfiguration.StepAdjustments[2].MetricIntervalUpperBound = get_endvalue(name + 'MetricIntervalUpperBound3')
 
 
 class APPASScalingPolicyStepUp(APPASScalingPolicyStep):
     def setup(self):
         super(APPASScalingPolicyStepUp, self).setup()
         name = self.title
-        self.StepScalingPolicyConfiguration.StepAdjustments[2].MetricIntervalLowerBound = get_final_value(name + 'MetricIntervalLowerBound3')
+        self.StepScalingPolicyConfiguration.StepAdjustments[2].MetricIntervalLowerBound = get_endvalue(name + 'MetricIntervalLowerBound3')
 
 
 class APPASScheduledAction(aas.ScheduledAction):
@@ -283,16 +283,16 @@ class APPASScheduledAction(aas.ScheduledAction):
         self.ScalableTargetAction = aas.ScalableTargetAction(
             MinCapacity=If(
                 name + 'CapacityMinSize',
-                get_final_value('CapacityMin'),
-                get_final_value(name + 'MinSize', nocondition=name + 'KeepMinSize')
+                get_endvalue('CapacityMin'),
+                get_endvalue(name + 'MinSize', nocondition=name + 'KeepMinSize')
             ),
             MaxCapacity=If(
                 name + 'CapacityMaxSize',
-                get_final_value('CapacityMax'),
-                get_final_value(name + 'MaxSize', nocondition=name + 'KeepMaxSize')
+                get_endvalue('CapacityMax'),
+                get_endvalue(name + 'MaxSize', nocondition=name + 'KeepMaxSize')
             )
         )
-        self.Schedule = get_final_value(name + 'Recurrence')
+        self.Schedule = get_endvalue(name + 'Recurrence')
         self.ScheduledActionName = name
         self.StartTime = If(
             name + 'StartTimeOverride',
@@ -303,10 +303,10 @@ class APPASScheduledAction(aas.ScheduledAction):
 
 class APPASScalableTarget(aas.ScalableTarget):
     def setup(self):
-        self.MaxCapacity = get_final_value('CapacityMax')
-        self.MinCapacity = get_final_value('CapacityMin')
-        self.ResourceId = get_sub_mapex('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
-        self.RoleARN = get_exported_value('RoleEC2ContainerServiceAutoscale', '')
+        self.MaxCapacity = get_endvalue('CapacityMax')
+        self.MinCapacity = get_endvalue('CapacityMin')
+        self.ResourceId = get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
+        self.RoleARN = get_expvalue('RoleEC2ContainerServiceAutoscale', '')
         self.ScalableDimension = 'ecs:service:DesiredCount'
         self.ServiceNamespace = 'ecs'
 
@@ -336,11 +336,11 @@ class ASUpdatePolicy(pol.UpdatePolicy):
         self.AutoScalingRollingUpdate = If(
             AutoScalingRollingUpdateCondition,
             pol.AutoScalingRollingUpdate(
-                MaxBatchSize=get_final_value('RollingUpdateMaxBatchSize'),
-                # MinInstancesInService=get_final_value('RollingUpdateMinInstancesInService'),
-                MinInstancesInService=get_final_value('CapacityDesired'),
-                MinSuccessfulInstancesPercent=get_final_value('RollingUpdateMinSuccessfulInstancesPercent'),
-                PauseTime=get_final_value('RollingUpdatePauseTime'),
+                MaxBatchSize=get_endvalue('RollingUpdateMaxBatchSize'),
+                # MinInstancesInService=get_endvalue('RollingUpdateMinInstancesInService'),
+                MinInstancesInService=get_endvalue('CapacityDesired'),
+                MinSuccessfulInstancesPercent=get_endvalue('RollingUpdateMinSuccessfulInstancesPercent'),
+                PauseTime=get_endvalue('RollingUpdatePauseTime'),
                 SuspendProcesses=[
                     'HealthCheck',
                     'ReplaceUnhealthy',
@@ -458,15 +458,15 @@ class ASInitConfigSetup(cfm.InitConfig):
                 'AdditionalStorageMount',
                 {
                     #'command': Join('', [
-                    #    'file -s ', get_final_value('AdditionalStorageName'), '1', ' | grep -q "ext[34] filesystem" || ',
-                    #    '{ parted -s ', get_final_value('AdditionalStorageName'), ' mklabel gpt', ' && ',
-                    #    'parted -s ', get_final_value('AdditionalStorageName'), ' mkpart primary ext2 1 ',
-                    #    get_final_value('AdditionalStorageSize'), 'G', ' && ',
-                    #    'mkfs.ext4 ', get_final_value('AdditionalStorageName'), '1', ' || continue; }\n',
+                    #    'file -s ', get_endvalue('AdditionalStorageName'), '1', ' | grep -q "ext[34] filesystem" || ',
+                    #    '{ parted -s ', get_endvalue('AdditionalStorageName'), ' mklabel gpt', ' && ',
+                    #    'parted -s ', get_endvalue('AdditionalStorageName'), ' mkpart primary ext2 1 ',
+                    #    get_endvalue('AdditionalStorageSize'), 'G', ' && ',
+                    #    'mkfs.ext4 ', get_endvalue('AdditionalStorageName'), '1', ' || continue; }\n',
                     #    'mkdir -p /data', ' && ',
                     #    'mount /dev/xvdx1 /data'
                     #])
-                    'command': get_sub_mapex(
+                    'command': get_subvalue(
                         'file -s ${1M}1 | grep -q "ext[34] filesystem" || { parted -s ${1M} mklabel gpt && parted -s ${1M} mkpart primary ext2 1 ${2M}G && mkfs.ext4 ${1M}1 || continue; }\nmkdir -p /data && mount ${1M}1 /data',
                         ['AdditionalStorageName', 'AdditionalStorageSize']
                     )
@@ -556,7 +556,7 @@ class ASInitConfigApps(cfm.InitConfig):
             '/tmp/ibox/': If(
                 'DeployRevision',
                 Ref('AWS::NoValue'),
-                get_sub_mapex(
+                get_subvalue(
                     'https://%s.s3-${AWS::Region}.amazonaws.com/${1M}/${1M}-${%s}.tar.gz' % (cfg.BucketAppRepository, envappversion),
                     reponame, ''
                 )
@@ -567,7 +567,7 @@ class ASInitConfigApps(cfm.InitConfig):
                 'DeployRevision',
                 Ref('AWS::NoValue'),
                 {
-                    'command': get_sub_mapex(
+                    'command': get_subvalue(
                         'EnvAppVersion=${%s} EnvRepoName=${1M} /tmp/ibox/bin/setup.sh' % envappversion, reponame
                     )
                 }
@@ -575,7 +575,7 @@ class ASInitConfigApps(cfm.InitConfig):
             '02_setup_reboot_codedeploy': If(
                 'DeployRevision',
                 {
-                    'command': get_sub_mapex(
+                    'command': get_subvalue(
                         'EnvAppVersion=${%s} EnvRepoName=${1M} /opt/ibox/${1M}/live/bin/setup.sh' % envappversion, reponame
                     ),
                     'test': 'test -e /var/lib/cloud/instance/sem/config_ssh_authkey_fingerprints'
@@ -676,7 +676,7 @@ class ASNotificationConfiguration(asg.NotificationConfigurations):
             'autoscaling:EC2_INSTANCE_LAUNCH',
             'autoscaling:EC2_INSTANCE_TERMINATE',
         ]
-        self.TopicARN = get_exported_value('SNSTopicASGNotification')
+        self.TopicARN = get_expvalue('SNSTopicASGNotification')
 # E - AUTOSCALING #
 
 # ##########################################
@@ -720,7 +720,7 @@ class AS_ScheduledAction(object):
             ),
             And(
                 Not(Condition(resname + 'MinSizeOverride')),
-                Equals(get_final_value(resname + 'MinSize'), 'k')
+                Equals(get_endvalue(resname + 'MinSize'), 'k')
             )
         )}
 
@@ -731,7 +731,7 @@ class AS_ScheduledAction(object):
             ),
             And(
                 Not(Condition(resname + 'MaxSizeOverride')),
-                Equals(get_final_value(resname + 'MaxSize'), 'k')
+                Equals(get_endvalue(resname + 'MaxSize'), 'k')
             )
         )}
 
@@ -742,7 +742,7 @@ class AS_ScheduledAction(object):
             ),
             And(
                 Not(Condition(resname + 'MinSizeOverride')),
-                Equals(get_final_value(resname + 'MinSize'), 'CapacityMin')
+                Equals(get_endvalue(resname + 'MinSize'), 'CapacityMin')
             )
         )}
 
@@ -753,7 +753,7 @@ class AS_ScheduledAction(object):
             ),
             And(
                 Not(Condition(resname + 'MaxSizeOverride')),
-                Equals(get_final_value(resname + 'MaxSize'), 'CapacityMax')
+                Equals(get_endvalue(resname + 'MaxSize'), 'CapacityMax')
             )
         )}
 
@@ -764,7 +764,7 @@ class AS_ScheduledAction(object):
             ),
             And(
                 Not(Condition(resname + 'RecurrenceOverride')),
-                Not(Equals(get_final_value(resname + 'Recurrence'), 'None'))
+                Not(Equals(get_endvalue(resname + 'Recurrence'), 'None'))
             )
         )}
 
@@ -782,7 +782,7 @@ class AS_ScheduledAction(object):
         out_Map = {}
         for k in OutKey:
             out_String.append('%s=${%s}' % (k, k))  # Ex. 'MinSize=${MinSize}'
-            out_Map.update({k: get_final_value(resname + k) if k != 'StartTime' else Ref(resname + k)})
+            out_Map.update({k: get_endvalue(resname + k) if k != 'StartTime' else Ref(resname + k)})
 
         O_ScheduledAction = Output(resname)
         O_ScheduledAction.Value = Sub(','.join(out_String), **out_Map)
@@ -809,7 +809,7 @@ class AS_ScheduledActionsEC2(object):
                 ),
                 And(
                     Not(Condition(resname + 'DesiredSizeOverride')),
-                    Equals(get_final_value(resname + 'DesiredSize'), 'k')
+                    Equals(get_endvalue(resname + 'DesiredSize'), 'k')
                 )
             )}
     
@@ -820,7 +820,7 @@ class AS_ScheduledActionsEC2(object):
                 ),
                 And(
                     Not(Condition(resname + 'DesiredSizeOverride')),
-                    Equals(get_final_value(resname + 'DesiredSize'), 'CapacityDesired')
+                    Equals(get_endvalue(resname + 'DesiredSize'), 'CapacityDesired')
                 )
             )}
     
@@ -941,7 +941,7 @@ class AS_ScalingPoliciesTracking(object):
                 ),
                 And(
                     Not(Condition(basename + 'TargetValueOverride')),
-                    Not(Equals(get_final_value(basename + 'TargetValue'), '0'))
+                    Not(Equals(get_endvalue(basename + 'TargetValue'), '0'))
                 )
             )}
 
@@ -954,8 +954,8 @@ class AS_ScalingPoliciesTracking(object):
             ):
                 ScalingPolicyTrackings_Out_String.append('Cpu${Statistic}:${Cpu}')
                 ScalingPolicyTrackings_Out_Map.update({
-                    'Statistic': get_final_value(basename + 'CustomizedMetricSpecificationStatistic') if v['Type'] == 'Custom'  else '',
-                    'Cpu': get_final_value(basename + 'TargetValue'),
+                    'Statistic': get_endvalue(basename + 'CustomizedMetricSpecificationStatistic') if v['Type'] == 'Custom'  else '',
+                    'Cpu': get_endvalue(basename + 'TargetValue'),
                 })
 
             # resources
@@ -994,7 +994,7 @@ class AS_Autoscaling(object):
 
         # Outputs
         O_Capacity = Output('Capacity')
-        O_Capacity.Value = get_sub_mapex(
+        O_Capacity.Value = get_subvalue(
             'Desired=${1M},Min=${2M},Max=${3M}',
             [
                 'CapacityDesired',
@@ -1060,13 +1060,13 @@ class AS_LaunchConfiguration(object):
             ),
             And(
                 Not(Condition('AdditionalStorageSizeOverride')),
-                Not(Equals(get_final_value('AdditionalStorageSize'), '0'))
+                Not(Equals(get_endvalue('AdditionalStorageSize'), '0'))
             )
         )}
 
         C_AdditionalStorageMount = {'AdditionalStorageMount': And(
             Condition('AdditionalStorage'),
-            Not(Equals(get_final_value('AdditionalStorageMount'), 'None'))
+            Not(Equals(get_endvalue('AdditionalStorageMount'), 'None'))
         )}
 
         C_CloudFormationInit = {'CloudFormationInit': Equals(
@@ -1089,7 +1089,7 @@ class AS_LaunchConfiguration(object):
             ),
             And(
                 Not(Condition('InstanceTypeOverride')),
-                Equals(FindInMap('InstanceTypes', get_final_value('InstanceType'), 'InstaceEphemeral0'), '1')
+                Equals(FindInMap('InstanceTypes', get_endvalue('InstanceType'), 'InstaceEphemeral0'), '1')
             )
         )}
 
@@ -1100,7 +1100,7 @@ class AS_LaunchConfiguration(object):
             ),
             And(
                 Not(Condition('InstanceTypeOverride')),
-                Equals(FindInMap('InstanceTypes', get_final_value('InstanceType'), 'InstaceEphemeral1'), '1')
+                Equals(FindInMap('InstanceTypes', get_endvalue('InstanceType'), 'InstaceEphemeral1'), '1')
             )
         )}
 
@@ -1111,7 +1111,7 @@ class AS_LaunchConfiguration(object):
             ),
             And(
                 Not(Condition('InstanceTypeOverride')),
-                Equals(FindInMap('InstanceTypes', get_final_value('InstanceType'), 'InstaceEphemeral2'), '1')
+                Equals(FindInMap('InstanceTypes', get_endvalue('InstanceType'), 'InstaceEphemeral2'), '1')
             )
         )}
 
@@ -1169,7 +1169,7 @@ class AS_LaunchConfiguration(object):
                             ),
                             And(
                                 Not(Condition(reponame + 'Override')),
-                                Equals(get_final_value(reponame), 'None')
+                                Equals(get_endvalue(reponame), 'None')
                             )
                         )
                     )
@@ -1187,7 +1187,7 @@ class AS_LaunchConfiguration(object):
 
             IBoxEnvApp.extend([
                 'export EnvApp%sVersion=' % n, Ref(envname), "\n",
-                'export EnvRepo%sName=' % n, get_final_value(reponame), "\n",
+                'export EnvRepo%sName=' % n, get_endvalue(reponame), "\n",
             ])
 
             InitConfigSetsApp = If(name, name, Ref('AWS::NoValue'))
@@ -1214,7 +1214,7 @@ class AS_LaunchConfiguration(object):
             cfg.Outputs.append(Output_app)
 
             Output_repo = Output(reponame)
-            Output_repo.Value = get_final_value(reponame)
+            Output_repo.Value = get_endvalue(reponame)
             cfg.Outputs.append(Output_repo)
 
         InitConfigSetup = ASInitConfigSetup()
@@ -1289,7 +1289,7 @@ class AS_LaunchConfiguration(object):
         R_LaunchConfigurationSpot = ASLaunchConfiguration('LaunchConfigurationSpot')
         R_LaunchConfigurationSpot.setup(UserDataApp=UserDataApp, spot=True)
         R_LaunchConfigurationSpot.SecurityGroups = R_LaunchConfiguration.SecurityGroups
-        R_LaunchConfigurationSpot.SpotPrice = get_final_value('SpotPrice')
+        R_LaunchConfigurationSpot.SpotPrice = get_endvalue('SpotPrice')
 
         cfg.Resources.extend([
             R_LaunchConfiguration,
@@ -1304,7 +1304,7 @@ class AS_LaunchConfiguration(object):
 
         # Outputs
         O_AdditionalStorageSize = Output('AdditionalStorageSize')
-        O_AdditionalStorageSize.Value = get_final_value('AdditionalStorageSize')
+        O_AdditionalStorageSize.Value = get_endvalue('AdditionalStorageSize')
 
         O_DoNotSignal = Output('DoNotSignal')
         O_DoNotSignal.Value = Ref('DoNotSignal')
@@ -1317,13 +1317,13 @@ class AS_LaunchConfiguration(object):
         O_ImageId.Value = self.LaunchConfiguration.ImageId
 
         O_InstanceType = Output('InstanceType')
-        O_InstanceType.Value = get_final_value('InstanceType')
+        O_InstanceType.Value = get_endvalue('InstanceType')
 
         O_KeyName = Output('KeyName')
-        O_KeyName.Value = get_final_value('KeyName')
+        O_KeyName.Value = get_endvalue('KeyName')
 
         O_VolumeSize = Output('VolumeSize')
-        O_VolumeSize.Value = get_final_value('VolumeSize')
+        O_VolumeSize.Value = get_endvalue('VolumeSize')
 
         cfg.Outputs.extend([
             O_AdditionalStorageSize,
@@ -1371,7 +1371,7 @@ class AS_AutoscalingEC2(AS_Autoscaling):
             ),
             If(
                 'SpotAutoMinOnDemandNumber',
-                asg.Tag(('autospotting_min_on_demand_number'), get_final_value('SpotAutoMinOnDemandNumber'), True),
+                asg.Tag(('autospotting_min_on_demand_number'), get_endvalue('SpotAutoMinOnDemandNumber'), True),
                 Ref('AWS::NoValue')
             )
         ])

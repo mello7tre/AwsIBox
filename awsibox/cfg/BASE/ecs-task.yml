@@ -29,37 +29,37 @@ global:
     - CpuTask:
         Or(
           And(Condition('CpuOverride'),Not(Equals(Ref('Cpu'), 'None'))),
-          And(Not(Condition('CpuOverride')),Not(Equals(get_final_value('Cpu'), 'None')))
+          And(Not(Condition('CpuOverride')),Not(Equals(get_endvalue('Cpu'), 'None')))
         )
     - LaunchTypeFarGate:
         Or(
           And(Condition('LaunchTypeOverride'),Equals(Ref('LaunchType'), 'FARGATE')),
-          And(Not(Condition('LaunchTypeOverride')),Equals(get_final_value('LaunchType'), 'FARGATE'))
+          And(Not(Condition('LaunchTypeOverride')),Equals(get_endvalue('LaunchType'), 'FARGATE'))
         )
     - LogConfiguration:
-        Not(Equals(get_final_value('LogDriver'), 'None'))
+        Not(Equals(get_endvalue('LogDriver'), 'None'))
     - NetworkModeAwsVpc:
         Or(
           And(Condition('NetworkModeOverride'),Equals(Ref('NetworkMode'), 'awsvpc')),
-          And(Not(Condition('NetworkModeOverride')),Equals(get_final_value('NetworkMode'), 'awsvpc')),
+          And(Not(Condition('NetworkModeOverride')),Equals(get_endvalue('NetworkMode'), 'awsvpc')),
           Condition('LaunchTypeFarGate')
         )
     - NetworkModeStandard:
         Or(
           And(Condition('NetworkModeOverride'),Not(Equals(Ref('NetworkMode'), 'awsvpc'))),
-          And(Not(Condition('NetworkModeOverride')),Not(Equals(get_final_value('NetworkMode'), 'awsvpc')))
+          And(Not(Condition('NetworkModeOverride')),Not(Equals(get_endvalue('NetworkMode'), 'awsvpc')))
         )
   Output:
     - Cpu:
-        Value: get_final_value('Cpu')
+        Value: get_endvalue('Cpu')
         Condition: CpuTask
     - Memory:
-        Value: get_final_value('Memory')
+        Value: get_endvalue('Memory')
         Condition: LaunchTypeFarGate
     - LaunchType:
-        Value: get_final_value('LaunchType')
+        Value: get_endvalue('LaunchType')
     - LogDriver:
-        Value: get_final_value('LogDriver')
+        Value: get_endvalue('LogDriver')
   ContainerDefinitions:
     - 1:
         Cpu: 16

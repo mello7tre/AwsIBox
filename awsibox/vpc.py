@@ -6,8 +6,8 @@ from shared import *
 class EC2VPCPeeringConnection(ec2.VPCPeeringConnection):
     def setup(self):
         self.Condition = 'VPCPeeringConnection'
-        self.PeerVpcId = get_exported_value('VpcId-stg', '')
-        self.VpcId = get_exported_value('VpcId-dev', '')
+        self.PeerVpcId = get_expvalue('VpcId-stg', '')
+        self.VpcId = get_expvalue('VpcId-dev', '')
         self.Tags = Tags(Name='Dev-Peer-Staging')
 
 
@@ -20,21 +20,21 @@ class EC2RoutePeeringConnection(ec2.Route):
 class EC2RoutePeeringConnectionDev(EC2RoutePeeringConnection):
     def setup(self):
         super(EC2RoutePeeringConnectionDev, self).setup()
-        self.DestinationCidrBlock = get_exported_value('VPCCidr-stg', '')
-        self.RouteTableId = get_exported_value('RouteTablePrivate-dev', '')
+        self.DestinationCidrBlock = get_expvalue('VPCCidr-stg', '')
+        self.RouteTableId = get_expvalue('RouteTablePrivate-dev', '')
 
 
 class EC2RoutePeeringConnectionStg(EC2RoutePeeringConnection):
     def setup(self):
         super(EC2RoutePeeringConnectionStg, self).setup()
-        self.DestinationCidrBlock = get_exported_value('VPCCidr-dev', '')
-        self.RouteTableId = get_exported_value('RouteTablePrivate-stg', '')
+        self.DestinationCidrBlock = get_expvalue('VPCCidr-dev', '')
+        self.RouteTableId = get_expvalue('RouteTablePrivate-stg', '')
 
 
 class EC2VPCEndpoint(ec2.VPCEndpoint):
     def setup(self):
-        self.RouteTableIds = [ get_exported_value('RouteTablePrivate') ]
-        self.VpcId = get_exported_value('VpcId')
+        self.RouteTableIds = [ get_expvalue('RouteTablePrivate') ]
+        self.VpcId = get_expvalue('VpcId')
 
 
 class EC2VPCEndpointS3(EC2VPCEndpoint):
@@ -49,7 +49,7 @@ class VPC_Endpoint(object):
         #Conditions
         do_no_override(True)
         C_S3 = {'EC2VPCEndpointS3': Not(
-            Equals(get_final_value('VPCEndpoint'), 'None')
+            Equals(get_endvalue('VPCEndpoint'), 'None')
         )}
 
         cfg.Conditions.extend([

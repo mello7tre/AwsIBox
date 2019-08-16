@@ -68,7 +68,7 @@ class WAFRegionalWebAcl(wafr.WebACL, WAFWebACL):
 class WAFIPSetDescriptors(waf.IPSetDescriptors, wafr.IPSetDescriptors):
     def setup(self, name):
         self.Type = 'IPV4'
-        self.Value=Select(int(self.title), get_final_value(name + 'Ips'))
+        self.Value=Select(int(self.title), get_endvalue(name + 'Ips'))
 
 
 class WAFFieldToMatch(waf.FieldToMatch, wafr.FieldToMatch):
@@ -88,7 +88,7 @@ class WAFByteMatchTuples(waf.ByteMatchTuples, wafr.ByteMatchTuples):
 
 class WAFPredicates(waf.Predicates, wafr.Predicates):
     def setup(self, name, ptype, wtype):
-        self.Negated = get_final_value(name + 'Negated')
+        self.Negated = get_endvalue(name + 'Negated')
         if ptype == 'ByteMatch':
             self.DataId = Ref('Waf' + wtype + 'ByteMatchSet' + self.title)
             self.Type = 'ByteMatch'
@@ -113,7 +113,7 @@ class WAFAction(waf.Action, wafr.Action):
 class WAFWebACLRule(waf.Rules, wafr.Rules):
     def setup(self, name, index, wtype):
         self.Action = WAFAction(
-            Type=get_final_value(name + 'Action')
+            Type=get_endvalue(name + 'Action')
         )
         self.Priority = index
         self.RuleId = Ref('Waf' + wtype + 'Rule' + self.title)
@@ -133,11 +133,11 @@ class WAF_IPSets(object):
             # conditions
             do_no_override(True)
             C_Waf = {resname: And(
-                Not(Equals(get_final_value(mapname + 'Enabled'), 'None')),
+                Not(Equals(get_endvalue(mapname + 'Enabled'), 'None')),
                 Condition('Global') if wtype == 'Global' else Equals('1', '1'),
                 Or(
-                    Equals(get_final_value(mapname + 'WafType'), wtype),
-                    Equals(get_final_value(mapname + 'WafType'), 'Common'),
+                    Equals(get_endvalue(mapname + 'WafType'), wtype),
+                    Equals(get_endvalue(mapname + 'WafType'), 'Common'),
                 )
             )}
             
@@ -168,11 +168,11 @@ class WAF_ByteMatchSets(object):
             # conditions
             do_no_override(True)
             C_Waf = {resname: And(
-                Not(Equals(get_final_value(mapname + 'Enabled'), 'None')),
+                Not(Equals(get_endvalue(mapname + 'Enabled'), 'None')),
                 Condition('Global') if wtype == 'Global' else Equals('1', '1'),
                 Or(
-                    Equals(get_final_value(mapname + 'WafType'), wtype),
-                    Equals(get_final_value(mapname + 'WafType'), 'Common'),
+                    Equals(get_endvalue(mapname + 'WafType'), wtype),
+                    Equals(get_endvalue(mapname + 'WafType'), 'Common'),
                 )
             )}
             
@@ -206,11 +206,11 @@ class WAF_Rules(object):
             # conditions
             do_no_override(True)
             C_Waf = {resname: And(
-                Not(Equals(get_final_value(mapname + 'Enabled'), 'None')),
+                Not(Equals(get_endvalue(mapname + 'Enabled'), 'None')),
                 Condition('Global') if wtype == 'Global' else Equals('1', '1'),
                 Or(
-                    Equals(get_final_value(mapname + 'WafType'), wtype),
-                    Equals(get_final_value(mapname + 'WafType'), 'Common'),
+                    Equals(get_endvalue(mapname + 'WafType'), wtype),
+                    Equals(get_endvalue(mapname + 'WafType'), 'Common'),
                 )
             )}
             
@@ -262,11 +262,11 @@ class WAF_WebAcls(object):
             # conditions
             do_no_override(True)
             C_Waf = {resname: And(
-                Not(Equals(get_final_value(mapname + 'Enabled'), 'None')),
+                Not(Equals(get_endvalue(mapname + 'Enabled'), 'None')),
                 Condition('Global') if wtype == 'Global' else Equals('1', '1'),
                 Or(
-                    Equals(get_final_value(mapname + 'WafType'), wtype),
-                    Equals(get_final_value(mapname + 'WafType'), 'Common'),
+                    Equals(get_endvalue(mapname + 'WafType'), wtype),
+                    Equals(get_endvalue(mapname + 'WafType'), 'Common'),
                 )
             )}
             

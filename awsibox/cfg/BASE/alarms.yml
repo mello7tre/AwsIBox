@@ -12,7 +12,7 @@ global:
 
   AlarmTarget5XX: &target5xx
     Enabled: None
-    AlarmActions: [get_exported_value('SNSTopicCloudWatchAlarm')]
+    AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
     ActionsEnabled: True
     EvaluationPeriods: 2
     MetricName: HTTPCode_Target_5XX_Count
@@ -26,7 +26,7 @@ global:
 
   AlarmBackend5XX: &backend5xx
     Enabled: None
-    AlarmActions: [get_exported_value('SNSTopicCloudWatchAlarm')]
+    AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
     ActionsEnabled: True
     EvaluationPeriods: 2
     MetricName: HTTPCode_Backend_5XX
@@ -117,7 +117,7 @@ global:
         Dimensions:
           - LoadBalancer:
               Name: LoadBalancer
-              Value: get_exported_value('LoadBalancerApplicationExternalFullName', 'LoadBalancerApplicationStack')
+              Value: get_expvalue('LoadBalancerApplicationExternalFullName', 'LoadBalancerApplicationStack')
           - TargetGroup:
               Name: TargetGroup
               Value: Sub('${TargetGroupExternal.TargetGroupFullName}')
@@ -126,7 +126,7 @@ global:
         Dimensions:
           - LoadBalancer:
               Name: LoadBalancer
-              Value: get_exported_value('LoadBalancerApplicationInternalFullName', 'LoadBalancerApplicationStack')
+              Value: get_expvalue('LoadBalancerApplicationInternalFullName', 'LoadBalancerApplicationStack')
           - TargetGroup:
               Name: TargetGroup
               Value: Sub('${TargetGroupInternal.TargetGroupFullName}')

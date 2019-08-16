@@ -11,27 +11,27 @@ class CCHCacheCluster(cch.CacheCluster):
 class CCHCacheClusterPublic(CCHCacheCluster):
     def setup(self):
         super(CCHCacheClusterPublic, self).setup()
-        self.CacheSubnetGroupName = get_exported_value('CacheSubnetGroupPublic')
+        self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPublic')
         self.CacheSecurityGroupNames = [Ref('SecurityGroupCCH')]
 
 
 class CCHCacheClusterPrivate(CCHCacheCluster):
     def setup(self):
         super(CCHCacheClusterPrivate, self).setup()
-        self.CacheSubnetGroupName = get_exported_value('CacheSubnetGroupPrivate')
+        self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPrivate')
         self.VpcSecurityGroupIds = [Ref('SecurityGroupCCH')]
 
 
 class CCHCacheSubnetGroupPrivate(cch.SubnetGroup):
     def setup(self):
         self.Description = Sub('${EnvShort}-Private')
-        self.SubnetIds=Split(',', get_exported_value('SubnetsPrivate'))
+        self.SubnetIds=Split(',', get_expvalue('SubnetsPrivate'))
 
 
 class CCHCacheSubnetGroupPublic(cch.SubnetGroup):
     def setup(self):
         self.Description = Sub('${EnvShort}-Public')
-        self.SubnetIds=Split(',', get_exported_value('SubnetsPublic'))
+        self.SubnetIds=Split(',', get_expvalue('SubnetsPublic'))
 
 # #################################
 # ### START STACK INFRA CLASSES ###

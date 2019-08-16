@@ -82,10 +82,10 @@ class IAMPolicyBucketReplica(iam.PolicyType):
                     ],
                     'Effect': 'Allow',
                     'Resource': [
-                        get_sub_mapex(
+                        get_subvalue(
                             'arn:aws:s3:::${1M}/*',
                             bucket + 'ReplicaDstBucket'
-                        ) if 'ReplicaDstBucket' in key else get_sub_mapex(
+                        ) if 'ReplicaDstBucket' in key else get_subvalue(
                             'arn:aws:s3:::${1M}-%s/*' % bucket_name.replace('${AWS::Region}-', '', 1),
                             bucket + 'ReplicaDstRegion',
                         )
@@ -127,7 +127,7 @@ class IAMRoleLambdaBase(iam.Role):
             'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
         ]
         if 'RoleManagedPolicyArns' in key:
-            self.ManagedPolicyArns.extend(get_final_value('RoleManagedPolicyArns', mappedvalue=key))
+            self.ManagedPolicyArns.extend(get_endvalue('RoleManagedPolicyArns', mappedvalue=key))
         self.AssumeRolePolicyDocument = {
             'Statement': [{
                 'Action': 'sts:AssumeRole',
@@ -167,7 +167,7 @@ def IAMPolicyStatement(key):
 
     for k in ['Action', 'NotAction', 'Resource', 'NotResource', 'Condition']:
         if k in key:
-            Statement.update({k: get_final_value(k, mappedvalue=key)})
+            Statement.update({k: get_endvalue(k, mappedvalue=key)})
 
     return Statement
 
@@ -191,10 +191,10 @@ class IAM_Users(object):
             # conditions
             do_no_override(True)
             c_User = {resname: Not(
-                Equals(get_final_value(resname + 'Enabled'), 'None')
+                Equals(get_endvalue(resname + 'Enabled'), 'None')
             )}
             c_Role = {resname + 'RoleAccount': Not(
-                Equals(get_final_value(resname + 'RoleAccount'), 'None')
+                Equals(get_endvalue(resname + 'RoleAccount'), 'None')
             )}
 
             cfg.Conditions.extend([
@@ -211,7 +211,7 @@ class IAM_Users(object):
                     # conditions
                     do_no_override(True)
                     c_RoleGroup = {condname: Not(
-                        Equals(get_final_value(condname), 'None')
+                        Equals(get_endvalue(condname), 'None')
                     )}
     
                     cfg.Conditions.append(c_RoleGroup)
@@ -251,7 +251,7 @@ class IAM_Users(object):
                 'StringEquals': {'aws:username': v['UserName']}
             }
             AssumeRoleStatement['Principal'] = {
-                'AWS': Sub('arn:aws:iam::${IdAccount}:root', **{'IdAccount': get_final_value(resname + 'RoleAccount')})
+                'AWS': Sub('arn:aws:iam::${IdAccount}:root', **{'IdAccount': get_endvalue(resname + 'RoleAccount')})
             }
 
             r_User = IAMUser(resname)
@@ -260,7 +260,7 @@ class IAM_Users(object):
 
             r_SSMParameter = SSMParameter('SSMParameterPassword' + n)
             r_SSMParameter.Condition = resname
-            r_SSMParameter.Name = Sub('/iam/PasswordBase/${UserName}', **{'UserName': get_final_value(resname + 'UserName')})
+            r_SSMParameter.Name = Sub('/iam/PasswordBase/${UserName}', **{'UserName': get_endvalue(resname + 'UserName')})
             r_SSMParameter.Value = Ref('PasswordBase' + n)
             r_SSMParameter.AllowedPattern = '^[^ ]{16,}$'
 
@@ -282,7 +282,7 @@ class IAM_UserToGroupAdditions(object):
                 # conditions
                 do_no_override(True)
                 c_User = {condname: Not(
-                    Equals(get_final_value(condname), 'None') 
+                    Equals(get_endvalue(condname), 'None') 
                 )}
                 cfg.Conditions.append(c_User)
                 do_no_override(False)
@@ -291,8 +291,8 @@ class IAM_UserToGroupAdditions(object):
                     If(
                         condname,
                         # for user defined in the same yaml file
-                        # Ref('IAMUser' + m) if m in cfg.IAMUser else get_final_value(condname),
-                        get_final_value(condname),
+                        # Ref('IAMUser' + m) if m in cfg.IAMUser else get_endvalue(condname),
+                        get_endvalue(condname),
                         Ref('AWS::NoValue')
                     )
                 )
@@ -317,7 +317,7 @@ class IAM_Groups(object):
             # conditions
             do_no_override(True)
             c_Group = {resname: Not(
-                Equals(get_final_value(resname + 'Enabled'), 'None')
+                Equals(get_endvalue(resname + 'Enabled'), 'None')
             )}
             cfg.Conditions.append(c_Group)
             do_no_override(False)
