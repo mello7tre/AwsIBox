@@ -311,7 +311,20 @@ CFG_FILE_EXT = os.path.normpath(CFG_FILE_EXT)
 
 envrole = cfg.envrole
 brand = cfg.brand
-RP_base = cfg.RP_base
+
+RP_base = OrderedDict([
+    ('cmm', {
+        'cmm': {},
+    }),
+])
+
+# dynamically create RP_BASE OrderedDict from ENV_BASE and cfg.regions
+for n in cfg.ENV_BASE:
+    RP_base[n] = {}
+    for m in cfg.regions:
+        RP_base[n][m] = {}
+
+cfg.RP_base = RP_base
 
 cfg_role = [
     read_yaml(envrole, 'BASE', CFG_FILE_INT),

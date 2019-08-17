@@ -13,6 +13,7 @@ from troposphere import (
     Split,
 )
 
+
 mappedvalue = {}
 no_override = False
 envrole = ''
@@ -25,7 +26,6 @@ brand = ''
 debug = False
 RP = {}
 
-
 Parameters = []
 Parameters_Override = []
 Conditions = []
@@ -36,24 +36,13 @@ MAX_SECURITY_GROUPS = 4
 # SECURITY_GROUPS_DEFAULT equals list of empty values (Ex. for "MAX_SECURITY_GROUPS = 3" we have "SECURITY_GROUPS_DEFAULT = ',,'")
 SECURITY_GROUPS_DEFAULT = reduce(lambda a, i: ',' + str(a), range(MAX_SECURITY_GROUPS - 1), '')
 
-RP_base = OrderedDict([
-    ('cmm', {
-        'cmm': {},
-    }),
-    ('dev', {
-        'eu-west-1': {},
-        'us-east-1': {},
-    }),
-    ('stg', {
-        'eu-west-1': {},
-        'us-east-1': {},
-    }),
-    ('prd', {
-        'eu-west-1': {},
-        'us-east-1': {},
-        'eu-central-1': {},
-    }),
-])
+ENV_BASE = ['dev', 'stg', 'prd']
+
+DEFAULT_REGIONS = [
+    'eu-west-1',
+    'us-east-1',
+    'eu-central-1',
+]
 
 IMPORT_MODULES = [
     'lambdas',
