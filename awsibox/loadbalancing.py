@@ -4,6 +4,18 @@ import troposphere.ec2 as ec2
 
 from shared import *
 
+from route53 import (
+    R53_RecordSetEC2LoadBalancer,
+    R53_RecordSetECSLoadBalancer,
+)
+
+from securitygroup import (
+    SecurityGroupRuleELBPorts,
+    SecurityGroupIngressInstanceELBPorts,
+    SecurityGroupLoadBalancer,
+    SecurityGroupsIngressEcs,
+)
+
 
 # S - CLASSIC LOAD BALANCING #
 class ELBListener(elb.Listener):
@@ -1073,7 +1085,3 @@ class LB_ElasticLoadBalancingECS(object):
             O_Access,
             O_Scheme,
         ])
-
-
-# Need to stay as last lines
-import_modules(globals())
