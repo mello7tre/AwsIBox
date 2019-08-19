@@ -69,6 +69,7 @@ def stack_add_res():
         # End
         cfg.template.add_parameter(v)
     del cfg.Parameters[:]
+    del cfg.Parameters_Override[:]
 
     for v in cfg.Conditions:
         for name in v:
