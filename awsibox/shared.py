@@ -37,14 +37,13 @@ from troposphere import (
 )
 
 from cfg import (
-    mappedvalue,
-    RP_cmm,
     MAX_SECURITY_GROUPS,
     SECURITY_GROUPS_DEFAULT,
     PARAMETERS_SKIP_OVERRIDE_CONDITION,
 )
 
 import cfg
+
 
 # S - PARAMETERS #
 class Parameter(Parameter):
@@ -98,12 +97,6 @@ def import_modules(gbl):
         gbl.update(mod.__dict__)
 
 
-def import_modules_old():
-    for module in cfg.IMPORT_MODULES:
-        mod = importlib.import_module(module)
-        globals().update(mod.__dict__)
-
-
 def get_endvalue(
         param,
         ssm=False,
@@ -114,10 +107,14 @@ def get_endvalue(
         split=False,
         issub=False,
         strout=False,
-        mappedvalue=mappedvalue
+        mappedvalue=None
 ):
     v = ''
     parameters = []
+
+    # set default if not defined
+    if not mappedvalue:
+        mappedvalue = cfg.mappedvalue
 
     # if param in mappedvalue means its value do not changes based on Env/Region so hardcode the value in json, ...
     if param in mappedvalue:
@@ -250,34 +247,6 @@ def import_lambda(name):
         exit(1)
 
 
-def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, root=None):
-    prop_class = props[obj_propname][0]
-    if isinstance(prop_class, type) and prop_class.__bases__[0].__name__ == 'AWSProperty':
-        # If object already have that props, keep existing props
-        if obj_propname in obj.properties:
-            prop_obj = obj.properties[obj_propname]
-        else:
-            prop_obj = prop_class()
-        auto_get_props(prop_obj, key=key[obj_propname], mapname=mapname + obj_propname, recurse=True, root=None if root is None else root[obj_propname])
-        
-        return prop_obj
-    elif isinstance(prop_class, list) and isinstance(prop_class[0], type) and prop_class[0].__bases__[0].__name__ == 'AWSProperty':
-        # If object props already is a list, keep existing list objects
-        if obj_propname in obj.properties:
-            prop_list = obj.properties[obj_propname]
-        else:
-            prop_list = []
-        prop_class = props[obj_propname][0][0]
-        for o, v in key[obj_propname].iteritems():
-            prop_obj = prop_class()
-            auto_get_props(prop_obj, key=v, mapname=mapname + obj_propname + str(o), recurse=True, root=None if root is None else root[obj_propname][o]) 
-            prop_list.append(prop_obj)
-
-            return prop_list
-
-    return get_endvalue(mapname + propname)
-
-
 def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, rootkey=None, rootname=None):
     prop_class = props[obj_propname][0]
     if isinstance(prop_class, type) and prop_class.__bases__[0].__name__ == 'AWSProperty':
@@ -352,7 +321,11 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
     return get_endvalue(mapname + propname)
 
 
-def auto_get_props(obj, key=RP_cmm, del_prefix='', mapname=None, recurse=False, rootkey=None, rootname=None, rootdict=None):
+def auto_get_props(obj, key=None, del_prefix='', mapname=None, recurse=False, rootkey=None, rootname=None, rootdict=None):
+    # set default if not defined
+    if not key:
+        key = cfg.RP_cmm
+
     # Allowed object properties
     props = vars(obj)['propnames']
     props.extend(vars(obj)['attributes'])

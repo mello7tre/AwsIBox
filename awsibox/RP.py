@@ -295,140 +295,165 @@ def get_stack_type(cfgs):
             pass
 
 
-global envrole
-global stacktype
-global RP_base
-global RP_base_keys
-global brand
-global CFG_FILE_INT
-global CFG_FILE_EXT
-
-CFG_FILE_INT = '%s/cfg' % os.path.dirname(os.path.realpath(__file__))
-CFG_FILE_INT = os.path.normpath(CFG_FILE_INT)
-
-CFG_FILE_EXT = '%s/cfg' % os.getcwd()
-CFG_FILE_EXT = os.path.normpath(CFG_FILE_EXT)
-
-envrole = cfg.envrole
-brand = cfg.brand
-
-RP_base = OrderedDict([
-    ('cmm', {
-        'cmm': {},
-    }),
-])
-
-# dynamically create RP_BASE OrderedDict from ENV_BASE and cfg.regions
-for n in cfg.ENV_BASE:
-    RP_base[n] = {}
-    for m in cfg.regions:
-        RP_base[n][m] = {}
-
-cfg.RP_base = RP_base
-
-cfg_role = [
-    read_yaml(envrole, 'BASE', CFG_FILE_INT),
-    read_yaml(envrole, 'BASE', CFG_FILE_EXT),
-    read_yaml(envrole, brand, CFG_FILE_EXT),
-]
-
-stacktype = get_stack_type(cfg_role)
-
-if not stacktype:
-    logging.error('StackType key not found for Role %s in paths: %s, %s', envrole, CFG_FILE_EXT, CFG_FILE_INT)
-    exit(1)
-
-cfgs = OrderedDict([
-    ('common', [
-        read_yaml('common', 'BASE', CFG_FILE_INT),
-        read_yaml('common', 'BASE', CFG_FILE_EXT),
-        read_yaml('common', brand, CFG_FILE_EXT),
-    ]),
-    ('type', [
-        read_yaml(stacktype, 'BASE', CFG_FILE_INT),
-        read_yaml(stacktype, 'BASE', CFG_FILE_EXT),
-        read_yaml(stacktype, brand, CFG_FILE_EXT),
-    ]),
-    ('role', cfg_role),
-])
-
-RP_base_keys = get_RP_base_keys()
-
-RP = get_RP(cfgs)
-
-try:
-    stacktype = RP['cmm']['cmm']['StackType']
-except KeyError:
-    exit(1)
-
-#    print(RP['dev']['eu-west-1']['CloudFrontCacheBehaviors'][2]['QueryStringCacheKeys'])
-if cfg.debug:
-    # TO DEBUG - NICELY PRINT NESTED ORDEREDDICT
-    show_odict(RP)
-    #pprint(RP)
-
-cfg.RP = RP
-cfg.RP_cmm = RP['cmm']['cmm']
-
-for n, v in cfg.RP_cmm.iteritems():
-    setattr(cfg, n, v)
-
-# set generic attribute based on condition:
-
-# LoadBalancerClassic
-try: cfg.LoadBalancerClassic
-except:
-    cfg.LoadBalancerClassic = []
-
-# LoadBalancerApplication
-try: cfg.LoadBalancerApplication
-except:
-    cfg.LoadBalancerApplication = []
-
-# LoadBalancer
-cfg.LoadBalancer = None
-for n in ['LoadBalancerClassic', 'LoadBalancerApplication']:
-    try: getattr(cfg, n)
+def set_cfg():
+    for n, v in cfg.RP_cmm.iteritems():
+        setattr(cfg, n, v)
+    
+    # set generic attribute based on condition:
+    
+    # LoadBalancerClassic
+    try: cfg.LoadBalancerClassic
+    except:
+        cfg.LoadBalancerClassic = []
+    
+    # LoadBalancerApplication
+    try: cfg.LoadBalancerApplication
+    except:
+        cfg.LoadBalancerApplication = []
+    
+    # LoadBalancer
+    cfg.LoadBalancer = None
+    for n in ['LoadBalancerClassic', 'LoadBalancerApplication']:
+        try: getattr(cfg, n)
+        except:
+            pass
+        else:
+            cfg.LoadBalancer = True
+    
+    # LoadBalancerClassicExternal LoadBalancerClassicInternal
+    cfg.LoadBalancerClassicExternal = None
+    cfg.LoadBalancerClassicInternal = None
+    try: cfg.LoadBalancerClassic
     except:
         pass
     else:
-        cfg.LoadBalancer = True
+        if 'External' in cfg.LoadBalancerClassic:
+            cfg.LoadBalancerClassicExternal = True
+        if 'Internal' in cfg.LoadBalancerClassic:
+            cfg.LoadBalancerClassicInternal = True
+    
+    # LoadBalancerApplicationExternal LoadBalancerApplicationInternal
+    cfg.LoadBalancerApplicationExternal = None
+    cfg.LoadBalancerApplicationInternal = None
+    try: cfg.LoadBalancerApplication
+    except:
+        pass
+    else:
+        if 'External' in cfg.LoadBalancerApplication:
+            cfg.LoadBalancerApplicationExternal = True
+        if 'Internal' in cfg.LoadBalancerApplication:
+            cfg.LoadBalancerApplicationInternal = True
+    
+    # SpotASG
+    try: cfg.SpotASG
+    except:
+        cfg.SpotASG = None
+    
+    # RecordSet
+    cfg.RecordSetExternal = None
+    cfg.RecordSetInternal = None
+    if 'External' in cfg.RecordSet:
+        cfg.RecordSetExternal = True
+    if 'Internal' in cfg.RecordSet:
+        cfg.RecordSetInternal = True
+    
+    cfg.stacktype = stacktype
 
-# LoadBalancerClassicExternal LoadBalancerClassicInternal
-cfg.LoadBalancerClassicExternal = None
-cfg.LoadBalancerClassicInternal = None
-try: cfg.LoadBalancerClassic
-except:
-    pass
-else:
-    if 'External' in cfg.LoadBalancerClassic:
-        cfg.LoadBalancerClassicExternal = True
-    if 'Internal' in cfg.LoadBalancerClassic:
-        cfg.LoadBalancerClassicInternal = True
 
-# LoadBalancerApplicationExternal LoadBalancerApplicationInternal
-cfg.LoadBalancerApplicationExternal = None
-cfg.LoadBalancerApplicationInternal = None
-try: cfg.LoadBalancerApplication
-except:
-    pass
-else:
-    if 'External' in cfg.LoadBalancerApplication:
-        cfg.LoadBalancerApplicationExternal = True
-    if 'Internal' in cfg.LoadBalancerApplication:
-        cfg.LoadBalancerApplicationInternal = True
+def build_RP():
+    global envrole
+    global stacktype
+    global RP_base
+    global RP_base_keys
+    global brand
+    global CFG_FILE_INT
+    global CFG_FILE_EXT
 
-# SpotASG
-try: cfg.SpotASG
-except:
-    cfg.SpotASG = None
+    CFG_FILE_INT = '%s/cfg' % os.path.dirname(os.path.realpath(__file__))
+    CFG_FILE_INT = os.path.normpath(CFG_FILE_INT)
+    
+    CFG_FILE_EXT = '%s/cfg' % os.getcwd()
+    CFG_FILE_EXT = os.path.normpath(CFG_FILE_EXT)
+    
+    envrole = cfg.envrole
+    brand = cfg.brand
+    
+    RP_base = OrderedDict([
+        ('cmm', {
+            'cmm': {},
+        }),
+    ])
+    
+    # dynamically create RP_BASE OrderedDict from ENV_BASE and cfg.regions
+    for n in cfg.ENV_BASE:
+        RP_base[n] = {}
+        for m in cfg.regions:
+            RP_base[n][m] = {}
 
-# RecordSet
-cfg.RecordSetExternal = None
-cfg.RecordSetInternal = None
-if 'External' in cfg.RecordSet:
-    cfg.RecordSetExternal = True
-if 'Internal' in cfg.RecordSet:
-    cfg.RecordSetInternal = True
+    # remove when finished refactoring   
+    RP_base = OrderedDict([
+        ('cmm', {
+            'cmm': {},
+        }),
+        ('dev', {
+            'eu-west-1': {},
+            'us-east-1': {},
+        }),
+        ('stg', {
+            'eu-west-1': {},
+            'us-east-1': {},
+        }),
+        ('prd', {
+            'eu-west-1': {},
+            'us-east-1': {},
+            'eu-central-1': {},
+        }),
+    ])
 
-cfg.stacktype = stacktype
+    cfg.RP_base = RP_base
+    
+    cfg_role = [
+        read_yaml(envrole, 'BASE', CFG_FILE_INT),
+        read_yaml(envrole, 'BASE', CFG_FILE_EXT),
+        read_yaml(envrole, brand, CFG_FILE_EXT),
+    ]
+    
+    stacktype = get_stack_type(cfg_role)
+    
+    if not stacktype:
+        logging.error('StackType key not found for Role %s in paths: %s, %s', envrole, CFG_FILE_EXT, CFG_FILE_INT)
+        exit(1)
+    
+    cfgs = OrderedDict([
+        ('common', [
+            read_yaml('common', 'BASE', CFG_FILE_INT),
+            read_yaml('common', 'BASE', CFG_FILE_EXT),
+            read_yaml('common', brand, CFG_FILE_EXT),
+        ]),
+        ('type', [
+            read_yaml(stacktype, 'BASE', CFG_FILE_INT),
+            read_yaml(stacktype, 'BASE', CFG_FILE_EXT),
+            read_yaml(stacktype, brand, CFG_FILE_EXT),
+        ]),
+        ('role', cfg_role),
+    ])
+    
+    RP_base_keys = get_RP_base_keys()
+    
+    RP = get_RP(cfgs)
+    
+    try:
+        stacktype = RP['cmm']['cmm']['StackType']
+    except KeyError:
+        exit(1)
+    
+    # print(RP['dev']['eu-west-1']['CloudFrontCacheBehaviors'][2]['QueryStringCacheKeys'])
+    if cfg.debug:
+        # TO DEBUG - NICELY PRINT NESTED ORDEREDDICT
+        show_odict(RP)
+        #pprint(RP)
+    
+    cfg.RP = RP
+    cfg.RP_cmm = RP['cmm']['cmm']
+
+    set_cfg()

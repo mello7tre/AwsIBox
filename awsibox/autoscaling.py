@@ -9,6 +9,9 @@ import sys
 from cfn import *
 from shared import *
 
+parent_dir_name = os.getcwd()
+sys.path.append(parent_dir_name + '/lib')
+
 try:
     from cfnExt import *
 except ImportError:

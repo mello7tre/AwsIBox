@@ -55,8 +55,6 @@ def get_mapping_env_region(MP, RP, e, r, p):
 
 
 def get_mappings(RP):
-    global mappedvalue
-
     mappings = {}
     mappings['cmm'] = copy.deepcopy(RP_base)
     mappings['ec2'] = {}
@@ -66,7 +64,7 @@ def get_mappings(RP):
 
     mappedvalue = mappings['cmm']['cmm']['cmm']
     cfg.mappedvalue = mappedvalue
-    # pprint(mappedvalue)
+    #pprint(mappedvalue)
 
     # delete empy mappings, CloudFormation do not like them!
     for env in RP_base:
@@ -133,17 +131,18 @@ def get_mappings(RP):
     return get_final_resources(mappings)
 
 
-global envrole
-global stacktype
-global RP_base
-global mappings
+def build_mapping():
+    global envrole
+    global stacktype
+    global RP_base
+    global mappings
+    
+    envrole = cfg.envrole
+    stacktype = cfg.stacktype
+    RP_base = cfg.RP_base
+    
+    mappings = get_mappings(cfg.RP)
 
-envrole = cfg.envrole
-stacktype = cfg.stacktype
-RP_base = cfg.RP_base
-
-mappings = get_mappings(cfg.RP)
-
-if mappings is not None:
-    for m, v in mappings.iteritems():
-        cfg.template.add_mapping(m, v)
+    if mappings:
+        for m, v in mappings.iteritems():
+            cfg.template.add_mapping(m, v)

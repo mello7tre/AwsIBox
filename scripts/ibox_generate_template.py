@@ -1,49 +1,77 @@
 #!/usr/bin/python
 import sys
 import os
+import json
 
-parent_dir_name = os.getcwd()
-sys.path.append(parent_dir_name + '/lib')
+from troposphere import Template
+from awsibox import args, cfg, RP, mapping, discover, generate
 
-import awsibox.cfg as cfg
-from awsibox.args import *
-from awsibox.RP import *
-from awsibox.mapping import *
-from awsibox.shared import *
-
-stacktype = cfg.stacktype
-envrole = cfg.envrole
+args = args.get_args()
 
 
-def execute_class():
-    for k, v in cfg.CFG_TO_CLASS.iteritems():
-        if k in RP_cmm.keys():
-            RP_value = RP_cmm[k]
-            if isinstance(RP_value, str) and RP_value == 'SkipClass':
-                continue
-            if isinstance(v, list):
-                for n in v:
-                    globals()[n](key=k)
-                continue
-            if v + stacktype.upper() in globals():
-                globals()[v + stacktype.upper()](key=k)
-            elif v in globals():
-                globals()[v](key=k)
+def output_template(template, brand=None, role=None):
+    if args.Output == 'json':
+        output = template.to_json()
+        extension = '.json'
+    elif args.Output == 'cjson':
+        output = template.to_json(indent=None)
+        extension = '.json'
+    elif args.Output == 'yaml':
+        output = template.to_yaml()
+        extension = '.yaml'
 
-    stack_add_res()
+    if args.action == 'view':
+        print(output)
+    elif args.action == 'write':
+        file_path = os.path.join(os.getcwd(), 'templates', brand)
+        try:
+            os.makedirs(file_path)
+        except:
+            pass
+        file_name = os.path.join(file_path, role + extension) 
+        with open(file_name, 'w') as f:
+            f.write(output + '\n')
 
 
-# ################################
-# #### END STACK ROLE CLASSES ####
-# ################################
+def get_template():
+    # save base cfg 
+    cfg_base = cfg.__dict__.copy()
 
-classenvrole = envrole.replace('-', '_')  # Ex client-portal -> client_portal
-cfg.classenvrole = classenvrole
+    cfg.template = Template()
+    RP.build_RP()
+    mapping.build_mapping()
+    template = generate.generate()
 
-execute_class()
+    # restore base cfg
+    cfg.__dict__.clear()
+    cfg.__dict__.update(cfg_base)
 
-cfg.template.add_description('%s [%s]' % (envrole, stacktype))
-cfg.template.add_version('2010-09-09')
+    return template
 
-print(cfg.template.to_json())
-# print(cfg.template.to_yaml())
+
+if args.action == 'view':
+    cfg.envrole = args.EnvRole
+    cfg.brand = args.Brand
+
+    template = get_template()
+    
+    output_template(template)
+
+elif args.action == 'write':
+    discover_map = discover.discover(args.Brands, args.EnvRoles, args.StackTypes)
+    
+    for brand, roles in discover_map.iteritems():
+        cfg.brand = brand
+    
+        for role in roles:
+            cfg.envrole = role
+
+            print('Brand: %s - EnvRole: %s' % (brand, role))
+
+            try:
+                template = get_template()
+            except Exception, e:
+                print('ERROR: %s' % e)
+                exit(1)
+
+            output_template(template, brand, role)

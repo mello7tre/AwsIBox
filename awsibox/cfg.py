@@ -1,36 +1,19 @@
+import os
 from collections import OrderedDict, Mapping
 
-from troposphere import (
-    Template,
-    Parameter,
-    GetAtt,
-    Ref,
-    Join,
-    If,
-    FindInMap,
-    ImportValue,
-    Sub,
-    Split,
-)
-
-
-mappedvalue = {}
 no_override = False
-envrole = ''
-stacktype = ''
-classenvrole = ''
-template = Template()
-RP_cmm = {}
-mappings = {}
-brand = ''
-debug = False
-RP = {}
 
 Parameters = []
 Parameters_Override = []
 Conditions = []
 Resources = []
 Outputs = []
+
+PATH_INT = '%s/cfg' % os.path.dirname(os.path.realpath(__file__))
+PATH_INT = os.path.normpath(PATH_INT)
+
+PATH_EXT = '%s/cfg' % os.getcwd()
+PATH_EXT = os.path.normpath(PATH_EXT)
 
 MAX_SECURITY_GROUPS = 4
 # SECURITY_GROUPS_DEFAULT equals list of empty values (Ex. for "MAX_SECURITY_GROUPS = 3" we have "SECURITY_GROUPS_DEFAULT = ',,'")

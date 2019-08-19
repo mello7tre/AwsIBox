@@ -1,7 +1,7 @@
 import troposphere.cloudfront as clf
 
 from shared import *
-
+import cfg
 
 class CFOriginAccessIdentity(clf.CloudFrontOriginAccessIdentity):
     def setup(self, comment):
@@ -336,7 +336,7 @@ class CF_CloudFront(object):
             cachebehavior.setup(key=v)
 
             # Create and Use Condition only if PathPattern Value differ between envs
-            if name + 'PathPattern' not in mappedvalue:
+            if name + 'PathPattern' not in cfg.mappedvalue:
                 # conditions
                 do_no_override(True)
                 c_CacheBehavior = {name: Not(
