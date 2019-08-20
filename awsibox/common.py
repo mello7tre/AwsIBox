@@ -36,7 +36,7 @@ from troposphere import (
     Template,
 )
 
-import cfg
+from . import cfg
 
 from .cfg import (
     MAX_SECURITY_GROUPS,

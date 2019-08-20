@@ -1,7 +1,7 @@
 from pprint import pprint, pformat
 import argparse
 
-import cfg
+from . import cfg
 
 
 # parse main argumets

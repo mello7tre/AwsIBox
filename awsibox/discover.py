@@ -2,7 +2,7 @@ import sys
 import os
 import mmap
 
-import cfg
+from . import cfg
 
 
 def get_brands():

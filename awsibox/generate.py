@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import cfg
+from . import cfg
 from .shared import stack_add_res
 from . import (lambdas, securitygroup, cloudwatch, loadbalancing, autoscaling, iam,
     codedeploy, route53, certificates, events, cloudfront, sqs, sns,

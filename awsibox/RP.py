@@ -8,7 +8,7 @@ import logging
 from collections import OrderedDict, Mapping
 from pprint import pprint, pformat
 
-import cfg
+from . import cfg
 
 
 def show_odict(odict):
