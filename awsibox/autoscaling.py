@@ -1,13 +1,18 @@
+import os
+import sys
+
 import troposphere.autoscaling as asg
 import troposphere.cloudformation as cfm
 import troposphere.policies as pol
 import troposphere.applicationautoscaling as aas
 
-import os
-import sys
-
-from cfn import *
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+from .cfn import *
+from .codedeploy import CD_DeploymentGroup
+from .securitygroup import SG_SecurityGroupsEC2
+from .iam import IAMInstanceProfile
 
 parent_dir_name = os.getcwd()
 sys.path.append(parent_dir_name + '/lib')
@@ -1439,6 +1444,3 @@ class AS_LifecycleHook(object):
 
             if cfg.SpotASG:
                 cfg.Resources.append(r_HookSpot)
-            
-# Need to stay as last lines
-import_modules(globals())

@@ -1,6 +1,8 @@
 import troposphere.iam as iam
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props, SSMParameter)
 
 
 # S - IAM #
@@ -384,6 +386,3 @@ class IAM_Roles(object):
                 o_Role.Export = Export(resname)
 
                 cfg.Outputs.append(o_Role)
-
-# Need to stay as last lines
-import_modules(globals())

@@ -1,6 +1,9 @@
 import troposphere.rds as rds
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+from .route53 import R53_RecordSetRDS
 
 
 class RDSDBInstance(rds.DBInstance):
@@ -184,6 +187,3 @@ class RDS_SubnetGroups(object):
             O_Private,
             O_Public,
         ])
-
-# Need to stay as last lines
-import_modules(globals())

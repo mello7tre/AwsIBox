@@ -1,7 +1,9 @@
 import troposphere.awslambda as lbd
 
-from shared import *
-
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props, import_lambda)
+from .iam import IAMRoleLambdaBase
 
 class LambdaPermission(lbd.Permission):
     def setup(self):
@@ -156,7 +158,3 @@ class LBD_Lambdas(object):
                 O_Lambda.Export = Export(resname)
 
                 cfg.Outputs.append(O_Lambda)
-
-
-# Need to stay as last lines
-import_modules(globals())

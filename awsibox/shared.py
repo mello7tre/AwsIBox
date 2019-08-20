@@ -1,48 +1,6 @@
-import os
-import importlib
-import random
-import string
-import copy
-import json
-import logging
-from pprint import pprint, pformat
 import troposphere.ssm as ssm
 
-from troposphere import (
-    And,
-    AWSHelperFn,
-    AWSObject,
-    AWSProperty,
-    Base64,
-    BaseAWSObject,
-    Condition,
-    Equals,
-    Export,
-    FindInMap,
-    GetAtt,
-    GetAZs,
-    If,
-    ImportValue,
-    Join,
-    Not,
-    Or,
-    Output,
-    Parameter,
-    Ref,
-    Select,
-    Split,
-    Sub,
-    Tags,
-    Template,
-)
-
-from cfg import (
-    MAX_SECURITY_GROUPS,
-    SECURITY_GROUPS_DEFAULT,
-    PARAMETERS_SKIP_OVERRIDE_CONDITION,
-)
-
-import cfg
+from .common import *
 
 
 # S - PARAMETERS #
@@ -92,10 +50,10 @@ def do_no_override(action):
         cfg.no_override = False
 
 
-def import_modules(gbl):
-    for module in cfg.IMPORT_MODULES:
-        mod = importlib.import_module('.%s' % module, package='awsibox')
-        gbl.update(mod.__dict__)
+#def import_modules(gbl):
+#    for module in cfg.IMPORT_MODULES:
+#        mod = importlib.import_module('.%s' % module, package='awsibox')
+#        gbl.update(mod.__dict__)
 
 
 def get_endvalue(
@@ -110,6 +68,9 @@ def get_endvalue(
         strout=False,
         mappedvalue=None
 ):
+    # Its not pythonic, but it's only way to avoid circular import problems
+    from securitygroup import SG_SecurityGroupsTSK
+
     v = ''
     parameters = []
 
@@ -377,4 +338,4 @@ def gen_random_string():
 
 
 # Need to stay as last lines
-import_modules(globals())
+#import_modules(globals())

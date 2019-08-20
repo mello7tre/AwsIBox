@@ -1,6 +1,8 @@
 import troposphere.certificatemanager as crm
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
 
 
 class CRMCertificate(crm.Certificate):
@@ -54,7 +56,3 @@ class CRM_CertificateECS(object):
 class CRM_CertificateRES(object):
     def __init__(self, key):
         CRM_Certificate(key)
-
-
-# Need to stay as last lines
-import_modules(globals())

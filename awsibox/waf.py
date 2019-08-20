@@ -1,7 +1,9 @@
 import troposphere.waf as waf
 import troposphere.wafregional as wafr
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
 
 
 class WAFIPSet(waf.IPSet):
@@ -339,6 +341,3 @@ class WAF_RegionalRules(WAF_Rules):
 class WAF_RegionalWebAcls(WAF_WebAcls):
     def __init__(self, key):
         WAF_WebAcls(key, wtype='Regional')
-
-# Need to stay as last lines
-import_modules(globals())

@@ -1,6 +1,9 @@
 import troposphere.codedeploy as cdd
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+
 
 class CDEc2TagFilters(cdd.Ec2TagFilters):
     def __init__(self, title, **kwargs):
@@ -84,6 +87,3 @@ class CD_Applications(object):
             App.ApplicationName = get_endvalue(key + n)
 
             cfg.Resources.append(App)
-
-# Need to stay as last lines
-import_modules(globals())

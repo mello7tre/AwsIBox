@@ -1,8 +1,11 @@
 import troposphere.ecs as ecs
 import troposphere.ecr as ecr
 
-from shared import *
-
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+from .securitygroup import (SecurityGroupEcsService, SecurityGroupRuleEcsService,
+    SG_SecurityGroupsECS)
 
 class ECSService(ecs.Service):
     def setup(self, scheme):
@@ -603,6 +606,3 @@ class ECS_Cluster(object):
         cfg.Resources.extend([
             R_Cluster,
         ])
-
-# Need to stay as last lines
-import_modules(globals())

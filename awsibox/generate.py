@@ -1,24 +1,31 @@
 #!/usr/bin/python
 import cfg
-from shared import stack_add_res, import_modules
+from .shared import stack_add_res
+from . import (lambdas, securitygroup, cloudwatch, loadbalancing, autoscaling, iam,
+    codedeploy, route53, certificates, events, cloudfront, sqs, sns,
+    containers, buckets, waf, vpc, dynamodb, kms, rds, efs, elasticache,
+    servicediscovery, cloudformation, logs, apigateway)
+
 
 def execute_class(RP_cmm):
-    import_modules(globals())
-
     for k, v in cfg.CFG_TO_CLASS.iteritems():
+        class_name = v['class']
+        module_name = v['module']
+        module = globals()[module_name]
+
         if k in RP_cmm.keys():
             RP_value = RP_cmm[k]
             if isinstance(RP_value, str) and RP_value == 'SkipClass':
                 continue
-            if isinstance(v, list):
-                for n in v:
-                    globals()[n](key=k)
+            if isinstance(class_name, list):
+                for n in class_name:
+                    getattr(module, n)(key=k)
                 continue
-            stacktype_class = v + cfg.stacktype.upper()
-            if stacktype_class in globals():
-                globals()[stacktype_class](key=k)
-            elif v in globals():
-                globals()[v](key=k)
+            stacktype_class = class_name + cfg.stacktype.upper()
+            if stacktype_class in dir(module):
+                getattr(module, stacktype_class)(key=k)
+            elif class_name in dir(module):
+                getattr(module, class_name)(key=k)
 
     stack_add_res()
 

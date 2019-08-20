@@ -1,7 +1,10 @@
 import troposphere.s3 as s3
 
-from shared import *
-
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+from .iam import IAMRoleBucketReplica, IAMPolicyBucketReplica, IAMPolicyStatement
+from .cloudfront import CFOriginAccessIdentity
 
 class S3Bucket(s3.Bucket):
     def setup(self, key):
@@ -465,6 +468,3 @@ class S3_BucketPolicies(object):
             r_Policy.PolicyDocument['Statement'] = Statement            
 
             cfg.Resources.append(r_Policy)
-
-# Need to stay as last lines
-import_modules(globals())

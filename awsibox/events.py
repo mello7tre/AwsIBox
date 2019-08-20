@@ -1,7 +1,9 @@
 import troposphere.events as eve
 
-from shared import *
-
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+from .lambdas import LambdaPermissionEvent
 
 class EVERule(eve.Rule):
     def setup(self, key, name):
@@ -70,7 +72,3 @@ class EVE_EventRules(object):
             cfg.Outputs.extend([
                 o_State,
             ])
-
-
-# Need to stay as last lines
-import_modules(globals())

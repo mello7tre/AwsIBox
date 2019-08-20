@@ -1,6 +1,8 @@
 import troposphere.ec2 as ec2
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
 
 
 class EC2VPCPeeringConnection(ec2.VPCPeeringConnection):
@@ -65,6 +67,3 @@ class VPC_Endpoint(object):
         cfg.Resources.extend([
             R_S3,
         ])
-
-# Need to stay as last lines
-import_modules(globals())

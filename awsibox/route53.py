@@ -1,6 +1,8 @@
 import troposphere.route53 as r53
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
 
 
 # S - ROUTE53 #
@@ -409,6 +411,3 @@ class R53_HostedZones(object):
             O_EnvName,
             O_EnvNameRegion,
         ])
-
-# Need to stay as last lines
-import_modules(globals())

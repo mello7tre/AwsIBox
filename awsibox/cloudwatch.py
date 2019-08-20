@@ -1,6 +1,8 @@
 import troposphere.cloudwatch as clw
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
 
 
 class CW_Alarms(object):
@@ -66,7 +68,3 @@ class CW_Alarms(object):
             )
 
             cfg.Outputs.append(o_Alarm)
-
-
-# Need to stay as last lines
-import_modules(globals())

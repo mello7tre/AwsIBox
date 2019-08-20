@@ -1,6 +1,8 @@
 import troposphere.servicediscovery  as srvd
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
 
 
 class ServiceDiscoveryPublicDnsNamespace(srvd.PublicDnsNamespace):
@@ -27,6 +29,3 @@ class SRVD_ServiceDiscoveryRES(object):
         cfg.Outputs.extend([
             O_PublicDnsNamespace,
         ])
-
-# Need to stay as last lines
-import_modules(globals())

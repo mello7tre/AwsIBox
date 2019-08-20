@@ -1,7 +1,10 @@
 import troposphere.sns as sns
 
-from shared import *
-
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+from .lambdas import LambdaPermissionSNS
+from .sqs import SQSQueuePolicy
 
 class SNSSubscription(sns.SubscriptionResource):
     def setup(self, key):
@@ -72,6 +75,3 @@ class SNS_Subscriptions(object):
                 r_QueuePolicy.setup(key=v)
 
                 cfg.Resources.append(r_QueuePolicy)
-
-# Need to stay as last lines
-import_modules(globals())

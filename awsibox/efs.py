@@ -1,6 +1,10 @@
 import troposphere.efs as efs
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+from .route53 import R53RecordSetEFS
+from .securitygroup import SecurityGroup, SecurityGroupIngress
 
 
 class EFSFileSystem(efs.FileSystem):
@@ -101,6 +105,3 @@ class EFS_FileStorage(object):
             o_SG.Export = Export(sgclientname)
 
             cfg.Outputs.append(o_SG)
-
-# Need to stay as last lines
-import_modules(globals())

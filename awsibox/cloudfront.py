@@ -1,7 +1,11 @@
 import troposphere.cloudfront as clf
 
-from shared import *
-import cfg
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+#import cfg
+from .route53 import R53_RecordSetCloudFront
+
 
 class CFOriginAccessIdentity(clf.CloudFrontOriginAccessIdentity):
     def setup(self, comment):
@@ -534,7 +538,3 @@ class CF_CloudFrontCLF(CF_CloudFront):
         cfg.Resources.extend([
             R_CloudFrontDistribution,
         ])
-# E - CLOUDFRONT #
-
-# Need to stay as last lines
-import_modules(globals())

@@ -1,6 +1,8 @@
 import troposphere.ec2 as ec2
 
-from shared import *
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
 
 
 # S - SECURITY GROUP #
@@ -379,7 +381,3 @@ class SG_SecurityGroupIngressesExtraRDS(SG_SecurityGroupIngressesExtraService):
 class SG_SecurityGroupIngressesExtraCCH(SG_SecurityGroupIngressesExtraService):
     def __init__(self, **kwargs):
         super(SG_SecurityGroupIngressesExtraCCH, self).__init__(service='CCH', **kwargs)
-
-
-# Need to stay as last lines
-import_modules(globals())

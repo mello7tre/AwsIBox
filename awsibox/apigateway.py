@@ -1,7 +1,11 @@
+from collections import OrderedDict, Mapping
 import troposphere.apigateway as agw
 
-from shared import *
-from collections import OrderedDict, Mapping
+from .common import *
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props)
+from .lambdas import LambdaPermissionApiGateway
+
 
 class ApiGatewayAccount(agw.Account):
     def setup(self):
@@ -112,8 +116,3 @@ class AGW_RestApi(object):
             )
 
             cfg.Resources.append(r_LambdaPermission)
-
-
-
-# Need to stay as last lines
-import_modules(globals())
