@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="awsibox",
-    version="0.0.1",
+    version="0.0.2",
     author="Mello",
     author_email="mello+python@ankot.org",
     description="AWS Infrastructure in a Box",
@@ -20,9 +20,13 @@ setuptools.setup(
         'awsibox': ['templates/*'],
         'awsibox': ['lambdas/*'],
     },
+    install_requires=[
+        'troposphere==2.4.1',
+        'PyYAML~=5',
+    ],
+    python_requires='~=2.7',
     scripts=[
-        'scripts/ibox_generate_template.py',
-        'scripts/ibox_build_templates.sh',
+        'scripts/ibox_generate_templates.py',
     ],
     classifiers=[
         "Programming Language :: Python :: 2",
