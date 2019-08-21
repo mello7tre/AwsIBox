@@ -59,6 +59,7 @@ def get_mappings(RP):
     mappings['cmm'] = copy.deepcopy(RP_base)
     mappings['ec2'] = {}
     mappings['resources-env'] = {}
+    mappings['res'] = {}
 
     mappings['cmm'] = get_mapping_env_region(copy.deepcopy(RP_base), RP, None, None, None)
 
@@ -114,18 +115,41 @@ def get_mappings(RP):
 #   #END##MAP INSTANCE TYPE EPHEMERAL####
 
 #  #START##MAP AVABILITY ZONES####
-    mappings['resources-env']['AvabilityZones'] = {
-        'eu-west-1': {
-            'Zone0': 'True',
-            'Zone1': 'True',
-            'Zone2': 'True'
-        },
-        'eu-central-1': {
-            'Zone0': 'True',
-            'Zone1': 'True',
-            'Zone2': 'False'
-        },
-    }
+    AvabilityZones = {}
+    AZ = cfg.AZones
+    for r in cfg.regions:
+        zones = {}
+        try:
+            nzones = AZ[r]
+        except:
+            nzones = AZ['default']
+
+        try:
+            nzones = cfg.RP['dev'][r]['AZones']
+        except:
+            pass
+
+        n = 1
+        while n <= AZ['MAX']:
+            zones['Zone%s' % n] = 'True' if nzones >= n else 'False'
+            n += 1
+
+        AvabilityZones[r] = zones
+
+    mappings['res']['AvabilityZones'] = AvabilityZones
+
+#    mappings['resources-env']['AvabilityZones'] = {
+#        'eu-west-1': {
+#            'Zone0': 'True',
+#            'Zone1': 'True',
+#            'Zone2': 'True'
+#        },
+#        'eu-central-1': {
+#            'Zone0': 'True',
+#            'Zone1': 'True',
+#            'Zone2': 'False'
+#        },
+#    }
 #  #END##MAP AVABILITY ZONES####
 
     return get_final_resources(mappings)

@@ -18,6 +18,14 @@ class CFM_Conditions(object):
         do_no_override(False)
 
 
+class CFM_Mappings(object):
+    def __init__(self, key):
+        for n, v in getattr(cfg, key).iteritems():
+            c_Mapping = {n: v}
+
+            cfg.Mappings.append(c_Mapping)
+
+
 class CFM_Outputs(object):
     def __init__(self, key):
         auto_build_obj(Output(''), getattr(cfg, key), obj_list=cfg.Outputs)

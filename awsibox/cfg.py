@@ -6,6 +6,7 @@ no_override = False
 Parameters = []
 Parameters_Override = []
 Conditions = []
+Mappings = []
 Resources = []
 Outputs = []
 
@@ -26,6 +27,18 @@ DEFAULT_REGIONS = [
     'us-east-1',
     'eu-central-1',
 ]
+
+AZones = {
+    'MAX': 6,
+    'default': 3,
+    'us-east-1': 6,
+    'us-west-1': 2,
+    'us-west-2': 4,
+    'ca-central-1': 2,
+    'sa-east-1': 2,
+    'cn-north-1': 2,
+    'ap-northeast-3': 1,
+}
 
 PARAMETERS_SKIP_OVERRIDE_CONDITION = (
     'Env',
@@ -57,6 +70,7 @@ EVAL_FUNCTIONS_IN_CFG = (
 CFG_TO_CLASS = OrderedDict([
     ('Parameter', {'module': 'cloudformation', 'class': 'CFM_Parameters'}),
     ('Condition', {'module': 'cloudformation', 'class': 'CFM_Conditions'}),
+    ('Mapping', {'module': 'cloudformation', 'class': 'CFM_Mappings'}),
     ('Output', {'module': 'cloudformation', 'class': 'CFM_Outputs'}),
     ('CapacityDesired', {'module': 'autoscaling', 'class': 'AS_Autoscaling'}),
     ('ScalingPolicyUpScalingAdjustment1', {'module': 'autoscaling', 'class': 'AS_ScalingPoliciesStep'}),

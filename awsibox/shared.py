@@ -34,6 +34,11 @@ def stack_add_res():
             cfg.template.add_condition(name, v[name])
     del cfg.Conditions[:]
 
+    for v in cfg.Mappings:
+        for name in v:
+            cfg.template.add_mapping(name, v[name])
+    del cfg.Mappings[:]
+
     for v in cfg.Resources:
         cfg.template.add_resource(v)
     del cfg.Resources[:]
