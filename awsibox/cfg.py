@@ -10,10 +10,10 @@ Mappings = []
 Resources = []
 Outputs = []
 
-PATH_INT = '%s/cfg' % os.path.dirname(os.path.realpath(__file__))
+PATH_INT = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'cfg')
 PATH_INT = os.path.normpath(PATH_INT)
 
-PATH_EXT = '%s/cfg' % os.getcwd()
+PATH_EXT = os.path.join(os.getcwd(), 'cfg')
 PATH_EXT = os.path.normpath(PATH_EXT)
 
 MAX_SECURITY_GROUPS = 4

@@ -7,16 +7,6 @@ from pprint import pprint, pformat
 from . import cfg
 
 
-def get_final_resources(resources):
-    resources['final'] = {}
-
-    for r in ['cmm', stacktype, envrole]:
-        if r in resources:
-            resources['final'].update(resources[r])
-
-    return resources['final']
-
-
 def mappings_create_entry(mappings, keyenv, keyregion, keyname, keyvalue):
     # create mapping entry
     mappings[keyenv][keyregion].update({keyname: keyvalue})
