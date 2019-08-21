@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from . import cfg
 from .shared import stack_add_res
-from . import (lambdas, securitygroup, cloudwatch, loadbalancing, autoscaling, iam,
+from . import (mappings, lambdas, securitygroup, cloudwatch, loadbalancing, autoscaling, iam,
     codedeploy, route53, certificates, events, cloudfront, sqs, sns,
     containers, buckets, waf, vpc, dynamodb, kms, rds, efs, elasticache,
     servicediscovery, cloudformation, logs, apigateway)

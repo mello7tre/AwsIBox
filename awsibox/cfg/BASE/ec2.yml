@@ -32,6 +32,8 @@ ec2:
           Condition('SpotPrice'),
           Equals('1', '1'),
         )
+  MappingClass:
+    - EC2:
   AdditionalStorage:
     Mount: True
     Name: /dev/xvdx

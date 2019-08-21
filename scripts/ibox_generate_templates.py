@@ -4,7 +4,7 @@ import os
 import json
 
 from troposphere import Template
-from awsibox import args, cfg, RP, mapping, discover, generate
+from awsibox import args, cfg, RP, discover, generate
 
 args = args.get_args()
 
@@ -39,7 +39,6 @@ def get_template():
 
     cfg.template = Template()
     RP.build_RP()
-    mapping.build_mapping()
     template = generate.generate()
 
     # restore base cfg

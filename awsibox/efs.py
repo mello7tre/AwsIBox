@@ -36,7 +36,7 @@ class EFS_FileStorage(object):
             sgservername = 'SecurityGroupEFSServer' + n  # Ex. SecurityGroupEFSServerWordPress
             sgclientname = 'SecurityGroupEFS' + n  # Ex. SecurityGroupEFSWordPress
             sginame = 'SecurityGroupIngressEFS' + n  # Ex. SecurityGroupIngressEFSWordPress
-            for i in range(3):
+            for i in range(cfg.AZones['MAX']):
                 mountname = 'EFSMountTarget%s%s' % (n, i)  # Ex. EFSMountTargetWordPress3
                 # conditions
                 do_no_override(True)

@@ -1040,7 +1040,7 @@ class AS_LaunchConfiguration(object):
         P_InstanceType = Parameter('InstanceType')
         P_InstanceType.ConstraintDescription = 'must be a valid EC2 instance type.'
         P_InstanceType.Description = 'InstanceType - default for default based on env/role'
-        P_InstanceType.AllowedValues = cfg.template.mappings['InstanceTypes'].keys()
+        P_InstanceType.AllowedValues = cfg.INSTANCE_LIST
         P_InstanceType.Default = 'default'
 
         P_KeyName = Parameter('KeyName')

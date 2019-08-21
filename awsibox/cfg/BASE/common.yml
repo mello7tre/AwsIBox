@@ -25,5 +25,7 @@ global:
         Value: Ref('EnvStackVersion')
     - StackType:
         Value: cfg.stacktype
+  MappingClass:
+    - EnvRegion:
   HostedZoneIdCF: Z2FDTNDATAQYW2
   RecordSet: ['Internal', 'External']

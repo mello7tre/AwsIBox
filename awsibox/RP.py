@@ -390,26 +390,6 @@ def build_RP():
         for m in cfg.regions:
             RP_base[n][m] = {}
 
-    # remove when finished refactoring   
-    RP_base = OrderedDict([
-        ('cmm', {
-            'cmm': {},
-        }),
-        ('dev', {
-            'eu-west-1': {},
-            'us-east-1': {},
-        }),
-        ('stg', {
-            'eu-west-1': {},
-            'us-east-1': {},
-        }),
-        ('prd', {
-            'eu-west-1': {},
-            'us-east-1': {},
-            'eu-central-1': {},
-        }),
-    ])
-
     cfg.RP_base = RP_base
     
     cfg_role = [
