@@ -1,0 +1,70 @@
+global:
+
+us-east-1:
+  LoadBalancerAccountID: 127311923021
+
+us-east-2:
+  LoadBalancerAccountID: 033677994240
+
+us-west-1:
+  LoadBalancerAccountID: 027434742980
+
+us-west-2:
+  LoadBalancerAccountID: 797873946194
+
+ca-central-1:
+  LoadBalancerAccountID: 985666609251
+
+eu-central-1:
+  LoadBalancerAccountID: 054676820928
+
+eu-west-1:
+  LoadBalancerAccountID: 156460612806
+
+eu-west-2:
+  LoadBalancerAccountID: 652711504416
+
+eu-west-3:
+  LoadBalancerAccountID: 009996457667
+
+eu-north-1:
+  LoadBalancerAccountID: 897822967062
+
+ap-east-1:
+  LoadBalancerAccountID: 754344448648
+
+ap-northeast-1:
+  LoadBalancerAccountID: 582318560864
+
+ap-northeast-2:
+  LoadBalancerAccountID: 600734575887
+
+ap-northeast-3:
+  LoadBalancerAccountID: 383597477331
+
+ap-southeast-1:
+  LoadBalancerAccountID: 114774131450
+
+ap-southeast-2:
+  LoadBalancerAccountID: 783225319266
+
+ap-south-1:
+  LoadBalancerAccountID: 718504428378
+
+me-south-1:
+  LoadBalancerAccountID: 076674570225
+
+sa-east-1:
+  LoadBalancerAccountID: 507241528517
+
+us-gov-west-1:
+  LoadBalancerAccountID: 048591011584
+
+us-gov-east-1:
+  LoadBalancerAccountID: 190560391635
+
+cn-north-1:
+  LoadBalancerAccountID: 638102146993
+
+cn-northwest-1:
+  LoadBalancerAccountID: 037604701340
