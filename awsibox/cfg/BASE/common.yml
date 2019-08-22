@@ -27,5 +27,8 @@ global:
         Value: cfg.stacktype
   MappingClass:
     - EnvRegion:
+  AllowedIp1: '127.0.0.1/32'
+  AllowedIp2: '127.0.0.1/32'
+  CloudWatchAlarmEndpoint: 'mello+aws@ankot.org'
   HostedZoneIdCF: Z2FDTNDATAQYW2
   RecordSet: ['Internal', 'External']
