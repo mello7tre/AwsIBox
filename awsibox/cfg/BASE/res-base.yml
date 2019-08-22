@@ -1,0 +1,177 @@
+include: !include [
+  lb-accountid.yml,
+]
+
+res-base:
+  StackType: res
+  StackName: r-base
+  Parameter:
+    - HostedZoneEnv:
+        Description: 'Create HostedZoneEnv - can be created in only one Region - empty for default based on env/role'
+        AllowedValue: ['', 'True', 'None']
+    - HostedZoneIdEnv:
+        Description: 'Id of HostedZoneEnv - must be submitted in all others Regions where HostedZoneEnv is not created - empty for default based on env/role'
+  Output:
+    - LambdaECSRunTaskArn:
+        Condition: LambdaECSRunTask
+        Value: GetAtt('LambdaECSRunTask', 'Arn')
+        Export: Export('LambdaECSRunTaskArn')
+    - RoleLambdaECSRunTask:
+        Condition: LambdaECSRunTask
+        Value: Ref('RoleLambdaECSRunTask')
+        Export: Export('RoleLambdaECSRunTask')
+  AllowedIp:
+    - 1:
+        Enabled: True
+        Ip: cfg.AllowedIp1
+    - 2:
+        Enabled: True
+        Ip: cfg.AllowedIp2
+  Bucket:
+    - AppRepository:
+        Enabled: True
+        OutputValueRegion: 'AWSRegion'
+        Versioning: Enabled
+    - Logs:
+        Enabled: True
+        Create: True
+        LifecycleConfiguration:
+            Rules:
+              - 1:
+                  Id: delete
+                  ExpirationInDays: 30
+                  Status: Enabled
+        PolicyStatement:
+          - 1:
+              Action: 's3:PutObject'
+              Resource: Sub('arn:aws:s3:::${BucketLogs}/*')
+              Principal: get_endvalue('LoadBalancerAccountID')
+              Sid: AllowLBLogs
+  HostedZoneEnv: None
+  HostedZoneIdEnv: None
+  IAMPolicy:
+    - BaseInstance:
+        Type: Managed
+        Export: True
+        Description: 'Policy common to all instances'
+        Statement:
+          - 1:
+              Action:
+                - 's3:GetBucketLocation'
+                - 's3:ListAllMyBuckets'
+              Resource: 'arn:aws:s3:::*'
+          - 2:
+              Action:
+                - 's3:Get*'
+                - 's3:List*'
+              Resource:
+                - Sub('arn:aws:s3:::%s' % cfg.BucketAppRepository)
+                - Sub('arn:aws:s3:::%s/*' % cfg.BucketAppRepository)
+                - Sub('arn:aws:s3:::%s' % cfg.BucketAppData)
+                - Sub('arn:aws:s3:::%s/*' % cfg.BucketAppData)
+                - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}')
+                - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}/*')
+          - 3:
+              Action:
+                - 'elasticloadbalancing:DescribeInstanceHealth'
+                - 'elasticloadbalancing:DescribeTargetHealth'
+                - 'ec2:DescribeInstances'
+              Resource: '*'
+    - LambdaECSDrainInstance:
+        Condition: LambdaECSDrainInstance
+        Roles:
+          - Ref('RoleLambdaECSDrainInstance')
+        Statement:
+          - 1:
+              Action: 'autoscaling:CompleteLifecycleAction'
+              Resource: '*'
+          - 2:
+              Action: 'ecs:ListContainerInstances'
+              Resource: '*'
+          - 3:
+              Action:
+                - 'ecs:DescribeContainerInstances'
+                - 'ecs:UpdateContainerInstancesState'
+              Resource: '*'
+              #Condition: {'StringEquals': {'ecs:cluster': {'Fn::GetAtt': ['Cluster', 'Arn']}}}
+          - 4:
+              Action: 'sns:Publish'
+              Resource: Ref('SNSTopicECSDrainInstance')
+          - 5:
+              Action: 'cloudformation:ListExports'
+              Resource: '*'
+    - LambdaECSRunTask:
+        Condition: LambdaECSRunTask
+        Roles:
+          - Ref('RoleLambdaECSRunTask')
+        Statement:
+          - 1:
+              Action:
+                - 'ecs:ListContainerInstances'
+                - 'ecs:DescribeContainerInstances'
+              Resource:
+                - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/*')
+                - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:container-instance/*')
+  KMSKey: True
+  Lambda:
+    - ECSDrainInstance:
+        Enabled: True
+        Description: 'Gracefully drain ECS tasks from EC2 instances before the instances are terminated by autoscaling.'
+        MemorySize: 128
+        Runtime: python3.6
+        Timeout: 60
+        Variables: []
+    - ECSRunTask:
+        Enabled: True
+        Description: 'Run ECS Task'
+        MemorySize: 128
+        Runtime: python2.7
+        Timeout: 60
+        Variables: []
+  Role:
+    - CodeDeploy:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole'
+        Principal: codedeploy.amazonaws.com
+    - ECSService:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
+        Principal: ecs.amazonaws.com
+    - EC2ContainerServiceAutoscale:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
+        Principal: application-autoscaling.amazonaws.com
+    - ECSTaskExecution:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+        Principal: ecs-tasks.amazonaws.com
+    - ApiGatewayCloudWatch:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
+        Principal: apigateway.amazonaws.com
+  SecurityGroupBase:
+    - LoadBalancerApplicationExternal: 'Assign to LoadBalancerApplicationExternal'
+    - LoadBalancerApplicationInternal: 'Assign to LoadBalancerApplicationInternal'
+  ServiceDiscovery: True
+  SNSSubscription:
+    - CloudWatchAlarm:
+        TopicArn: Ref('SNSTopicCloudWatchAlarm')
+        Endpoint: cfg.CloudWatchAlarmEndpoint
+        Protocol: email
+    - ECSDrainInstanceLambdaECSDrainInstance:
+        Condition: LambdaECSDrainInstance
+        TopicArn: Ref('SNSTopicECSDrainInstance')
+        Endpoint: GetAtt('LambdaECSDrainInstance', 'Arn')
+        Protocol: lambda
+  SNSTopic:
+    - CloudWatchAlarm:
+        Export: True
+    - ECSDrainInstance:
+        Condition: LambdaECSDrainInstance
+        Export: True
+  VPCEndpoint: True
