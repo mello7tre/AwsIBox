@@ -14,6 +14,20 @@ res:
     Versioning: None
 
   Bucket:
+    - IBoxBase:
+        Enabled: None
+        Create: None
+        AccountsRO: {}
+        Cors: None
+        CloudFrontOriginAccessIdentityExtra:
+          - Dev: None
+          - Stg: None
+          - Prd: None
+        ReplicaDstRegion: None
+        ReplicaDstOwner: None
+        ReplicaSrcAccount: None
+        Versioning: None
+
     - AppRepository:
         <<: *bucketbase
         AccountsRO:

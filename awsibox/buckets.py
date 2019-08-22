@@ -247,6 +247,14 @@ class S3_Buckets(object):
 
             PolicyROConditions = []
             PolicyROPrincipal = []
+
+            # get default value from BucketBase
+            for m, w in cfg.Bucket['IBoxBase'].iteritems():
+                try:
+                    v[m]
+                except:
+                    v[m] = w
+
             for m, w in v['AccountsRO'].iteritems():
                 accountro_name = resname + 'AccountsRO' + m 
                 # conditions
