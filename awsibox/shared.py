@@ -188,6 +188,34 @@ def get_subvalue(substring, subvar, stack=False):
     return v
 
 
+def get_condition(name, cond, value):
+    if cond == 'equals':
+        cond_param = Equals(Ref(name), value)
+        cond_map = Equals(get_endvalue(name), value)
+    elif cond == 'not_equals':
+        cond_param = Not(Equals(Ref(name), value))
+        cond_map = Not(Equals(get_endvalue(name), value))
+    
+    parameters = cfg.Parameters_Override + cfg.Parameters
+
+    if any(name == p.title for p in parameters):
+        condition = {name: Or(
+                And(
+                    Condition(name + 'Override'),
+                    cond_param,
+                ),
+                And(
+                    Not(Condition(name + 'Override')),
+                    cond_map,
+                )
+            )
+        }
+    else:
+        condition = {name: cond_map}
+
+    return condition
+
+
 def import_lambda(name):
     parent_dir_name = os.path.dirname(os.path.realpath(__file__))
     lambda_file = os.path.join(os.getcwd(), 'lib/lambdas/%s.code' % name)

@@ -2,7 +2,7 @@ import troposphere.iam as iam
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, SSMParameter)
+    get_subvalue, auto_get_props, get_condition, SSMParameter)
 
 
 # S - IAM #

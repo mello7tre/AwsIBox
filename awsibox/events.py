@@ -2,7 +2,7 @@ import troposphere.events as eve
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props)
+    get_subvalue, auto_get_props, get_condition)
 from .lambdas import LambdaPermissionEvent
 
 class EVERule(eve.Rule):

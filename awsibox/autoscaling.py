@@ -8,7 +8,7 @@ import troposphere.applicationautoscaling as aas
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props)
+    get_subvalue, auto_get_props, get_condition)
 from .cfn import *
 from .codedeploy import CD_DeploymentGroup
 from .securitygroup import SG_SecurityGroupsEC2

@@ -2,7 +2,7 @@ import troposphere.cloudfront as clf
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props)
+    get_subvalue, auto_get_props, get_condition)
 from .route53 import R53_RecordSetCloudFront
 
 
@@ -294,16 +294,7 @@ class CF_CloudFront(object):
 
         # Conditions
         do_no_override(True)
-        C_Logging = {'CloudFrontLogging': Or(
-            And(
-                Condition('CloudFrontLoggingOverride'),
-                Not(Equals(Ref('CloudFrontLogging'), 'None'))
-            ),
-            And(
-                Not(Condition('CloudFrontLoggingOverride')),
-                Not(Equals(get_endvalue('CloudFrontLogging'), 'None'))
-            )
-        )}
+        C_Logging = get_condition('CloudFrontLogging', 'not_equals', 'None')
 
         C_AcmCertificate = {'CloudFrontAcmCertificate': Not(
             Equals(get_endvalue('CloudFrontAcmCertificate'), 'None')

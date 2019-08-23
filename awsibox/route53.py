@@ -2,7 +2,7 @@ import troposphere.route53 as r53
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props)
+    get_subvalue, auto_get_props, get_condition)
 
 
 # S - ROUTE53 #
@@ -351,10 +351,7 @@ class R53_HostedZones(object):
     def __init__(self, key):
         # Conditions
         do_no_override(True)
-        C_Env = {'HostedZoneEnv': Not(
-            Equals(get_endvalue('HostedZoneEnv'), 'None')
-        )}
-
+        C_Env = get_condition('HostedZoneEnv', 'not_equals', 'None')
         
         C_EnvExtra1 = {'HostedZoneEnvExtra1': Not(
             Equals(get_endvalue('HostedZoneEnvExtra1'), 'None')
