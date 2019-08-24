@@ -721,60 +721,11 @@ class AS_ScheduledAction(object):
 
         # Conditions
         do_no_override(True)
-        C_KeepMinSize = {resname + 'KeepMinSize': Or(
-            And(
-                Condition(resname + 'MinSizeOverride'),
-                Equals(Ref(resname + 'MinSize'), 'k')
-            ),
-            And(
-                Not(Condition(resname + 'MinSizeOverride')),
-                Equals(get_endvalue(resname + 'MinSize'), 'k')
-            )
-        )}
-
-        C_KeepMaxSize = {resname + 'KeepMaxSize': Or(
-            And(
-                Condition(resname + 'MaxSizeOverride'),
-                Equals(Ref(resname + 'MaxSize'), 'k')
-            ),
-            And(
-                Not(Condition(resname + 'MaxSizeOverride')),
-                Equals(get_endvalue(resname + 'MaxSize'), 'k')
-            )
-        )}
-
-        C_CapacityMinSize = {resname + 'CapacityMinSize': Or(
-            And(
-                Condition(resname + 'MinSizeOverride'),
-                Equals(Ref(resname + 'MinSize'), 'CapacityMin')
-            ),
-            And(
-                Not(Condition(resname + 'MinSizeOverride')),
-                Equals(get_endvalue(resname + 'MinSize'), 'CapacityMin')
-            )
-        )}
-
-        C_CapacityMaxSize = {resname + 'CapacityMaxSize': Or(
-            And(
-                Condition(resname + 'MaxSizeOverride'),
-                Equals(Ref(resname + 'MaxSize'), 'CapacityMax')
-            ),
-            And(
-                Not(Condition(resname + 'MaxSizeOverride')),
-                Equals(get_endvalue(resname + 'MaxSize'), 'CapacityMax')
-            )
-        )}
-
-        C_ScheduledAction = {resname: Or(
-            And(
-                Condition(resname + 'RecurrenceOverride'),
-                Not(Equals(Ref(resname + 'Recurrence'), 'None'))
-            ),
-            And(
-                Not(Condition(resname + 'RecurrenceOverride')),
-                Not(Equals(get_endvalue(resname + 'Recurrence'), 'None'))
-            )
-        )}
+        C_KeepMinSize = get_condition(resname + 'KeepMinSize', 'equals', 'k', resname + 'MinSize')
+        C_KeepMaxSize = get_condition(resname + 'KeepMaxSize', 'equals', 'k', resname + 'MaxSize')
+        C_CapacityMinSize = get_condition(resname + 'CapacityMinSize', 'equals', 'CapacityMin', resname + 'MinSize')
+        C_CapacityMaxSize = get_condition(resname + 'CapacityMaxSize', 'equals', 'CapacityMax', resname + 'MaxSize')
+        C_ScheduledAction = get_condition(resname, 'not_equals', 'None', resname + 'Recurrence')
 
         cfg.Conditions.extend([
             C_KeepMinSize,
@@ -810,27 +761,8 @@ class AS_ScheduledActionsEC2(object):
     
             # conditions
             do_no_override(True)
-            c_DesiredSize = {resname + 'KeepDesiredSize': Or(
-                And(
-                    Condition(resname + 'DesiredSizeOverride'),
-                    Equals(Ref(resname + 'DesiredSize'), 'k')
-                ),
-                And(
-                    Not(Condition(resname + 'DesiredSizeOverride')),
-                    Equals(get_endvalue(resname + 'DesiredSize'), 'k')
-                )
-            )}
-    
-            c_CapacityDesiredSize = {resname + 'CapacityDesiredSize': Or(
-                And(
-                    Condition(resname + 'DesiredSizeOverride'),
-                    Equals(Ref(resname + 'DesiredSize'), 'CapacityDesired')
-                ),
-                And(
-                    Not(Condition(resname + 'DesiredSizeOverride')),
-                    Equals(get_endvalue(resname + 'DesiredSize'), 'CapacityDesired')
-                )
-            )}
+            c_DesiredSize = get_condition(resname + 'KeepDesiredSize', 'equals', 'k', resname + 'DesiredSize')
+            c_CapacityDesiredSize = get_condition(resname + 'CapacityDesiredSize', 'equals', 'CapacityDesired', resname + 'DesiredSize')
     
             cfg.Conditions.extend([
                 c_DesiredSize,
@@ -942,16 +874,7 @@ class AS_ScalingPoliciesTracking(object):
 
             #  conditions
             do_no_override(True)
-            c_Value = {resname: Or(
-                And(
-                    Condition(basename + 'TargetValueOverride'),
-                    Not(Equals(Ref(basename + 'TargetValue'), '0'))
-                ),
-                And(
-                    Not(Condition(basename + 'TargetValueOverride')),
-                    Not(Equals(get_endvalue(basename + 'TargetValue'), '0'))
-                )
-            )}
+            c_Value = get_condition(resname, 'not_equals', '0', basename + 'TargetValue')
 
             cfg.Conditions.append(c_Value)
             do_no_override(False)
@@ -1061,16 +984,7 @@ class AS_LaunchConfiguration(object):
 
         # Conditions
         do_no_override(True)
-        C_AdditionalStorage = {'AdditionalStorage': Or(
-            And(
-                Condition('AdditionalStorageSizeOverride'),
-                Not(Equals(Ref('AdditionalStorageSize'), '0'))
-            ),
-            And(
-                Not(Condition('AdditionalStorageSizeOverride')),
-                Not(Equals(get_endvalue('AdditionalStorageSize'), '0'))
-            )
-        )}
+        C_AdditionalStorage = get_condition('AdditionalStorage', 'not_equals', '0', 'AdditionalStorageSize')
 
         C_AdditionalStorageMount = {'AdditionalStorageMount': And(
             Condition('AdditionalStorage'),

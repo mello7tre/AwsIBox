@@ -188,24 +188,26 @@ def get_subvalue(substring, subvar, stack=False):
     return v
 
 
-def get_condition(name, cond, value):
+def get_condition(name, cond, value, key_name=None):
+    key_name = key_name if key_name else name
+
     if cond == 'equals':
-        cond_param = Equals(Ref(name), value)
-        cond_map = Equals(get_endvalue(name), value)
+        cond_param = Equals(Ref(key_name), value)
+        cond_map = Equals(get_endvalue(key_name), value)
     elif cond == 'not_equals':
-        cond_param = Not(Equals(Ref(name), value))
-        cond_map = Not(Equals(get_endvalue(name), value))
+        cond_param = Not(Equals(Ref(key_name), value))
+        cond_map = Not(Equals(get_endvalue(key_name), value))
     
     parameters = cfg.Parameters_Override + cfg.Parameters
 
-    if any(name == p.title for p in parameters):
+    if any(key_name == p.title for p in parameters):
         condition = {name: Or(
                 And(
-                    Condition(name + 'Override'),
+                    Condition(key_name + 'Override'),
                     cond_param,
                 ),
                 And(
-                    Not(Condition(name + 'Override')),
+                    Not(Condition(key_name + 'Override')),
                     cond_map,
                 )
             )
