@@ -259,9 +259,7 @@ class S3_Buckets(object):
                 accountro_name = resname + 'AccountsRO' + m 
                 # conditions
                 do_no_override(True)
-                c_AccountRO = {accountro_name: Not(
-                    Equals(get_endvalue(accountro_name), 'None')
-                )}
+                c_AccountRO = get_condition(accountro_name, 'not_equals', 'None')
 
                 cfg.Conditions.append(c_AccountRO)
                 do_no_override(False)
@@ -286,21 +284,11 @@ class S3_Buckets(object):
 
             cfg.Conditions.extend([
                 c_PolicyRO,
-                {resname: Not(
-                    Equals(get_endvalue(resname + 'Create'), 'None')
-                )},
-                {resname + 'Versioning': Not(
-                    Equals(get_endvalue(resname + 'Versioning'), 'None')
-                )},
-                {resname + 'Cors': Not(
-                    Equals(get_endvalue(resname + 'Cors'), 'None')
-                )},
-                {resname + 'ReplicaSrcAccount': Not(
-                    Equals(get_endvalue(resname + 'ReplicaSrcAccount'), 'None')
-                )},
-                {resname + 'ReplicaDstOwner': Not(
-                    Equals(get_endvalue(resname + 'ReplicaDstOwner'), 'None')
-                )},
+                get_condition(resname, 'not_equals', 'None', resname + 'Create'),
+                get_condition(resname + 'Versioning', 'not_equals', 'None'),
+                get_condition(resname + 'Cors', 'not_equals', 'None'),
+                get_condition(resname + 'ReplicaSrcAccount', 'not_equals', 'None'),
+                get_condition(resname + 'ReplicaDstOwner', 'not_equals', 'None'),
                 #{resname + 'AccountRO': Not(
                 #    Equals(get_endvalue(resname + 'AccountRO'), 'None')
                 #)},
@@ -378,9 +366,7 @@ class S3_Buckets(object):
                     ixname = resname + 'CloudFrontOriginAccessIdentityExtra' + ixn
                     # conditions
                     do_no_override(True)
-                    c_CloudFrontOriginAccessIdentityExtra = {ixname: Not(
-                        Equals(get_endvalue(ixname), 'None')
-                    )}
+                    c_CloudFrontOriginAccessIdentityExtra = get_condition(ixname, 'not_equals', 'None')
 
                     cfg.Conditions.extend([
                         c_CloudFrontOriginAccessIdentityExtra,
@@ -430,9 +416,7 @@ class S3_Buckets(object):
                 condname = resname + 'OutputValueRegion'
                 # conditions
                 do_no_override(False)
-                c_OutputValueRegion = {condname: Not(
-                    Equals(get_endvalue(condname), 'AWSRegion')
-                )}
+                c_OutputValueRegion = get_condition(condname, 'not_equals', 'AWSRegion')
 
                 cfg.Conditions.append(c_OutputValueRegion)
                 do_no_override(False)
