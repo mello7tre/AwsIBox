@@ -49,6 +49,11 @@ def get_envregion_mapping():
     mappedvalue = mappings['cmm']['cmm']
     cfg.mappedvalue = mappedvalue
 
+    if cfg.debug:
+        print('##########MAPPEDVALUE#########START#####')
+        pprint(cfg.mappedvalue)
+        print('##########MAPPEDVALUE#########END#######')
+
     # delete empy mappings, CloudFormation do not like them!
     for env in cfg.RP_base:
         for region in cfg.RP_base[env]:

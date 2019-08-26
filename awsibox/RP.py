@@ -171,7 +171,7 @@ def get_RP_for_envs(value):
     if hasattr(value, 'iteritems'):
         for d, v in value.iteritems():
             RP[d] = get_RP_for_envs(v)
-    elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], OrderedDict):
+    elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], (OrderedDict, dict)):
         for d, v in enumerate(value):
             for i, j in v.iteritems():
                 # CF Mapping allow for index only alfanumeric char, this way i can specify more elegant index in CloudFormation behaviours
@@ -227,6 +227,24 @@ def merge_cfg(cfgs, cfg_key, list_base=None):
     return RP_list
 
 
+def prepend_base_cfgs(cfg_cmm):
+    for cfg_key, cfg_value in cfg.BASE_CFGS.iteritems():
+        key_names = []
+        for c in cfg_cmm:
+            if cfg_key in c:
+                for k in c[cfg_key]:
+                    key_names.extend(k.keys())
+
+        if key_names:
+            keys = []
+            for k in key_names:
+                keys.append({
+                    k: cfg_value
+                })
+
+            cfg_cmm.insert(0,{cfg_key: keys})
+
+
 def get_RP(cfgs):
     RP = copy.deepcopy(RP_base)
 
@@ -239,6 +257,9 @@ def get_RP(cfgs):
     RP_list = []
 
     cfg_merge_cmm = merge_cfg(cfgs, cfg_key_cmm)
+
+    # Prepend base config from awsibox/cfg.py BASE_CFGS
+    prepend_base_cfgs(cfg_merge_cmm)
 
     RP['cmm']['cmm'] = get_RP_for_envs(cfg_merge_cmm)
 
@@ -422,17 +443,18 @@ def build_RP():
     
     RP = get_RP(cfgs)
     
+    # print(RP['dev']['eu-west-1']['CloudFrontCacheBehaviors'][2]['QueryStringCacheKeys'])
+    if cfg.debug:
+        print('##########RP#########START#####')
+        # TO DEBUG - NICELY PRINT NESTED ORDEREDDICT
+        show_odict(RP)
+        print('##########RP#########END#######')
+
     try:
         stacktype = RP['cmm']['cmm']['StackType']
     except KeyError:
         exit(1)
-    
-    # print(RP['dev']['eu-west-1']['CloudFrontCacheBehaviors'][2]['QueryStringCacheKeys'])
-    if cfg.debug:
-        # TO DEBUG - NICELY PRINT NESTED ORDEREDDICT
-        show_odict(RP)
-        #pprint(RP)
-    
+
     cfg.RP = RP
     cfg.RP_cmm = RP['cmm']['cmm']
 

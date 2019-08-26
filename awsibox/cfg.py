@@ -67,6 +67,28 @@ EVAL_FUNCTIONS_IN_CFG = (
     'Tags(',
 )
 
+BASE_CFGS = {
+    'Bucket': {
+        'Enabled': 'None',
+        'Create': 'None',
+        'AccountsRO': OrderedDict([
+            ('dev', 'None'),
+            ('stg', 'None'),
+            ('prd', 'None'),
+        ]),
+        'Cors': 'None',
+        'CloudFrontOriginAccessIdentityExtra': OrderedDict([
+            ('Dev', 'None'),
+            ('Stg', 'None'),
+            ('Prd', 'None'),
+        ]),
+        'ReplicaDstRegion': 'None',
+        'ReplicaDstOwner': 'None',
+        'ReplicaSrcAccount': 'None',
+        'Versioning': 'None',
+    }
+}
+
 INSTANCE_LIST = [
     'default',
     'i2.xlarge', 'i2.2xlarge', 'i2.4xlarge',
