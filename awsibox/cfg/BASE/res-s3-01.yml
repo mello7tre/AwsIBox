@@ -1,7 +1,6 @@
-resources-s3-01:
+res-s3-01:
   StackType: res
   StackName: r-s3-01
   Bucket:
-    - MachineLearning:
-        Enabled: True
+    - AppData:
         Create: True

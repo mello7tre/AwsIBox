@@ -1,0 +1,82 @@
+res-event-01:
+  StackType: res
+  StackName: r-event-01
+  EventsRule:
+    - EC2Notification:
+        Description: 'EC2 Instance State-change Notification'
+        State: 'ENABLED'
+        EventPattern: >
+            eval('{
+              "source": [
+                "aws.ec2"
+              ],
+              "detail-type": [
+                "EC2 Instance State-change Notification"
+              ],
+              "detail": {
+                "state": [
+                  "running",
+                  "shutting-down"
+                ]
+              }
+            }')
+        Targets:
+          - LambdaServiceDiscovery:
+              Arn: GetAtt('LambdaServiceDiscovery', 'Arn')
+              Id: 'TargetFunction-01'
+          - LambdaR53RecordInstanceId:
+              Arn: GetAtt('LambdaR53RecordInstanceId', 'Arn')
+              Id: 'TargetFunction-02'
+  Lambda:
+    - ServiceDiscovery:
+        Export: True
+        Description: 'ServiceDiscovery'
+        MemorySize: 128
+        Runtime: python2.7
+        Timeout: 30
+        Variables:
+          - NameSpaceID: get_expvalue('ServiceDiscoveryPublicDnsNamespaceId')
+          - PublicDnsNamespaceName: Sub('find.' + cfg.HostedZoneNameEnv)
+          - HostedZoneId: get_expvalue('HostedZoneIdEnv')
+    - R53RecordInstanceId:
+        Export: True
+        Description: 'R53 Record InstanceId Automatic Creation'
+        MemorySize: 128
+        Runtime: python2.7
+        Timeout: 30
+        Variables:
+          - HostedZoneName: get_endvalue('HostedZoneNamePrivate')
+          - HostedZoneId: get_expvalue('HostedZoneIdPrivate')
+          - Topic: get_expvalue('SNSTopicASGNotificationR53')
+  IAMPolicy:
+    - LambdaServiceDiscovery:
+        Roles:
+          - Ref('RoleLambdaServiceDiscovery')
+        Statement:
+          - 1:
+              Action:
+                - 'servicediscovery:ListServices'
+                - 'servicediscovery:CreateService'
+                - 'servicediscovery:DeleteService'
+                - 'servicediscovery:RegisterInstance'
+                - 'servicediscovery:DeRegisterInstance'
+                - 'servicediscovery:GetOperation'
+                - 'servicediscovery:GetNameSpace'
+              Resource: '*'
+          - 2:
+              Action:
+                - 'route53:ChangeResourceRecordSets'
+              Resource: 'arn:aws:route53:::*'
+    - LambdaR53RecordInstanceId:
+        Roles:
+          - Ref('RoleLambdaR53RecordInstanceId')
+        Statement:
+          - 1:
+              Action:
+                - 'sns:Publish'
+              Resource: get_expvalue('SNSTopicASGNotificationR53')
+          - 2:
+              Action:
+                - 'route53:ChangeResourceRecordSets'
+                - 'route53:ListResourceRecordSets'
+              Resource: 'arn:aws:route53:::*'

@@ -242,7 +242,7 @@ def prepend_base_cfgs(cfg_cmm):
                     k: cfg_value
                 })
 
-            cfg_cmm.insert(0,{cfg_key: keys})
+            cfg_cmm.insert(0, {cfg_key: keys})
 
 
 def get_RP(cfgs):

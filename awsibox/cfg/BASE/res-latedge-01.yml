@@ -1,0 +1,18 @@
+res-latedge-01:
+  StackType: res
+  StackName: r-latedge-01
+  Lambda:
+    - AtEdgeAddHeaders:
+        Enabled: None
+        AtEdge: True
+        Description: 'Lambda@Edge add Headers'
+        MemorySize: 128
+        Runtime: nodejs8.10
+        Timeout: 10
+        Version: True
+        Variables: []
+
+us-east-1:
+  Lambda:
+    - AtEdgeAddHeaders:
+        Enabled: True
