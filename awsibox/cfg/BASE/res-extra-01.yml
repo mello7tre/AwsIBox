@@ -1,0 +1,11 @@
+res-extra-01:
+  StackType: res
+  StackName: r-extra-01
+  CacheSubnetGroup: True
+  DBSubnetGroup: True
+  EFSFileSystem:
+    - EcsCluster:
+      Enabled: None
+      Name: EcsCluster
+  SecurityGroupBase:
+    - RDS: 'Assign to RDS Client'
