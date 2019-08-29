@@ -20,13 +20,6 @@ res-base:
         Condition: LambdaECSRunTask
         Value: Ref('RoleLambdaECSRunTask')
         Export: Export('RoleLambdaECSRunTask')
-  AllowedIp:
-    - 1:
-        Enabled: True
-        Ip: cfg.AllowedIp1
-    - 2:
-        Enabled: True
-        Ip: cfg.AllowedIp2
   Bucket:
     - AppRepository:
         Enabled: True
@@ -155,6 +148,7 @@ res-base:
           - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
         Principal: apigateway.amazonaws.com
   SecurityGroupBase:
+    - BaseInstance: 'Enable ICMP Ping [ALL] and SSH on EC2 Instance'
     - LoadBalancerApplicationExternal: 'Assign to LoadBalancerApplicationExternal'
     - LoadBalancerApplicationInternal: 'Assign to LoadBalancerApplicationInternal'
   ServiceDiscovery: True

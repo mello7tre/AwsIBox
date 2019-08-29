@@ -8,8 +8,12 @@ from . import cfg
 
 
 def mappings_create_entry(mappings, keyenv, keyregion, keyname, keyvalue):
+    global mappedvalues
+
     # create mapping entry
     mappings[keyenv][keyregion].update({keyname: keyvalue})
+    if keyenv != 'cmm':
+        mappedvalues.add(keyname)
     # and if present delete the common one, but first record its value
     if keyenv != 'cmm' and keyname in mappings['cmm']['cmm']:
         value = mappings['cmm']['cmm'][keyname]
@@ -45,14 +49,22 @@ def get_mapping_env_region(MP, RP, e, r, p):
 
 
 def get_envregion_mapping():
+    global mappedvalues
+    mappedvalues = set()
+
     mappings = get_mapping_env_region(copy.deepcopy(cfg.RP_base), cfg.RP, None, None, None)
-    mappedvalue = mappings['cmm']['cmm']
-    cfg.mappedvalue = mappedvalue
+    fixedvalues = mappings['cmm']['cmm']
+    cfg.fixedvalues = fixedvalues
+    cfg.mappedvalues = mappedvalues
 
     if cfg.debug:
-        print('##########MAPPEDVALUE#########START#####')
-        pprint(cfg.mappedvalue)
-        print('##########MAPPEDVALUE#########END#######')
+        print('##########FIXEDVALUES#########START#####')
+        pprint(cfg.fixedvalues)
+        print('##########FIXEDVALUES#########END#######')
+
+        print('##########MAPPEDVALUES#########START#####')
+        pprint(cfg.mappedvalues)
+        print('##########MAPPEDVALUES#########END#######')
 
     # delete empy mappings, CloudFormation do not like them!
     for env in cfg.RP_base:
@@ -130,7 +142,7 @@ class Mappings(object):
                 mapping = get_envregion_mapping()
             if n == 'EC2':
                 mapping = get_ec2_mapping()
-            if n == 'Azones':
+            if n == 'AZones':
                 mapping = get_azones_mapping()
 
             cfg.Mappings.append(mapping)

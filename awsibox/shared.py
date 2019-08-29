@@ -19,15 +19,23 @@ def stack_add_res():
         name = v.title
         # Automatically create override conditions for parameters
         if not name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION):
+
+            if name == 'InstanceType':
+                default = 'default'
+            elif name == 'SecurityGroups':
+                default = cfg.SECURITY_GROUPS_DEFAULT
+            else:
+                default = ''
+
             condition = {
-                name + 'Override': Not(Equals(Ref(name), '' if name != 'InstanceType' else 'default'))
+                name + 'Override': Not(Equals(Ref(name), default))
             }
+
             cfg.Conditions.append(condition)
-            cfg.Parameters_Override.append(v)
         # End
         cfg.template.add_parameter(v)
+
     del cfg.Parameters[:]
-    del cfg.Parameters_Override[:]
 
     for v in cfg.Conditions:
         for name in v:
@@ -55,10 +63,10 @@ def do_no_override(action):
         cfg.no_override = False
 
 
-#def import_modules(gbl):
-#    for module in cfg.IMPORT_MODULES:
-#        mod = importlib.import_module('.%s' % module, package='awsibox')
-#        gbl.update(mod.__dict__)
+# def import_modules(gbl):
+#     for module in cfg.IMPORT_MODULES:
+#         mod = importlib.import_module('.%s' % module, package='awsibox')
+#         gbl.update(mod.__dict__)
 
 
 def get_endvalue(
@@ -71,50 +79,50 @@ def get_endvalue(
         split=False,
         issub=False,
         strout=False,
-        mappedvalue=None
+        fixedvalues=None
 ):
     # Its not pythonic, but it's only way to avoid circular import problems
     from securitygroup import SG_SecurityGroupsTSK
 
     v = ''
-    parameters = []
+    param_override = param + 'Override'
 
     # set default if not defined
-    if not mappedvalue:
-        mappedvalue = cfg.mappedvalue
+    if not fixedvalues:
+        fixedvalues = cfg.fixedvalues
 
-    # if param in mappedvalue means its value do not changes based on Env/Region so hardcode the value in json, ...
-    if param in mappedvalue:
-        mapped_value = mappedvalue[param]
+    # if param in fixedvalues means its value do not changes based on Env/Region so hardcode the value in json, ...
+    if param in fixedvalues:
+        endvalue = fixedvalues[param]
         # check if value start with method and use eval to run code ... in list too
-        if isinstance(mapped_value, list):
-            mapped_value = [eval(r) if r.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else r for r in mapped_value]
-        if isinstance(mapped_value, str):
-            mapped_value = eval(mapped_value.replace('\n', '')) if mapped_value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else mapped_value
+        if isinstance(endvalue, list):
+            endvalue = [eval(r) if r.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else r for r in endvalue]
+        if isinstance(endvalue, str):
+            endvalue = eval(endvalue.replace('\n', '')) if endvalue.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else endvalue
     # ... otherway use mapping
     else:
-        mapped_value = FindInMap(Ref('EnvShort'), Ref("AWS::Region"), param)
+        endvalue = FindInMap(Ref('EnvShort'), Ref("AWS::Region"), param)
 
-    if strout is True and isinstance(mapped_value, int):
-        mapped_value = str(mapped_value)
+    if strout is True and isinstance(endvalue, int):
+        endvalue = str(endvalue)
 
-    if nolist is True and isinstance(mapped_value, list):
-        mapped_value = ','.join(mapped_value)
+    if nolist is True and isinstance(endvalue, list):
+        endvalue = ','.join(endvalue)
 
     if issub is False:
-        override_value = If(param + 'Override', Ref(param), mapped_value)
+        override_value = If(param_override, Ref(param), endvalue)
     else:
-        override_value = If(param + 'Override', Ref(param), Sub(mapped_value))
+        override_value = If(param_override, Ref(param), Sub(endvalue))
 
-    parameters = cfg.Parameters_Override + cfg.Parameters
-
-    if cfg.no_override is False and any(param == p.title for p in parameters):
+    if (cfg.no_override is False and
+            any(param == p.title for p in cfg.Parameters) and not
+            param.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
         v = override_value
-    # elif param in mappings['dev']['eu-west-1'] or param in mappedvalue:
+    # elif param in mappings['dev']['eu-west-1'] or param in fixedvalues:
     else:
-        v = mapped_value
+        v = endvalue
         # using ssm - DISABLED FOR NOW
-        # v = mapped_value if ssm is True else GetAtt('SSMParameter' + param, 'Value')
+        # v = endvalue if ssm is True else GetAtt('SSMParameter' + param, 'Value')
 
     if condition:
         if condition is True:
@@ -160,7 +168,7 @@ def get_expvalue(param, stack=False, prefix=''):
         )
     else:
         v = ImportValue(param)
- 
+
     return v
 
 
@@ -190,6 +198,7 @@ def get_subvalue(substring, subvar, stack=False):
 
 def get_condition(name, cond, value, key_name=None):
     key_name = key_name if key_name else name
+    key_override = key_name + 'Override'
 
     if cond == 'equals':
         cond_param = Equals(Ref(key_name), value)
@@ -197,21 +206,19 @@ def get_condition(name, cond, value, key_name=None):
     elif cond == 'not_equals':
         cond_param = Not(Equals(Ref(key_name), value))
         cond_map = Not(Equals(get_endvalue(key_name), value))
-    
-    parameters = cfg.Parameters_Override + cfg.Parameters
 
-    if any(key_name == p.title for p in parameters):
+    if (any(key_name == p.title for p in cfg.Parameters) and not
+            key_name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
         condition = {name: Or(
-                And(
-                    Condition(key_name + 'Override'),
-                    cond_param,
-                ),
-                And(
-                    Not(Condition(key_name + 'Override')),
-                    cond_map,
-                )
+            And(
+                Condition(key_override),
+                cond_param,
+            ),
+            And(
+                Not(Condition(key_override)),
+                cond_map,
             )
-        }
+        )}
     else:
         condition = {name: cond_map}
 
@@ -233,12 +240,11 @@ def import_lambda(name):
                     value = '"'
                 else:
                     value = ''.join(x)
-    
+
                 file_lines.append(value)
-                    
-            #file_lines = [eval(x) if x.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else ''.join(x) for x in f.readlines()]
-    
+
             return(file_lines)
+
     except IOError:
         logging.error('Lambda code %s not found' % name)
         exit(1)
@@ -260,11 +266,12 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
             rootkey=rootkey[obj_propname] if rootkey else None,
             rootname=rootname + obj_propname if rootname else None,
         )
-        
+
         return prop_obj
+
     elif isinstance(prop_class, list) and isinstance(prop_class[0], type) and prop_class[0].__bases__[0].__name__ == 'AWSProperty':
         # If object props already is a list, keep existing list objects
-        # need to make a change, if object already exist, i must first iterate over old list with rootkey and rootname and then over new one 
+        # need to make a change, if object already exist, i must first iterate over old list with rootkey and rootname and then over new one
         prop_list = []
         prop_class = props[obj_propname][0][0]
         # If rootkey is defined, first iterate over rootkey and execute auto_get_props passing rootkey and rootname, but check if element exist in key too,
@@ -296,7 +303,7 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
                 prop_list.append(prop_obj)
         # ...then iterate over key, but check if element exist in rootkey too, in that case skip it (already included in previous rootkey iteration)
         # when calling auto_get_props rootkey and rootname can be setted to None, cause if element has not been skipped mean that it do not exist in rootkey
-        # so there is no need to pass it (there cannot be a corrispective node in rootkey) 
+        # so there is no need to pass it (there cannot be a corrispective node in rootkey)
         for o, v in key[obj_propname].iteritems():
             name_o = str(o)
             mapname_o = mapname + obj_propname + name_o
@@ -310,7 +317,7 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
                 recurse=True,
                 rootkey=None,
                 rootname=None,
-            ) 
+            )
             prop_list.append(prop_obj)
 
         return prop_list
@@ -343,7 +350,7 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None, recurse=False, ro
                 value = auto_get_props_recurse(obj, key, obj.props, obj_propname, mapname, propname, rootkey, rootname)
             # needed for lib/efs.py EFS_FileStorage SGIExtra - where is passed as key a new dictionary to parse for parameters
             elif rootdict:
-                value = get_endvalue(mapname + propname, mappedvalue=rootdict)
+                value = get_endvalue(mapname + propname, fixedvalues=rootdict)
             else:
                 value = get_endvalue(mapname + propname)
             try:
@@ -366,11 +373,7 @@ def gen_random_string():
     length = 16
     char_set = string.ascii_letters + string.digits
     if not hasattr(gen_random_string, "rng"):
-        gen_random_string.rng = random.SystemRandom() # Create a static variable
-    secret_string = ''.join([ gen_random_string.rng.choice(char_set) for _ in xrange(length) ])
+        gen_random_string.rng = random.SystemRandom()  # Create a static variable
+    secret_string = ''.join([gen_random_string.rng.choice(char_set) for _ in xrange(length)])
 
     return secret_string
-
-
-# Need to stay as last lines
-#import_modules(globals())

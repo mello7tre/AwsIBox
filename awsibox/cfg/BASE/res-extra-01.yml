@@ -1,6 +1,8 @@
 res-extra-01:
   StackType: res
   StackName: r-extra-01
+  MappingClass:
+    - AZones:
   CacheSubnetGroup: True
   DBSubnetGroup: True
   EFSFileSystem:

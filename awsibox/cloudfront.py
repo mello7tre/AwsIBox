@@ -330,7 +330,7 @@ class CF_CloudFront(object):
             cachebehavior.setup(key=v)
 
             # Create and Use Condition only if PathPattern Value differ between envs
-            if name + 'PathPattern' not in cfg.mappedvalue:
+            if name + 'PathPattern' not in cfg.fixedvalues:
                 # conditions
                 do_no_override(True)
                 c_CacheBehavior = {name: Not(

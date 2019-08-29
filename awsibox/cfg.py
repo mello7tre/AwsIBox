@@ -4,7 +4,6 @@ from collections import OrderedDict, Mapping
 no_override = False
 
 Parameters = []
-Parameters_Override = []
 Conditions = []
 Mappings = []
 Resources = []
@@ -40,14 +39,17 @@ AZones = {
     'ap-northeast-3': 1,
 }
 
+AZoneNames = ['A', 'B', 'C', 'D', 'E', 'F']
+
 PARAMETERS_SKIP_OVERRIDE_CONDITION = (
     'Env',
     'UpdateMode',
     'RecordSetExternal',
     'DoNotSignal',
     'EfsMounts',
-    'SecurityGroups',
     'ImageIdLatest',
+    'VPCCidrBlock',
+    'VPCName',
 )
 
 EVAL_FUNCTIONS_IN_CFG = (
@@ -158,4 +160,5 @@ CFG_TO_CLASS = OrderedDict([
     ('VPCEndpoint', {'module': 'vpc', 'class': 'VPC_Endpoint'}),
     ('SecurityGroupBase', {'module': 'securitygroup', 'class': 'SG_SecurityGroup'}),
     ('SecurityGroupIngress', {'module': 'securitygroup', 'class': 'SG_SecurityGroupIngressesExtra'}),
+    ('VPC', {'module': 'vpc', 'class': 'VPC_VPC'}),
 ])

@@ -1,0 +1,10 @@
+vpc:
+  StackType: res
+  StackName: vpc
+  MappingClass:
+    - AZones:
+  VPC: True
+  CidrBlock: Ref('VPCCidrBlock')
+  EnableDnsSupport: True
+  EnableDnsHostnames: True
+  Tags: Tags(Name=Ref('VPCName'))

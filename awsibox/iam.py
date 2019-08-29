@@ -129,7 +129,7 @@ class IAMRoleLambdaBase(iam.Role):
             'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
         ]
         if 'RoleManagedPolicyArns' in key:
-            self.ManagedPolicyArns.extend(get_endvalue('RoleManagedPolicyArns', mappedvalue=key))
+            self.ManagedPolicyArns.extend(get_endvalue('RoleManagedPolicyArns', fixedvalues=key))
         self.AssumeRolePolicyDocument = {
             'Statement': [{
                 'Action': 'sts:AssumeRole',
@@ -169,7 +169,7 @@ def IAMPolicyStatement(key):
 
     for k in ['Action', 'NotAction', 'Resource', 'NotResource', 'Condition']:
         if k in key:
-            Statement.update({k: get_endvalue(k, mappedvalue=key)})
+            Statement.update({k: get_endvalue(k, fixedvalues=key)})
 
     return Statement
 

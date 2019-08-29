@@ -58,7 +58,6 @@ class SecurityGroupsIngressEcs(SecurityGroupIngress):
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################
 
-# S - SECURITY GROUP #
 class SecurityGroupRule(ec2.SecurityGroupRule):
     IpProtocol = 'tcp'
 
@@ -83,7 +82,6 @@ class SecurityGroupRuleEcsService(SecurityGroupRule):
         self.FromPort = get_endvalue('ContainerDefinitions1ContainerPort')
         self.ToPort = self.FromPort
 
-# E - SECURITY GROUP #
 
 # ##########################################
 # ### END STACK META CLASSES AND METHODS ###
@@ -100,17 +98,6 @@ class SG_SecurityGroupsExtra(object):
         cfg.Parameters.extend([
             P_SecurityGroups,
         ])
-
-        # Conditions
-        do_no_override(True)
-        C_Override = {'SecurityGroupsOverride': Not(
-            Equals(Select('0', Split(',', Ref('SecurityGroups'))), '')
-        )}
-
-        cfg.Conditions.extend([
-            C_Override,
-        ])
-        do_no_override(False)
 
         SecurityGroups = []
 
@@ -230,15 +217,57 @@ class SG_SecurityGroupsTSK(object):
         self.SecurityGroups = SG_Extra.SecurityGroups
 
 
+def SG_SecurityGroupIngressBaseInstance():
+    Securitygroup_Rules = []
+
+    for n, v in cfg.AllowedIp.iteritems():
+        name = 'AllowedIp%s' % n
+        # conditions
+        do_no_override(True)
+        cfg.Conditions.append({
+            name: Not(Equals(get_endvalue(name + 'Enabled'), 'None'))
+        })
+        do_no_override(False)
+
+        # resources
+        Rule = SecurityGroupRule()
+        Rule.FromPort = '22'
+        Rule.ToPort = '22'
+        Rule.CidrIp=get_endvalue(name + 'Ip')
+
+        Securitygroup_Rules.append(
+            If(
+                name,
+                Rule,
+                Ref('AWS::NoValue')
+            )
+        )
+
+    Securitygroup_Rules.append(
+        ec2.SecurityGroupRule(
+            CidrIp='0.0.0.0/0',
+            FromPort='8',
+            IpProtocol='icmp',
+            ToPort='-1'
+        )
+    )
+
+    return Securitygroup_Rules
+
+
 class SG_SecurityGroupRES(object):
     def __init__(self, key):
-        for n, v in cfg.SecurityGroupBase.iteritems():
+        for n, v in getattr(cfg, key).iteritems():
             name = 'SecurityGroup%s' % n  # Ex. SecurityGroupElasticSearchClient
             outname = name if n != 'ElasticSearchClient' else 'SecurityGroup' + n.replace('Client', '')  # Ex. SecurityGroupElasticSearch
+
             # resources
             r_Base = SecurityGroup(name)
             r_Base.setup()
             r_Base.GroupDescription = get_endvalue('SecurityGroupBase' + n)
+
+            if n == 'BaseInstance':
+                r_Base.SecurityGroupIngress = SG_SecurityGroupIngressBaseInstance()
 
             cfg.Resources.append(r_Base)
 
@@ -248,59 +277,6 @@ class SG_SecurityGroupRES(object):
             o_Base.Export = Export(outname)
 
             cfg.Outputs.append(o_Base)
-
-        Securitygroup_Rules = []
-        for n, v in cfg.AllowedIp.iteritems():
-            name = 'AllowedIp%s' % n
-            # conditions
-            do_no_override(True)
-            cfg.Conditions.append({
-                name: Not(Equals(get_endvalue(name + 'Enabled'), 'None'))
-            })
-            do_no_override(False)
-
-            # resources
-            Rule = SecurityGroupRule()
-            Rule.FromPort = '22'
-            Rule.ToPort = '22'
-            Rule.CidrIp=get_endvalue(name + 'Ip')
-            
-            Securitygroup_Rules.append(
-                If(
-                    name,
-                    Rule,
-                    Ref('AWS::NoValue')
-                )
-            )
-
-        Securitygroup_Rules.append(
-            ec2.SecurityGroupRule(
-                CidrIp='0.0.0.0/0',
-                FromPort='8',
-                IpProtocol='icmp',
-                ToPort='-1'
-            )
-        )      
-
-        # Resources
-        R_BaseInstance = SecurityGroup('SecurityGroupBaseInstance')
-        R_BaseInstance.setup()
-        R_BaseInstance.GroupDescription = 'Enable ICMP Ping [ALL] and SSH [192.168.36.0/23]'
-        # R_BaseInstance.GroupDescription='Enable ICMP Ping [ALL] and SSH [' + ','.join(securitygroups_description['resources-env']) + ']'
-        R_BaseInstance.SecurityGroupIngress = Securitygroup_Rules
-
-        cfg.Resources.extend([
-            R_BaseInstance,
-        ])
-
-        # Outputs
-        O_BaseInstance = Output('SecurityGroupBaseInstance')
-        O_BaseInstance.Value = GetAtt('SecurityGroupBaseInstance', 'GroupId')
-        O_BaseInstance.Export = Export('SecurityGroupBaseInstance')
-
-        cfg.Outputs.extend([
-            O_BaseInstance,
-        ])
 
 
 class SG_SecurityGroupIngressesExtraService(object):

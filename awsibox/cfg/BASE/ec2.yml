@@ -129,7 +129,7 @@ prd:
         MinSize: 2
 
 eu-west-1:
-  ImageId: ami-466768ac
+  ImageId: ami-0bbc25e23a7640b9b
 
 eu-central-1:
   ImageId: ami-e28d098d
