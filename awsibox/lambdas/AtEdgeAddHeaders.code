@@ -1,6 +1,12 @@
 'use strict';
 
-const headerCacheControl = [{ key: 'cache-control', value: 'max-age=2592000' }];
+const cachecontrol =
+STRING_EVAL_FUNCTIONS_IN_CFG
+get_endvalue('LambdaAtEdgeAddHeadersCacheControl')
+STRING_EVAL_FUNCTIONS_IN_CFG
+;
+
+const headerCacheControl = [{key: 'cache-control', value: 'max-age=' + cachecontrol}];
 const headerXRobotsTag = [{ key: 'x-robots-tag', value: 'noindex, follow' }];
 
 exports.lambda_handler = (event, context, callback) => {

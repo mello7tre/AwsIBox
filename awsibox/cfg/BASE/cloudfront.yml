@@ -63,6 +63,3 @@ global:
         ResponsePagePath: '/error-pages/504.html'
         ResponseCode: 504
   RecordSetCloudFront: None
-
-eu-central-1:
-  CloudFront: None

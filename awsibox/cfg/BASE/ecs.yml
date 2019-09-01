@@ -33,6 +33,7 @@ ecs:
   ListenerRules:
     - 1:
         HostHeader: '*${EnvRole}.*'
+  LoadBalancerApplicationStack: alb-a-d
   NetworkMode: bridge
   ScalingPolicyTrackings:
     - APPCpu:
@@ -62,17 +63,3 @@ dev: &cfg_dev
         MinSize: CapacityMin
 
 stg: *cfg_dev 
-
-eu-west-1:
-  dev:
-    LoadBalancerApplicationStack: alb-a-d
-
-  stg:
-    LoadBalancerApplicationStack: alb-a-s
-
-  prd:
-    LoadBalancerApplicationStack: alb-a-p
-
-eu-central-1:
-  prd:
-    LoadBalancerApplicationStack: alb-a-b

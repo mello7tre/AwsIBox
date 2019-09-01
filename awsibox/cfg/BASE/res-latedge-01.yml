@@ -11,6 +11,7 @@ res-latedge-01:
         Timeout: 10
         Version: True
         Variables: []
+        CacheControl: 7776000
 
 us-east-1:
   Lambda:

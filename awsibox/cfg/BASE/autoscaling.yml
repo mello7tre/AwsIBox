@@ -67,15 +67,3 @@ global:
     - APPCpu:
         <<: *apptrackingcpu
         PolicyName: ScalingPolicyTrackingsAPPCpu
-
-prd:
-  Capacity:
-    Desired: 2
-    Min: 2
-    Max: 9
-
-eu-central-1:
-  prd:
-    Capacity:
-      Desired: 0
-      Min: 0

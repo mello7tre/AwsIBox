@@ -1,6 +1,7 @@
 include: !include [
   securitygroup.yml,
   certificate.yml,
+  lb-hostedzoneid.yml,
 ]
 
 global:
@@ -47,9 +48,3 @@ global:
   TargetGroupDeregistrationDelay: '30'
   TargetGroupCookieSticky: None
   UnhealthyThresholdCount: 3
-
-eu-west-1:
-  HostedZoneIdLB: Z32O12XQLNTSW2
-
-eu-central-1:
-  HostedZoneIdLB: Z215JYRZR1TBD5

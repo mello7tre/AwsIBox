@@ -60,6 +60,7 @@ global:
         Value: get_endvalue('LaunchType')
     - LogDriver:
         Value: get_endvalue('LogDriver')
+  ClusterStack: ecs-a-d
   ContainerDefinitions:
     - 1:
         Cpu: 16
@@ -92,17 +93,3 @@ prd:
   ContainerDefinitions:
     - 1:
         Cpu: 256
-
-eu-west-1:
-  dev:
-    ClusterStack: ecs-a-d
-
-  stg:
-    ClusterStack: ecs-a-s
-
-  prd:
-    ClusterStack: ecs-a-p
-
-eu-central-1:
-  prd:
-    ClusterStack: ecs-a-b

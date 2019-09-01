@@ -1,3 +1,7 @@
+include: !include [
+  imageid-ecs.yml,
+]
+
 ecs-cluster:
   StackType: ec2
   StackName: ecs
@@ -133,6 +137,7 @@ dev: &cfg_dev
   ASGLifecycleHook:
     - ECSDrainInstance:
         HeartbeatTimeout: 900
+  ImageId: latest
   InstanceType: t3.large
   ScheduledAction:
     - Rotate:
@@ -151,15 +156,3 @@ prd:
     - Up:
         Recurrence: '00 6 * * *'
   VolumeSize: 50
-
-eu-west-1:
-  ImageId: ami-05b65c0f6a75c1c64
-
-  dev:
-    ImageId: latest
-
-  stg:
-    ImageId: latest
-
-eu-central-1:
-  ImageId: ami-4255d32d

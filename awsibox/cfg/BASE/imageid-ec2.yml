@@ -1,0 +1,64 @@
+global:
+
+eu-west-2:
+  ImageId: ami-0d8e27447ec2c8410
+
+ca-central-1:
+  ImageId: ami-0d4ae09ec9361d8ac
+
+us-west-2:
+  ImageId: ami-082b5a644766e0e6f
+
+ap-east-1:
+  ImageId: ami-570c7726
+
+us-east-2:
+  ImageId: ami-0d8f6eb4f641ef691
+
+us-east-1:
+  ImageId: ami-0b898040803850657
+
+us-west-1:
+  ImageId: ami-056ee704806822732
+
+sa-east-1:
+  ImageId: ami-058943e7d9b9cabfb
+
+eu-west-3:
+  ImageId: ami-0adcddd3324248c4c
+
+eu-central-1:
+  ImageId: ami-0cc293023f983ed53
+
+eu-west-1:
+  ImageId: ami-0bbc25e23a7640b9b
+
+ap-northeast-2:
+  ImageId: ami-095ca789e0549777d
+
+ap-northeast-1:
+  ImageId: ami-0c3fd0f5d33134a76
+
+ap-south-1:
+  ImageId: ami-0d2692b6acea72ee6
+
+ap-southeast-2:
+  ImageId: ami-0dc96254d5535925f
+
+ap-southeast-2:
+  ImageId: ami-0dc96254d5535925f
+
+eu-north-1:
+  ImageId: ami-3f36be41
+
+ap-northeast-3:
+  ImageId: ami-0ee933a7f81beb045
+
+ap-southeast-1:
+  ImageId: ami-01f7527546b557442
+
+cn-north-1:
+  ImageId: ami-08b835182371dee58
+
+cn-northwest-1:
+  ImageId: ami-0829e595217a759b9
