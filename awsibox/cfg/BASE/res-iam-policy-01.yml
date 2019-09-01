@@ -1,4 +1,4 @@
-resources-iam-policy-01:
+res-iam-policy-01:
   StackType: res
   StackName: iam-p-01
   IAMPolicy:

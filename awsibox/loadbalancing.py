@@ -422,10 +422,10 @@ class LB_ListenerRulesExternalInternal(object):
         if Protocol == 'https':
             RuleHttpAdd = None
             RuleHttpsAdd = True
-        
+
         if RuleHttpAdd:
             cfg.Resources.append(R_RuleHttp)
-        if RuleHttpsAdd:
+        if RuleHttpsAdd and scheme == 'External':
             cfg.Resources.append(R_RuleHttps)
 
 
@@ -555,7 +555,7 @@ class LB_ListenersV2ExternalInternal(object):
 
             cfg.Resources.append(R_ListenerHttp)
 
-        if cfg.ListenerLoadBalancerHttpsPort != 443:
+        if cfg.ListenerLoadBalancerHttpsPort != 443 and scheme == 'External':
             R_ListenerHttps = ELBV2ListenerHttps('ListenerHttps' + scheme)
             R_ListenerHttps.setup(scheme=scheme)
             R_ListenerHttps.Condition = 'ListenerLoadBalancerHttpsPort'
