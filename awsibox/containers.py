@@ -40,21 +40,16 @@ class ECSService(ecs.Service):
         if cfg.HealthCheckGracePeriodSeconds != 0:
             self.HealthCheckGracePeriodSeconds = get_endvalue('HealthCheckGracePeriodSeconds')
 
-        if scheme:
-            self.LoadBalancers = [
-                ecs.LoadBalancer(
-                    ContainerName=Ref('EnvRole'),
-                    ContainerPort=get_endvalue('ContainerDefinitions1ContainerPort'),
-                    TargetGroupArn=Ref('TargetGroup' + scheme)
-                )
-            ]
         #self.PlatformVersion = 'LATEST'
-        if scheme:
+
+        if cfg.LoadBalancerApplication:
+            self.LoadBalancers = []
             self.Role = If(
                 'NetworkModeAwsVpc',
                 Ref('AWS::NoValue'),
                 get_expvalue('RoleECSService')
             )
+
         self.TaskDefinition = Ref('TaskDefinition')
 
 
@@ -140,6 +135,14 @@ class ECSMountPoint(ecs.MountPoint):
         self.ReadOnly = False
         self.SourceVolume = self.title
         self.ContainerPath = key['ContainerPath']
+
+
+class ECSLoadBalancer(ecs.LoadBalancer):
+    def __init__(self, title, scheme, **kwargs):
+        super(ECSLoadBalancer, self).__init__(title, **kwargs)
+        self.ContainerName = Ref('EnvRole')
+        self.ContainerPort = get_endvalue('ContainerDefinitions1ContainerPort')
+        self.TargetGroupArn = Ref('TargetGroup' + scheme)
 
 
 class ECSContainerDefinition(ecs.ContainerDefinition):
@@ -502,22 +505,21 @@ class ECS_Service(object):
         R_SG.setup()
 
         R_Service = ECSService('Service')
+        R_Service.setup(scheme='')
 
         if cfg.LoadBalancerApplicationExternal:
-            R_Service.setup(scheme='External')
+            R_Service.LoadBalancers.append(ECSLoadBalancer('', scheme='External'))
 
             SGRule = SecurityGroupRuleEcsService()
             SGRule.setup(scheme='External')
             R_SG.SecurityGroupIngress.append(SGRule)
 
         if cfg.LoadBalancerApplicationInternal:
-            R_Service.setup(scheme='Internal')
+            R_Service.LoadBalancers.append(ECSLoadBalancer('', scheme='Internal'))
 
             SGRule = SecurityGroupRuleEcsService()
             SGRule.setup(scheme='Internal')
             R_SG.SecurityGroupIngress.append(SGRule)
-        else:
-            R_Service.setup(scheme='')
 
         SecurityGroups = SG_SecurityGroupsECS().SecurityGroups
         NetworkConfiguration = ecs.NetworkConfiguration()
