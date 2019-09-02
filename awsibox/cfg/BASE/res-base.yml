@@ -43,6 +43,13 @@ res-base:
   HostedZoneEnv: None
   HostedZoneIdEnv: None
   IAMPolicy:
+    - AssumeRoleAWSCloudFormationStackSetExecutionRole:
+        Type: Managed
+        Description: 'Assume Role AWSCloudFormationStackSetExecutionRole'
+        Statement:
+          - 1:
+              Action: 'sts:AssumeRole'
+              Resource: Ref('AWSCloudFormationStackSetExecutionRole')
     - BaseInstance:
         Type: Managed
         Export: True
@@ -122,6 +129,15 @@ res-base:
         Timeout: 60
         Variables: []
   Role:
+    - AWSCloudFormationStackSetExecutionRole:
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/AdministratorAccess'
+        Principal: Ref('AWSCloudFormationStackSetAdministrationRole')
+        PrincipalType: AWS
+    - AWSCloudFormationStackSetAdministrationRole:
+        ManagedPolicyArns:
+          - Ref('AssumeRoleAWSCloudFormationStackSetExecutionRole')
+        Principal: cloudformation.amazonaws.com
     - CodeDeploy:
         Export: True
         ManagedPolicyArns:
