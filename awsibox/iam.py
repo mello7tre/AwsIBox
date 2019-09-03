@@ -116,7 +116,7 @@ class IAMRole(iam.Role):
                 'Action': 'sts:AssumeRole',
                 'Effect': 'Allow',
                 'Principal': {
-                    key['PrincipalType'] if 'PrincipalType' in key else 'Service': [key['Principal']]
+                    key['PrincipalType'] if 'PrincipalType' in key else 'Service': [get_endvalue(self.title + 'Principal')]
                 },
             }]
         }
@@ -378,10 +378,6 @@ class IAM_Roles(object):
             resname = key + n  # Ex. RoleECSService
             r_Role = IAMRole(resname)
             r_Role.setup(key=v)
-            # Fix following roles must be named without Role prefix, need to do it after executing auto_get_props
-            if n in ['AWSCloudFormationStackSetAdministrationRole', 'AWSCloudFormationStackSetExecutionRole']:
-                resname = n
-                r_Role.title = resname
 
             cfg.Resources.append(r_Role)
 
