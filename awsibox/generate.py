@@ -2,8 +2,8 @@
 from . import cfg
 from .shared import stack_add_res
 from . import (mappings, lambdas, securitygroup, cloudwatch, loadbalancing, autoscaling, iam,
-    codedeploy, route53, certificates, events, cloudfront, sqs, sns,
-    containers, buckets, waf, vpc, dynamodb, kms, rds, efs, elasticache,
+    codedeploy, route53, crm, events, cloudfront, sqs, sns,
+    ecs, ecr, s3, waf, vpc, dynamodb, kms, rds, efs, elasticache,
     servicediscovery, cloudformation, logs, apigateway)
 
 
