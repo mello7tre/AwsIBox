@@ -109,6 +109,8 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
 
         if 'ViewerProtocolPolicy' in key:
             self.ViewerProtocolPolicy = get_endvalue(name + 'ViewerProtocolPolicy')
+        else:
+            self.ViewerProtocolPolicy = 'redirect-to-https'
 
 
 class CFCacheBehavior(clf.CacheBehavior, CFDefaultCacheBehavior):
