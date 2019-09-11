@@ -30,11 +30,11 @@ class IAMUserToGroupAddition(iam.UserToGroupAddition):
 
 class IAMPolicy(iam.PolicyType):
     def setup(self, key, name):
+        self.PolicyName = name
         auto_get_props(self, key)
         self.PolicyDocument = {
             'Version': '2012-10-17',
         }
-        self.PolicyName = name
 
 
 class IAMManagedPolicy(iam.ManagedPolicy):
