@@ -11,6 +11,7 @@ res-extra-01:
         Equals(Ref('RegionAWSCloudFormationStackSetRoles'), Ref('AWS::Region'))
   MappingClass:
     - AZones:
+  ApiGatewayAccount: True
   CacheSubnetGroup: True
   DBSubnetGroup: True
   EFSFileSystem:

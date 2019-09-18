@@ -43,11 +43,11 @@ class LambdaVersion(lbd.Version):
 
 class LambdaFunction(lbd.Function):
     def setup(self, key, name):
-        auto_get_props(self, key)
         import_name = key['ImportName'] if 'ImportName' in key else name
         self.Code = lbd.Code(
             ZipFile=Join('', import_lambda(import_name))
         )
+        auto_get_props(self, key)
         self.FunctionName = Sub('${AWS::StackName}-${EnvRole}-' + name)
         if 'Handler' not in key:
             self.Handler = 'index.lambda_handler'

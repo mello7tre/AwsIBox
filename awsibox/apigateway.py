@@ -53,6 +53,75 @@ class ApiGatewayDeployment(agw.Deployment):
         self.RestApiId = Ref('ApiGatewayRestApi')
 
 
+class AGW_Account(object):
+    def __init__(self, key):
+        # Resources
+        R_Account = ApiGatewayAccount('ApiGatewayAccount')
+        R_Account.setup()
+
+        cfg.Resources.extend([
+            R_Account,
+        ])
+
+
+class AGW_UsagePlans(object):
+    def __init__(self, key):
+        for n, v in getattr(cfg, key).iteritems():
+            resname = key + n
+            for m, w in v['ApiStages'].iteritems():
+                # parameters
+                p_Stage = Parameter(resname + 'ApiStages' + m + 'Stage')
+                p_Stage.Description = m + ' Stage - empty for default based on env/role'
+
+                cfg.Parameters.append(p_Stage)
+
+            # resources
+            r_UsagePlan = agw.UsagePlan(resname)
+            auto_get_props(r_UsagePlan, v, recurse=True)
+
+            cfg.Resources.extend([
+                r_UsagePlan,
+            ])
+
+            # outputs
+            o_UsagePlan = Output(resname)
+            o_UsagePlan.Value = Ref(resname)
+            o_UsagePlan.Export = Export(resname)
+
+            cfg.Outputs.extend([
+                o_UsagePlan,
+            ])
+
+
+class AGW_ApiKeys(object):
+    def __init__(self, key):
+        for n, v in getattr(cfg, key).iteritems():
+            resname = key + n
+            # parameters
+            p_Enabled = Parameter(resname + 'Enabled')
+            p_Enabled.Description = resname + 'Enabled - empty for default based on env/role'
+
+            p_UsagePlan = Parameter(resname + 'UsagePlan')
+            p_UsagePlan.Description = resname + 'UsagePlan - empty for default based on env/role'
+
+            cfg.Parameters.extend([
+                p_Enabled,
+                p_UsagePlan,
+            ])
+            
+            # resources
+            r_ApiKey = agw.ApiKey(resname)
+            auto_get_props(r_ApiKey, v, recurse=True)
+
+            cfg.Resources.extend([
+                r_ApiKey,
+            ])
+            
+            # Outputs
+            o_ApiKey = Output(resname)
+            o_ApiKey.Value = Ref(resname)
+
+
 class AGW_Stages(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).iteritems():
@@ -85,12 +154,8 @@ class AGW_RestApi(object):
         R_RestApi = agw.RestApi('ApiGatewayRestApi')
         auto_get_props(R_RestApi, mapname='')
 
-        R_Account = ApiGatewayAccount('ApiGatewayAccount')
-        R_Account.setup()
-
         cfg.Resources.extend([
             R_RestApi,
-            R_Account,
         ])
 
         for n, v in getattr(cfg, key).iteritems():
@@ -116,3 +181,15 @@ class AGW_RestApi(object):
             )
 
             cfg.Resources.append(r_LambdaPermission)
+
+        # Outputs
+        O_RestApi = Output('ApiGatewayRestApi')
+        O_RestApi.Value = Ref('ApiGatewayRestApi')
+
+        O_RestApiStage = Output('ApiGatewayRestApiStage')
+        O_RestApiStage.Value = cfg.Stage
+
+        cfg.Outputs.extend([
+            O_RestApi,
+            O_RestApiStage,
+        ])
