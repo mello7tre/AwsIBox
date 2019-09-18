@@ -29,7 +29,8 @@ def get_files(brand):
             except:
                 pass
             for filename in filenames:
-                files.append(os.path.join(root,filename))
+                if not filename.startswith('.'):
+                    files.append(os.path.join(root,filename))
 
     return files
 
