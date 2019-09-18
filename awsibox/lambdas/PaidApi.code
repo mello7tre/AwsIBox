@@ -24,4 +24,4 @@ def lambda_handler(event, context):
     outbody = json.dumps(out)
     outb64 = base64.b64encode(outbody)
 
-    send_response(200, outb64, headers)
+    return send_response(200, outb64, headers)

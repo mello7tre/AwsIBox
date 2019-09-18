@@ -162,6 +162,9 @@ class AGW_RestApi(object):
         # Resources
         R_RestApi = agw.RestApi('ApiGatewayRestApi')
         auto_get_props(R_RestApi, mapname='')
+        R_RestApi.EndpointConfiguration = agw.EndpointConfiguration(
+            Types=get_endvalue('EndpointConfiguration')
+        )
 
         cfg.Resources.extend([
             R_RestApi,
@@ -192,13 +195,9 @@ class AGW_RestApi(object):
             cfg.Resources.append(r_LambdaPermission)
 
         # Outputs
-        O_RestApi = Output('ApiGatewayRestApi')
-        O_RestApi.Value = Ref('ApiGatewayRestApi')
-
-        O_RestApiStage = Output('ApiGatewayRestApiStage')
-        O_RestApiStage.Value = cfg.Stage
+        O_InvokeUrl = Output('InvokeUrl')
+        O_InvokeUrl.Value = Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/' + cfg.Stage)
 
         cfg.Outputs.extend([
-            O_RestApi,
-            O_RestApiStage,
+            O_InvokeUrl,
         ])
