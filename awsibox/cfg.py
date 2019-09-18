@@ -129,7 +129,7 @@ CFG_TO_CLASS = OrderedDict([
     ('ApiGatewayResource', {'module': 'apigateway', 'class': 'AGW_RestApi'}),
     ('ApiGatewayStage', {'module': 'apigateway', 'class': 'AGW_Stages'}),
     ('ApiGatewayUsagePlan', {'module': 'apigateway', 'class': 'AGW_UsagePlans'}),
-    ('ApiKey', {'module': 'apigateway', 'class': 'AGW_ApiKeys'}),
+    ('ApiGatewayApiKey', {'module': 'apigateway', 'class': 'AGW_ApiKeys'}),
     ('LogGroupName', {'module': 'logs', 'class': 'LGS_LogGroup'}),
     ('ContainerDefinitions', {'module': 'ecs', 'class': 'ECS_TaskDefinition'}),
     ('EFSFileSystem', {'module': 'efs', 'class': 'EFS_FileStorage'}),

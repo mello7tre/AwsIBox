@@ -116,6 +116,15 @@ class AGW_ApiKeys(object):
             cfg.Resources.extend([
                 r_ApiKey,
             ])
+
+            if 'UsagePlan' in v:
+                plankey_name = resname + 'UsagePlan'
+                r_UsagePlanKey = agw.UsagePlanKey('ApiGatewayUsagePlan' + n)
+                r_UsagePlanKey.KeyId = Ref(resname)
+                r_UsagePlanKey.KeyType = 'API_KEY'
+                r_UsagePlanKey.UsagePlanId = ImportValue(get_subvalue('ApiGatewayUsagePlan${1M}', resname + 'UsagePlan'))
+
+                cfg.Resources.append(r_UsagePlanKey)
             
             # Outputs
             o_ApiKey = Output(resname)
