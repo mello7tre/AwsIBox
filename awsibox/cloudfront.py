@@ -139,7 +139,7 @@ class CFDistributionConfig(clf.DistributionConfig):
         self.ViewerCertificate = clf.ViewerCertificate(
             AcmCertificateArn=If(
                 'CloudFrontAcmCertificate',
-                get_endvalue('CloudFrontAcmCertificateArn'),
+                get_endvalue('GlobalCertificateArn'),
                 Ref('AWS::NoValue')
             ),
             CloudFrontDefaultCertificate=If(

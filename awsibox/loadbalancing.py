@@ -22,7 +22,7 @@ class ELBListener(elb.Listener):
             If(
                 'LoadBalancerSslCertificateAdHoc',
                 Ref('CertificateLoadBalancerAdHocExternal'),
-                get_endvalue('LoadBalancerSslCertificateArn')
+                get_endvalue('RegionalCertificateArn')
             ),
             Ref('AWS::NoValue')
         )
@@ -107,7 +107,7 @@ class ELBV2ListenerHttps(ELBV2Listener):
             CertificateArn=If(
                 'LoadBalancerSslCertificateAdHoc',
                 Ref('CertificateLoadBalancerAdHocExternal'),
-                get_endvalue('LoadBalancerSslCertificateArn')
+                get_endvalue('RegionalCertificateArn')
             )
         )]
         self.Port = get_endvalue('ListenerLoadBalancerHttpsPort')
@@ -636,7 +636,7 @@ class LB_ListenersV2ECS(LB_Listeners):
 class LB_ListenersV2ALB(object):
     def __init__(self):
         # Parameters
-        P_CertificateArn = Parameter('LoadBalancerSslCertificateArn')
+        P_CertificateArn = Parameter('RegionalCertificateArn')
         P_CertificateArn.Description = 'LoadBalancer CertificateArn - empty for default based on env/role'
 
         cfg.Parameters.extend([
@@ -654,7 +654,7 @@ class LB_ListenersV2ALB(object):
             R_ListenerHttps = ELBV2ListenerHttps('ListenerHttpsDefaultExternal')
             R_ListenerHttps.setup(scheme='External')
             R_ListenerHttps.DefaultActions[0].TargetGroupArn=Ref('TargetGroupDefaultExternal')
-            R_ListenerHttps.Certificates[0].CertificateArn = get_endvalue('LoadBalancerSslCertificateArn')
+            R_ListenerHttps.Certificates[0].CertificateArn = get_endvalue('RegionalCertificateArn')
             R_ListenerHttps.Condition = 'LoadBalancerApplicationExternal'
 
             cfg.Resources.extend([
