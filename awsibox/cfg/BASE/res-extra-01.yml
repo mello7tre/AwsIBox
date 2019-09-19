@@ -1,3 +1,7 @@
+include: !include [
+  certificate.yml,
+]
+
 res-extra-01:
   StackType: res
   StackName: r-extra-01

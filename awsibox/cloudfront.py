@@ -208,7 +208,7 @@ class CFOriginCLF(clf.Origin):
         self.OriginCustomHeaders = CustomHeaders
 
 
-class CFOriginFixed(clf.Origin):
+class CFOriginEC2ECS(clf.Origin):
     def setup(self):
         cloudfrontorigincustomheaders = []
 
@@ -256,6 +256,17 @@ class CFOriginFixed(clf.Origin):
                 Ref('AWS::NoValue')
             ),
             OriginProtocolPolicy=get_endvalue('CloudFrontOriginProtocolPolicy')
+        )
+
+
+class CFOriginAGW(CFOriginEC2ECS):
+    def setup(self):
+        super(CFOriginAGW, self).setup()
+        self.DomainName = Sub('${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com')
+        self.Id = self.DomainName
+        self.CustomOriginConfig = clf.CustomOriginConfig(
+            HTTPSPort='443',
+            OriginProtocolPolicy='https-only',
         )
 
 
@@ -388,9 +399,9 @@ class CF_CloudFront(object):
         self.CloudFrontDistribution = CloudFrontDistribution
 
 
-class CF_CloudFrontEC2(CF_CloudFront):
+class CF_CloudFrontInOtherService(CF_CloudFront):
     def __init__(self, key):
-        super(CF_CloudFrontEC2, self).__init__()
+        super(CF_CloudFrontInOtherService, self).__init__()
 
         # Parameters
         P_CloudFront = Parameter('CloudFront')
@@ -445,33 +456,33 @@ class CF_CloudFrontEC2(CF_CloudFront):
         ])
         do_no_override(False)
 
+        # Save current Aliases and prepare the new one
+        self.Aliases = copy.copy(self.CloudFrontDistribution.DistributionConfig.Aliases)
+        self.AliasCdn = If(
+            'RecordSetCloudFront',
+            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + cfg.HostedZoneNameEnv),
+            Ref('RecordSetExternal')
+        )
+        self.AliasBase = Sub('${EnvRole}${RecordSetCloudFrontSuffix}.' + cfg.HostedZoneNameEnv)
+        self.AliasZone = If(
+            'CloudFrontAliasZone',
+            Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)),
+            Ref('AWS::NoValue')
+        )
+
         # Resources
         self.CloudFrontDistribution.DistributionConfig.Aliases[0:0] = [
-            If(
-                'RecordSetCloudFront',
-                Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + cfg.HostedZoneNameEnv),
-                Ref('RecordSetExternal')
-            ),
-            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.' + cfg.HostedZoneNameEnv),
-            If(
-                'CloudFrontAliasZone',
-                Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)),
-                Ref('AWS::NoValue')
-            )
+            self.AliasCdn,
+            self.AliasBase,
+            self.AliasZone,
         ]
 
         self.CloudFrontDistribution.Condition = 'CloudFrontDistribution'
 
-        Origin = CFOriginFixed()
+        Origin = CFOriginEC2ECS()
         Origin.setup()
         self.CloudFrontDistribution.DistributionConfig.Origins = [Origin]
         self.CloudFrontDistribution.DistributionConfig.Comment = Sub('${AWS::StackName}-${EnvRole}')
-
-        R_CloudFrontDistribution = self.CloudFrontDistribution
-
-        cfg.Resources.extend([
-            R_CloudFrontDistribution,
-        ])
 
         R53_RecordSetCloudFront()
 
@@ -484,9 +495,63 @@ class CF_CloudFrontEC2(CF_CloudFront):
         ])
 
 
+class CF_CloudFrontEC2(CF_CloudFrontInOtherService):
+    def __init__(self, key):
+        super(CF_CloudFrontEC2, self).__init__(key)
+
+        R_CloudFrontDistribution = self.CloudFrontDistribution
+
+        cfg.Resources.extend([
+            R_CloudFrontDistribution,
+        ])
+
+
 class CF_CloudFrontECS(CF_CloudFrontEC2):
     def __init__(self, key):
         super(CF_CloudFrontECS, self).__init__(key)
+
+
+class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
+    def __init__(self, key):
+        super(CF_CloudFrontAGW, self).__init__(key)
+
+        # To use the same code of ecs ec2 need to add "fake" condition, api-gateway use https only
+        # Conditions
+        do_no_override(True)
+        C_ListenerLoadBalancerHttpPort = {'ListenerLoadBalancerHttpPort': Equals(
+            'True', 'False'
+        )}
+        C_ListenerLoadBalancerHttpsPort = {'ListenerLoadBalancerHttpsPort': Equals(
+            'True', 'True'
+        )}
+
+        cfg.Conditions.extend([
+            C_ListenerLoadBalancerHttpPort,
+            C_ListenerLoadBalancerHttpsPort,
+        ])
+        do_no_override(False)
+
+        Origin = CFOriginAGW()
+        Origin.setup()
+        self.CloudFrontDistribution.DistributionConfig.Origins = [Origin]
+
+        self.AliasCdn = If(
+            'RecordSetCloudFront',
+            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + cfg.HostedZoneNameEnv),
+            Ref('AWS::NoValue')
+        )
+        self.Aliases[0:0] = [
+            self.AliasCdn,
+            self.AliasBase,
+            self.AliasZone,
+        ]
+        self.CloudFrontDistribution.DistributionConfig.Aliases = self.Aliases
+
+        R_CloudFrontDistribution = self.CloudFrontDistribution
+
+        cfg.Resources.extend([
+            R_CloudFrontDistribution,
+        ])
 
 
 class CF_CloudFrontCLF(CF_CloudFront):

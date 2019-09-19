@@ -353,6 +353,11 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None, recurse=False, ro
                 value = get_endvalue(mapname + propname, fixedvalues=rootdict)
             else:
                 value = get_endvalue(mapname + propname)
+
+            # Avoid intercepting a Template Condition as a Resource Condition
+            if obj_propname == 'Condition' and not isinstance(value, str):
+                continue
+
             try:
                 setattr(obj, obj_propname, value)
             except TypeError:
