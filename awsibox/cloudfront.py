@@ -2,7 +2,7 @@ import troposphere.cloudfront as clf
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, change_object_data)
 from .route53 import R53_RecordSetCloudFront
 
 
@@ -531,8 +531,13 @@ class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
 
         # Change in condition RecordSetCloudFront value RecordSetExternal as is not present in agw stack
         for n, v in enumerate(self.CloudFrontDistribution.DistributionConfig.Aliases):
-            if isinstance(v, If) and v.data['Fn::If'][0] == 'RecordSetCloudFront':
-                self.CloudFrontDistribution.DistributionConfig.Aliases[n].data['Fn::If'][2] = Ref('AWS::NoValue')
+            change_object_data(
+                self.CloudFrontDistribution.DistributionConfig.Aliases[n],
+                'RecordSetExternal', 
+                Ref('AWS::NoValue')
+            )
+            #if isinstance(v, If) and v.data['Fn::If'][0] == 'RecordSetCloudFront':
+            #    self.CloudFrontDistribution.DistributionConfig.Aliases[n].data['Fn::If'][2] = Ref('AWS::NoValue')
 
         R_CloudFrontDistribution = self.CloudFrontDistribution
 

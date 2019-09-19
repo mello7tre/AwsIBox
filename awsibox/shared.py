@@ -374,6 +374,14 @@ def auto_build_obj(obj, key, obj_list=cfg.Resources):
         obj_list.append(final_obj)
 
 
+def change_object_data(obj, find, value):
+    if isinstance(obj, If):
+        obj_if = obj.data['Fn::If']
+        for n, v in enumerate(obj_if):
+            if isinstance(v, Ref) and v.data['Ref'] == find:
+                obj_if[n] = value
+
+
 def gen_random_string():
     length = 16
     char_set = string.ascii_letters + string.digits
