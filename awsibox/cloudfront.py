@@ -456,25 +456,19 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
         ])
         do_no_override(False)
 
-        # Save current Aliases and prepare the new one
-        self.Aliases = copy.copy(self.CloudFrontDistribution.DistributionConfig.Aliases)
-        self.AliasCdn = If(
-            'RecordSetCloudFront',
-            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + cfg.HostedZoneNameEnv),
-            Ref('RecordSetExternal')
-        )
-        self.AliasBase = Sub('${EnvRole}${RecordSetCloudFrontSuffix}.' + cfg.HostedZoneNameEnv)
-        self.AliasZone = If(
-            'CloudFrontAliasZone',
-            Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)),
-            Ref('AWS::NoValue')
-        )
-
         # Resources
         self.CloudFrontDistribution.DistributionConfig.Aliases[0:0] = [
-            self.AliasCdn,
-            self.AliasBase,
-            self.AliasZone,
+            If(
+                'RecordSetCloudFront',
+                Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + cfg.HostedZoneNameEnv),
+                Ref('RecordSetExternal')
+            ),
+            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.' + cfg.HostedZoneNameEnv),
+            If(
+                'CloudFrontAliasZone',
+                Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)),
+                Ref('AWS::NoValue')
+            ),
         ]
 
         self.CloudFrontDistribution.Condition = 'CloudFrontDistribution'
@@ -535,17 +529,10 @@ class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
         Origin.setup()
         self.CloudFrontDistribution.DistributionConfig.Origins = [Origin]
 
-        self.AliasCdn = If(
-            'RecordSetCloudFront',
-            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.' + cfg.HostedZoneNameEnv),
-            Ref('AWS::NoValue')
-        )
-        self.Aliases[0:0] = [
-            self.AliasCdn,
-            self.AliasBase,
-            self.AliasZone,
-        ]
-        self.CloudFrontDistribution.DistributionConfig.Aliases = self.Aliases
+        # Change in condition RecordSetCloudFront value RecordSetExternal as is not present in agw stack
+        for n, v in enumerate(self.CloudFrontDistribution.DistributionConfig.Aliases):
+            if isinstance(v, If) and v.data['Fn::If'][0] == 'RecordSetCloudFront':
+                self.CloudFrontDistribution.DistributionConfig.Aliases[n].data['Fn::If'][2] = Ref('AWS::NoValue')
 
         R_CloudFrontDistribution = self.CloudFrontDistribution
 
