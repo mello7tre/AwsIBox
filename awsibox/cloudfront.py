@@ -478,6 +478,12 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
         self.CloudFrontDistribution.DistributionConfig.Origins = [Origin]
         self.CloudFrontDistribution.DistributionConfig.Comment = Sub('${AWS::StackName}-${EnvRole}')
 
+        R_CloudFrontDistribution = self.CloudFrontDistribution
+
+        add_obj([
+            R_CloudFrontDistribution,
+        ])
+
         R53_RecordSetCloudFront()
 
         # Outputs
@@ -492,12 +498,6 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
 class CF_CloudFrontEC2(CF_CloudFrontInOtherService):
     def __init__(self, key):
         super(CF_CloudFrontEC2, self).__init__(key)
-
-        R_CloudFrontDistribution = self.CloudFrontDistribution
-
-        add_obj([
-            R_CloudFrontDistribution,
-        ])
 
 
 class CF_CloudFrontECS(CF_CloudFrontEC2):
@@ -535,12 +535,6 @@ class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
             'RecordSetExternal',
             Ref('AWS::NoValue')
         )
-
-        R_CloudFrontDistribution = self.CloudFrontDistribution
-
-        add_obj([
-            R_CloudFrontDistribution,
-        ])
 
 
 class CF_CloudFrontCLF(CF_CloudFront):
