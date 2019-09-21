@@ -8,7 +8,7 @@ import troposphere.applicationautoscaling as aas
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .cfn import *
 from .codedeploy import CD_DeploymentGroup
 from .securitygroup import SG_SecurityGroupsEC2
@@ -712,7 +712,7 @@ class AS_ScheduledAction(object):
         P_StartTime = Parameter(resname + 'StartTime')
         P_StartTime.Description = resname + 'StartTime - k to keep current value - empty for default based on env/role'
 
-        cfg.Parameters.extend([
+        add_obj([
             P_MinSize,
             P_MaxSize,
             P_Recurrence,
@@ -727,7 +727,7 @@ class AS_ScheduledAction(object):
         C_CapacityMaxSize = get_condition(resname + 'CapacityMaxSize', 'equals', 'CapacityMax', resname + 'MaxSize')
         C_ScheduledAction = get_condition(resname, 'not_equals', 'None', resname + 'Recurrence')
 
-        cfg.Conditions.extend([
+        add_obj([
             C_KeepMinSize,
             C_KeepMaxSize,
             C_CapacityMinSize,
@@ -746,7 +746,7 @@ class AS_ScheduledAction(object):
         O_ScheduledAction = Output(resname)
         O_ScheduledAction.Value = Sub(','.join(out_String), **out_Map)
         
-        cfg.Outputs.append(O_ScheduledAction)
+        add_obj(O_ScheduledAction)
 
 
 class AS_ScheduledActionsEC2(object):
@@ -757,14 +757,14 @@ class AS_ScheduledActionsEC2(object):
             p_DesiredSize = Parameter(resname + 'DesiredSize')
             p_DesiredSize.Description = resname + 'Desired Capacity - k to keep current value - empty for default based on env/role'
     
-            cfg.Parameters.append(p_DesiredSize)
+            add_obj(p_DesiredSize)
     
             # conditions
             do_no_override(True)
             c_DesiredSize = get_condition(resname + 'KeepDesiredSize', 'equals', 'k', resname + 'DesiredSize')
             c_CapacityDesiredSize = get_condition(resname + 'CapacityDesiredSize', 'equals', 'CapacityDesired', resname + 'DesiredSize')
     
-            cfg.Conditions.extend([
+            add_obj([
                 c_DesiredSize,
                 c_CapacityDesiredSize,
             ])
@@ -777,7 +777,7 @@ class AS_ScheduledActionsEC2(object):
             r_ScheduledAction = ASScheduledAction(resname)
             r_ScheduledAction.setup()
     
-            cfg.Resources.append(r_ScheduledAction)
+            add_obj(r_ScheduledAction)
         
 
 class AS_ScheduledActionsECS(object):
@@ -795,7 +795,7 @@ class AS_ScheduledActionsECS(object):
                 )
             )}
     
-            cfg.Conditions.append(c_disable)
+            add_obj(c_disable)
             do_no_override(False)
 
             # resources
@@ -822,7 +822,7 @@ class AS_ScalingPoliciesStepEC2(object):
         R_Up = ASScalingPolicyStepUp('ScalingPolicyUp')
         R_Up.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_Down,
             R_Up,
         ])
@@ -836,7 +836,7 @@ class AS_ScalingPoliciesStepECS(object):
         R_Up = APPASScalingPolicyStepUp('ScalingPolicyUp')
         R_Up.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_Down,
             R_Up,
         ])
@@ -867,7 +867,7 @@ class AS_ScalingPoliciesTracking(object):
             p_Statistic = Parameter(basename + 'CustomizedMetricSpecificationStatistic')
             p_Statistic.Description = 'Tracking %s Statistic - 0 to disable - empty for default based on env/role' % n
 
-            cfg.Parameters.extend([
+            add_obj([
                 p_Value,
                 p_Statistic,
             ])
@@ -876,7 +876,7 @@ class AS_ScalingPoliciesTracking(object):
             do_no_override(True)
             c_Value = get_condition(resname, 'not_equals', '0', basename + 'TargetValue')
 
-            cfg.Conditions.append(c_Value)
+            add_obj(c_Value)
             do_no_override(False)
 
             # outputs
@@ -894,13 +894,13 @@ class AS_ScalingPoliciesTracking(object):
             auto_get_props(r_Tracking, v, recurse=True)
             r_Tracking.Condition = resname
 
-            cfg.Resources.append(r_Tracking)
+            add_obj(r_Tracking)
 
         # Outputs
         O_Policy = Output(key)
         O_Policy.Value = Sub(','.join(ScalingPolicyTrackings_Out_String), **ScalingPolicyTrackings_Out_Map)
 
-        cfg.Outputs.extend([
+        add_obj([
             O_Policy,
         ])
 
@@ -917,7 +917,7 @@ class AS_Autoscaling(object):
         P_Max = Parameter('CapacityMax')
         P_Max.Description = 'Max Autoscaling Capacity - empty for default based on env/role'
 
-        cfg.Parameters.extend([
+        add_obj([
             P_Desired,
             P_Min,
             P_Max,
@@ -934,7 +934,7 @@ class AS_Autoscaling(object):
             ]
         )
 
-        cfg.Outputs.extend([
+        add_obj([
             O_Capacity,
         ])
 
@@ -972,7 +972,7 @@ class AS_LaunchConfiguration(object):
         P_VolumeSize = Parameter('VolumeSize')
         P_VolumeSize.Description = 'Size of HD in GB - empty for default based on env/role'
 
-        cfg.Parameters.extend([
+        add_obj([
             P_AdditionalStorageSize,
             P_DoNotSignal,
             P_EfsMounts,
@@ -1037,7 +1037,7 @@ class AS_LaunchConfiguration(object):
             )
         )}
 
-        cfg.Conditions.extend([
+        add_obj([
             C_AdditionalStorage,
             C_AdditionalStorageMount,
             C_CloudFormationInit,
@@ -1065,7 +1065,7 @@ class AS_LaunchConfiguration(object):
             UserDataApp.extend(['#${%s}\n' % envname])
 
             # parameters
-            cfg.Parameters.extend([
+            add_obj([
                 Parameter(
                     envname,
                     Description='Application %s version' % n,
@@ -1080,7 +1080,7 @@ class AS_LaunchConfiguration(object):
 
             # conditions
             do_no_override(True)
-            cfg.Conditions.append({
+            add_obj({
                 name: And(
                     Not(Equals(Ref(envname), '')),
                     Not(
@@ -1128,16 +1128,16 @@ class AS_LaunchConfiguration(object):
                 r_DeploymentGroup = CDDeploymentGroup('DeploymentGroup' + name)
                 r_DeploymentGroup.setup(index=n)
 
-                cfg.Resources.append(r_DeploymentGroup)
+                add_obj(r_DeploymentGroup)
 
             # outputs
             Output_app = Output(envname)
             Output_app.Value = Ref(envname)
-            cfg.Outputs.append(Output_app)
+            add_obj(Output_app)
 
             Output_repo = Output(reponame)
             Output_repo.Value = get_endvalue(reponame)
-            cfg.Outputs.append(Output_repo)
+            add_obj(Output_repo)
 
         InitConfigSetup = ASInitConfigSetup()
         InitConfigSetup.ibox_env_app = IBoxEnvApp
@@ -1213,13 +1213,13 @@ class AS_LaunchConfiguration(object):
         R_LaunchConfigurationSpot.SecurityGroups = R_LaunchConfiguration.SecurityGroups
         R_LaunchConfigurationSpot.SpotPrice = get_endvalue('SpotPrice')
 
-        cfg.Resources.extend([
+        add_obj([
             R_LaunchConfiguration,
             R_InstanceProfile,
         ])
 
         if cfg.SpotASG:
-            cfg.Resources.append(R_LaunchConfigurationSpot)
+            add_obj(R_LaunchConfigurationSpot)
 
         self.LaunchConfiguration = R_LaunchConfiguration
         self.Tags = Tags
@@ -1247,7 +1247,7 @@ class AS_LaunchConfiguration(object):
         O_VolumeSize = Output('VolumeSize')
         O_VolumeSize.Value = get_endvalue('VolumeSize')
 
-        cfg.Outputs.extend([
+        add_obj([
             O_AdditionalStorageSize,
             O_DoNotSignal,
             O_EfsMounts,
@@ -1307,12 +1307,12 @@ class AS_AutoscalingEC2(AS_Autoscaling):
         R_ASGSpot.Tags.extend(Tags)
         R_ASGSpot.NotificationConfigurations = [NotificationConfiguration]
         
-        cfg.Resources.extend([
+        add_obj([
             R_ASG,
         ])
 
         if cfg.SpotASG:
-            cfg.Resources.append(R_ASGSpot)
+            add_obj(R_ASGSpot)
 
         self.LaunchConfiguration = LaunchConfiguration
 
@@ -1320,7 +1320,7 @@ class AS_AutoscalingEC2(AS_Autoscaling):
         O_UpdateMode = Output('UpdateMode')
         O_UpdateMode.Value = Ref('UpdateMode')
 
-        cfg.Outputs.extend([
+        add_obj([
             O_UpdateMode,
         ])
 
@@ -1333,7 +1333,7 @@ class AS_AutoscalingECS(AS_Autoscaling):
         R_ScalableTarget.setup()
         R_ScalableTarget.ScheduledActions = AS_ScheduledActionsECS('ScheduledAction').ScheduledActions
 
-        cfg.Resources.extend([
+        add_obj([
             R_ScalableTarget
         ])
 
@@ -1352,9 +1352,9 @@ class AS_LifecycleHook(object):
             r_HookSpot.Condition = 'SpotASG'
             r_HookSpot.AutoScalingGroupName = Ref('AutoScalingGroupSpot')
                 
-            cfg.Resources.extend([
+            add_obj([
                 r_Hook,
             ])
 
             if cfg.SpotASG:
-                cfg.Resources.append(r_HookSpot)
+                add_obj(r_HookSpot)

@@ -2,7 +2,7 @@ import troposphere.ecr as ecr
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .securitygroup import (SecurityGroupEcsService, SecurityGroupRuleEcsService,
     SG_SecurityGroupsECS)
 
@@ -121,7 +121,7 @@ class ECR_Repositories(object):
                 Equals(get_endvalue(mapname), 'None')
             )}
 
-            cfg.Conditions.extend([
+            add_obj([
                 c_Account,
             ])
             do_no_override(False)
@@ -153,4 +153,4 @@ class ECR_Repositories(object):
             Repo.RepositoryPolicyText['Statement'].extend(PolicyStatementAccounts)
             Repo.LifecyclePolicy = ECRRepositoryLifecyclePolicy('')
 
-            cfg.Resources.append(Repo)
+            add_obj(Repo)

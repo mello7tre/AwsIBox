@@ -2,7 +2,7 @@ import troposphere.awslambda as lbd
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, import_lambda)
+    get_subvalue, auto_get_props, get_condition, add_obj, import_lambda)
 from .iam import IAMRoleLambdaBase
 
 class LambdaPermission(lbd.Permission):
@@ -81,7 +81,7 @@ class LBD_Lambdas(object):
                     Equals(get_endvalue(resname + 'Enabled'), 'None')
                 )}
 
-                cfg.Conditions.append(c_Lambda)
+                add_obj(c_Lambda)
                 do_no_override(False)
 
                 r_Lambda.Condition = resname
@@ -93,7 +93,7 @@ class LBD_Lambdas(object):
                 p_Version.AllowedValues = ['', 'A', 'B']
                 p_Version.Default = ''
 
-                cfg.Parameters.append(p_Version)
+                add_obj(p_Version)
 
                 # conditons
                 do_no_override(True)
@@ -110,7 +110,7 @@ class LBD_Lambdas(object):
                 )}
                 
 
-                cfg.Conditions.extend([
+                add_obj([
                     c_VersionA,
                     c_VersionB,
                     c_Version,
@@ -124,7 +124,7 @@ class LBD_Lambdas(object):
                 r_VersionB = LambdaVersion(versionname + 'B', name=resname )
                 r_VersionB.Condition = versionname + 'B'
 
-                cfg.Resources.extend([
+                add_obj([
                     r_VersionA,
                     r_VersionB,
                 ])
@@ -138,7 +138,7 @@ class LBD_Lambdas(object):
                 )
                 o_Version.Condition = versionname
                 
-                cfg.Outputs.extend([
+                add_obj([
                     o_Version,
                 ])
 
@@ -147,7 +147,7 @@ class LBD_Lambdas(object):
             if hasattr(r_Lambda, 'Condition'):
             	r_Role.Condition = r_Lambda.Condition
 
-            cfg.Resources.extend([
+            add_obj([
                 r_Lambda,
                 r_Role,
             ])
@@ -157,4 +157,4 @@ class LBD_Lambdas(object):
                 O_Lambda.Value = GetAtt(resname, 'Arn')
                 O_Lambda.Export = Export(resname)
 
-                cfg.Outputs.append(O_Lambda)
+                add_obj(O_Lambda)

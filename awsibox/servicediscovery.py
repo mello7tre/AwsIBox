@@ -2,7 +2,7 @@ import troposphere.servicediscovery  as srvd
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 class ServiceDiscoveryPublicDnsNamespace(srvd.PublicDnsNamespace):
@@ -17,7 +17,7 @@ class SRVD_ServiceDiscoveryRES(object):
         R_PublicDnsNamespace = ServiceDiscoveryPublicDnsNamespace('PublicDnsNamespace')
         R_PublicDnsNamespace.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_PublicDnsNamespace,
         ])
 
@@ -26,6 +26,6 @@ class SRVD_ServiceDiscoveryRES(object):
         O_PublicDnsNamespace.Value = Ref('PublicDnsNamespace')
         O_PublicDnsNamespace.Export = Export('ServiceDiscoveryPublicDnsNamespaceId')
 
-        cfg.Outputs.extend([
+        add_obj([
             O_PublicDnsNamespace,
         ])

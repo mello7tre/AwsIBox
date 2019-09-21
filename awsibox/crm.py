@@ -2,7 +2,7 @@ import troposphere.certificatemanager as crm
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 class CRMCertificate(crm.Certificate):
@@ -25,7 +25,7 @@ class CRM_Certificate(object):
             r_Certificate.setup(key=v)
             r_Certificate.Tags = Tags(Name=n)
 
-            cfg.Resources.extend([
+            add_obj([
                 r_Certificate,
             ])
 
@@ -36,7 +36,7 @@ class CRM_Certificate(object):
             if hasattr(r_Certificate, 'Condition'):
                 o_Certificate.Condition = r_Certificate.Condition
 
-            cfg.Outputs.extend([
+            add_obj([
                 o_Certificate,
             ])
 

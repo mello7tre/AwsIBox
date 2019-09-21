@@ -3,11 +3,11 @@ from collections import OrderedDict, Mapping
 
 no_override = False
 
-Parameters = []
-Conditions = []
-Mappings = []
-Resources = []
-Outputs = []
+Parameters = OrderedDict()
+Conditions = OrderedDict()
+Mappings = OrderedDict()
+Resources = OrderedDict()
+Outputs = OrderedDict()
 
 PATH_INT = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'cfg')
 PATH_INT = os.path.normpath(PATH_INT)

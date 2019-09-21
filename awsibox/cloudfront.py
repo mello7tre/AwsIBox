@@ -2,7 +2,7 @@ import troposphere.cloudfront as clf
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, change_obj_data)
+    get_subvalue, auto_get_props, get_condition, add_obj, change_obj_data)
 from .route53 import R53_RecordSetCloudFront
 
 
@@ -50,7 +50,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
                 self.ForwardedValues.Cookies.WhitelistedNames = get_endvalue(name + 'CookiesWhitelistedNames', condition=True)
                 # conditions
                 do_no_override(True)
-                cfg.Conditions.append({
+                add_obj({
                     name + 'CookiesWhitelistedNames': Equals(get_endvalue(name + 'CookiesForward'), 'whitelist')
                 })
                 do_no_override(False)
@@ -65,7 +65,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
             self.ForwardedValues.QueryStringCacheKeys = get_endvalue(name + 'QueryStringCacheKeys', condition=True)
             # conditions
             do_no_override(True)
-            cfg.Conditions.append({
+            add_obj({
                 name + 'QueryStringCacheKeys': Equals(get_endvalue(name + 'QueryString'), True)
             })
             do_no_override(False)
@@ -92,7 +92,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
                 eventType = key['LambdaEventType']
             # conditions
             do_no_override(True)
-            cfg.Conditions.append({
+            add_obj({
                 condname: Not(Equals(get_endvalue(condname), 'None'))
             })
             do_no_override(False)
@@ -238,7 +238,7 @@ class CFOriginEC2ECS(clf.Origin):
                 )
                 # conditions
                 do_no_override(True)
-                cfg.Conditions.append({
+                add_obj({
                     name: Not(Equals(get_endvalue(name + 'HeaderName'), ''))
                 })
                 do_no_override(False)
@@ -301,7 +301,7 @@ class CF_CloudFront(object):
         P_Logging = Parameter('CloudFrontLogging')
         P_Logging.Description = 'CloudFront Logging - None to disable - empty for default based on env/role'
 
-        cfg.Parameters.extend([
+        add_obj([
             P_Logging,
         ])
 
@@ -313,7 +313,7 @@ class CF_CloudFront(object):
             Equals(get_endvalue('CloudFrontAcmCertificate'), 'None')
         )}
 
-        cfg.Conditions.extend([
+        add_obj([
             C_Logging,
             C_AcmCertificate,
         ])
@@ -350,7 +350,7 @@ class CF_CloudFront(object):
                     Equals(get_endvalue(name + 'PathPattern'), 'None')
                 )}
 
-                cfg.Conditions.append(c_CacheBehavior)
+                add_obj(c_CacheBehavior)
                 do_no_override(False)
 
                 cachebehaviors.append(
@@ -373,7 +373,7 @@ class CF_CloudFront(object):
             p_Alias = Parameter(name)
             p_Alias.Description = 'Alias extra - empty for default based on env/role'
 
-            cfg.Parameters.append(p_Alias)
+            add_obj(p_Alias)
             
             cloudfrontaliasextra.append(get_endvalue(name, condition=True))
 
@@ -390,7 +390,7 @@ class CF_CloudFront(object):
                 )
             )}
 
-            cfg.Conditions.append(c_Alias)
+            add_obj(c_Alias)
             do_no_override(False)
 
         CloudFrontDistribution.DistributionConfig = DistributionConfig
@@ -411,7 +411,7 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
         P_RecordSetCloudFrontSuffix = Parameter('RecordSetCloudFrontSuffix')
         P_RecordSetCloudFrontSuffix.Description = 'RecordSetCloudFront DNS Name Suffix - empty to disable'
 
-        cfg.Parameters.extend([
+        add_obj([
             P_CloudFront,
             P_RecordSetCloudFrontSuffix,
         ])
@@ -447,7 +447,7 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
             Not(Equals(get_endvalue('CloudFrontOriginProtocolPolicy'), 'http-only'))
         )}
 
-        cfg.Conditions.extend([
+        add_obj([
             C_AliasZone,
             C_Distribution,
             C_OriginAdHoc,
@@ -484,7 +484,7 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
         O_CloudFront = Output('CloudFront')
         O_CloudFront.Value = get_endvalue('CloudFront')
 
-        cfg.Outputs.extend([
+        add_obj([
             O_CloudFront,
         ])
 
@@ -495,7 +495,7 @@ class CF_CloudFrontEC2(CF_CloudFrontInOtherService):
 
         R_CloudFrontDistribution = self.CloudFrontDistribution
 
-        cfg.Resources.extend([
+        add_obj([
             R_CloudFrontDistribution,
         ])
 
@@ -519,7 +519,7 @@ class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
             'True', 'True'
         )}
 
-        cfg.Conditions.extend([
+        add_obj([
             C_ListenerLoadBalancerHttpPort,
             C_ListenerLoadBalancerHttpsPort,
         ])
@@ -538,7 +538,7 @@ class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
 
         R_CloudFrontDistribution = self.CloudFrontDistribution
 
-        cfg.Resources.extend([
+        add_obj([
             R_CloudFrontDistribution,
         ])
 
@@ -558,7 +558,7 @@ class CF_CloudFrontCLF(CF_CloudFront):
             p_OriginHTTPSPort = Parameter('CloudFrontOrigins' + n + 'HTTPSPort')
             p_OriginHTTPSPort.Description = 'Origin - empty for default based on env/role'
 
-            cfg.Parameters.extend([
+            add_obj([
                 p_Origin,
                 p_OriginHTTPSPort,
             ])
@@ -581,6 +581,6 @@ class CF_CloudFrontCLF(CF_CloudFront):
 
         R_CloudFrontDistribution = self.CloudFrontDistribution
 
-        cfg.Resources.extend([
+        add_obj([
             R_CloudFrontDistribution,
         ])

@@ -3,7 +3,7 @@ import troposphere.apigateway as agw
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionApiGateway
 
 
@@ -59,7 +59,7 @@ class AGW_Account(object):
         R_Account = ApiGatewayAccount('ApiGatewayAccount')
         R_Account.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_Account,
         ])
 
@@ -73,13 +73,13 @@ class AGW_UsagePlans(object):
                 p_Stage = Parameter(resname + 'ApiStages' + m + 'Stage')
                 p_Stage.Description = m + ' Stage - empty for default based on env/role'
 
-                cfg.Parameters.append(p_Stage)
+                add_obj(p_Stage)
 
             # resources
             r_UsagePlan = agw.UsagePlan(resname)
             auto_get_props(r_UsagePlan, v, recurse=True)
 
-            cfg.Resources.extend([
+            add_obj([
                 r_UsagePlan,
             ])
 
@@ -88,7 +88,7 @@ class AGW_UsagePlans(object):
             o_UsagePlan.Value = Ref(resname)
             o_UsagePlan.Export = Export(resname)
 
-            cfg.Outputs.extend([
+            add_obj([
                 o_UsagePlan,
             ])
 
@@ -104,7 +104,7 @@ class AGW_ApiKeys(object):
             p_UsagePlan = Parameter(resname + 'UsagePlan')
             p_UsagePlan.Description = resname + 'UsagePlan - empty for default based on env/role'
 
-            cfg.Parameters.extend([
+            add_obj([
                 p_Enabled,
                 p_UsagePlan,
             ])
@@ -113,7 +113,7 @@ class AGW_ApiKeys(object):
             r_ApiKey = agw.ApiKey(resname)
             auto_get_props(r_ApiKey, v, recurse=True)
 
-            cfg.Resources.extend([
+            add_obj([
                 r_ApiKey,
             ])
 
@@ -124,7 +124,7 @@ class AGW_ApiKeys(object):
                 r_UsagePlanKey.KeyType = 'API_KEY'
                 r_UsagePlanKey.UsagePlanId = ImportValue(get_subvalue('ApiGatewayUsagePlan${1M}', resname + 'UsagePlan'))
 
-                cfg.Resources.append(r_UsagePlanKey)
+                add_obj(r_UsagePlanKey)
             
             # Outputs
             o_ApiKey = Output(resname)
@@ -139,7 +139,7 @@ class AGW_Stages(object):
             p_DeploymentDescription.Description = 'Deployment' + n + ' Description'
             p_DeploymentDescription.Default = n
 
-            cfg.Parameters.extend([
+            add_obj([
                 p_DeploymentDescription,
             ])
 
@@ -151,7 +151,7 @@ class AGW_Stages(object):
             r_Deployment = ApiGatewayDeployment('ApiGatewayDeployment' + n)
             r_Deployment.setup(name=n, key=v)
 
-            cfg.Resources.extend([
+            add_obj([
                 r_Stage,
                 r_Deployment,
             ])
@@ -166,7 +166,7 @@ class AGW_RestApi(object):
             Types=get_endvalue('EndpointConfiguration')
         )
 
-        cfg.Resources.extend([
+        add_obj([
             R_RestApi,
         ])
 
@@ -180,7 +180,7 @@ class AGW_RestApi(object):
                 r_Method = ApiGatewayMethod(resname + 'Method' + m)
                 r_Method.setup(key=w, basename=n, name=m, stage=agw_stage)
 
-                cfg.Resources.extend([
+                add_obj([
                     r_Resource,
                     r_Method,
                 ])
@@ -192,12 +192,12 @@ class AGW_RestApi(object):
                 source=Sub('arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*/*')
             )
 
-            cfg.Resources.append(r_LambdaPermission)
+            add_obj(r_LambdaPermission)
 
         # Outputs
         O_InvokeUrl = Output('InvokeUrl')
         O_InvokeUrl.Value = Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/' + cfg.Stage)
 
-        cfg.Outputs.extend([
+        add_obj([
             O_InvokeUrl,
         ])

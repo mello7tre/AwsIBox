@@ -2,7 +2,7 @@ import troposphere.efs as efs
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .route53 import R53RecordSetEFS
 from .securitygroup import SecurityGroup, SecurityGroupIngress
 
@@ -44,20 +44,20 @@ class EFS_FileStorage(object):
                     Condition(resname),
                     Equals(FindInMap('AvabilityZones', Ref('AWS::Region'), 'Zone%s' % i), 'True')
                 )}
-                cfg.Conditions.append(c_FileZone)
+                add_obj(c_FileZone)
                 do_no_override(False)
 
                 # resources
                 r_Mount = EFSMountTarget(mountname)
                 r_Mount.setup(index=i, sgname=sgservername, efsresname=resname)
 
-                cfg.Resources.append(r_Mount)
+                add_obj(r_Mount)
             # conditions
             do_no_override(True)
             c_File = {resname: Not(
                 Equals(get_endvalue(resname + 'Enabled'), 'None')
             )}
-            cfg.Conditions.append(c_File)
+            add_obj(c_File)
             do_no_override(False)
 
             # resources
@@ -89,7 +89,7 @@ class EFS_FileStorage(object):
             r_SGI = SecurityGroupIngress(sginame)
             auto_get_props(r_SGI, SGIExtra, rootdict=SGIExtra, mapname='', del_prefix=sginame)
 
-            cfg.Resources.extend([
+            add_obj([
                 r_File,
                 r_Record,
                 r_SGServer,
@@ -104,4 +104,4 @@ class EFS_FileStorage(object):
             o_SG.Value = GetAtt(sgclientname, 'GroupId')
             o_SG.Export = Export(sgclientname)
 
-            cfg.Outputs.append(o_SG)
+            add_obj(o_SG)

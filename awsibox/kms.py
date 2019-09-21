@@ -1,15 +1,8 @@
 import troposphere.kms as kms
 
 from .common import *
-
-from shared import (
-    Parameter,
-    do_no_override,
-    get_endvalue,
-    get_expvalue,
-    get_subvalue,
-    auto_get_props,
-)
+from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 class KMSKey(kms.Key):
@@ -49,7 +42,7 @@ class KMS_Keys(object):
         R_AliasParameterStore = KMSAliasParameterStore('KMSAliasParameterStore')
         R_AliasParameterStore.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_KeyParameterStore,
             R_AliasParameterStore,
         ])
@@ -59,6 +52,6 @@ class KMS_Keys(object):
         O_ParameterStore.Value = Sub('${KMSKeyParameterStore.Arn}')
         O_ParameterStore.Export = Export('KeyParameterStore')
 
-        cfg.Outputs.extend([
+        add_obj([
             O_ParameterStore,
         ])

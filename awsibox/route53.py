@@ -2,7 +2,7 @@ import troposphere.route53 as r53
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 # S - ROUTE53 #
@@ -179,7 +179,7 @@ class R53_RecordSetCloudFront(object):
             )
         )}
 
-        cfg.Conditions.extend([
+        add_obj([
             C_RecordSet,
         ])
 
@@ -187,7 +187,7 @@ class R53_RecordSetCloudFront(object):
         R_RecordSet = R53RecordSetCloudFront('RecordSetCloudFront')
         R_RecordSet.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_RecordSet,
         ])
 
@@ -196,7 +196,7 @@ class R53_RecordSetCloudFront(object):
         O_CloudFront.Condition = 'RecordSetCloudFront'
         O_CloudFront.Value = Sub('${RecordSet} --> ${CloudFrontDistribution.DomainName}', **{'RecordSet': R_RecordSet.Name})
 
-        cfg.Outputs.extend([
+        add_obj([
             O_CloudFront
         ])
 
@@ -222,13 +222,13 @@ class R53_RecordSetEC2LoadBalancer(object):
             elif cfg.LoadBalancerApplicationInternal:
                 R_External.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationInternal.DNSName}')
 
-            cfg.Resources.append(R_External)
+            add_obj(R_External)
 
             # outputs
             O_External = Output('RecordSetExternal')
             O_External.Value = Ref('RecordSetExternal')
 
-            cfg.Outputs.append(O_External)
+            add_obj(O_External)
 
         # RecordSet Internal
         if cfg.RecordSetInternal:
@@ -247,13 +247,13 @@ class R53_RecordSetEC2LoadBalancer(object):
             elif cfg.LoadBalancerApplicationExternal:
                 R_Internal.AliasTarget.DNSName = Sub('dualstack.${LoadBalancerApplicationExternal.DNSName}')
 
-            cfg.Resources.append(R_Internal)
+            add_obj(R_Internal)
 
             # outputs
             O_Internal = Output('RecordSetInternal')
             O_Internal.Value = Ref('RecordSetInternal')
 
-            cfg.Outputs.append(O_Internal)
+            add_obj(O_Internal)
 # E - ROUTE53 #
 
 
@@ -268,13 +268,13 @@ class R53_RecordSetECSLoadBalancer(object):
             else:
                 R_External.setup(scheme='Internal')
 
-            cfg.Resources.append(R_External)
+            add_obj(R_External)
             
             # outputs
             O_External = Output('RecordSetExternal')
             O_External.Value = Ref('RecordSetExternal')
 
-            cfg.Outputs.append(O_External)
+            add_obj(O_External)
 
         if cfg.RecordSetInternal:
             R_Internal = R53RecordSetECSLoadBalancerApplicationInternal('RecordSetInternal')
@@ -284,13 +284,13 @@ class R53_RecordSetECSLoadBalancer(object):
             else:
                 R_Internal.setup(scheme='External')
 
-            cfg.Resources.append(R_Internal)
+            add_obj(R_Internal)
 
             # outputs
             O_Internal = Output('RecordSetInternal')
             O_Internal.Value = Ref('RecordSetInternal')
 
-            cfg.Outputs.append(O_Internal)
+            add_obj(O_Internal)
 
 
 class R53_RecordSetRDS(object):
@@ -299,24 +299,24 @@ class R53_RecordSetRDS(object):
         if cfg.RecordSetExternal:
             R_External = R53RecordSetRDSExternal('RecordSetExternal')
             R_External.setup()
-            cfg.Resources.append(R_External)
+            add_obj(R_External)
 
             # outputs
             O_External = Output('RecordSetExternal')
             O_External.Value = Ref('RecordSetExternal')
 
-            cfg.Outputs.append(O_External)
+            add_obj(O_External)
 
         if cfg.RecordSetInternal:
             R_Internal = R53RecordSetRDSInternal('RecordSetInternal')
             R_Internal.setup()
-            cfg.Resources.append(R_Internal)
+            add_obj(R_Internal)
 
             # outputs
             O_Internal = Output('RecordSetInternal')
             O_Internal.Value = Ref('RecordSetInternal')
 
-            cfg.Outputs.append(O_Internal)
+            add_obj(O_Internal)
 
 
 class R53_RecordSetCCH(object):
@@ -325,26 +325,26 @@ class R53_RecordSetCCH(object):
         if cfg.RecordSetExternal:
             R_External = R53RecordSetCCHExternal('RecordSetExternal')
             R_External.setup()
-            cfg.Resources.append(R_External)
+            add_obj(R_External)
 
             # outputs
             O_External = Output('RecordSetExternal')
             O_External.Value = Ref('RecordSetExternal')
             O_External.Condition = 'CacheEnabled'
 
-            cfg.Outputs.append(O_External)
+            add_obj(O_External)
 
         if cfg.RecordSetInternal:
             R_Internal = R53RecordSetCCHInternal('RecordSetInternal')
             R_Internal.setup()
-            cfg.Resources.append(R_Internal)
+            add_obj(R_Internal)
 
             # outputs
             O_Internal = Output('RecordSetInternal')
             O_Internal.Value = Ref('RecordSetInternal')
             O_Internal.Condition = 'CacheEnabled'
 
-            cfg.Outputs.append(O_Internal)
+            add_obj(O_Internal)
 
 
 class R53_HostedZones(object):
@@ -358,7 +358,7 @@ class R53_HostedZones(object):
         )}
         do_no_override(False)
 
-        cfg.Conditions.extend([
+        add_obj([
             C_Env,
             C_EnvExtra1,
         ])
@@ -373,7 +373,7 @@ class R53_HostedZones(object):
         R_EnvExtra1 = R53HostedZoneEnvExtra1('HostedZoneEnvExtra1')
         R_EnvExtra1.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_Private,
             R_Env,
             R_EnvExtra1,
@@ -401,7 +401,7 @@ class R53_HostedZones(object):
         O_EnvNameRegion = Output('HostedZoneNameRegionEnv')
         O_EnvNameRegion.Value = Sub(cfg.HostedZoneNameRegionEnv)
 
-        cfg.Outputs.extend([
+        add_obj([
             O_Private,
             O_PrivateName,
             O_Env,

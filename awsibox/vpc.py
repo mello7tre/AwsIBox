@@ -2,7 +2,7 @@ import troposphere.ec2 as ec2
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 class EC2VPCPeeringConnection(ec2.VPCPeeringConnection):
@@ -114,7 +114,7 @@ class VPC_Endpoint(object):
             Equals(get_endvalue('VPCEndpoint'), 'None')
         )}
 
-        cfg.Conditions.extend([
+        add_obj([
             C_S3,
         ])
         do_no_override(False)
@@ -124,7 +124,7 @@ class VPC_Endpoint(object):
         R_S3.setup()
         R_S3.Condition = 'EC2VPCEndpointS3'
 
-        cfg.Resources.extend([
+        add_obj([
             R_S3,
         ])
 
@@ -143,7 +143,7 @@ class VPC_VPC(object):
         P_Name = Parameter('VPCName')
         P_Name.Description = 'VPC Tag Name'
 
-        cfg.Parameters.extend([
+        add_obj([
             P_CidrBlock,
             P_Name,
         ])
@@ -180,7 +180,7 @@ class VPC_VPC(object):
         R_RouteInternetGateway = EC2RouteInternetGateway('RouteInternetGateway')
         R_RouteInternetGateway.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_VPC,
             R_RouteTablePrivate,
             R_RouteTablePublic,
@@ -205,7 +205,7 @@ class VPC_VPC(object):
             p_SubnetCidrBlockPublic.Description = 'Ip Class Range for Public Subnet in zone %s' % zone_name
             p_SubnetCidrBlockPublic.Default = '%s.%s.0/24' %(vpc_net, i + 1)
 
-            cfg.Parameters.extend([
+            add_obj([
                 p_SubnetCidrBlockPrivate,
                 p_SubnetCidrBlockPublic,
             ])
@@ -215,7 +215,7 @@ class VPC_VPC(object):
             c_Zone = {zone_cond: Equals(
                 FindInMap('AvabilityZones', Ref('AWS::Region'), 'Zone%s' % i), 'True'
             )}
-            cfg.Conditions.append(c_Zone)
+            add_obj(c_Zone)
             do_no_override(False)
 
             # resources
@@ -236,7 +236,7 @@ class VPC_VPC(object):
             r_SubnetRouteTableAssociationPublic.setup(zone_name)
             r_SubnetRouteTableAssociationPublic.Condition = zone_cond
 
-            cfg.Resources.extend([
+            add_obj([
                 r_SubnetPrivate,
                 r_SubnetPublic,
                 r_SubnetRouteTableAssociationPrivate,
@@ -281,7 +281,7 @@ class VPC_VPC(object):
         O_SubnetsPublic.Value = Join(',', o_subnetpublic)
         O_SubnetsPublic.Export = Export('SubnetsPublic')
 
-        cfg.Outputs.extend([
+        add_obj([
             O_VpcId,
             O_VPCCidr,
             O_RouteTablePrivate,

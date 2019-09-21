@@ -3,7 +3,7 @@ import troposphere.wafregional as wafr
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 class WAFIPSet(waf.IPSet):
@@ -143,7 +143,7 @@ class WAF_IPSets(object):
                 )
             )}
             
-            cfg.Conditions.append(C_Waf)
+            add_obj(C_Waf)
             do_no_override(False)
 
             # resources
@@ -157,7 +157,7 @@ class WAF_IPSets(object):
             IPSet.setup(name=n)
             IPSet.IPSetDescriptors = IPSetDescriptors
 
-            cfg.Resources.append(IPSet)
+            add_obj(IPSet)
 
 
 class WAF_ByteMatchSets(object):
@@ -178,7 +178,7 @@ class WAF_ByteMatchSets(object):
                 )
             )}
             
-            cfg.Conditions.append(C_Waf)
+            add_obj(C_Waf)
             do_no_override(False)
 
 
@@ -195,7 +195,7 @@ class WAF_ByteMatchSets(object):
             ByteMatchSet.setup(name=n)
             ByteMatchSet.ByteMatchTuples = ByteMatchTuples
 
-            cfg.Resources.append(ByteMatchSet)
+            add_obj(ByteMatchSet)
 
 
 class WAF_Rules(object):
@@ -216,7 +216,7 @@ class WAF_Rules(object):
                 )
             )}
             
-            cfg.Conditions.append(C_Waf)
+            add_obj(C_Waf)
             do_no_override(False)
 
 
@@ -244,14 +244,14 @@ class WAF_Rules(object):
             Rule.setup(name=n)
             Rule.Predicates = Predicates
 
-            cfg.Resources.append(Rule)
+            add_obj(Rule)
 
             # outputs
             O_Rule = Output(mapname + wtype)
             O_Rule.Condition = resname
             O_Rule.Value = ','.join(O_Predicates)
 
-            cfg.Outputs.append(O_Rule)
+            add_obj(O_Rule)
 
 
 class WAF_WebAcls(object):
@@ -272,7 +272,7 @@ class WAF_WebAcls(object):
                 )
             )}
             
-            cfg.Conditions.append(C_Waf)
+            add_obj(C_Waf)
             do_no_override(False)
 
 
@@ -294,14 +294,14 @@ class WAF_WebAcls(object):
             WebACL.Rules = Rules
             WebACL.DefaultAction = WAFAction(Type=v['DefaultAction'])
 
-            cfg.Resources.append(WebACL)
+            add_obj(WebACL)
 
             # outputs
             O_WebACL = Output(mapname + wtype)
             O_WebACL.Condition = resname
             O_WebACL.Value = Sub('${%s} - %s' % (resname, ','.join(O_Rules)))
 
-            cfg.Outputs.append(O_WebACL)
+            add_obj(O_WebACL)
 
 class WAF_GlobalByteMatchSets(object):
     def __init__(self, key):

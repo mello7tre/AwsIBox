@@ -2,7 +2,7 @@ import troposphere.codedeploy as cdd
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 class CDEc2TagFilters(cdd.Ec2TagFilters):
@@ -65,7 +65,7 @@ class CD_DeploymentGroup(object):
             Ref('UpdateMode'), 'CodeDeploy'
         )}
 
-        cfg.Conditions.extend([
+        add_obj([
             C_DeploymentGroup,
             C_DeployRevision,
         ])
@@ -77,7 +77,7 @@ class CD_DeploymentGroup(object):
             R_DeploymentGroup = CDDeploymentGroup('DeploymentGroup')
             R_DeploymentGroup.setup(index=1)
 
-            cfg.Resources.append(R_DeploymentGroup)
+            add_obj(R_DeploymentGroup)
 
 
 class CD_Applications(object):
@@ -86,4 +86,4 @@ class CD_Applications(object):
             App = cdd.Application(key + n)
             App.ApplicationName = get_endvalue(key + n)
 
-            cfg.Resources.append(App)
+            add_obj(App)

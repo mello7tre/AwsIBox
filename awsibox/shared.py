@@ -15,45 +15,56 @@ class SSMParameter(ssm.Parameter):
 
 
 def stack_add_res():
-    for v in cfg.Parameters:
-        name = v.title
+    for n, v in cfg.Parameters.iteritems():
         # Automatically create override conditions for parameters
-        if not name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION):
+        if not n.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION):
 
-            if name == 'InstanceType':
+            if n == 'InstanceType':
                 default = 'default'
-            elif name == 'SecurityGroups':
+            elif n == 'SecurityGroups':
                 default = cfg.SECURITY_GROUPS_DEFAULT
             else:
                 default = ''
 
             condition = {
-                name + 'Override': Not(Equals(Ref(name), default))
+                n + 'Override': Not(Equals(Ref(n), default))
             }
 
-            cfg.Conditions.append(condition)
+            add_obj(condition)
         # End
         cfg.template.add_parameter(v)
 
-    del cfg.Parameters[:]
+    cfg.Parameters.clear()
 
-    for v in cfg.Conditions:
-        for name in v:
-            cfg.template.add_condition(name, v[name])
-    del cfg.Conditions[:]
+    for n, v in cfg.Conditions.iteritems():
+        cfg.template.add_condition(n, v)
+    cfg.Conditions.clear()
 
-    for v in cfg.Mappings:
-        for name in v:
-            cfg.template.add_mapping(name, v[name])
-    del cfg.Mappings[:]
+    for n, v in cfg.Mappings.iteritems():
+        cfg.template.add_mapping(n, v)
+    cfg.Mappings.clear()
 
-    for v in cfg.Resources:
+    for n, v in cfg.Resources.iteritems():
         cfg.template.add_resource(v)
-    del cfg.Resources[:]
+    cfg.Resources.clear()
 
-    for v in cfg.Outputs:
+    for n, v in cfg.Outputs.iteritems():
         cfg.template.add_output(v)
-    del cfg.Outputs[:]
+    cfg.Outputs.clear()
+
+
+def add_obj(obj):
+    if isinstance(obj, list):
+        for n in obj:
+            add_obj(n)
+    elif isinstance(obj, Parameter):
+        cfg.Parameters[obj.title] = obj
+    elif isinstance(obj, dict):
+        cfg.Conditions.update(obj)
+    elif isinstance(obj, Output):
+        cfg.Outputs[obj.title] = obj
+    else:
+        cfg.Resources[obj.title] = obj
 
 
 def do_no_override(action):
@@ -114,8 +125,7 @@ def get_endvalue(
     else:
         override_value = If(param_override, Ref(param), Sub(endvalue))
 
-    if (cfg.no_override is False and
-            any(param == p.title for p in cfg.Parameters) and not
+    if (cfg.no_override is False and param in cfg.Parameters and not
             param.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
         v = override_value
     # elif param in mappings['dev']['eu-west-1'] or param in fixedvalues:
@@ -207,7 +217,7 @@ def get_condition(name, cond, value, key_name=None):
         cond_param = Not(Equals(Ref(key_name), value))
         cond_map = Not(Equals(get_endvalue(key_name), value))
 
-    if (any(key_name == p.title for p in cfg.Parameters) and not
+    if (key_name in cfg.Parameters and not
             key_name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
         condition = {name: Or(
             And(
@@ -364,14 +374,14 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None, recurse=False, ro
                 pass
 
 
-def auto_build_obj(obj, key, obj_list=cfg.Resources):
+def auto_build_obj(obj, key):
     props = vars(obj)['propnames']
     classname = obj.__class__
     for resname, resvalue in key.iteritems():
         final_obj = classname(resname)
         auto_get_props(final_obj, resvalue)
 
-        obj_list.append(final_obj)
+        add_obj(final_obj)
 
 
 def change_obj_data(obj, find, value):

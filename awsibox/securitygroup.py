@@ -2,7 +2,7 @@ import troposphere.ec2 as ec2
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 # S - SECURITY GROUP #
@@ -95,7 +95,7 @@ class SG_SecurityGroupsExtra(object):
         P_SecurityGroups.AllowedPattern = '^(\w*,\w*){%s}$' % (MAX_SECURITY_GROUPS - 1)
         P_SecurityGroups.Default = SECURITY_GROUPS_DEFAULT
 
-        cfg.Parameters.extend([
+        add_obj([
             P_SecurityGroups,
         ])
 
@@ -121,7 +121,7 @@ class SG_SecurityGroupsExtra(object):
                     )
                 )
             )}
-            cfg.Conditions.append(c_OverrideCondition)
+            add_obj(c_OverrideCondition)
             do_no_override(False)
 
             SecurityGroups.append(If(
@@ -145,7 +145,7 @@ class SG_SecurityGroupsExtra(object):
         O_SecurityGroups = Output('SecurityGroups')
         O_SecurityGroups.Value = Sub(','.join(Out_String), **Out_Map)
 
-        cfg.Outputs.extend([
+        add_obj([
             O_SecurityGroups,
         ])
 
@@ -161,7 +161,7 @@ class SG_SecurityGroupIngressesExtra(object):
             r_SGI = SecurityGroupIngress(resname)
             auto_get_props(r_SGI, v)
 
-            cfg.Resources.append(r_SGI)
+            add_obj(r_SGI)
 
 
 class SG_SecurityGroupsEC2(object):
@@ -180,7 +180,7 @@ class SG_SecurityGroupsEC2(object):
         R_SGInstance = SecurityGroupInstanceRules('SecurityGroupInstancesRules')
         R_SGInstance.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_SGInstance,
         ])
 
@@ -224,7 +224,7 @@ def SG_SecurityGroupIngressBaseInstance():
         name = 'AllowedIp%s' % n
         # conditions
         do_no_override(True)
-        cfg.Conditions.append({
+        add_obj({
             name: Not(Equals(get_endvalue(name + 'Enabled'), 'None'))
         })
         do_no_override(False)
@@ -269,14 +269,14 @@ class SG_SecurityGroupRES(object):
             if n == 'BaseInstance':
                 r_Base.SecurityGroupIngress = SG_SecurityGroupIngressBaseInstance()
 
-            cfg.Resources.append(r_Base)
+            add_obj(r_Base)
 
             # outputs
             o_Base = Output(outname)
             o_Base.Value = GetAtt(name, 'GroupId')
             o_Base.Export = Export(outname)
 
-            cfg.Outputs.append(o_Base)
+            add_obj(o_Base)
 
 
 class SG_SecurityGroupIngressesExtraService(object):
@@ -299,7 +299,7 @@ class SG_SecurityGroupIngressesExtraService(object):
                     Equals(get_endvalue(service + 'Access'), 'Private')
                 )}
 
-                cfg.Conditions.extend([
+                add_obj([
                     c_AllowedIp,
                     c_SGRulePrivate,
                 ])
@@ -337,7 +337,7 @@ class SG_SecurityGroupIngressesExtraService(object):
         R_SG.GroupDescription = 'Enable access to ' + service
         R_SG.SecurityGroupIngress = Securitygroup_Rules
 
-        cfg.Resources.extend([
+        add_obj([
             R_SG,
         ])
 
@@ -345,7 +345,7 @@ class SG_SecurityGroupIngressesExtraService(object):
         O_SG = Output('SecurityGroup')
         O_SG.Value = GetAtt('SecurityGroup' + service, 'GroupId')
 
-        cfg.Outputs.extend([
+        add_obj([
             O_SG,
         ])
 

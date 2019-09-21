@@ -145,4 +145,4 @@ class Mappings(object):
             if n == 'AZones':
                 mapping = get_azones_mapping()
 
-            cfg.Mappings.append(mapping)
+            cfg.Mappings.update(mapping)

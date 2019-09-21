@@ -2,7 +2,7 @@ import troposphere.events as eve
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionEvent
 
 class EVERule(eve.Rule):
@@ -32,9 +32,9 @@ class EVE_EventRules(object):
                 p_ScheduleExpression = Parameter(resname + 'ScheduleExpression')
                 p_ScheduleExpression.Description = 'Events Rule Schedule - empty for default based on env/role'
 
-                cfg.Parameters.append(p_ScheduleExpression)
+                add_obj(p_ScheduleExpression)
 
-            cfg.Parameters.extend([
+            add_obj([
                 p_State,
             ])
 
@@ -51,13 +51,13 @@ class EVE_EventRules(object):
                     r_LambdaPermission = LambdaPermissionEvent(permname)
                     r_LambdaPermission.setup(key=w, source=resname)
 
-                    cfg.Resources.append(r_LambdaPermission)
+                    add_obj(r_LambdaPermission)
 
             r_Rule = EVERule(resname)
             r_Rule.setup(key=v, name=n)
             r_Rule.Targets = Targets
 
-            cfg.Resources.append(r_Rule)
+            add_obj(r_Rule)
 
             # outputs
             o_State = Output(resname + 'State')
@@ -67,8 +67,8 @@ class EVE_EventRules(object):
                 o_ScheduleExpression = Output(resname + 'ScheduleExpression')
                 o_ScheduleExpression.Value = get_endvalue(resname + 'ScheduleExpression')
 
-                cfg.Outputs.append(o_ScheduleExpression)
+                add_obj(o_ScheduleExpression)
     
-            cfg.Outputs.extend([
+            add_obj([
                 o_State,
             ])

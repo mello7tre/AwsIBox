@@ -2,7 +2,7 @@ import troposphere.rds as rds
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .route53 import R53_RecordSetRDS
 
 
@@ -140,7 +140,7 @@ class RDS_ParameterGroups(object):
             r_PG.setup()
             r_PG.Parameters = v
 
-            cfg.Resources.append(r_PG)
+            add_obj(r_PG)
 
 
 class RDS_DB(object):
@@ -155,7 +155,7 @@ class RDS_DB(object):
 
         R53_RecordSetRDS()
 
-        cfg.Resources.extend([
+        add_obj([
             R_DB,
         ])
 
@@ -169,7 +169,7 @@ class RDS_SubnetGroups(object):
         R_Public = RDSDBSubnetGroupPublic('DBSubnetGroupPublic')
         R_Public.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_Private,
             R_Public,
         ])
@@ -183,7 +183,7 @@ class RDS_SubnetGroups(object):
         O_Public.Value = Ref('DBSubnetGroupPublic')
         O_Public.Export = Export('DBSubnetGroupPublic')
 
-        cfg.Outputs.extend([
+        add_obj([
             O_Private,
             O_Public,
         ])

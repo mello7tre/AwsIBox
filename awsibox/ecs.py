@@ -2,7 +2,7 @@ import troposphere.ecs as ecs
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .securitygroup import (SecurityGroupEcsService, SecurityGroupRuleEcsService,
     SG_SecurityGroupsECS)
 
@@ -242,7 +242,7 @@ class ECS_TaskDefinition(object):
         P_DockerLabelLastUpdate = Parameter('DockerLabelLastUpdate')
         P_DockerLabelLastUpdate.Description = 'Use to force redeploy'
 
-        cfg.Parameters.extend([
+        add_obj([
             P_DockerLabelLastUpdate,
         ])
 
@@ -263,7 +263,7 @@ class ECS_TaskDefinition(object):
                 EnvApp.AllowedPattern = '^[a-zA-Z0-9-_.]*$'
                 EnvApp.Default = '1'
 
-                cfg.Parameters.append(EnvApp)
+                add_obj(EnvApp)
 
                 # outputs
                 o_EnvAppOut = Output(nameenvapp)
@@ -278,9 +278,9 @@ class ECS_TaskDefinition(object):
                         o_Repo = Output('RepoName')
                         o_Repo.Value = get_endvalue('RepoName')
 
-                    cfg.Outputs.append(o_Repo)
+                    add_obj(o_Repo)
 
-                cfg.Outputs.extend([
+                add_obj([
                     o_EnvAppOut,
                 ])
 
@@ -294,7 +294,7 @@ class ECS_TaskDefinition(object):
                     EnvValue = Parameter(envname + 'Value')
                     EnvValue.Description = '%s - empty for default based on env/role' % w['Name']
 
-                    cfg.Parameters.append(EnvValue)
+                    add_obj(EnvValue)
 
                     Environment = ECSEnvironment(envname)
                     Environment.setup(key=w)
@@ -309,7 +309,7 @@ class ECS_TaskDefinition(object):
             o_EnvValueOut = Output(name + 'Envs')
             o_EnvValueOut.Value = Sub(','.join(EnvValue_Out_String), **EnvValue_Out_Map)
 
-            cfg.Outputs.append(o_EnvValueOut)
+            add_obj(o_EnvValueOut)
 
             Environments.extend(Environments_Base)
 
@@ -318,19 +318,19 @@ class ECS_TaskDefinition(object):
                 p_Cpu = Parameter(name + 'Cpu')
                 p_Cpu.Description = 'Cpu Share for containers - empty for default based on env/role'
 
-                cfg.Parameters.append(p_Cpu)
+                add_obj(p_Cpu)
 
             if 'Memory' in v:
                 p_Memory = Parameter(name + 'Memory')
                 p_Memory.Description = 'Memory hard limit for containers - empty for default based on env/role'
 
-                cfg.Parameters.append(p_Memory)
+                add_obj(p_Memory)
 
             if 'MemoryReservation' in v:
                 p_MemoryReservation = Parameter(name + 'MemoryReservation')
                 p_MemoryReservation.Description = 'Memory soft limit for containers - empty for default based on env/role'
 
-                cfg.Parameters.append(p_MemoryReservation)
+                add_obj(p_MemoryReservation)
 
             Container = ECSContainerDefinition(name)
             Container.setup(key=v, index=n)
@@ -370,7 +370,7 @@ class ECS_TaskDefinition(object):
                 o_Constraints = Output(name + 'Constraints')
                 o_Constraints.Value = Sub(','.join(Constraints_Out_String), **Constraints_Out_Map)
 
-                cfg.Outputs.append(o_Constraints)
+                add_obj(o_Constraints)
 
         # Resources
         R_TaskDefinition = ECSTaskDefinition('TaskDefinition')
@@ -385,7 +385,7 @@ class ECS_TaskDefinition(object):
 
             R_TaskDefinition.Volumes = Volumes
 
-        cfg.Resources.extend([
+        add_obj([
             R_TaskDefinition,
         ])
 
@@ -399,7 +399,7 @@ class ECS_Service(object):
         P_MinimumHealthyPercent = Parameter('DeploymentConfigurationMinimumHealthyPercent')
         P_MinimumHealthyPercent.Description = 'DeploymentConfiguration MinimumHealthyPercent - empty for default based on env/role'
 
-        cfg.Parameters.extend([
+        add_obj([
             P_MaximumPercent,
             P_MinimumHealthyPercent,
         ])
@@ -437,7 +437,7 @@ class ECS_Service(object):
             Ref('AWS::NoValue')
         )
 
-        cfg.Resources.extend([
+        add_obj([
             R_Service,
             R_SG,
         ])
@@ -450,7 +450,7 @@ class ECS_Service(object):
             O_MinimumHealthyPercent = Output('DeploymentConfigurationMinimumHealthyPercent')
             O_MinimumHealthyPercent.Value = R_Service.DeploymentConfiguration.MinimumHealthyPercent
     
-            cfg.Outputs.extend([
+            add_obj([
                 O_MaximumPercent,
                 O_MinimumHealthyPercent,
             ])
@@ -463,6 +463,6 @@ class ECS_Cluster(object):
         # Resources
         R_Cluster = ecs.Cluster('Cluster')
 
-        cfg.Resources.extend([
+        add_obj([
             R_Cluster,
         ])

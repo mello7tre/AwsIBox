@@ -2,7 +2,7 @@ import troposphere.iam as iam
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, SSMParameter)
+    get_subvalue, auto_get_props, get_condition, add_obj, SSMParameter)
 
 
 # S - IAM #
@@ -190,7 +190,7 @@ class IAM_Users(object):
             p_Password.Default = ''
             p_Password.NoEcho = True
 
-            cfg.Parameters.append(p_Password)
+            add_obj(p_Password)
 
             # conditions
             do_no_override(True)
@@ -201,7 +201,7 @@ class IAM_Users(object):
                 Equals(get_endvalue(resname + 'RoleAccount'), 'None')
             )}
 
-            cfg.Conditions.extend([
+            add_obj([
                 c_User,
                 c_Role,
             ])
@@ -218,7 +218,7 @@ class IAM_Users(object):
                         Equals(get_endvalue(condname), 'None')
                     )}
     
-                    cfg.Conditions.append(c_RoleGroup)
+                    add_obj(c_RoleGroup)
                     do_no_override(False)
     
                     # resources
@@ -268,7 +268,7 @@ class IAM_Users(object):
             r_SSMParameter.Value = Ref('PasswordBase' + n)
             r_SSMParameter.AllowedPattern = '^[^ ]{16,}$'
 
-            cfg.Resources.extend([
+            add_obj([
                 r_User,
                 r_Role,
                 r_SSMParameter,
@@ -288,7 +288,7 @@ class IAM_UserToGroupAdditions(object):
                 c_User = {condname: Not(
                     Equals(get_endvalue(condname), 'None') 
                 )}
-                cfg.Conditions.append(c_User)
+                add_obj(c_User)
                 do_no_override(False)
 
                 Users.append(
@@ -307,7 +307,7 @@ class IAM_UserToGroupAdditions(object):
             r_GroupAdd.setup(key=v, name=n)
             r_GroupAdd.Users = Users
 
-            cfg.Resources.extend([
+            add_obj([
                 r_GroupAdd,
             ])
 
@@ -323,7 +323,7 @@ class IAM_Groups(object):
             c_Group = {resname: Not(
                 Equals(get_endvalue(resname + 'Enabled'), 'None')
             )}
-            cfg.Conditions.append(c_Group)
+            add_obj(c_Group)
             do_no_override(False)
 
             ManagedPolicyArns = []
@@ -339,7 +339,7 @@ class IAM_Groups(object):
             r_Group.setup(key=v, name=n)
             r_Group.ManagedPolicyArns = ManagedPolicyArns
 
-            cfg.Resources.extend([
+            add_obj([
                 r_Group,
             ])
 
@@ -360,7 +360,7 @@ class IAM_Policies(object):
             r_Policy.setup(key=v, name=n)
             r_Policy.PolicyDocument['Statement'] = Statement
 
-            cfg.Resources.append(r_Policy)
+            add_obj(r_Policy)
 
             # outputs
             if 'Export' in v:
@@ -368,7 +368,7 @@ class IAM_Policies(object):
                 o_Policy.Value = Ref(resname)
                 o_Policy.Export = Export(resname)
 
-                cfg.Outputs.append(o_Policy)
+                add_obj(o_Policy)
 
 
 class IAM_Roles(object):
@@ -379,7 +379,7 @@ class IAM_Roles(object):
             r_Role = IAMRole(resname)
             r_Role.setup(key=v)
 
-            cfg.Resources.append(r_Role)
+            add_obj(r_Role)
 
             # outputs
             if 'Export' in v:
@@ -387,4 +387,4 @@ class IAM_Roles(object):
                 o_Role.Value = GetAtt(resname, 'Arn')
                 o_Role.Export = Export(resname)
 
-                cfg.Outputs.append(o_Role)
+                add_obj(o_Role)

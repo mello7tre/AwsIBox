@@ -2,7 +2,7 @@ import troposphere.sqs as sqs
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj, add_obj)
 
 
 class SQSQueue(sqs.Queue):
@@ -49,6 +49,6 @@ class SQS_Queues(object):
             r_Queue = SQSQueue(resname)
             r_Queue.setup()
 
-            cfg.Resources.extend([
+            add_obj([
                 r_Queue,
             ])

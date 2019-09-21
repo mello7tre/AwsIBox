@@ -2,7 +2,7 @@ import troposphere.logs as lgs
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 class LogsLogGroup(lgs.LogGroup):
@@ -20,6 +20,6 @@ class LGS_LogGroup(object):
     def __init__(self, key):
         R_Group = LogsLogGroup('LogsLogGroup')
 
-        cfg.Resources.extend([
+        add_obj([
             R_Group,
         ])

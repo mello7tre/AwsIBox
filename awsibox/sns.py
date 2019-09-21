@@ -2,7 +2,7 @@ import troposphere.sns as sns
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionSNS
 from .sqs import SQSQueuePolicy
 
@@ -28,7 +28,7 @@ class SNS_Topics(object):
             if 'Condition' in v:
                 r_Topic.Condition = v['Condition']
 
-            cfg.Resources.append(r_Topic)
+            add_obj(r_Topic)
 
             # outputs
             if 'Export' in v:
@@ -38,7 +38,7 @@ class SNS_Topics(object):
                 if 'Condition' in v:
                     o_Topic.Condition = v['Condition']
 
-                cfg.Outputs.append(o_Topic)
+                add_obj(o_Topic)
 
 
 class SNS_Subscriptions(object):
@@ -51,7 +51,7 @@ class SNS_Subscriptions(object):
             r_Subscription = SNSSubscription(resname)
             r_Subscription.setup(key=v)
 
-            cfg.Resources.append(r_Subscription)
+            add_obj(r_Subscription)
 
             if v['Protocol'] == 'lambda':
                 lambdaname = resname.split('Lambda')[1]
@@ -64,7 +64,7 @@ class SNS_Subscriptions(object):
                 if hasattr(r_Subscription, 'Condition'):
                     r_LambdaPermission.Condition = r_Subscription.Condition
 
-                cfg.Resources.append(r_LambdaPermission)
+                add_obj(r_LambdaPermission)
 
             if v['Protocol'] == 'sqs':
                 queuename = resname.split('SQS')[1]  # Ex. RabbitMQCluster
@@ -74,4 +74,5 @@ class SNS_Subscriptions(object):
                 r_QueuePolicy = SQSQueuePolicy(queuepolicyname)
                 r_QueuePolicy.setup(key=v)
 
-                cfg.Resources.append(r_QueuePolicy)
+                #add_obj(r_QueuePolicy)
+                add_obj([r_QueuePolicy])

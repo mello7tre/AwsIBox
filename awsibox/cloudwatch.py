@@ -2,7 +2,7 @@ import troposphere.cloudwatch as clw
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 class CW_Alarms(object):
@@ -24,7 +24,7 @@ class CW_Alarms(object):
             p_Threshold.Description = 'Threshold for alarm triggering - empty for default based on env/role'
             p_Threshold.AllowedValues = ['', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
 
-            cfg.Parameters.extend([
+            add_obj([
                 p_EvaluationPeriods,
                 #p_Period,
                 p_Threshold,
@@ -44,7 +44,7 @@ class CW_Alarms(object):
             )}
             do_no_override(False)
 
-            cfg.Conditions.append(c_Alarm)
+            add_obj(c_Alarm)
 
             # resources
             r_Alarm = clw.Alarm(resname)
@@ -54,7 +54,7 @@ class CW_Alarms(object):
             if not hasattr(r_Alarm, 'Condition'):
                 r_Alarm.Condition = resname
 
-            cfg.Resources.append(r_Alarm)
+            add_obj(r_Alarm)
 
             # outputs
             o_Alarm = Output(resname)
@@ -67,4 +67,4 @@ class CW_Alarms(object):
                 ]
             )
 
-            cfg.Outputs.append(o_Alarm)
+            add_obj(o_Alarm)

@@ -2,7 +2,7 @@ import troposphere.s3 as s3
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .iam import IAMRoleBucketReplica, IAMPolicyBucketReplica, IAMPolicyStatement
 from .cloudfront import CFOriginAccessIdentity
 
@@ -244,7 +244,7 @@ class S3_Buckets(object):
             p_ReplicaDstRegion.Description = 'Region to Replicate Bucket - None to disable - empty for default based on env/role'
             p_ReplicaDstRegion.AllowedValues = ['', 'None', 'eu-central-1']
 
-            cfg.Parameters.append(p_ReplicaDstRegion)
+            add_obj(p_ReplicaDstRegion)
 
             PolicyROConditions = []
             PolicyROPrincipal = []
@@ -255,7 +255,7 @@ class S3_Buckets(object):
                 do_no_override(True)
                 c_AccountRO = get_condition(accountro_name, 'not_equals', 'None')
 
-                cfg.Conditions.append(c_AccountRO)
+                add_obj(c_AccountRO)
                 do_no_override(False)
 
                 PolicyROConditions.append(Condition(accountro_name))
@@ -276,7 +276,7 @@ class S3_Buckets(object):
             else:
                 c_PolicyRO = {resname + 'PolicyRO': Equals('True', 'False')}
 
-            cfg.Conditions.extend([
+            add_obj([
                 c_PolicyRO,
                 get_condition(resname, 'not_equals', 'None', resname + 'Create'),
                 get_condition(resname + 'Versioning', 'not_equals', 'None'),
@@ -362,7 +362,7 @@ class S3_Buckets(object):
                     do_no_override(True)
                     c_CloudFrontOriginAccessIdentityExtra = get_condition(ixname, 'not_equals', 'None')
 
-                    cfg.Conditions.extend([
+                    add_obj([
                         c_CloudFrontOriginAccessIdentityExtra,
                     ])
                     do_no_override(False)
@@ -384,7 +384,7 @@ class S3_Buckets(object):
                 #r_PolicyOriginAccess = S3BucketPolicyCFOriginAccessIdentity('BucketPolicyCFOriginAccessIdentity' + identityname)
                 #r_PolicyOriginAccess.setup(bucket=resname, identity=identityresname)
 
-                cfg.Resources.extend([
+                add_obj([
                     r_OriginAccessIdentity,
                     #r_PolicyOriginAccess,
                 ])
@@ -393,9 +393,9 @@ class S3_Buckets(object):
                 o_OriginAccessIdentity = Output(identityresname)
                 o_OriginAccessIdentity.Value = Ref(identityresname)
 
-                cfg.Outputs.append(o_OriginAccessIdentity)
+                add_obj(o_OriginAccessIdentity)
 
-            cfg.Resources.extend([
+            add_obj([
                 r_Bucket,
                 r_Policy,
                 #r_PolicyReplica,
@@ -412,7 +412,7 @@ class S3_Buckets(object):
                 do_no_override(False)
                 c_OutputValueRegion = get_condition(condname, 'not_equals', 'AWSRegion')
 
-                cfg.Conditions.append(c_OutputValueRegion)
+                add_obj(c_OutputValueRegion)
                 do_no_override(False)
 
                 outvaluebase = If(
@@ -430,7 +430,7 @@ class S3_Buckets(object):
             if resname == 'BucketAppRepository':
                 o_Bucket.Export = Export(resname)
 
-            cfg.Outputs.extend([
+            add_obj([
                 o_Bucket,
             ])
 
@@ -453,4 +453,4 @@ class S3_BucketPolicies(object):
             r_Policy.Bucket = get_endvalue(resname + 'Bucket')
             r_Policy.PolicyDocument['Statement'] = Statement            
 
-            cfg.Resources.append(r_Policy)
+            add_obj(r_Policy)

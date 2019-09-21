@@ -2,7 +2,7 @@ import troposphere.elasticache as cch
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition)
+    get_subvalue, auto_get_props, get_condition, add_obj)
 from .route53 import R53_RecordSetCCH
 
 
@@ -53,7 +53,7 @@ class CCH_Cache(object):
 
         R53_RecordSetCCH()
 
-        cfg.Resources.extend([
+        add_obj([
             R_Cache,
         ])
 
@@ -67,7 +67,7 @@ class CCH_SubnetGroups(object):
         R_Public = CCHCacheSubnetGroupPublic('CacheSubnetGroupPublic')
         R_Public.setup()
 
-        cfg.Resources.extend([
+        add_obj([
             R_Private,
             R_Public,
         ])
@@ -81,7 +81,7 @@ class CCH_SubnetGroups(object):
         O_Public.Value = Ref('CacheSubnetGroupPublic')
         O_Public.Export = Export('CacheSubnetGroupPublic')
 
-        cfg.Outputs.extend([
+        add_obj([
             O_Private,
             O_Public,
         ])
