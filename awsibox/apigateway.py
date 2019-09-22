@@ -64,6 +64,25 @@ class AGW_Account(object):
         ])
 
 
+class AGW_DomainName(object):
+    def __init__(self, key):
+        for n, v in getattr(cfg, key).iteritems():
+            resname = key + n
+            # resources
+            r_Domain = agw.DomainName(resname)
+            auto_get_props(r_Domain, v, recurse=True)
+
+            # outputs
+            o_Domain = Output(resname)
+            o_Domain.Value = Ref(resname)
+            o_Domain.Export = Export(resname)
+
+            add_obj([
+                r_Domain,
+                o_Domain,
+            ])
+
+
 class AGW_UsagePlans(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).iteritems():

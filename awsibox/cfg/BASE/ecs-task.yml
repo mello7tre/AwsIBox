@@ -60,7 +60,7 @@ global:
         Value: get_endvalue('LaunchType')
     - LogDriver:
         Value: get_endvalue('LogDriver')
-  ClusterStack: ecs-a-d
+  ClusterStack: ecs-a
   ContainerDefinitions:
     - 1:
         Cpu: 16
@@ -88,8 +88,3 @@ global:
     - Task:
         Principal: ecs-tasks.amazonaws.com
   Volumes: []
-
-prd:
-  ContainerDefinitions:
-    - 1:
-        Cpu: 256

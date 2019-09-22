@@ -33,7 +33,7 @@ ecs:
   ListenerRules:
     - 1:
         HostHeader: '*${EnvRole}.*'
-  LoadBalancerApplicationStack: alb-a-d
+  LoadBalancerApplicationStack: alb-a
   NetworkMode: bridge
   ScalingPolicyTrackings:
     - APPCpu:

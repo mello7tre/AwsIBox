@@ -126,6 +126,7 @@ CFG_TO_CLASS = OrderedDict([
     ('Cluster', {'module': 'ecs', 'class': 'ECS_Cluster'}),
     ('Service', {'module': 'ecs', 'class': 'ECS_Service'}),
     ('ApiGatewayAccount', {'module': 'apigateway', 'class': 'AGW_Account'}),
+    ('ApiGatewayDomainName', {'module': 'apigateway', 'class': 'AGW_DomainName'}),
     ('ApiGatewayResource', {'module': 'apigateway', 'class': 'AGW_RestApi'}),
     ('ApiGatewayStage', {'module': 'apigateway', 'class': 'AGW_Stages'}),
     ('ApiGatewayUsagePlan', {'module': 'apigateway', 'class': 'AGW_UsagePlans'}),
