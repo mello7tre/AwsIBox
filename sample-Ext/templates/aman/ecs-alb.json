@@ -1,0 +1,947 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Conditions": {
+        "ListenerLoadBalancerHttpPort": {
+            "Fn::Or": [
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "ListenerLoadBalancerHttpPortOverride"
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Ref": "ListenerLoadBalancerHttpPort"
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::And": [
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Condition": "ListenerLoadBalancerHttpPortOverride"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        80,
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "ListenerLoadBalancerHttpPortOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "ListenerLoadBalancerHttpPort"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "ListenerLoadBalancerHttpsPort": {
+            "Fn::Or": [
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "ListenerLoadBalancerHttpsPortOverride"
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Ref": "ListenerLoadBalancerHttpsPort"
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::And": [
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Condition": "ListenerLoadBalancerHttpsPortOverride"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        443,
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "ListenerLoadBalancerHttpsPortOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "ListenerLoadBalancerHttpsPort"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "LoadBalancerApplicationExternal": {
+            "Fn::Or": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LoadBalancerApplication"
+                        },
+                        "External"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LoadBalancerApplication"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "LoadBalancerApplicationInternal": {
+            "Fn::Or": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LoadBalancerApplication"
+                        },
+                        "Internal"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LoadBalancerApplication"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "LoadBalancerApplicationOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LoadBalancerApplication"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "LoadBalancerHttp2": {
+            "Fn::Or": [
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "LoadBalancerHttp2Override"
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Ref": "LoadBalancerHttp2"
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::And": [
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Condition": "LoadBalancerHttp2Override"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        true,
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "LoadBalancerHttp2Override": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LoadBalancerHttp2"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "LoadBalancerLog": {
+            "Fn::Or": [
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "LoadBalancerLogOverride"
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Ref": "LoadBalancerLog"
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::And": [
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Condition": "LoadBalancerLogOverride"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        "None",
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "LoadBalancerLogOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LoadBalancerLog"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "LoadBalancerSslCertificateAdHoc": {
+            "Fn::And": [
+                {
+                    "Condition": "ListenerLoadBalancerHttpsPort"
+                },
+                {
+                    "Fn::Equals": [
+                        true,
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "LoadBalancerSslCertificateOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LoadBalancerSslCertificate"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "RegionalCertificateArnOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "RegionalCertificateArn"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        }
+    },
+    "Description": "ecs-alb [alb]",
+    "Mappings": {
+        "dev": {
+            "eu-central-1": {
+                "HostedZoneIdLB": "Z215JYRZR1TBD5"
+            },
+            "eu-west-1": {
+                "HostedZoneIdLB": "Z32O12XQLNTSW2"
+            },
+            "us-east-1": {
+                "HostedZoneIdLB": "Z35SXDOTRQ7X7K"
+            }
+        },
+        "prd": {
+            "eu-central-1": {
+                "HostedZoneIdLB": "Z215JYRZR1TBD5"
+            },
+            "eu-west-1": {
+                "HostedZoneIdLB": "Z32O12XQLNTSW2"
+            },
+            "us-east-1": {
+                "HostedZoneIdLB": "Z35SXDOTRQ7X7K"
+            }
+        },
+        "stg": {
+            "eu-central-1": {
+                "HostedZoneIdLB": "Z215JYRZR1TBD5"
+            },
+            "eu-west-1": {
+                "HostedZoneIdLB": "Z32O12XQLNTSW2"
+            },
+            "us-east-1": {
+                "HostedZoneIdLB": "Z35SXDOTRQ7X7K"
+            }
+        }
+    },
+    "Outputs": {
+        "BrandDomain": {
+            "Value": "aman.arda"
+        },
+        "CertificateLoadBalancerAdHocExternal": {
+            "Condition": "LoadBalancerSslCertificateAdHoc",
+            "Value": {
+                "Ref": "CertificateLoadBalancerAdHocExternal"
+            }
+        },
+        "Env": {
+            "Value": {
+                "Ref": "Env"
+            }
+        },
+        "EnvRole": {
+            "Value": {
+                "Ref": "EnvRole"
+            }
+        },
+        "EnvStackVersion": {
+            "Value": {
+                "Ref": "EnvStackVersion"
+            }
+        },
+        "ListenerHttpDefaultExternal": {
+            "Condition": "LoadBalancerApplicationExternal",
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "ListenerHttpDefaultExternal-${AWS::StackName}"
+                }
+            },
+            "Value": {
+                "Ref": "ListenerHttpDefaultExternal"
+            }
+        },
+        "ListenerHttpDefaultInternal": {
+            "Condition": "LoadBalancerApplicationInternal",
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "ListenerHttpDefaultInternal-${AWS::StackName}"
+                }
+            },
+            "Value": {
+                "Ref": "ListenerHttpDefaultInternal"
+            }
+        },
+        "ListenerHttpsDefaultExternal": {
+            "Condition": "LoadBalancerApplicationExternal",
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "ListenerHttpsDefaultExternal-${AWS::StackName}"
+                }
+            },
+            "Value": {
+                "Ref": "ListenerHttpsDefaultExternal"
+            }
+        },
+        "LoadBalancerApplication": {
+            "Value": {
+                "Fn::If": [
+                    "LoadBalancerApplicationOverride",
+                    {
+                        "Ref": "LoadBalancerApplication"
+                    },
+                    "External,Internal"
+                ]
+            }
+        },
+        "LoadBalancerApplicationExternal": {
+            "Condition": "LoadBalancerApplicationExternal",
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "LoadBalancerApplicationExternal-${AWS::StackName}"
+                }
+            },
+            "Value": {
+                "Ref": "LoadBalancerApplicationExternal"
+            }
+        },
+        "LoadBalancerApplicationExternalDNS": {
+            "Condition": "LoadBalancerApplicationExternal",
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "LoadBalancerApplicationExternalDNS-${AWS::StackName}"
+                }
+            },
+            "Value": {
+                "Fn::GetAtt": [
+                    "LoadBalancerApplicationExternal",
+                    "DNSName"
+                ]
+            }
+        },
+        "LoadBalancerApplicationExternalFullName": {
+            "Condition": "LoadBalancerApplicationExternal",
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "LoadBalancerApplicationExternalFullName-${AWS::StackName}"
+                }
+            },
+            "Value": {
+                "Fn::GetAtt": [
+                    "LoadBalancerApplicationExternal",
+                    "LoadBalancerFullName"
+                ]
+            }
+        },
+        "LoadBalancerApplicationInternal": {
+            "Condition": "LoadBalancerApplicationInternal",
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "LoadBalancerApplicationInternal-${AWS::StackName}"
+                }
+            },
+            "Value": {
+                "Ref": "LoadBalancerApplicationInternal"
+            }
+        },
+        "LoadBalancerApplicationInternalDNS": {
+            "Condition": "LoadBalancerApplicationInternal",
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "LoadBalancerApplicationInternalDNS-${AWS::StackName}"
+                }
+            },
+            "Value": {
+                "Fn::GetAtt": [
+                    "LoadBalancerApplicationInternal",
+                    "DNSName"
+                ]
+            }
+        },
+        "LoadBalancerApplicationInternalFullName": {
+            "Condition": "LoadBalancerApplicationInternal",
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "LoadBalancerApplicationInternalFullName-${AWS::StackName}"
+                }
+            },
+            "Value": {
+                "Fn::GetAtt": [
+                    "LoadBalancerApplicationInternal",
+                    "LoadBalancerFullName"
+                ]
+            }
+        },
+        "LoadBalancerLog": {
+            "Value": {
+                "Fn::If": [
+                    "LoadBalancerLogOverride",
+                    {
+                        "Ref": "LoadBalancerLog"
+                    },
+                    "None"
+                ]
+            }
+        },
+        "LoadBalancerSslCertificate": {
+            "Value": {
+                "Fn::If": [
+                    "LoadBalancerSslCertificateOverride",
+                    {
+                        "Ref": "LoadBalancerSslCertificate"
+                    },
+                    true
+                ]
+            }
+        },
+        "StackType": {
+            "Value": "alb"
+        }
+    },
+    "Parameters": {
+        "Env": {
+            "AllowedValues": [
+                "dev",
+                "stg",
+                "prod"
+            ],
+            "Default": "dev",
+            "Description": "Environment",
+            "Type": "String"
+        },
+        "EnvRole": {
+            "AllowedPattern": "^[a-zA-Z0-9-_.]*$",
+            "Default": "",
+            "Description": "Service Role",
+            "Type": "String"
+        },
+        "EnvShort": {
+            "AllowedValues": [
+                "dev",
+                "stg",
+                "prd"
+            ],
+            "Default": "dev",
+            "Description": "Environment Short - NEVER CHANGE!",
+            "Type": "String"
+        },
+        "EnvStackVersion": {
+            "Default": "1",
+            "Description": "Stack version, if changed with UpdateMode=Cfn triggers cfn-hup",
+            "Type": "String"
+        },
+        "ListenerLoadBalancerHttpPort": {
+            "Default": "",
+            "Description": "Http Port where Load Balancer listen - empty for default based on env/role",
+            "Type": "String"
+        },
+        "ListenerLoadBalancerHttpsPort": {
+            "Default": "",
+            "Description": "Http Port where Load Balancer listen - empty for default based on env/role",
+            "Type": "String"
+        },
+        "LoadBalancerApplication": {
+            "AllowedValues": [
+                "External",
+                "Internal",
+                ""
+            ],
+            "Default": "",
+            "Description": "Application Load Balancer to conditionally create - empty for default based on role - need to be already defined",
+            "Type": "String"
+        },
+        "LoadBalancerHttp2": {
+            "AllowedValues": [
+                "",
+                "true",
+                "false"
+            ],
+            "Default": "",
+            "Description": "Load Balancer Http2 - empty for default based on env/role",
+            "Type": "String"
+        },
+        "LoadBalancerLog": {
+            "Default": "",
+            "Description": "Load Balancer EmitInterval - None to disable - empty for default based on env/role",
+            "Type": "String"
+        },
+        "LoadBalancerSslCertificate": {
+            "Default": "",
+            "Description": "Load Balancer External Ssl Certificate - None to disable - empty for default based on env/role",
+            "Type": "String"
+        },
+        "RegionalCertificateArn": {
+            "Default": "",
+            "Description": "LoadBalancer CertificateArn - empty for default based on env/role",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "CertificateLoadBalancerAdHocExternal": {
+            "Condition": "LoadBalancerSslCertificateAdHoc",
+            "Properties": {
+                "DomainName": {
+                    "Fn::Sub": "${AWS::StackName}.${EnvRole}${AWS::Region}.${EnvShort}.aman.arda"
+                },
+                "DomainValidationOptions": [
+                    {
+                        "DomainName": {
+                            "Fn::Sub": "${AWS::StackName}.${EnvRole}${AWS::Region}.${EnvShort}.aman.arda"
+                        },
+                        "ValidationDomain": {
+                            "Fn::Sub": "${EnvShort}.aman.arda"
+                        }
+                    },
+                    {
+                        "DomainName": {
+                            "Fn::Sub": "${EnvRole}.${EnvShort}.aman.arda"
+                        },
+                        "ValidationDomain": {
+                            "Fn::Sub": "${EnvShort}.aman.arda"
+                        }
+                    },
+                    {
+                        "DomainName": {
+                            "Fn::Sub": "${EnvRole}.${AWS::Region}.${EnvShort}.aman.arda"
+                        },
+                        "ValidationDomain": {
+                            "Fn::Sub": "${EnvShort}.aman.arda"
+                        }
+                    }
+                ],
+                "SubjectAlternativeNames": [
+                    {
+                        "Fn::Sub": "${EnvRole}.${EnvShort}.aman.arda"
+                    },
+                    {
+                        "Fn::Sub": "${EnvRole}.${AWS::Region}.${EnvShort}.aman.arda"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "LoadBalancerAdHocExternal"
+                    }
+                ],
+                "ValidationMethod": "EMAIL"
+            },
+            "Type": "AWS::CertificateManager::Certificate"
+        },
+        "ListenerHttpDefaultExternal": {
+            "Condition": "LoadBalancerApplicationExternal",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "TargetGroupDefaultExternal"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "LoadBalancerApplicationExternal"
+                },
+                "Port": {
+                    "Fn::If": [
+                        "ListenerLoadBalancerHttpPortOverride",
+                        {
+                            "Ref": "ListenerLoadBalancerHttpPort"
+                        },
+                        80
+                    ]
+                },
+                "Protocol": "HTTP"
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::Listener"
+        },
+        "ListenerHttpDefaultInternal": {
+            "Condition": "LoadBalancerApplicationInternal",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "TargetGroupDefaultInternal"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "LoadBalancerApplicationInternal"
+                },
+                "Port": {
+                    "Fn::If": [
+                        "ListenerLoadBalancerHttpPortOverride",
+                        {
+                            "Ref": "ListenerLoadBalancerHttpPort"
+                        },
+                        80
+                    ]
+                },
+                "Protocol": "HTTP"
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::Listener"
+        },
+        "ListenerHttpsDefaultExternal": {
+            "Condition": "LoadBalancerApplicationExternal",
+            "Properties": {
+                "Certificates": [
+                    {
+                        "CertificateArn": {
+                            "Fn::If": [
+                                "RegionalCertificateArnOverride",
+                                {
+                                    "Ref": "RegionalCertificateArn"
+                                },
+                                {
+                                    "Fn::FindInMap": [
+                                        {
+                                            "Ref": "EnvShort"
+                                        },
+                                        {
+                                            "Ref": "AWS::Region"
+                                        },
+                                        "RegionalCertificateArn"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "DefaultActions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "TargetGroupDefaultExternal"
+                        },
+                        "Type": "forward"
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "LoadBalancerApplicationExternal"
+                },
+                "Port": {
+                    "Fn::If": [
+                        "ListenerLoadBalancerHttpsPortOverride",
+                        {
+                            "Ref": "ListenerLoadBalancerHttpsPort"
+                        },
+                        443
+                    ]
+                },
+                "Protocol": "HTTPS"
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::Listener"
+        },
+        "LoadBalancerApplicationExternal": {
+            "Condition": "LoadBalancerApplicationExternal",
+            "Properties": {
+                "LoadBalancerAttributes": [
+                    {
+                        "Fn::If": [
+                            "LoadBalancerLog",
+                            {
+                                "Key": "access_logs.s3.bucket",
+                                "Value": {
+                                    "Fn::Sub": "${AWS::Region}-arda-aman-${EnvShort}-logs"
+                                }
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    },
+                    {
+                        "Fn::If": [
+                            "LoadBalancerLog",
+                            {
+                                "Key": "access_logs.s3.enabled",
+                                "Value": true
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    },
+                    {
+                        "Fn::If": [
+                            "LoadBalancerLog",
+                            {
+                                "Key": "access_logs.s3.prefix",
+                                "Value": {
+                                    "Fn::Sub": "${EnvRole}.${AWS::StackName}"
+                                }
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    },
+                    {
+                        "Fn::If": [
+                            "LoadBalancerHttp2",
+                            {
+                                "Key": "routing.http2.enabled",
+                                "Value": {
+                                    "Fn::If": [
+                                        "LoadBalancerHttp2Override",
+                                        {
+                                            "Ref": "LoadBalancerHttp2"
+                                        },
+                                        true
+                                    ]
+                                }
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    }
+                ],
+                "Scheme": "internet-facing",
+                "SecurityGroups": [
+                    {
+                        "Fn::ImportValue": "SecurityGroupLoadBalancerApplicationExternal"
+                    }
+                ],
+                "Subnets": {
+                    "Fn::Split": [
+                        ",",
+                        {
+                            "Fn::ImportValue": "SubnetsPublic"
+                        }
+                    ]
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer"
+        },
+        "LoadBalancerApplicationInternal": {
+            "Condition": "LoadBalancerApplicationInternal",
+            "Properties": {
+                "LoadBalancerAttributes": [
+                    {
+                        "Fn::If": [
+                            "LoadBalancerLog",
+                            {
+                                "Key": "access_logs.s3.bucket",
+                                "Value": {
+                                    "Fn::Sub": "${AWS::Region}-arda-aman-${EnvShort}-logs"
+                                }
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    },
+                    {
+                        "Fn::If": [
+                            "LoadBalancerLog",
+                            {
+                                "Key": "access_logs.s3.enabled",
+                                "Value": true
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    },
+                    {
+                        "Fn::If": [
+                            "LoadBalancerLog",
+                            {
+                                "Key": "access_logs.s3.prefix",
+                                "Value": {
+                                    "Fn::Sub": "${EnvRole}.${AWS::StackName}"
+                                }
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    },
+                    {
+                        "Fn::If": [
+                            "LoadBalancerHttp2",
+                            {
+                                "Key": "routing.http2.enabled",
+                                "Value": {
+                                    "Fn::If": [
+                                        "LoadBalancerHttp2Override",
+                                        {
+                                            "Ref": "LoadBalancerHttp2"
+                                        },
+                                        true
+                                    ]
+                                }
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    }
+                ],
+                "Scheme": "internal",
+                "SecurityGroups": [
+                    {
+                        "Fn::ImportValue": "SecurityGroupLoadBalancerApplicationInternal"
+                    }
+                ],
+                "Subnets": {
+                    "Fn::Split": [
+                        ",",
+                        {
+                            "Fn::ImportValue": "SubnetsPrivate"
+                        }
+                    ]
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer"
+        },
+        "TargetGroupDefaultExternal": {
+            "Condition": "LoadBalancerApplicationExternal",
+            "Properties": {
+                "Port": 80,
+                "Protocol": "HTTP",
+                "VpcId": {
+                    "Fn::ImportValue": "VpcId"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        },
+        "TargetGroupDefaultInternal": {
+            "Condition": "LoadBalancerApplicationInternal",
+            "Properties": {
+                "Port": 80,
+                "Protocol": "HTTP",
+                "VpcId": {
+                    "Fn::ImportValue": "VpcId"
+                }
+            },
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        }
+    }
+}

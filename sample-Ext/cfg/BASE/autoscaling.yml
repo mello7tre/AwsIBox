@@ -1,0 +1,7 @@
+global:
+
+prd:
+  Capacity:
+    Desired: 2
+    Min: 2
+    Max: 9

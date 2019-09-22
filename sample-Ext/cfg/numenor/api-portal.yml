@@ -1,0 +1,34 @@
+api-portal:
+  StackType: ecs
+  StackName: apt
+  ContainerDefinitions:
+    - 1:
+        Command: ['nginx']
+        Links: ['api-portal-node:node']
+        Memory: 64
+        ContainerPort: 80
+        Protocol: HTTP
+    - 2:
+        Command: ['node', '/myapp/src/server']
+        Cpu: 16
+        Envs:
+          - NODEENV:
+              Name: NODE_ENV
+              Value: production
+        Memory: 768
+        MemoryReservation: 640
+        Name: node
+        Protocol: HTTP
+  HealthCheckPath: /status
+  ListenerLoadBalancerHttpsPort: 2010
+  ListenerRules:
+    - 1:
+        Priority: 2010
+  LoadBalancerApplication: ['External', 'Internal']
+  RepoName: arda.numenor.api.portal
+  RecordSet: ['External', 'Internal']
+
+prd:
+  ContainerDefinitions:
+    - 2:
+        Cpu: 512

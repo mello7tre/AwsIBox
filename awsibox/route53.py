@@ -158,9 +158,9 @@ class R53HostedZoneEnvExtra1(r53.HostedZone):
     def setup(self):
         self.Condition = self.title  # Ex. HostedZoneEnvExtra1
         self.HostedZoneConfig = r53.HostedZoneConfiguration(
-            Comment=Sub('${EnvShort} attico public zone')
+            Comment=get_subvalue('${EnvShort} ${1M} public zone', 'HostedZoneEnvExtra1')
         )
-        self.Name = Sub('${EnvShort}.attico.it')
+        self.Name = get_subvalue('${EnvShort}.${1M}', 'HostedZoneEnvExtra1')
 
 # E - ROUTE53 #
 
@@ -352,15 +352,10 @@ class R53_HostedZones(object):
         # Conditions
         do_no_override(True)
         C_Env = get_condition('HostedZoneEnv', 'not_equals', 'None')
-        
-        C_EnvExtra1 = {'HostedZoneEnvExtra1': Not(
-            Equals(get_endvalue('HostedZoneEnvExtra1'), 'None')
-        )}
         do_no_override(False)
 
         add_obj([
             C_Env,
-            C_EnvExtra1,
         ])
 
         # Resources
@@ -370,13 +365,26 @@ class R53_HostedZones(object):
         R_Env = R53HostedZoneEnv('HostedZoneEnv')
         R_Env.setup()
 
-        R_EnvExtra1 = R53HostedZoneEnvExtra1('HostedZoneEnvExtra1')
-        R_EnvExtra1.setup()
+        try: cfg.HostedZoneEnvExtra1
+        except:
+            pass
+        else:
+            # Conditions
+            do_no_override(True)
+            C_EnvExtra1 = {'HostedZoneEnvExtra1': Not(
+                Equals(get_endvalue('HostedZoneEnvExtra1'), 'None')
+            )}
+            add_obj(C_EnvExtra1)
+            do_no_override(False)
+
+            # Resources
+            R_EnvExtra1 = R53HostedZoneEnvExtra1('HostedZoneEnvExtra1')
+            R_EnvExtra1.setup()
+            add_obj(R_EnvExtra1)
 
         add_obj([
             R_Private,
             R_Env,
-            R_EnvExtra1,
         ])
 
         # Outputs
