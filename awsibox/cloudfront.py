@@ -396,6 +396,39 @@ class CF_CloudFront(object):
         CloudFrontDistribution.DistributionConfig = DistributionConfig
         CloudFrontDistribution.DistributionConfig.Aliases = cloudfrontaliasextra
 
+        Origins = []
+        try: cfg.CloudFrontOrigins
+        except:
+            pass
+        else:
+            for n, v in cfg.CloudFrontOrigins.iteritems():
+                name = 'CloudFrontOrigins%s' % n
+                
+                # parameters
+                p_Origin = Parameter('CloudFrontOrigins' + n + 'DomainName')
+                p_Origin.Description = 'Origin - empty for default based on env/role'
+    
+                p_OriginHTTPSPort = Parameter('CloudFrontOrigins' + n + 'HTTPSPort')
+                p_OriginHTTPSPort.Description = 'Origin - empty for default based on env/role'
+    
+                add_obj([
+                    p_Origin,
+                    p_OriginHTTPSPort,
+                ])
+    
+                Origin = CFOriginCLF(name)
+                Origin.setup(index=n)
+                Origins.append(Origin)
+
+        CloudFrontDistribution.DistributionConfig.Origins = Origins
+        CloudFrontDistribution.DistributionConfig.Comment = get_endvalue('CloudFrontComment')
+
+        R_CloudFrontDistribution = CloudFrontDistribution
+
+        add_obj([
+            R_CloudFrontDistribution,
+        ])
+
         self.CloudFrontDistribution = CloudFrontDistribution
 
 
@@ -475,14 +508,8 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
 
         Origin = CFOriginEC2ECS()
         Origin.setup()
-        self.CloudFrontDistribution.DistributionConfig.Origins = [Origin]
+        self.CloudFrontDistribution.DistributionConfig.Origins.append(Origin)
         self.CloudFrontDistribution.DistributionConfig.Comment = Sub('${AWS::StackName}-${EnvRole}')
-
-        R_CloudFrontDistribution = self.CloudFrontDistribution
-
-        add_obj([
-            R_CloudFrontDistribution,
-        ])
 
         R53_RecordSetCloudFront()
 
@@ -541,26 +568,6 @@ class CF_CloudFrontCLF(CF_CloudFront):
     def __init__(self, key):
         super(CF_CloudFrontCLF, self).__init__()
 
-        Origins = []
-        for n, v in cfg.CloudFrontOrigins.iteritems():
-            name = 'CloudFrontOrigins%s' % n
-            
-            # parameters
-            p_Origin = Parameter('CloudFrontOrigins' + n + 'DomainName')
-            p_Origin.Description = 'Origin - empty for default based on env/role'
-
-            p_OriginHTTPSPort = Parameter('CloudFrontOrigins' + n + 'HTTPSPort')
-            p_OriginHTTPSPort.Description = 'Origin - empty for default based on env/role'
-
-            add_obj([
-                p_Origin,
-                p_OriginHTTPSPort,
-            ])
-
-            Origin = CFOriginCLF(name)
-            Origin.setup(index=n)
-            Origins.append(Origin)
-
         CustomErrorResponses = []
         if hasattr(cfg.CustomErrorResponses, 'iteritems'):
             for n, v in cfg.CustomErrorResponses.iteritems():
@@ -569,12 +576,4 @@ class CF_CloudFrontCLF(CF_CloudFront):
                 CustomErrorResponse.setup(key=v)
                 CustomErrorResponses.append(CustomErrorResponse)
 
-        self.CloudFrontDistribution.DistributionConfig.Origins = Origins
         self.CloudFrontDistribution.DistributionConfig.CustomErrorResponses = CustomErrorResponses
-        self.CloudFrontDistribution.DistributionConfig.Comment = get_endvalue('CloudFrontComment')
-
-        R_CloudFrontDistribution = self.CloudFrontDistribution
-
-        add_obj([
-            R_CloudFrontDistribution,
-        ])
