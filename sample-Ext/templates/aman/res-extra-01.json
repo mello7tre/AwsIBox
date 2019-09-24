@@ -578,6 +578,17 @@
                 ]
             }
         },
+        "SecurityGroupElasticSearch": {
+            "Export": {
+                "Name": "SecurityGroupElasticSearch"
+            },
+            "Value": {
+                "Fn::GetAtt": [
+                    "SecurityGroupElasticSearchClient",
+                    "GroupId"
+                ]
+            }
+        },
         "SecurityGroupRDS": {
             "Export": {
                 "Name": "SecurityGroupRDS"
@@ -1402,6 +1413,15 @@
             "Condition": "EFSFileSystemName",
             "Properties": {
                 "GroupDescription": "Rule to access EFS FileSystem Name",
+                "VpcId": {
+                    "Fn::ImportValue": "VpcId"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "SecurityGroupElasticSearchClient": {
+            "Properties": {
+                "GroupDescription": "Assign to ElasticSearch Clients",
                 "VpcId": {
                     "Fn::ImportValue": "VpcId"
                 }

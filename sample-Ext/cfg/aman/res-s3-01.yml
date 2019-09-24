@@ -1,0 +1,5 @@
+res-s3-01:
+  Bucket:
+    - ElasticSearch:
+        Enabled: True
+        Create: True

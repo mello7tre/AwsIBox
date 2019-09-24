@@ -1,9 +1,191 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
+    "Conditions": {
+        "BucketElasticSearch": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        true,
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "BucketElasticSearchAccountsROdev": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        "None",
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "BucketElasticSearchAccountsROprd": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        "None",
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "BucketElasticSearchAccountsROstg": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        "None",
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "BucketElasticSearchCors": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        "None",
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "BucketElasticSearchPolicyRO": {
+            "Fn::Or": [
+                {
+                    "Fn::Equals": [
+                        "1",
+                        "0"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        "1",
+                        "0"
+                    ]
+                },
+                {
+                    "Condition": "BucketElasticSearchAccountsROdev"
+                },
+                {
+                    "Condition": "BucketElasticSearchAccountsROstg"
+                },
+                {
+                    "Condition": "BucketElasticSearchAccountsROprd"
+                }
+            ]
+        },
+        "BucketElasticSearchReplica": {
+            "Fn::Or": [
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "BucketElasticSearch"
+                        },
+                        {
+                            "Condition": "BucketElasticSearchReplicaDstRegionOverride"
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Ref": "BucketElasticSearchReplicaDstRegion"
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "BucketElasticSearch"
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Condition": "BucketElasticSearchReplicaDstRegionOverride"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        "None",
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "BucketElasticSearchReplicaDstOwner": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        "None",
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "BucketElasticSearchReplicaDstRegionOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "BucketElasticSearchReplicaDstRegion"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "BucketElasticSearchReplicaSrcAccount": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        "None",
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "BucketElasticSearchVersioning": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        "None",
+                        "None"
+                    ]
+                }
+            ]
+        }
+    },
     "Description": "res-s3-01 [res]",
     "Outputs": {
         "BrandDomain": {
             "Value": "aman.arda"
+        },
+        "BucketElasticSearch": {
+            "Value": {
+                "Fn::If": [
+                    "BucketElasticSearch",
+                    {
+                        "Ref": "BucketElasticSearch"
+                    },
+                    {
+                        "Fn::Sub": "${AWS::Region}-arda-aman-${EnvShort}-elasticsearch"
+                    }
+                ]
+            }
         },
         "Env": {
             "Value": {
@@ -25,6 +207,16 @@
         }
     },
     "Parameters": {
+        "BucketElasticSearchReplicaDstRegion": {
+            "AllowedValues": [
+                "",
+                "None",
+                "eu-central-1"
+            ],
+            "Default": "",
+            "Description": "Region to Replicate Bucket - None to disable - empty for default based on env/role",
+            "Type": "String"
+        },
         "Env": {
             "AllowedValues": [
                 "dev",
@@ -57,5 +249,411 @@
             "Type": "String"
         }
     },
-    "Resources": {}
+    "Resources": {
+        "BucketElasticSearch": {
+            "Condition": "BucketElasticSearch",
+            "Properties": {
+                "BucketName": {
+                    "Fn::Sub": "${AWS::Region}-arda-aman-${EnvShort}-elasticsearch"
+                },
+                "CorsConfiguration": {
+                    "Fn::If": [
+                        "BucketElasticSearchCors",
+                        {
+                            "CorsRules": [
+                                {
+                                    "AllowedHeaders": [
+                                        "Authorization"
+                                    ],
+                                    "AllowedMethods": [
+                                        "GET"
+                                    ],
+                                    "AllowedOrigins": [
+                                        "*"
+                                    ],
+                                    "MaxAge": 3000
+                                }
+                            ]
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "ReplicationConfiguration": {
+                    "Fn::If": [
+                        "BucketElasticSearchReplica",
+                        {
+                            "Role": {
+                                "Fn::GetAtt": [
+                                    "RoleBucketElasticSearchReplica",
+                                    "Arn"
+                                ]
+                            },
+                            "Rules": [
+                                {
+                                    "Destination": {
+                                        "AccessControlTranslation": {
+                                            "Fn::If": [
+                                                "BucketElasticSearchReplicaDstOwner",
+                                                {
+                                                    "Owner": "Destination"
+                                                },
+                                                {
+                                                    "Ref": "AWS::NoValue"
+                                                }
+                                            ]
+                                        },
+                                        "Account": {
+                                            "Fn::If": [
+                                                "BucketElasticSearchReplicaDstOwner",
+                                                "None",
+                                                {
+                                                    "Ref": "AWS::NoValue"
+                                                }
+                                            ]
+                                        },
+                                        "Bucket": {
+                                            "Fn::Sub": [
+                                                "arn:aws:s3:::${BucketElasticSearchReplicaDstRegion}-arda-aman-${EnvShort}-elasticsearch",
+                                                {
+                                                    "BucketElasticSearchReplicaDstRegion": {
+                                                        "Fn::If": [
+                                                            "BucketElasticSearchReplicaDstRegionOverride",
+                                                            {
+                                                                "Ref": "BucketElasticSearchReplicaDstRegion"
+                                                            },
+                                                            "None"
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "Prefix": "",
+                                    "Status": "Enabled"
+                                }
+                            ]
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "VersioningConfiguration": {
+                    "Fn::If": [
+                        "BucketElasticSearchVersioning",
+                        {
+                            "Status": "None"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                }
+            },
+            "Type": "AWS::S3::Bucket"
+        },
+        "BucketPolicyElasticSearch": {
+            "Condition": "BucketElasticSearch",
+            "Properties": {
+                "Bucket": {
+                    "Fn::Sub": "${AWS::Region}-arda-aman-${EnvShort}-elasticsearch"
+                },
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "s3:GetBucketLocation"
+                            ],
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
+                                }
+                            },
+                            "Resource": {
+                                "Fn::Sub": "arn:aws:s3:::${AWS::Region}-arda-aman-${EnvShort}-elasticsearch"
+                            },
+                            "Sid": "Base"
+                        },
+                        {
+                            "Fn::If": [
+                                "BucketElasticSearchReplicaSrcAccount",
+                                {
+                                    "Action": [
+                                        "s3:ReplicateObject",
+                                        "s3:ReplicateDelete",
+                                        "s3:ObjectOwnerOverrideToBucketOwner"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Principal": {
+                                        "AWS": [
+                                            {
+                                                "Fn::Sub": [
+                                                    "arn:aws:iam::${BucketElasticSearchReplicaSrcAccount}:root",
+                                                    {
+                                                        "BucketElasticSearchReplicaSrcAccount": "None"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "Resource": [
+                                        {
+                                            "Fn::Sub": "arn:aws:s3:::${AWS::Region}-arda-aman-${EnvShort}-elasticsearch/*"
+                                        }
+                                    ],
+                                    "Sid": "AllowReplica"
+                                },
+                                {
+                                    "Ref": "AWS::NoValue"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::If": [
+                                "BucketElasticSearchPolicyRO",
+                                {
+                                    "Action": [
+                                        "s3:ListBucket",
+                                        "s3:GetBucketLocation",
+                                        "s3:ListBucketMultipartUploads",
+                                        "s3:ListBucketVersions"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Principal": {
+                                        "AWS": [
+                                            {
+                                                "Fn::If": [
+                                                    "BucketElasticSearchAccountsROdev",
+                                                    {
+                                                        "Fn::Sub": [
+                                                            "arn:aws:iam::${BucketElasticSearchAccountsROdev}:root",
+                                                            {
+                                                                "BucketElasticSearchAccountsROdev": "None"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "Ref": "AWS::NoValue"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "Fn::If": [
+                                                    "BucketElasticSearchAccountsROstg",
+                                                    {
+                                                        "Fn::Sub": [
+                                                            "arn:aws:iam::${BucketElasticSearchAccountsROstg}:root",
+                                                            {
+                                                                "BucketElasticSearchAccountsROstg": "None"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "Ref": "AWS::NoValue"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "Fn::If": [
+                                                    "BucketElasticSearchAccountsROprd",
+                                                    {
+                                                        "Fn::Sub": [
+                                                            "arn:aws:iam::${BucketElasticSearchAccountsROprd}:root",
+                                                            {
+                                                                "BucketElasticSearchAccountsROprd": "None"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "Ref": "AWS::NoValue"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "Resource": [
+                                        {
+                                            "Fn::Sub": "arn:aws:s3:::${AWS::Region}-arda-aman-${EnvShort}-elasticsearch"
+                                        }
+                                    ],
+                                    "Sid": "AllowListBucket"
+                                },
+                                {
+                                    "Ref": "AWS::NoValue"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::If": [
+                                "BucketElasticSearchPolicyRO",
+                                {
+                                    "Action": [
+                                        "s3:GetObject",
+                                        "s3:ListMultipartUploadParts"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Principal": {
+                                        "AWS": [
+                                            {
+                                                "Fn::If": [
+                                                    "BucketElasticSearchAccountsROdev",
+                                                    {
+                                                        "Fn::Sub": [
+                                                            "arn:aws:iam::${BucketElasticSearchAccountsROdev}:root",
+                                                            {
+                                                                "BucketElasticSearchAccountsROdev": "None"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "Ref": "AWS::NoValue"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "Fn::If": [
+                                                    "BucketElasticSearchAccountsROstg",
+                                                    {
+                                                        "Fn::Sub": [
+                                                            "arn:aws:iam::${BucketElasticSearchAccountsROstg}:root",
+                                                            {
+                                                                "BucketElasticSearchAccountsROstg": "None"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "Ref": "AWS::NoValue"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "Fn::If": [
+                                                    "BucketElasticSearchAccountsROprd",
+                                                    {
+                                                        "Fn::Sub": [
+                                                            "arn:aws:iam::${BucketElasticSearchAccountsROprd}:root",
+                                                            {
+                                                                "BucketElasticSearchAccountsROprd": "None"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "Ref": "AWS::NoValue"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "Resource": [
+                                        {
+                                            "Fn::Sub": "arn:aws:s3:::${AWS::Region}-arda-aman-${EnvShort}-elasticsearch/*"
+                                        }
+                                    ],
+                                    "Sid": "AllowGetObject"
+                                },
+                                {
+                                    "Ref": "AWS::NoValue"
+                                }
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                }
+            },
+            "Type": "AWS::S3::BucketPolicy"
+        },
+        "IAMPolicyReplicaBucketElasticSearch": {
+            "Condition": "BucketElasticSearchReplica",
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "s3:GetReplicationConfiguration",
+                                "s3:ListBucket"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::Sub": "arn:aws:s3:::${AWS::Region}-arda-aman-${EnvShort}-elasticsearch"
+                                }
+                            ]
+                        },
+                        {
+                            "Action": [
+                                "s3:GetObjectVersion",
+                                "s3:GetObjectVersionAcl",
+                                "s3:GetObjectVersionTagging"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::Sub": "arn:aws:s3:::${AWS::Region}-arda-aman-${EnvShort}-elasticsearch/*"
+                                }
+                            ]
+                        },
+                        {
+                            "Action": [
+                                "s3:ReplicateObject",
+                                "s3:ReplicateDelete",
+                                "s3:ReplicateTags",
+                                "s3:ObjectOwnerOverrideToBucketOwner"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::Sub": [
+                                        "arn:aws:s3:::${BucketElasticSearchReplicaDstRegion}-arda-aman-${EnvShort}-elasticsearch/*",
+                                        {
+                                            "BucketElasticSearchReplicaDstRegion": {
+                                                "Fn::If": [
+                                                    "BucketElasticSearchReplicaDstRegionOverride",
+                                                    {
+                                                        "Ref": "BucketElasticSearchReplicaDstRegion"
+                                                    },
+                                                    "None"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "IAMPolicyReplicaBucketElasticSearch",
+                "Roles": [
+                    {
+                        "Ref": "RoleBucketElasticSearchReplica"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "RoleBucketElasticSearchReplica": {
+            "Condition": "BucketElasticSearchReplica",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "s3.amazonaws.com"
+                                ]
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "Path": "/"
+            },
+            "Type": "AWS::IAM::Role"
+        }
+    }
 }

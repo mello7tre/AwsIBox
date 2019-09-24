@@ -6,6 +6,7 @@ global:
     AppRepository: '${AWS::Region}-arda-aman-app-repository'
     AppData: '${AWS::Region}-arda-aman-app-data'
     Logs: '${AWS::Region}-arda-aman-${EnvShort}-logs'
+    ElasticSearch: '${AWS::Region}-arda-aman-${EnvShort}-elasticsearch'
   HostedZoneNameEnv: '${EnvShort}.aman.arda'
   HostedZoneNamePrivate: 'internal.aman.arda'
   HostedZoneNameRegionEnv: '${AWS::Region}.${EnvShort}.aman.arda'

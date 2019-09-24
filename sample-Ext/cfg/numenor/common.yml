@@ -6,6 +6,7 @@ global:
     AppRepository: '${AWS::Region}-arda-numenor-app-repository'
     AppData: '${AWS::Region}-arda-numenor-app-data'
     Logs: '${AWS::Region}-arda-numenor-${EnvShort}-logs'
+    Arrows: '${AWS::Region}-arda-numenor-${EnvShort}-arrows'
   HostedZoneNameEnv: '${EnvShort}.numenor.arda'
   HostedZoneNamePrivate: 'internal.numenor.arda'
   HostedZoneNameRegionEnv: '${AWS::Region}.${EnvShort}.numenor.arda'

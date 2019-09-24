@@ -1,0 +1,1881 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Conditions": {
+        "ClusterStackOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "ClusterStack"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "ContainerDefinitions1CpuOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "ContainerDefinitions1Cpu"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "ContainerDefinitions1MemoryOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "ContainerDefinitions1Memory"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "CpuOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Cpu"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "CpuTask": {
+            "Fn::Or": [
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "CpuOverride"
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Ref": "Cpu"
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::And": [
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Condition": "CpuOverride"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        "None",
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "DockerLabelLastUpdateOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "DockerLabelLastUpdate"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "EventsRuleECSRunTaskScheduleExpressionOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "EventsRuleECSRunTaskScheduleExpression"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "EventsRuleECSRunTaskStateOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "EventsRuleECSRunTaskState"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "LaunchTypeFarGate": {
+            "Fn::Or": [
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "LaunchTypeOverride"
+                        },
+                        {
+                            "Fn::Equals": [
+                                {
+                                    "Ref": "LaunchType"
+                                },
+                                "FARGATE"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::And": [
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Condition": "LaunchTypeOverride"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::Equals": [
+                                "EC2",
+                                "FARGATE"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "LaunchTypeOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LaunchType"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "LogConfiguration": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        "awslogs",
+                        "None"
+                    ]
+                }
+            ]
+        },
+        "LogDriverOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "LogDriver"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "MemoryOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Memory"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "NetworkModeAwsVpc": {
+            "Fn::Or": [
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "NetworkModeOverride"
+                        },
+                        {
+                            "Fn::Equals": [
+                                {
+                                    "Ref": "NetworkMode"
+                                },
+                                "awsvpc"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::And": [
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Condition": "NetworkModeOverride"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::Equals": [
+                                "awsvpc",
+                                "awsvpc"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Condition": "LaunchTypeFarGate"
+                }
+            ]
+        },
+        "NetworkModeOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "NetworkMode"
+                        },
+                        ""
+                    ]
+                }
+            ]
+        },
+        "NetworkModeStandard": {
+            "Fn::Or": [
+                {
+                    "Fn::And": [
+                        {
+                            "Condition": "NetworkModeOverride"
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Ref": "NetworkMode"
+                                        },
+                                        "awsvpc"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Fn::And": [
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Condition": "NetworkModeOverride"
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::Not": [
+                                {
+                                    "Fn::Equals": [
+                                        "awsvpc",
+                                        "awsvpc"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "SecurityGroup0": {
+            "Fn::Not": [
+                {
+                    "Fn::Or": [
+                        {
+                            "Fn::And": [
+                                {
+                                    "Condition": "SecurityGroupsOverride"
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Fn::Select": [
+                                                0,
+                                                {
+                                                    "Fn::Split": [
+                                                        ",",
+                                                        {
+                                                            "Ref": "SecurityGroups"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::And": [
+                                {
+                                    "Fn::Not": [
+                                        {
+                                            "Condition": "SecurityGroupsOverride"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Fn::Select": [
+                                                0,
+                                                {
+                                                    "Fn::Split": [
+                                                        ",",
+                                                        "BaseInstance,Elves,None,None"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "SecurityGroup1": {
+            "Fn::Not": [
+                {
+                    "Fn::Or": [
+                        {
+                            "Fn::And": [
+                                {
+                                    "Condition": "SecurityGroupsOverride"
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Fn::Select": [
+                                                1,
+                                                {
+                                                    "Fn::Split": [
+                                                        ",",
+                                                        {
+                                                            "Ref": "SecurityGroups"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::And": [
+                                {
+                                    "Fn::Not": [
+                                        {
+                                            "Condition": "SecurityGroupsOverride"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Fn::Select": [
+                                                1,
+                                                {
+                                                    "Fn::Split": [
+                                                        ",",
+                                                        "BaseInstance,Elves,None,None"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "SecurityGroup2": {
+            "Fn::Not": [
+                {
+                    "Fn::Or": [
+                        {
+                            "Fn::And": [
+                                {
+                                    "Condition": "SecurityGroupsOverride"
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Fn::Select": [
+                                                2,
+                                                {
+                                                    "Fn::Split": [
+                                                        ",",
+                                                        {
+                                                            "Ref": "SecurityGroups"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::And": [
+                                {
+                                    "Fn::Not": [
+                                        {
+                                            "Condition": "SecurityGroupsOverride"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Fn::Select": [
+                                                2,
+                                                {
+                                                    "Fn::Split": [
+                                                        ",",
+                                                        "BaseInstance,Elves,None,None"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "SecurityGroup3": {
+            "Fn::Not": [
+                {
+                    "Fn::Or": [
+                        {
+                            "Fn::And": [
+                                {
+                                    "Condition": "SecurityGroupsOverride"
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Fn::Select": [
+                                                3,
+                                                {
+                                                    "Fn::Split": [
+                                                        ",",
+                                                        {
+                                                            "Ref": "SecurityGroups"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "Fn::And": [
+                                {
+                                    "Fn::Not": [
+                                        {
+                                            "Condition": "SecurityGroupsOverride"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Fn::Equals": [
+                                        {
+                                            "Fn::Select": [
+                                                3,
+                                                {
+                                                    "Fn::Split": [
+                                                        ",",
+                                                        "BaseInstance,Elves,None,None"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        "None"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "SecurityGroupsOverride": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "SecurityGroups"
+                        },
+                        ",,,"
+                    ]
+                }
+            ]
+        }
+    },
+    "Description": "loader-arrows [tsk]",
+    "Mappings": {
+        "dev": {
+            "eu-central-1": {
+                "ContainerDefinitions1Cpu": 16,
+                "EventsRuleECSRunTaskState": "DISABLED"
+            },
+            "eu-west-1": {
+                "ContainerDefinitions1Cpu": 16,
+                "EventsRuleECSRunTaskState": "DISABLED"
+            },
+            "us-east-1": {
+                "ContainerDefinitions1Cpu": 16,
+                "EventsRuleECSRunTaskState": "DISABLED"
+            }
+        },
+        "prd": {
+            "eu-central-1": {
+                "ContainerDefinitions1Cpu": 256,
+                "EventsRuleECSRunTaskState": "ENABLED"
+            },
+            "eu-west-1": {
+                "ContainerDefinitions1Cpu": 256,
+                "EventsRuleECSRunTaskState": "ENABLED"
+            },
+            "us-east-1": {
+                "ContainerDefinitions1Cpu": 256,
+                "EventsRuleECSRunTaskState": "ENABLED"
+            }
+        },
+        "stg": {
+            "eu-central-1": {
+                "ContainerDefinitions1Cpu": 16,
+                "EventsRuleECSRunTaskState": "DISABLED"
+            },
+            "eu-west-1": {
+                "ContainerDefinitions1Cpu": 16,
+                "EventsRuleECSRunTaskState": "DISABLED"
+            },
+            "us-east-1": {
+                "ContainerDefinitions1Cpu": 16,
+                "EventsRuleECSRunTaskState": "DISABLED"
+            }
+        }
+    },
+    "Outputs": {
+        "BrandDomain": {
+            "Value": "numenor.arda"
+        },
+        "ContainerDefinitions1Constraints": {
+            "Value": {
+                "Fn::Sub": [
+                    "Cpu:${Cpu},Memory:${Memory}",
+                    {
+                        "Cpu": {
+                            "Fn::If": [
+                                "CpuTask",
+                                {
+                                    "Fn::If": [
+                                        "CpuOverride",
+                                        {
+                                            "Ref": "Cpu"
+                                        },
+                                        "None"
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "ContainerDefinitions1CpuOverride",
+                                        {
+                                            "Ref": "ContainerDefinitions1Cpu"
+                                        },
+                                        {
+                                            "Fn::FindInMap": [
+                                                {
+                                                    "Ref": "EnvShort"
+                                                },
+                                                {
+                                                    "Ref": "AWS::Region"
+                                                },
+                                                "ContainerDefinitions1Cpu"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "Memory": {
+                            "Fn::If": [
+                                "LaunchTypeFarGate",
+                                {
+                                    "Fn::If": [
+                                        "MemoryOverride",
+                                        {
+                                            "Ref": "Memory"
+                                        },
+                                        512
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "ContainerDefinitions1MemoryOverride",
+                                        {
+                                            "Ref": "ContainerDefinitions1Memory"
+                                        },
+                                        2048
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "ContainerDefinitions1Envs": {
+            "Value": {
+                "Fn::Sub": ""
+            }
+        },
+        "Cpu": {
+            "Condition": "CpuTask",
+            "Value": {
+                "Fn::If": [
+                    "CpuOverride",
+                    {
+                        "Ref": "Cpu"
+                    },
+                    "None"
+                ]
+            }
+        },
+        "Env": {
+            "Value": {
+                "Ref": "Env"
+            }
+        },
+        "EnvApp1Version": {
+            "Value": {
+                "Ref": "EnvApp1Version"
+            }
+        },
+        "EnvRole": {
+            "Value": {
+                "Ref": "EnvRole"
+            }
+        },
+        "EnvStackVersion": {
+            "Value": {
+                "Ref": "EnvStackVersion"
+            }
+        },
+        "EventsRuleECSRunTaskScheduleExpression": {
+            "Value": {
+                "Fn::If": [
+                    "EventsRuleECSRunTaskScheduleExpressionOverride",
+                    {
+                        "Ref": "EventsRuleECSRunTaskScheduleExpression"
+                    },
+                    "cron(30 00 01 * ? *)"
+                ]
+            }
+        },
+        "EventsRuleECSRunTaskState": {
+            "Value": {
+                "Fn::If": [
+                    "EventsRuleECSRunTaskStateOverride",
+                    {
+                        "Ref": "EventsRuleECSRunTaskState"
+                    },
+                    {
+                        "Fn::FindInMap": [
+                            {
+                                "Ref": "EnvShort"
+                            },
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "EventsRuleECSRunTaskState"
+                        ]
+                    }
+                ]
+            }
+        },
+        "LaunchType": {
+            "Value": {
+                "Fn::If": [
+                    "LaunchTypeOverride",
+                    {
+                        "Ref": "LaunchType"
+                    },
+                    "EC2"
+                ]
+            }
+        },
+        "LogDriver": {
+            "Value": {
+                "Fn::If": [
+                    "LogDriverOverride",
+                    {
+                        "Ref": "LogDriver"
+                    },
+                    "awslogs"
+                ]
+            }
+        },
+        "Memory": {
+            "Condition": "LaunchTypeFarGate",
+            "Value": {
+                "Fn::If": [
+                    "MemoryOverride",
+                    {
+                        "Ref": "Memory"
+                    },
+                    512
+                ]
+            }
+        },
+        "RepoName": {
+            "Value": "arda.numenor.loader-arrows"
+        },
+        "SecurityGroups": {
+            "Condition": "NetworkModeAwsVpc",
+            "Value": {
+                "Fn::Sub": [
+                    "${SecurityGroupName0}=${SecurityGroupValue0},${SecurityGroupName1}=${SecurityGroupValue1},${SecurityGroupName2}=${SecurityGroupValue2},${SecurityGroupName3}=${SecurityGroupValue3}",
+                    {
+                        "SecurityGroupName0": {
+                            "Fn::Select": [
+                                0,
+                                {
+                                    "Fn::Split": [
+                                        ",",
+                                        {
+                                            "Fn::If": [
+                                                "SecurityGroupsOverride",
+                                                {
+                                                    "Ref": "SecurityGroups"
+                                                },
+                                                "BaseInstance,Elves,None,None"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "SecurityGroupName1": {
+                            "Fn::Select": [
+                                1,
+                                {
+                                    "Fn::Split": [
+                                        ",",
+                                        {
+                                            "Fn::If": [
+                                                "SecurityGroupsOverride",
+                                                {
+                                                    "Ref": "SecurityGroups"
+                                                },
+                                                "BaseInstance,Elves,None,None"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "SecurityGroupName2": {
+                            "Fn::Select": [
+                                2,
+                                {
+                                    "Fn::Split": [
+                                        ",",
+                                        {
+                                            "Fn::If": [
+                                                "SecurityGroupsOverride",
+                                                {
+                                                    "Ref": "SecurityGroups"
+                                                },
+                                                "BaseInstance,Elves,None,None"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "SecurityGroupName3": {
+                            "Fn::Select": [
+                                3,
+                                {
+                                    "Fn::Split": [
+                                        ",",
+                                        {
+                                            "Fn::If": [
+                                                "SecurityGroupsOverride",
+                                                {
+                                                    "Ref": "SecurityGroups"
+                                                },
+                                                "BaseInstance,Elves,None,None"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "SecurityGroupValue0": {
+                            "Fn::If": [
+                                "SecurityGroup0",
+                                {
+                                    "Fn::ImportValue": {
+                                        "Fn::Sub": [
+                                            "SecurityGroup${ImportName}",
+                                            {
+                                                "ImportName": {
+                                                    "Fn::Select": [
+                                                        0,
+                                                        {
+                                                            "Fn::Split": [
+                                                                ",",
+                                                                {
+                                                                    "Fn::If": [
+                                                                        "SecurityGroupsOverride",
+                                                                        {
+                                                                            "Ref": "SecurityGroups"
+                                                                        },
+                                                                        "BaseInstance,Elves,None,None"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "None"
+                            ]
+                        },
+                        "SecurityGroupValue1": {
+                            "Fn::If": [
+                                "SecurityGroup1",
+                                {
+                                    "Fn::ImportValue": {
+                                        "Fn::Sub": [
+                                            "SecurityGroup${ImportName}",
+                                            {
+                                                "ImportName": {
+                                                    "Fn::Select": [
+                                                        1,
+                                                        {
+                                                            "Fn::Split": [
+                                                                ",",
+                                                                {
+                                                                    "Fn::If": [
+                                                                        "SecurityGroupsOverride",
+                                                                        {
+                                                                            "Ref": "SecurityGroups"
+                                                                        },
+                                                                        "BaseInstance,Elves,None,None"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "None"
+                            ]
+                        },
+                        "SecurityGroupValue2": {
+                            "Fn::If": [
+                                "SecurityGroup2",
+                                {
+                                    "Fn::ImportValue": {
+                                        "Fn::Sub": [
+                                            "SecurityGroup${ImportName}",
+                                            {
+                                                "ImportName": {
+                                                    "Fn::Select": [
+                                                        2,
+                                                        {
+                                                            "Fn::Split": [
+                                                                ",",
+                                                                {
+                                                                    "Fn::If": [
+                                                                        "SecurityGroupsOverride",
+                                                                        {
+                                                                            "Ref": "SecurityGroups"
+                                                                        },
+                                                                        "BaseInstance,Elves,None,None"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "None"
+                            ]
+                        },
+                        "SecurityGroupValue3": {
+                            "Fn::If": [
+                                "SecurityGroup3",
+                                {
+                                    "Fn::ImportValue": {
+                                        "Fn::Sub": [
+                                            "SecurityGroup${ImportName}",
+                                            {
+                                                "ImportName": {
+                                                    "Fn::Select": [
+                                                        3,
+                                                        {
+                                                            "Fn::Split": [
+                                                                ",",
+                                                                {
+                                                                    "Fn::If": [
+                                                                        "SecurityGroupsOverride",
+                                                                        {
+                                                                            "Ref": "SecurityGroups"
+                                                                        },
+                                                                        "BaseInstance,Elves,None,None"
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "None"
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "StackType": {
+            "Value": "tsk"
+        }
+    },
+    "Parameters": {
+        "ClusterStack": {
+            "Default": "",
+            "Description": "Cluster Stack Name used to launch service on - - empty for default based on env/role",
+            "Type": "String"
+        },
+        "ContainerDefinitions1Cpu": {
+            "Default": "",
+            "Description": "Cpu Share for containers - empty for default based on env/role",
+            "Type": "String"
+        },
+        "ContainerDefinitions1Memory": {
+            "Default": "",
+            "Description": "Memory hard limit for containers - empty for default based on env/role",
+            "Type": "String"
+        },
+        "Cpu": {
+            "AllowedValues": [
+                "",
+                "None",
+                "128",
+                "256",
+                "384",
+                "512",
+                "640",
+                "768",
+                "896",
+                "1024",
+                "1152",
+                "1280",
+                "1408",
+                "1536",
+                "1664",
+                "1792",
+                "1920",
+                "2048",
+                "2176",
+                "2304",
+                "2432",
+                "2560",
+                "2688",
+                "2816",
+                "2944",
+                "3072",
+                "3200",
+                "3328",
+                "3456",
+                "3584",
+                "3712",
+                "3840",
+                "3968",
+                "4096"
+            ],
+            "Default": "",
+            "Description": "Cpu used by task - empty for default based on env/role",
+            "Type": "String"
+        },
+        "DockerLabelLastUpdate": {
+            "Default": "",
+            "Description": "Use to force redeploy",
+            "Type": "String"
+        },
+        "Env": {
+            "AllowedValues": [
+                "dev",
+                "stg",
+                "prod"
+            ],
+            "Default": "dev",
+            "Description": "Environment",
+            "Type": "String"
+        },
+        "EnvApp1Version": {
+            "AllowedPattern": "^[a-zA-Z0-9-_.]*$",
+            "Default": "1",
+            "Description": "EnvApp1Version",
+            "Type": "String"
+        },
+        "EnvRole": {
+            "AllowedPattern": "^[a-zA-Z0-9-_.]*$",
+            "Default": "",
+            "Description": "Service Role",
+            "Type": "String"
+        },
+        "EnvShort": {
+            "AllowedValues": [
+                "dev",
+                "stg",
+                "prd"
+            ],
+            "Default": "dev",
+            "Description": "Environment Short - NEVER CHANGE!",
+            "Type": "String"
+        },
+        "EnvStackVersion": {
+            "Default": "1",
+            "Description": "Stack version, if changed with UpdateMode=Cfn triggers cfn-hup",
+            "Type": "String"
+        },
+        "EventsRuleECSRunTaskScheduleExpression": {
+            "Default": "",
+            "Description": "Events Rule Schedule - empty for default based on env/role",
+            "Type": "String"
+        },
+        "EventsRuleECSRunTaskState": {
+            "AllowedValues": [
+                "",
+                "DISABLED",
+                "ENABLED"
+            ],
+            "Default": "",
+            "Description": "Events Rule State - empty for default based on env/role",
+            "Type": "String"
+        },
+        "LaunchType": {
+            "AllowedValues": [
+                "",
+                "EC2",
+                "FARGATE"
+            ],
+            "Default": "",
+            "Description": "RunTask LaunchType - empty for default based on env/role",
+            "Type": "String"
+        },
+        "LogDriver": {
+            "AllowedValues": [
+                "",
+                "None",
+                "awslogs",
+                "fluentd",
+                "gelf",
+                "journald",
+                "json-file",
+                "splunk",
+                "syslog"
+            ],
+            "Default": "",
+            "Description": "Log driver for task container - empty for default",
+            "Type": "String"
+        },
+        "Memory": {
+            "Default": "",
+            "Description": "Memory used by task - empty for default based on env/role",
+            "Type": "String"
+        },
+        "NetworkMode": {
+            "AllowedValues": [
+                "",
+                "awsvpc",
+                "bridge"
+            ],
+            "Default": "",
+            "Description": "Task NetworkMode - empty for default based on env/role",
+            "Type": "String"
+        },
+        "SecurityGroups": {
+            "AllowedPattern": "^(\\w*,\\w*){3}$",
+            "Default": ",,,",
+            "Description": "SecurityGroups List Extra - ,,, for default based on env/role",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "EventsRuleECSRunTask": {
+            "Properties": {
+                "Description": "Periodically invoke LambdaECSRunTask",
+                "Name": {
+                    "Fn::Sub": "${AWS::StackName}-${EnvRole}-RuleECSRunTask"
+                },
+                "ScheduleExpression": {
+                    "Fn::If": [
+                        "EventsRuleECSRunTaskScheduleExpressionOverride",
+                        {
+                            "Ref": "EventsRuleECSRunTaskScheduleExpression"
+                        },
+                        "cron(30 00 01 * ? *)"
+                    ]
+                },
+                "State": {
+                    "Fn::If": [
+                        "EventsRuleECSRunTaskStateOverride",
+                        {
+                            "Ref": "EventsRuleECSRunTaskState"
+                        },
+                        {
+                            "Fn::FindInMap": [
+                                {
+                                    "Ref": "EnvShort"
+                                },
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "EventsRuleECSRunTaskState"
+                            ]
+                        }
+                    ]
+                },
+                "Targets": [
+                    {
+                        "Arn": {
+                            "Fn::ImportValue": "LambdaECSRunTaskArn"
+                        },
+                        "Id": "TargetFunction-01",
+                        "Input": {
+                            "Fn::Join": [
+                                "\"",
+                                [
+                                    "{",
+                                    "Cluster\":",
+                                    {
+                                        "Fn::ImportValue": {
+                                            "Fn::Sub": [
+                                                "Cluster-${ClusterStack}",
+                                                {
+                                                    "ClusterStack": {
+                                                        "Fn::If": [
+                                                            "ClusterStackOverride",
+                                                            {
+                                                                "Ref": "ClusterStack"
+                                                            },
+                                                            "ecs-a"
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    ",",
+                                    "ECSInstancesStackName\":",
+                                    {
+                                        "Fn::If": [
+                                            "ClusterStackOverride",
+                                            {
+                                                "Ref": "ClusterStack"
+                                            },
+                                            "ecs-a"
+                                        ]
+                                    },
+                                    ",",
+                                    "LaunchType\":",
+                                    {
+                                        "Fn::If": [
+                                            "LaunchTypeOverride",
+                                            {
+                                                "Ref": "LaunchType"
+                                            },
+                                            "EC2"
+                                        ]
+                                    },
+                                    ",",
+                                    {
+                                        "Fn::If": [
+                                            "NetworkModeAwsVpc",
+                                            "NetworkModeAwsVpc\":\"awsvpc\",",
+                                            {
+                                                "Ref": "AWS::NoValue"
+                                            }
+                                        ]
+                                    },
+                                    "TaskDefinition\":",
+                                    {
+                                        "Ref": "TaskDefinition"
+                                    },
+                                    ",",
+                                    "Subnets\":",
+                                    {
+                                        "Fn::ImportValue": "SubnetsPrivate"
+                                    },
+                                    ",",
+                                    "SecurityGroups\":",
+                                    {
+                                        "Fn::Join": [
+                                            " ",
+                                            [
+                                                {
+                                                    "Fn::If": [
+                                                        "SecurityGroup0",
+                                                        {
+                                                            "Fn::ImportValue": {
+                                                                "Fn::Sub": [
+                                                                    "SecurityGroup${ImportName}",
+                                                                    {
+                                                                        "ImportName": {
+                                                                            "Fn::Select": [
+                                                                                0,
+                                                                                {
+                                                                                    "Fn::Split": [
+                                                                                        ",",
+                                                                                        {
+                                                                                            "Fn::If": [
+                                                                                                "SecurityGroupsOverride",
+                                                                                                {
+                                                                                                    "Ref": "SecurityGroups"
+                                                                                                },
+                                                                                                "BaseInstance,Elves,None,None"
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "Ref": "AWS::NoValue"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "Fn::If": [
+                                                        "SecurityGroup1",
+                                                        {
+                                                            "Fn::ImportValue": {
+                                                                "Fn::Sub": [
+                                                                    "SecurityGroup${ImportName}",
+                                                                    {
+                                                                        "ImportName": {
+                                                                            "Fn::Select": [
+                                                                                1,
+                                                                                {
+                                                                                    "Fn::Split": [
+                                                                                        ",",
+                                                                                        {
+                                                                                            "Fn::If": [
+                                                                                                "SecurityGroupsOverride",
+                                                                                                {
+                                                                                                    "Ref": "SecurityGroups"
+                                                                                                },
+                                                                                                "BaseInstance,Elves,None,None"
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "Ref": "AWS::NoValue"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "Fn::If": [
+                                                        "SecurityGroup2",
+                                                        {
+                                                            "Fn::ImportValue": {
+                                                                "Fn::Sub": [
+                                                                    "SecurityGroup${ImportName}",
+                                                                    {
+                                                                        "ImportName": {
+                                                                            "Fn::Select": [
+                                                                                2,
+                                                                                {
+                                                                                    "Fn::Split": [
+                                                                                        ",",
+                                                                                        {
+                                                                                            "Fn::If": [
+                                                                                                "SecurityGroupsOverride",
+                                                                                                {
+                                                                                                    "Ref": "SecurityGroups"
+                                                                                                },
+                                                                                                "BaseInstance,Elves,None,None"
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "Ref": "AWS::NoValue"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "Fn::If": [
+                                                        "SecurityGroup3",
+                                                        {
+                                                            "Fn::ImportValue": {
+                                                                "Fn::Sub": [
+                                                                    "SecurityGroup${ImportName}",
+                                                                    {
+                                                                        "ImportName": {
+                                                                            "Fn::Select": [
+                                                                                3,
+                                                                                {
+                                                                                    "Fn::Split": [
+                                                                                        ",",
+                                                                                        {
+                                                                                            "Fn::If": [
+                                                                                                "SecurityGroupsOverride",
+                                                                                                {
+                                                                                                    "Ref": "SecurityGroups"
+                                                                                                },
+                                                                                                "BaseInstance,Elves,None,None"
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "Ref": "AWS::NoValue"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        ]
+                                    },
+                                    "}"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::Events::Rule"
+        },
+        "IAMPolicyCloudWatch": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "cloudwatch:PutMetricData"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": "*"
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "CloudWatch",
+                "Roles": [
+                    {
+                        "Ref": "RoleTask"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "IAMPolicyLambdaECSRunTaskTrigger": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "ecs:RunTask",
+                                "ecs:StartTask"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": {
+                                "Ref": "TaskDefinition"
+                            }
+                        },
+                        {
+                            "Action": [
+                                "iam:GetRole",
+                                "iam:PassRole"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::GetAtt": [
+                                        "RoleTask",
+                                        "Arn"
+                                    ]
+                                },
+                                {
+                                    "Fn::ImportValue": "RoleECSTaskExecution"
+                                }
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": {
+                    "Fn::Sub": "LambdaECSRunTaskTrigger_${AWS::StackName}"
+                },
+                "Roles": [
+                    {
+                        "Fn::ImportValue": "RoleLambdaECSRunTask"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "IAMPolicyModels": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "s3:ListBucket"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::Sub": "arn:aws:s3:::${AWS::Region}-arda-numenor-${EnvShort}-arrows"
+                                }
+                            ]
+                        },
+                        {
+                            "Action": [
+                                "s3:GetObject",
+                                "s3:PutObject"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::Sub": "arn:aws:s3:::${AWS::Region}-arda-numenor-${EnvShort}-arrows/poisoned/*"
+                                }
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "Models",
+                "Roles": [
+                    {
+                        "Ref": "RoleTask"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "IAMPolicyParameterStore": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "kms:Decrypt",
+                            "Effect": "Allow",
+                            "Resource": {
+                                "Fn::ImportValue": "KeyParameterStore"
+                            }
+                        },
+                        {
+                            "Action": "ssm:DescribeParameters",
+                            "Effect": "Allow",
+                            "Resource": {
+                                "Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:*"
+                            }
+                        },
+                        {
+                            "Action": "ssm:GetParameters",
+                            "Effect": "Allow",
+                            "Resource": [
+                                {
+                                    "Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${EnvRole}/*"
+                                },
+                                {
+                                    "Fn::Sub": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/${EnvRole}/*"
+                                }
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "ParameterStore",
+                "Roles": [
+                    {
+                        "Ref": "RoleTask"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "LambdaPermissionECSRunTaskEventsRuleECSRunTask": {
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::ImportValue": "LambdaECSRunTaskArn"
+                },
+                "Principal": "events.amazonaws.com",
+                "SourceArn": {
+                    "Fn::GetAtt": [
+                        "EventsRuleECSRunTask",
+                        "Arn"
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "LogsLogGroup": {
+            "Properties": {
+                "LogGroupName": {
+                    "Fn::Sub": "/aws/ecs/${AWS::StackName}"
+                },
+                "RetentionInDays": 30
+            },
+            "Type": "AWS::Logs::LogGroup"
+        },
+        "RoleTask": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": "sts:AssumeRole",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ecs-tasks.amazonaws.com"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "Path": "/"
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "TaskDefinition": {
+            "Properties": {
+                "ContainerDefinitions": [
+                    {
+                        "Cpu": {
+                            "Fn::If": [
+                                "CpuTask",
+                                {
+                                    "Fn::If": [
+                                        "CpuOverride",
+                                        {
+                                            "Ref": "Cpu"
+                                        },
+                                        "None"
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "ContainerDefinitions1CpuOverride",
+                                        {
+                                            "Ref": "ContainerDefinitions1Cpu"
+                                        },
+                                        {
+                                            "Fn::FindInMap": [
+                                                {
+                                                    "Ref": "EnvShort"
+                                                },
+                                                {
+                                                    "Ref": "AWS::Region"
+                                                },
+                                                "ContainerDefinitions1Cpu"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "DockerLabels": {
+                            "Fn::If": [
+                                "DockerLabelLastUpdateOverride",
+                                {
+                                    "LastUpdate": {
+                                        "Ref": "DockerLabelLastUpdate"
+                                    }
+                                },
+                                {
+                                    "Ref": "AWS::NoValue"
+                                }
+                            ]
+                        },
+                        "Environment": [
+                            {
+                                "Name": "EnvRegion",
+                                "Value": {
+                                    "Ref": "AWS::Region"
+                                }
+                            },
+                            {
+                                "Name": "Env",
+                                "Value": {
+                                    "Ref": "Env"
+                                }
+                            },
+                            {
+                                "Name": "EnvAbbr",
+                                "Value": {
+                                    "Ref": "EnvShort"
+                                }
+                            },
+                            {
+                                "Name": "EnvBrand",
+                                "Value": "numenor.arda"
+                            },
+                            {
+                                "Name": "EnvRole",
+                                "Value": {
+                                    "Ref": "EnvRole"
+                                }
+                            },
+                            {
+                                "Name": "EnvStackName",
+                                "Value": {
+                                    "Ref": "AWS::StackName"
+                                }
+                            },
+                            {
+                                "Name": "EnvClusterStackName",
+                                "Value": {
+                                    "Fn::If": [
+                                        "ClusterStackOverride",
+                                        {
+                                            "Ref": "ClusterStack"
+                                        },
+                                        "ecs-a"
+                                    ]
+                                }
+                            }
+                        ],
+                        "Essential": "true",
+                        "Image": {
+                            "Fn::Sub": [
+                                "${EcrAccount}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepoName}:${EnvApp1Version}",
+                                {
+                                    "EcrAccount": {
+                                        "Fn::FindInMap": [
+                                            {
+                                                "Ref": "EnvShort"
+                                            },
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "EcrAccount"
+                                        ]
+                                    },
+                                    "RepoName": "arda.numenor.loader-arrows"
+                                }
+                            ]
+                        },
+                        "LogConfiguration": {
+                            "Fn::If": [
+                                "LogConfiguration",
+                                {
+                                    "LogDriver": {
+                                        "Fn::If": [
+                                            "LogDriverOverride",
+                                            {
+                                                "Ref": "LogDriver"
+                                            },
+                                            "awslogs"
+                                        ]
+                                    },
+                                    "Options": {
+                                        "awslogs-group": {
+                                            "Ref": "LogsLogGroup"
+                                        },
+                                        "awslogs-region": {
+                                            "Ref": "AWS::Region"
+                                        },
+                                        "awslogs-stream-prefix": {
+                                            "Ref": "AWS::StackName"
+                                        }
+                                    }
+                                },
+                                {
+                                    "Ref": "AWS::NoValue"
+                                }
+                            ]
+                        },
+                        "Memory": {
+                            "Fn::If": [
+                                "LaunchTypeFarGate",
+                                {
+                                    "Fn::If": [
+                                        "MemoryOverride",
+                                        {
+                                            "Ref": "Memory"
+                                        },
+                                        512
+                                    ]
+                                },
+                                {
+                                    "Fn::If": [
+                                        "ContainerDefinitions1MemoryOverride",
+                                        {
+                                            "Ref": "ContainerDefinitions1Memory"
+                                        },
+                                        2048
+                                    ]
+                                }
+                            ]
+                        },
+                        "Name": {
+                            "Ref": "EnvRole"
+                        }
+                    }
+                ],
+                "Cpu": {
+                    "Fn::If": [
+                        "CpuTask",
+                        {
+                            "Fn::If": [
+                                "CpuOverride",
+                                {
+                                    "Ref": "Cpu"
+                                },
+                                "None"
+                            ]
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "ExecutionRoleArn": {
+                    "Fn::If": [
+                        "LaunchTypeFarGate",
+                        {
+                            "Fn::ImportValue": "RoleECSTaskExecution"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "Memory": {
+                    "Fn::If": [
+                        "LaunchTypeFarGate",
+                        {
+                            "Fn::If": [
+                                "MemoryOverride",
+                                {
+                                    "Ref": "Memory"
+                                },
+                                512
+                            ]
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "NetworkMode": {
+                    "Fn::If": [
+                        "NetworkModeAwsVpc",
+                        "awsvpc",
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "RequiresCompatibilities": {
+                    "Fn::If": [
+                        "LaunchTypeFarGate",
+                        [
+                            "EC2",
+                            "FARGATE"
+                        ],
+                        [
+                            "EC2"
+                        ]
+                    ]
+                },
+                "TaskRoleArn": {
+                    "Ref": "RoleTask"
+                }
+            },
+            "Type": "AWS::ECS::TaskDefinition"
+        }
+    }
+}
