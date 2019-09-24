@@ -176,22 +176,26 @@ def my_merge_dict(basedict, workdict):
 def get_RP_for_envs(value):
     RP = OrderedDict()
 
-    if hasattr(value, 'iteritems'):
-        for d, v in value.iteritems():
-            RP[d] = get_RP_for_envs(v)
-    elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], (OrderedDict, dict)):
-        for d, v in enumerate(value):
-            for i, j in v.iteritems():
-                # CF Mapping allow for index only alfanumeric char, this way i can specify more elegant index in CloudFormation behaviours
-                key = replace_not_allowed_char(i)
-                # RP[key] already exist as a dict, try merging
-                if key in RP and isinstance(RP[key], dict):
-                    RP[key] = my_merge_dict(RP[key], get_RP_for_envs(j))
-                else:
-                    RP[key] = get_RP_for_envs(j)
-    elif isinstance(value, list):
-        RP = list(value)
-    else:
+    try:
+        if hasattr(value, 'iteritems'):
+            for d, v in value.iteritems():
+                RP[d] = get_RP_for_envs(v)
+        elif isinstance(value[0], (OrderedDict, dict)):
+            for d, v in enumerate(value):
+                for i, j in v.iteritems():
+                    # CF Mapping allow for index only alfanumeric char,
+                    # this way i can specify more "clear" name for index in CloudFormation behaviours
+                    key = replace_not_allowed_char(i)
+                    # RP[key] already exist as a dict, try merging
+                    if key in RP and isinstance(RP[key], dict):
+                        RP[key] = my_merge_dict(RP[key], get_RP_for_envs(j))
+                    else:
+                        RP[key] = get_RP_for_envs(j)
+        elif isinstance(value, list):
+            RP = list(value)
+        else:
+            raise
+    except:
         RP = value
 
     return RP
