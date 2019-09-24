@@ -219,9 +219,12 @@ def parse_cfg(cfg, envs=[]):
 
     for value in gen_dict_extract(cfg, envs):
         for k, v in value.iteritems():
-            if k in odict and isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict):
-                odict[k] = odict[k] + v
-            else:
+            try:
+                if isinstance(v[0], dict):
+                    odict[k] = odict[k] + v
+                else:
+                    raise
+            except:
                 odict[k] = v
 
     return odict
