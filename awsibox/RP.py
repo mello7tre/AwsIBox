@@ -153,14 +153,22 @@ def my_merge_dict(basedict, workdict):
         return dict(workdict.items())
 
     for k in sumdict.iterkeys():
-        if k in workdict and isinstance(workdict[k], dict) and k in basedict and isinstance(basedict[k], Mapping):
-            my_merge_dict(basedict[k], workdict[k])
-        elif k in workdict:
-            basedict[k] = workdict[k]
-        #elif isinstance(basedict[k], dict) and 'PathPattern' in basedict[k] and basedict[k]['PathPattern'] == '':
-        #    del basedict[k]
-        else:
-            pass
+        try: 
+            if isinstance(workdict[k], dict) and isinstance(basedict[k], Mapping):
+                my_merge_dict(basedict[k], workdict[k])
+            # Trick to be able to add an element to a previuosly created/defined list.
+            # I can centralize some general iampolicy in ecs-cluster and attach them to RoleInstance,
+            # adding element to ManagedPolicyArns, preserving the base ones
+            elif workdict[k][0] == 'IBOXADDTOLIST':
+                del workdict[k][0]
+                basedict[k] += workdict[k]
+            else:
+                raise
+        except:
+            try:
+                basedict[k] = workdict[k]
+            except:
+                pass
 
     return basedict
 
