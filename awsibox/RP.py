@@ -153,49 +153,59 @@ def my_merge_dict(basedict, workdict):
         return dict(workdict.items())
 
     for k in sumdict.iterkeys():
-        try: 
-            if isinstance(workdict[k], dict) and isinstance(basedict[k], Mapping):
-                my_merge_dict(basedict[k], workdict[k])
-            # Trick to be able to add an element to a previuosly created/defined list.
-            # I can centralize some general iampolicy in ecs-cluster and attach them to RoleInstance,
-            # adding element to ManagedPolicyArns, preserving the base ones
-            elif workdict[k][0] == 'IBOXADDTOLIST':
-                del workdict[k][0]
-                basedict[k] += workdict[k]
-            else:
-                raise
+        try:
+            is_dict = isinstance(workdict[k], dict)
+            is_map = isinstance(basedict[k], Mapping)
         except:
-            try:
-                basedict[k] = workdict[k]
-            except:
-                pass
+            is_dict = False
+            is_map = False
+
+        # Trick to be able to add an element to a previuosly created/defined list.
+        # I can centralize some general iampolicy in ecs-cluster and attach them to RoleInstance,
+        # adding element to ManagedPolicyArns, preserving the base ones
+        try:
+            ibox_add_to_list = (workdict[k][0] == 'IBOXADDTOLIST')
+        except:
+            ibox_add_to_list = False
+
+        if is_dict and is_map:
+            my_merge_dict(basedict[k], workdict[k])
+        elif ibox_add_to_list:
+            del workdict[k][0]
+            basedict[k] += workdict[k]
+        elif k in workdict:
+            basedict[k] = workdict[k]
+        else:
+            pass
 
     return basedict
 
 
 def get_RP_for_envs(value):
     RP = OrderedDict()
-
+    
     try:
-        if hasattr(value, 'iteritems'):
-            for d, v in value.iteritems():
-                RP[d] = get_RP_for_envs(v)
-        elif isinstance(value[0], (OrderedDict, dict)):
-            for d, v in enumerate(value):
-                for i, j in v.iteritems():
-                    # CF Mapping allow for index only alfanumeric char,
-                    # this way i can specify more "clear" name for index in CloudFormation behaviours
-                    key = replace_not_allowed_char(i)
-                    # RP[key] already exist as a dict, try merging
-                    if key in RP and isinstance(RP[key], dict):
-                        RP[key] = my_merge_dict(RP[key], get_RP_for_envs(j))
-                    else:
-                        RP[key] = get_RP_for_envs(j)
-        elif isinstance(value, list):
-            RP = list(value)
-        else:
-            raise
+        is_dict = isinstance(value[0], (OrderedDict, dict))
     except:
+        is_dict = False
+
+    if hasattr(value, 'iteritems'):
+        for d, v in value.iteritems():
+            RP[d] = get_RP_for_envs(v)
+    elif is_dict:
+        for d, v in enumerate(value):
+            for i, j in v.iteritems():
+                # CF Mapping allow for index only alfanumeric char,
+                # this way i can specify more "clear" name for index in CloudFormation behaviours
+                key = replace_not_allowed_char(i)
+                # RP[key] already exist as a dict, try merging
+                if key in RP and isinstance(RP[key], dict):
+                    RP[key] = my_merge_dict(RP[key], get_RP_for_envs(j))
+                else:
+                    RP[key] = get_RP_for_envs(j)
+    elif isinstance(value, list):
+        RP = list(value)
+    else:
         RP = value
 
     return RP
