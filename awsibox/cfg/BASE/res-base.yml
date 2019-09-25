@@ -13,11 +13,9 @@ res-base:
         Description: 'Id of HostedZoneEnv - must be submitted in all others Regions where HostedZoneEnv is not created - empty for default based on env/role'
   Output:
     - LambdaECSRunTaskArn:
-        Condition: LambdaECSRunTask
         Value: GetAtt('LambdaECSRunTask', 'Arn')
         Export: Export('LambdaECSRunTaskArn')
     - RoleLambdaECSRunTask:
-        Condition: LambdaECSRunTask
         Value: Ref('RoleLambdaECSRunTask')
         Export: Export('RoleLambdaECSRunTask')
   Bucket:
@@ -70,10 +68,30 @@ res-base:
                 - 'elasticloadbalancing:DescribeTargetHealth'
                 - 'ec2:DescribeInstances'
               Resource: '*'
+    - Ecs:
+        Type: Managed
+        Export: True
+        Description: 'EcsCluster'
+        Statement:
+          - 1:
+              Action:
+                - 'ecs:CreateCluster'
+                - 'ecs:DeregisterContainerInstance'
+                - 'ecs:DiscoverPollEndpoint'
+                - 'ecs:Poll'
+                - 'ecs:RegisterContainerInstance'
+                - 'ecs:StartTelemetrySession'
+                - 'ecs:Submit*'
+                - 'ecs:UpdateContainerInstancesState'
+                - 'logs:CreateLogStream'
+                - 'logs:PutLogEvents'
+                - 'ecr:BatchCheckLayerAvailability'
+                - 'ecr:BatchGetImage'
+                - 'ecr:GetDownloadUrlForLayer'
+                - 'ecr:GetAuthorizationToken'
+              Resource: '*'
+  IAMPolicyInRole:
     - LambdaECSDrainInstance:
-        Condition: LambdaECSDrainInstance
-        Roles:
-          - Ref('RoleLambdaECSDrainInstance')
         Statement:
           - 1:
               Action: 'autoscaling:CompleteLifecycleAction'
@@ -86,7 +104,6 @@ res-base:
                 - 'ecs:DescribeContainerInstances'
                 - 'ecs:UpdateContainerInstancesState'
               Resource: '*'
-              #Condition: {'StringEquals': {'ecs:cluster': {'Fn::GetAtt': ['Cluster', 'Arn']}}}
           - 4:
               Action: 'sns:Publish'
               Resource: Ref('SNSTopicECSDrainInstance')
@@ -94,9 +111,6 @@ res-base:
               Action: 'cloudformation:ListExports'
               Resource: '*'
     - LambdaECSRunTask:
-        Condition: LambdaECSRunTask
-        Roles:
-          - Ref('RoleLambdaECSRunTask')
         Statement:
           - 1:
               Action:
@@ -108,14 +122,12 @@ res-base:
   KMSKey: True
   Lambda:
     - ECSDrainInstance:
-        Enabled: True
         Description: 'Gracefully drain ECS tasks from EC2 instances before the instances are terminated by autoscaling.'
         MemorySize: 128
         Runtime: python3.6
         Timeout: 60
         Variables: []
     - ECSRunTask:
-        Enabled: True
         Description: 'Run ECS Task'
         MemorySize: 128
         Runtime: python2.7
@@ -147,6 +159,14 @@ res-base:
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
         Principal: apigateway.amazonaws.com
+    - ASGLifecycleHookECSDrainInstance:
+        Principal: autoscaling.amazonaws.com
+        Policies:
+          - ASGLifecycleHookECSDrainInstance:
+              Statement:
+                - 1:
+                    Action: 'sns:Publish'
+                    Resource: Ref('SNSTopicECSDrainInstance')
   SecurityGroupBase:
     - BaseInstance: 'Enable ICMP Ping [ALL] and SSH on EC2 Instance'
     - LoadBalancerApplicationExternal: 'Assign to LoadBalancerApplicationExternal'
@@ -158,7 +178,6 @@ res-base:
         Endpoint: cfg.CloudWatchAlarmEndpoint
         Protocol: email
     - ECSDrainInstanceLambdaECSDrainInstance:
-        Condition: LambdaECSDrainInstance
         TopicArn: Ref('SNSTopicECSDrainInstance')
         Endpoint: GetAtt('LambdaECSDrainInstance', 'Arn')
         Protocol: lambda
@@ -166,6 +185,5 @@ res-base:
     - CloudWatchAlarm:
         Export: True
     - ECSDrainInstance:
-        Condition: LambdaECSDrainInstance
         Export: True
   VPCEndpoint: True

@@ -5,7 +5,6 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
     get_subvalue, auto_get_props, get_condition, add_obj, SSMParameter)
 
 
-# S - IAM #
 class IAMUser(iam.User):
     def setup(self, key, name):
         self.Condition = self.title
@@ -108,6 +107,22 @@ class IAMInstanceProfile(iam.InstanceProfile):
         ]
 
 
+class IAMRoleIBox(iam.Role):
+    def setup(self):
+        # Trick to add a policy from cfg/yml to a role created from code (Ex. LambdaRoles)
+        try:
+            cfg.IAMPolicyInRole
+        except:
+            pass
+        else:
+            for n, v in cfg.IAMPolicyInRole.iteritems():
+                if self.title.endswith(n):
+                    self.Policies = [
+                        IAMPolicyInRole(n, v)
+                    ]
+                    break
+
+
 class IAMRole(iam.Role):
     def setup(self, key):
         auto_get_props(self, key)
@@ -123,8 +138,9 @@ class IAMRole(iam.Role):
         self.Path = '/'
 
 
-class IAMRoleLambdaBase(iam.Role):
+class IAMRoleLambdaBase(IAMRoleIBox):
     def setup(self, key):
+        super(IAMRoleLambdaBase, self).setup()
         self.Path = '/'
         self.ManagedPolicyArns = [
             'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess',
@@ -158,11 +174,24 @@ class IAMRoleBucketReplica(iam.Role):
         }
 
 
-# E - IAM #
-
 # ############################################
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################
+
+
+def IAMPolicyInRole(name, key):
+    Policy = iam.Policy('')
+    Policy.PolicyName = name
+    Policy.PolicyDocument = {
+            'Version': '2012-10-17',
+            }
+    Statement = []
+    for n, v in key['Statement'].iteritems():
+        Statement.append(IAMPolicyStatement(v))
+    Policy.PolicyDocument['Statement'] = Statement
+
+    return Policy
+
 
 def IAMPolicyStatement(key):
     Statement = {
@@ -378,6 +407,13 @@ class IAM_Roles(object):
             resname = key + n  # Ex. RoleECSService
             r_Role = IAMRole(resname)
             r_Role.setup(key=v)
+
+            # Add embedded policies if present 
+            if 'Policies' in v:
+                Policies = []
+                for p, w in v['Policies'].iteritems():
+                    Policies.append(IAMPolicyInRole(p,w))
+                r_Role.Policies = Policies
 
             add_obj(r_Role)
 

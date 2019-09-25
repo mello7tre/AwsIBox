@@ -142,6 +142,7 @@ class LBD_Lambdas(object):
                     o_Version,
                 ])
 
+            # Automatically setup a lambda Role with base permissions.
             r_Role = IAMRoleLambdaBase('Role' + resname)
             r_Role.setup(key=v)
             if hasattr(r_Lambda, 'Condition'):
