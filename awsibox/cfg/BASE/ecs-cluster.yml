@@ -43,41 +43,12 @@ ecs-cluster:
         HeartbeatTimeout: 3600
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
         NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
-        RoleARN: GetAtt('RoleASGLifecycleHookECSDrainInstance', 'Arn') 
+        RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance') 
   CloudFront: SkipClass
   Apps: []
   Cluster: True
   HealthCheckType: EC2
   Listeners: []
-  IAMPolicy:
-    - Ecs:
-        Roles:
-          - Ref('RoleInstance')
-        Statement:
-          - 1:
-              Action:
-                - 'ecs:CreateCluster'
-                - 'ecs:DeregisterContainerInstance'
-                - 'ecs:DiscoverPollEndpoint'
-                - 'ecs:Poll'
-                - 'ecs:RegisterContainerInstance'
-                - 'ecs:StartTelemetrySession'
-                - 'ecs:Submit*'
-                - 'ecs:UpdateContainerInstancesState'
-                - 'logs:CreateLogStream'
-                - 'logs:PutLogEvents'
-                - 'ecr:BatchCheckLayerAvailability'
-                - 'ecr:BatchGetImage'
-                - 'ecr:GetDownloadUrlForLayer'
-                - 'ecr:GetAuthorizationToken'
-              Resource: '*'
-    - ASGLifecycleHookECSDrainInstance:
-        Roles:
-          - Ref('RoleASGLifecycleHookECSDrainInstance')
-        Statement:
-          - 1:
-              Action: 'sns:Publish'
-              Resource: get_expvalue('SNSTopicECSDrainInstance')
   RecordSet: []
   SecurityGroupIngress:
     - ContainerInstanceExternal:
@@ -111,8 +82,10 @@ ecs-cluster:
         GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
         ToPort: 443
   Role:
-    - ASGLifecycleHookECSDrainInstance:
-        Principal: 'autoscaling.amazonaws.com'
+    - Instance:
+        ManagedPolicyArns:
+          - IBOXADDTOLIST
+          - get_expvalue('IAMPolicyECS')
   ScalingPolicyUpScalingAdjustment1: SkipClass
   ScalingPolicyTrackings:
     - ASCustom:

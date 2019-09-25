@@ -4,7 +4,6 @@ include: !include [
   alarms.yml,
   cloudfront.yml,
   parameterstore.yml,
-  ssm.yml,
   imageid-ec2.yml
 ]
 
@@ -79,7 +78,8 @@ ec2:
   Role:
     - Instance:
         ManagedPolicyArns:
-          - get_expvalue('IAMPolicyBaseInstance', '')
+          - get_expvalue('IAMPolicyBaseInstance')
+          - get_expvalue('IAMPolicySSM')
         Principal: ec2.amazonaws.com
   RollingUpdate:
     MaxBatchSize: 1

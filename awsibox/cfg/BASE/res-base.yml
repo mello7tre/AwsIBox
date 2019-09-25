@@ -1,5 +1,6 @@
 include: !include [
   lb-accountid.yml,
+  ssm.yml,
 ]
 
 res-base:
@@ -160,6 +161,7 @@ res-base:
           - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
         Principal: apigateway.amazonaws.com
     - ASGLifecycleHookECSDrainInstance:
+        Export: True
         Principal: autoscaling.amazonaws.com
         Policies:
           - ASGLifecycleHookECSDrainInstance:
