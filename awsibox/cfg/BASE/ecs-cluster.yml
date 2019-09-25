@@ -38,7 +38,6 @@ ecs-cluster:
         Enabled: None
   ASGLifecycleHook:
     - ECSDrainInstance:
-        DependsOn: 'IAMPolicyASGLifecycleHookECSDrainInstance'
         DefaultResult: 'ABANDON'
         HeartbeatTimeout: 3600
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
