@@ -71,14 +71,6 @@ global:
     RetentionInDays: 30
   Memory: 512
   IAMPolicy:
-    - CloudWatch:
-        Roles:
-          - Ref('RoleTask')
-        Statement:
-          - 1:
-              Action:
-                - 'cloudwatch:PutMetricData'
-              Resource: '*'
     - ParameterStore:
         Roles:
           - Ref('RoleTask')
@@ -86,5 +78,7 @@ global:
   RepoName: None
   Role:
     - Task:
+        ManagedPolicyArns:
+          - get_expvalue('IAMPolicyCloudWatchPutMetric')
         Principal: ecs-tasks.amazonaws.com
   Volumes: []

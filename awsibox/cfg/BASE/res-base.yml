@@ -69,6 +69,15 @@ res-base:
                 - 'elasticloadbalancing:DescribeTargetHealth'
                 - 'ec2:DescribeInstances'
               Resource: '*'
+    - CloudWatchPutMetric:
+        Type: Managed
+        Export: True
+        Description: 'Policy for ecs-task to put CW metric data'
+        Statement:
+          - 1:
+              Action:
+                - 'cloudwatch:PutMetricData'
+              Resource: '*'
     - Ecs:
         Type: Managed
         Export: True
