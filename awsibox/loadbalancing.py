@@ -213,7 +213,10 @@ class ELBV2LoadBalancer(elbv2.LoadBalancer):
                     'Key': 'access_logs.s3.enabled',
                     'Value': True
                 },
-                Ref('AWS::NoValue')
+                {
+                    'Key': 'access_logs.s3.enabled',
+                    'Value': False
+                },
             ),
             If(
                 'LoadBalancerLog',
