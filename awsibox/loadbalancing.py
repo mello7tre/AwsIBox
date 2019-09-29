@@ -270,7 +270,19 @@ class ELBV2LoadBalancerInternalALB(ELBV2LoadBalancerInternal):
             get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
         ]
 
+
+class ELBV2ListenerAction404(elbv2.Action):
+    def __init__(self, **kwargs):
+        super(ELBV2ListenerAction404, self).__init__(**kwargs)
+        self.FixedResponseConfig =elbv2.FixedResponseConfig('')
+        self.FixedResponseConfig.ContentType = 'text/plain'
+        self.FixedResponseConfig.MessageBody = '404 Not Found\n'
+        self.FixedResponseConfig.StatusCode = '404'
+        self.Type = 'fixed-response'
+
+
 # E - V2 LOAD BALANCING #
+
 
 # #################################
 # ### START STACK INFRA CLASSES ###
@@ -651,12 +663,16 @@ class LB_ListenersV2ALB(object):
             # CREATE SPECIFIC CLASS - EXTERNAL INTERNAL AS PARAMETER
             R_ListenerHttp = ELBV2ListenerHttp('ListenerHttpDefaultExternal')
             R_ListenerHttp.setup(scheme='External')
-            R_ListenerHttp.DefaultActions[0].TargetGroupArn=Ref('TargetGroupDefaultExternal')
+            # Now that AWS allow to send a fixed response, there is no need to have a DefaultTarget Group pointing to nothing
+            # R_ListenerHttp.DefaultActions[0].TargetGroupArn=Ref('TargetGroupDefaultExternal')
+            R_ListenerHttp.DefaultActions[0] = ELBV2ListenerAction404()
             R_ListenerHttp.Condition = 'LoadBalancerApplicationExternal'
 
             R_ListenerHttps = ELBV2ListenerHttps('ListenerHttpsDefaultExternal')
             R_ListenerHttps.setup(scheme='External')
-            R_ListenerHttps.DefaultActions[0].TargetGroupArn=Ref('TargetGroupDefaultExternal')
+            # Now that AWS allow to send a fixed response, there is no need to have a DefaultTarget Group pointing to nothing
+            # R_ListenerHttps.DefaultActions[0].TargetGroupArn=Ref('TargetGroupDefaultExternal')
+            R_ListenerHttps.DefaultActions[0] = ELBV2ListenerAction404()
             R_ListenerHttps.Certificates[0].CertificateArn = get_endvalue('RegionalCertificateArn')
             R_ListenerHttps.Condition = 'LoadBalancerApplicationExternal'
 
@@ -684,7 +700,9 @@ class LB_ListenersV2ALB(object):
         if cfg.LoadBalancerApplicationInternal:
             R_ListenerHttp = ELBV2ListenerHttp('ListenerHttpDefaultInternal')
             R_ListenerHttp.setup(scheme='Internal')
-            R_ListenerHttp.DefaultActions[0].TargetGroupArn=Ref('TargetGroupDefaultInternal')
+            # Now that AWS allow to send a fixed response, there is no need to have a DefaultTarget Group pointing to nothing
+            # R_ListenerHttp.DefaultActions[0].TargetGroupArn=Ref('TargetGroupDefaultInternal')
+            R_ListenerHttp.DefaultActions[0] = ELBV2ListenerAction404()
             R_ListenerHttp.Condition = 'LoadBalancerApplicationInternal'
 
             add_obj([
@@ -758,6 +776,8 @@ class LB_TargetGroupsECS(LB_TargetGroups):
             cfg.Alarm['TargetInternal5XX']['Enabled'] = True
 
 
+# Now that AWS allow to send a fixed response, there is no need to have a DefaultTarget Group pointing to nothing
+# this class is no more used
 class LB_TargetGroupsALB(object):
     def __init__(self):
         # Resources
@@ -1040,7 +1060,8 @@ class LB_ElasticLoadBalancingALB(LB_ElasticLoadBalancing):
 
         # Resources
         LB_ListenersV2ALB()
-        LB_TargetGroupsALB()
+        # Now that AWS allow to send a fixed response, there is no need to have a DefaultTarget Group pointing to nothing
+        # LB_TargetGroupsALB()
 
         # Outputs
         O_ELB = Output('LoadBalancerApplication')
