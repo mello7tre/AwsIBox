@@ -359,6 +359,8 @@ class IAM_Groups(object):
             for m in v['ManagedPolicyArns']:
                 if m.startswith('arn'):
                     ManagedPolicyArns.append(m)
+                elif m.startswith('Ref('):
+                    ManagedPolicyArns.append(eval(m))
                 else:
                     ManagedPolicyArns.append(ImportValue('IAMPolicy' + m))
 
