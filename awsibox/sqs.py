@@ -5,11 +5,6 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
     get_subvalue, auto_get_props, get_condition, add_obj, add_obj)
 
 
-class SQSQueue(sqs.Queue):
-    def setup(self):
-        self.MessageRetentionPeriod = 360
-
-
 class SQSQueuePolicy(sqs.QueuePolicy):
     def setup(self, key):
         self.Queues = [
@@ -46,8 +41,8 @@ class SQS_Queues(object):
         for n, v in getattr(cfg, key).iteritems():
             resname = key + n
             # resources
-            r_Queue = SQSQueue(resname)
-            r_Queue.setup()
+            r_Queue = sqs.Queue(resname)
+            auto_get_props(r_Queue, v, recurse=True)
 
             add_obj([
                 r_Queue,
