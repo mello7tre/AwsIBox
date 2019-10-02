@@ -289,6 +289,9 @@ class ECS_TaskDefinition(object):
             EnvValue_Out_Map = {}
             if 'Envs' in v:
                 for m, w in v['Envs'].iteritems():
+                    # Method to create env but do not create Parameters and Outputs as they have a limited max number
+                    if 'NoParams' in w:
+                        continue
                     envname = '%sEnvs%s' % (name, m)
                     # parameters
                     EnvValue = Parameter(envname + 'Value')

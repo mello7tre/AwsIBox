@@ -210,12 +210,18 @@ def get_condition(name, cond, value, key_name=None):
     key_name = key_name if key_name else name
     key_override = key_name + 'Override'
 
+    # record current state
+    override_state = cfg.no_override
+    do_no_override(True)
     if cond == 'equals':
         cond_param = Equals(Ref(key_name), value)
         cond_map = Equals(get_endvalue(key_name), value)
     elif cond == 'not_equals':
         cond_param = Not(Equals(Ref(key_name), value))
         cond_map = Not(Equals(get_endvalue(key_name), value))
+    # if beginning state was False set it back
+    if not override_state:
+        do_no_override(False)
 
     if (key_name in cfg.Parameters and not
             key_name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):

@@ -720,21 +720,13 @@ class AS_ScheduledAction(object):
         ])
 
         # Conditions
-        do_no_override(True)
-        C_KeepMinSize = get_condition(resname + 'KeepMinSize', 'equals', 'k', resname + 'MinSize')
-        C_KeepMaxSize = get_condition(resname + 'KeepMaxSize', 'equals', 'k', resname + 'MaxSize')
-        C_CapacityMinSize = get_condition(resname + 'CapacityMinSize', 'equals', 'CapacityMin', resname + 'MinSize')
-        C_CapacityMaxSize = get_condition(resname + 'CapacityMaxSize', 'equals', 'CapacityMax', resname + 'MaxSize')
-        C_ScheduledAction = get_condition(resname, 'not_equals', 'None', resname + 'Recurrence')
-
         add_obj([
-            C_KeepMinSize,
-            C_KeepMaxSize,
-            C_CapacityMinSize,
-            C_CapacityMaxSize,
-            C_ScheduledAction,
+            get_condition(resname + 'KeepMinSize', 'equals', 'k', resname + 'MinSize'),
+            get_condition(resname + 'KeepMaxSize', 'equals', 'k', resname + 'MaxSize'),
+            get_condition(resname + 'CapacityMinSize', 'equals', 'CapacityMin', resname + 'MinSize'),
+            get_condition(resname + 'CapacityMaxSize', 'equals', 'CapacityMax', resname + 'MaxSize'),
+            get_condition(resname, 'not_equals', 'None', resname + 'Recurrence'),
         ])
-        do_no_override(False)
 
         # outputs
         out_String = []
@@ -760,15 +752,10 @@ class AS_ScheduledActionsEC2(object):
             add_obj(p_DesiredSize)
     
             # conditions
-            do_no_override(True)
-            c_DesiredSize = get_condition(resname + 'KeepDesiredSize', 'equals', 'k', resname + 'DesiredSize')
-            c_CapacityDesiredSize = get_condition(resname + 'CapacityDesiredSize', 'equals', 'CapacityDesired', resname + 'DesiredSize')
-    
             add_obj([
-                c_DesiredSize,
-                c_CapacityDesiredSize,
+                get_condition(resname + 'KeepDesiredSize', 'equals', 'k', resname + 'DesiredSize'),
+                get_condition(resname + 'CapacityDesiredSize', 'equals', 'CapacityDesired', resname + 'DesiredSize'),
             ])
-            do_no_override(False)
     
             # resources
             OutKey = ['DesiredSize']
@@ -873,11 +860,7 @@ class AS_ScalingPoliciesTracking(object):
             ])
 
             #  conditions
-            do_no_override(True)
-            c_Value = get_condition(resname, 'not_equals', '0', basename + 'TargetValue')
-
-            add_obj(c_Value)
-            do_no_override(False)
+            add_obj(get_condition(resname, 'not_equals', '0', basename + 'TargetValue'))
 
             # outputs
             if v['Type'] == 'Cpu' or (v['Type'] == 'Custom' and
