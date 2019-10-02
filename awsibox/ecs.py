@@ -289,15 +289,14 @@ class ECS_TaskDefinition(object):
             EnvValue_Out_Map = {}
             if 'Envs' in v:
                 for m, w in v['Envs'].iteritems():
-                    # Method to create env but do not create Parameters and Outputs as they have a limited max number
-                    if 'NoParams' in w:
-                        continue
                     envname = '%sEnvs%s' % (name, m)
                     # parameters
                     EnvValue = Parameter(envname + 'Value')
                     EnvValue.Description = '%s - empty for default based on env/role' % w['Name']
 
-                    add_obj(EnvValue)
+                    # If key NoParam is present skip adding Parameters (usefull as they have a limited max number)
+                    if 'NoParam' not in w:
+                        add_obj(EnvValue)
 
                     Environment = ECSEnvironment(envname)
                     Environment.setup(key=w)
