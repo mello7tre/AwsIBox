@@ -206,26 +206,43 @@ def get_subvalue(substring, subvar, stack=False):
     return v
 
 
-def get_condition(name, cond, value, key_name=None):
-    key_name = key_name if key_name else name
-    key_override = key_name + 'Override'
-
+def get_condition(cond_name, cond, value2, key=None):
     # record current state
     override_state = cfg.no_override
     do_no_override(True)
-    if cond == 'equals':
-        cond_param = Equals(Ref(key_name), value)
-        cond_map = Equals(get_endvalue(key_name), value)
-    elif cond == 'not_equals':
-        cond_param = Not(Equals(Ref(key_name), value))
-        cond_map = Not(Equals(get_endvalue(key_name), value))
+
+    key_name = key if key else cond_name
+    if isinstance(key, FindInMap):
+        map_name = key.data['Fn::FindInMap'][0]
+        key_name = key.data['Fn::FindInMap'][1] 
+        value_name = key.data['Fn::FindInMap'][2]
+        if not value_name and cond_name:
+            value_name = cond_name
+
+        value1_param = FindInMap(map_name, Ref(key_name), value_name)
+        value1_map = FindInMap(map_name, get_endvalue(key_name), value_name)
+    else:
+        value1_param = Ref(key_name)
+        value1_map = get_endvalue(key_name)
+
     # if beginning state was False set it back
     if not override_state:
         do_no_override(False)
 
+    eq_param = Equals(value1_param, value2)
+    eq_map = Equals(value1_map, value2)
+
+    if cond == 'equals':
+        cond_param = eq_param
+        cond_map = eq_map
+    elif cond == 'not_equals':
+        cond_param = Not(eq_param)
+        cond_map = Not(eq_map)
+
     if (key_name in cfg.Parameters and not
             key_name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
-        condition = {name: Or(
+        key_override = key_name + 'Override'
+        condition = Or(
             And(
                 Condition(key_override),
                 cond_param,
@@ -234,9 +251,12 @@ def get_condition(name, cond, value, key_name=None):
                 Not(Condition(key_override)),
                 cond_map,
             )
-        )}
+        )
     else:
-        condition = {name: cond_map}
+        condition = cond_map
+
+    if cond_name:
+        condition = {cond_name: condition}
 
     return condition
 

@@ -49,11 +49,9 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
             if 'CookiesWhitelistedNames' in key:
                 self.ForwardedValues.Cookies.WhitelistedNames = get_endvalue(name + 'CookiesWhitelistedNames', condition=True)
                 # conditions
-                do_no_override(True)
-                add_obj({
-                    name + 'CookiesWhitelistedNames': Equals(get_endvalue(name + 'CookiesForward'), 'whitelist')
-                })
-                do_no_override(False)
+                add_obj(
+                    get_condition(name + 'CookiesWhitelistedNames', 'equals', 'whitelist', name + 'CookiesForward')
+                )
 
         # If not defined default to 'Host'
         if 'Headers' in key:
@@ -64,11 +62,9 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
         if 'QueryStringCacheKeys' in key:
             self.ForwardedValues.QueryStringCacheKeys = get_endvalue(name + 'QueryStringCacheKeys', condition=True)
             # conditions
-            do_no_override(True)
-            add_obj({
-                name + 'QueryStringCacheKeys': Equals(get_endvalue(name + 'QueryString'), True)
-            })
-            do_no_override(False)
+            add_obj(
+                get_condition(name + 'QueryStringCacheKeys', 'equals', True, name + 'QueryString')
+            )
 
         if 'TargetOriginId' in key:
             self.TargetOriginId = get_endvalue(name + 'TargetOriginId')
@@ -91,11 +87,10 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
             if 'LambdaEventType' in key:
                 eventType = key['LambdaEventType']
             # conditions
-            do_no_override(True)
-            add_obj({
-                condname: Not(Equals(get_endvalue(condname), 'None'))
-            })
-            do_no_override(False)
+            add_obj(
+                get_condition(condname, 'not_equals', 'None')
+            )
+
             self.LambdaFunctionAssociations = [
                 If(
                     condname,
@@ -237,11 +232,9 @@ class CFOriginEC2ECS(clf.Origin):
                     )
                 )
                 # conditions
-                do_no_override(True)
-                add_obj({
-                    name: Not(Equals(get_endvalue(name + 'HeaderName'), ''))
-                })
-                do_no_override(False)
+                add_obj(
+                    get_condition(name, 'not_equals', '', name + 'HeaderName')
+                )
 
         self.OriginCustomHeaders = cloudfrontorigincustomheaders
         self.CustomOriginConfig = clf.CustomOriginConfig(
@@ -306,18 +299,10 @@ class CF_CloudFront(object):
         ])
 
         # Conditions
-        do_no_override(True)
-        C_Logging = get_condition('CloudFrontLogging', 'not_equals', 'None')
-
-        C_AcmCertificate = {'CloudFrontAcmCertificate': Not(
-            Equals(get_endvalue('CloudFrontAcmCertificate'), 'None')
-        )}
-
         add_obj([
-            C_Logging,
-            C_AcmCertificate,
+            get_condition('CloudFrontLogging', 'not_equals', 'None'),
+            get_condition('CloudFrontAcmCertificate', 'not_equals', 'None'),
         ])
-        do_no_override(False)
 
         # Resources
         CloudFrontDistribution = clf.Distribution('CloudFrontDistribution')
@@ -345,13 +330,9 @@ class CF_CloudFront(object):
             # Create and Use Condition only if PathPattern Value differ between envs
             if name + 'PathPattern' not in cfg.fixedvalues:
                 # conditions
-                do_no_override(True)
-                c_CacheBehavior = {name: Not(
-                    Equals(get_endvalue(name + 'PathPattern'), 'None')
-                )}
-
-                add_obj(c_CacheBehavior)
-                do_no_override(False)
+                add_obj(
+                    get_condition(name, 'not_equals', 'None', name + 'PathPattern')
+                )
 
                 cachebehaviors.append(
                     If(
@@ -378,20 +359,7 @@ class CF_CloudFront(object):
             cloudfrontaliasextra.append(get_endvalue(name, condition=True))
 
             # conditions
-            do_no_override(True)
-            c_Alias = {name: Or(
-                And(
-                    Condition(name + 'Override'),
-                    Not(Equals(Ref(name), 'None'))
-                ),
-                And(
-                    Not(Condition(name + 'Override')),
-                    Not(Equals(get_endvalue(name), 'None'))
-                )
-            )}
-
-            add_obj(c_Alias)
-            do_no_override(False)
+            add_obj(get_condition(name, 'not_equals', 'None'))
 
         CloudFrontDistribution.DistributionConfig = DistributionConfig
         CloudFrontDistribution.DistributionConfig.Aliases = cloudfrontaliasextra
@@ -450,44 +418,19 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
         ])
 
         # Conditions
-        do_no_override(True)
-        C_AliasZone = {'CloudFrontAliasZone': Not(
-            Equals(get_endvalue('CloudFrontAliasZone'), 'None')
-        )}
-
-        C_Distribution = {'CloudFrontDistribution': Or(
-            And(
-                Condition('CloudFrontOverride'),
-                Not(Equals(Ref('CloudFront'), 'None'))
-            ),
-            And(
-                Not(Condition('CloudFrontOverride')),
-                Not(Equals(get_endvalue('CloudFront'), 'None'))
-            )
-        )}
-
-        C_OriginAdHoc = {'CloudFrontOriginAdHoc': Equals(
-            get_endvalue('CloudFrontOriginAdHoc'), True
-        )}
-
-        C_OriginProtocolHTTP = {'CloudFrontOriginProtocolHTTP': And(
-            Condition('ListenerLoadBalancerHttpPort'),
-            Not(Equals(get_endvalue('CloudFrontOriginProtocolPolicy'), 'https-only'))
-        )}
-
-        C_OriginProtocolHTTPS = {'CloudFrontOriginProtocolHTTPS': And(
-            Condition('ListenerLoadBalancerHttpsPort'),
-            Not(Equals(get_endvalue('CloudFrontOriginProtocolPolicy'), 'http-only'))
-        )}
-
         add_obj([
-            C_AliasZone,
-            C_Distribution,
-            C_OriginAdHoc,
-            C_OriginProtocolHTTP,
-            C_OriginProtocolHTTPS,
+            get_condition('CloudFrontAliasZone', 'not_equals', 'None'),
+            get_condition('CloudFrontDistribution', 'not_equals', 'None', 'CloudFront'),
+            get_condition('CloudFrontOriginAdHoc', 'equals', True),
+            {'CloudFrontOriginProtocolHTTP': And(
+                Condition('ListenerLoadBalancerHttpPort'),
+                get_condition('', 'not_equals', 'https-only', 'CloudFrontOriginProtocolPolicy')
+            )},
+            {'CloudFrontOriginProtocolHTTPS': And(
+                Condition('ListenerLoadBalancerHttpsPort'),
+                get_condition('', 'not_equals', 'http-only', 'CloudFrontOriginProtocolPolicy')
+            )}
         ])
-        do_no_override(False)
 
         # Resources
         self.CloudFrontDistribution.DistributionConfig.Aliases[0:0] = [
@@ -538,19 +481,10 @@ class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
 
         # To use the same code of ecs ec2 need to add "fake" condition, api-gateway use https only
         # Conditions
-        do_no_override(True)
-        C_ListenerLoadBalancerHttpPort = {'ListenerLoadBalancerHttpPort': Equals(
-            'True', 'False'
-        )}
-        C_ListenerLoadBalancerHttpsPort = {'ListenerLoadBalancerHttpsPort': Equals(
-            'True', 'True'
-        )}
-
         add_obj([
-            C_ListenerLoadBalancerHttpPort,
-            C_ListenerLoadBalancerHttpsPort,
+            {'ListenerLoadBalancerHttpPort': Equals('True', 'False')},
+            {'ListenerLoadBalancerHttpsPort': Equals('True', 'True')},
         ])
-        do_no_override(False)
 
         Origin = CFOriginAGW()
         Origin.setup()

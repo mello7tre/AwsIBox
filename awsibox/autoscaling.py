@@ -773,7 +773,6 @@ class AS_ScheduledActionsECS(object):
         for n, v in getattr(cfg, key).iteritems():
             resname = '%s%s' % (key, n)
             # conditions
-            do_no_override(True)
             c_disable = {resname + 'Disable': Or(
                 Not(Condition(resname)),
                 And(
@@ -783,7 +782,6 @@ class AS_ScheduledActionsECS(object):
             )}
     
             add_obj(c_disable)
-            do_no_override(False)
 
             # resources
             AS_ScheduledAction(resname, [])
@@ -966,12 +964,11 @@ class AS_LaunchConfiguration(object):
         ])
 
         # Conditions
-        do_no_override(True)
         C_AdditionalStorage = get_condition('AdditionalStorage', 'not_equals', '0', 'AdditionalStorageSize')
 
         C_AdditionalStorageMount = {'AdditionalStorageMount': And(
             Condition('AdditionalStorage'),
-            Not(Equals(get_endvalue('AdditionalStorageMount'), 'None'))
+            get_condition('', 'not_equals', 'None', 'AdditionalStorageMount')
         )}
 
         C_CloudFormationInit = {'CloudFormationInit': Equals(
@@ -987,38 +984,20 @@ class AS_LaunchConfiguration(object):
             Equals(Select('0', Ref('EfsMounts')), '')
         )}
 
-        C_InstaceEphemeral0 = {'InstaceEphemeral0': Or(
-            And(
-                Condition('InstanceTypeOverride'),
-                Equals(FindInMap('InstanceTypes', Ref('InstanceType'), 'InstaceEphemeral0'), '1')
-            ),
-            And(
-                Not(Condition('InstanceTypeOverride')),
-                Equals(FindInMap('InstanceTypes', get_endvalue('InstanceType'), 'InstaceEphemeral0'), '1')
-            )
-        )}
+        C_InstaceEphemeral0 = get_condition(
+            'InstaceEphemeral0', 'equals', '1',
+            FindInMap('InstanceTypes', 'InstanceType', '')
+        )
 
-        C_InstaceEphemeral1 = {'InstaceEphemeral1': Or(
-            And(
-                Condition('InstanceTypeOverride'),
-                Equals(FindInMap('InstanceTypes', Ref('InstanceType'), 'InstaceEphemeral1'), '1')
-            ),
-            And(
-                Not(Condition('InstanceTypeOverride')),
-                Equals(FindInMap('InstanceTypes', get_endvalue('InstanceType'), 'InstaceEphemeral1'), '1')
-            )
-        )}
+        C_InstaceEphemeral1 = get_condition(
+            'InstaceEphemeral1', 'equals', '1',
+            FindInMap('InstanceTypes', 'InstanceType', '')
+        )
 
-        C_InstaceEphemeral2 = {'InstaceEphemeral2': Or(
-            And(
-                Condition('InstanceTypeOverride'),
-                Equals(FindInMap('InstanceTypes', Ref('InstanceType'), 'InstaceEphemeral2'), '1')
-            ),
-            And(
-                Not(Condition('InstanceTypeOverride')),
-                Equals(FindInMap('InstanceTypes', get_endvalue('InstanceType'), 'InstaceEphemeral2'), '1')
-            )
-        )}
+        C_InstaceEphemeral2 = get_condition(
+            'InstaceEphemeral2', 'equals', '1',
+            FindInMap('InstanceTypes', 'InstanceType', '')
+        )
 
         add_obj([
             C_AdditionalStorage,
@@ -1030,7 +1009,6 @@ class AS_LaunchConfiguration(object):
             C_InstaceEphemeral1,
             C_InstaceEphemeral2,
         ])
-        do_no_override(False)
 
         InitConfigSets = ASInitConfigSets()
         InitConfigSets.setup()
@@ -1062,25 +1040,12 @@ class AS_LaunchConfiguration(object):
             ])
 
             # conditions
-            do_no_override(True)
             add_obj({
                 name: And(
                     Not(Equals(Ref(envname), '')),
-                    Not(
-                        Or(
-                            And(
-                                Condition(reponame + 'Override'),
-                                Equals(Ref(reponame), 'None')
-                            ),
-                            And(
-                                Not(Condition(reponame + 'Override')),
-                                Equals(get_endvalue(reponame), 'None')
-                            )
-                        )
-                    )
+                    Not(get_condition('', 'equals', 'None', reponame))
                 )
             })
-            do_no_override(False)
 
             InitConfigApps = ASInitConfigApps(name)
             CfmInitArgs[name] = InitConfigApps
