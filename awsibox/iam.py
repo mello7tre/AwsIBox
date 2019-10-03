@@ -222,19 +222,10 @@ class IAM_Users(object):
             add_obj(p_Password)
 
             # conditions
-            do_no_override(True)
-            c_User = {resname: Not(
-                Equals(get_endvalue(resname + 'Enabled'), 'None')
-            )}
-            c_Role = {resname + 'RoleAccount': Not(
-                Equals(get_endvalue(resname + 'RoleAccount'), 'None')
-            )}
-
             add_obj([
-                c_User,
-                c_Role,
+                get_condition(resname, 'not_equals', 'None', resname + 'Enabled'),
+                get_condition(resname + 'RoleAccount', 'not_equals', 'None'),
             ])
-            do_no_override(False)
 
             ManagedPolicyArns = []
             RoleGroups = []
@@ -242,13 +233,7 @@ class IAM_Users(object):
                 for m, w in v['RoleGroups'].iteritems():
                     condname = resname + 'RoleGroups' + m
                     # conditions
-                    do_no_override(True)
-                    c_RoleGroup = {condname: Not(
-                        Equals(get_endvalue(condname), 'None')
-                    )}
-    
-                    add_obj(c_RoleGroup)
-                    do_no_override(False)
+                    add_obj(get_condition(condname, 'not_equals', 'None'))
     
                     # resources
                     RoleGroups.append(
@@ -313,12 +298,7 @@ class IAM_UserToGroupAdditions(object):
             for m, w in v['User'].iteritems():
                 condname = '%sUser%s' % (resname, m)
                 # conditions
-                do_no_override(True)
-                c_User = {condname: Not(
-                    Equals(get_endvalue(condname), 'None') 
-                )}
-                add_obj(c_User)
-                do_no_override(False)
+                add_obj(get_condition(condname, 'not_equals', 'None'))
 
                 Users.append(
                     If(
@@ -348,12 +328,7 @@ class IAM_Groups(object):
             resname = key + n  # Ex. IAMGroupBase
 
             # conditions
-            do_no_override(True)
-            c_Group = {resname: Not(
-                Equals(get_endvalue(resname + 'Enabled'), 'None')
-            )}
-            add_obj(c_Group)
-            do_no_override(False)
+            add_obj(get_condition(resname, 'not_equals', 'None', resname + 'Enabled'))
 
             ManagedPolicyArns = []
             for m in v['ManagedPolicyArns']:

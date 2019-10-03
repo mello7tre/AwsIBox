@@ -76,13 +76,7 @@ class LBD_Lambdas(object):
 
             if 'Enabled' in v:
                 # conditions
-                do_no_override(True)
-                c_Lambda = {resname: Not(
-                    Equals(get_endvalue(resname + 'Enabled'), 'None')
-                )}
-
-                add_obj(c_Lambda)
-                do_no_override(False)
+                add_obj(get_condition(resname, 'not_equals', 'None', resname + 'Enabled'))
 
                 r_Lambda.Condition = resname
             if 'Version' in v:
@@ -96,26 +90,18 @@ class LBD_Lambdas(object):
                 add_obj(p_Version)
 
                 # conditons
-                do_no_override(True)
-                c_VersionA = {versionname + 'A': Equals(
-                    Ref(resname + 'Version'), 'A'
-                )}
-                
-                c_VersionB = {versionname + 'B': Equals(
-                    Ref(resname + 'Version'), 'B'
-                )}
-                c_Version = {versionname: Or(
-                    Condition(versionname + 'A'),
-                    Condition(versionname + 'B'),
-                )}
-                
-
                 add_obj([
-                    c_VersionA,
-                    c_VersionB,
-                    c_Version,
+                    {versionname + 'A': Equals(
+                        Ref(resname + 'Version'), 'A'
+                    )},
+                    {versionname + 'B': Equals(
+                        Ref(resname + 'Version'), 'B'
+                    )},
+                    {versionname: Or(
+                        Condition(versionname + 'A'),
+                        Condition(versionname + 'B'),
+                    )},
                 ])
-                do_no_override(False)
 
                 # resources
                 r_VersionA = LambdaVersion(versionname + 'A', name=resname )

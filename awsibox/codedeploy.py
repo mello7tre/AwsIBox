@@ -55,21 +55,13 @@ class CDDeploymentGroup(cdd.DeploymentGroup):
 class CD_DeploymentGroup(object):
     def __init__(self):
         # Conditions
-        do_no_override(True)
-        C_DeploymentGroup = {'DeploymentGroup': And(
-            Condition('Apps1'),
-            Equals(get_endvalue('DeploymentGroup'), True),
-        )}
-
-        C_DeployRevision = {'DeployRevision': Equals(
-            Ref('UpdateMode'), 'CodeDeploy'
-        )}
-
         add_obj([
-            C_DeploymentGroup,
-            C_DeployRevision,
+            {'DeploymentGroup': And(
+                Condition('Apps1'),
+                get_condition('', 'equals', True, 'DeploymentGroup')
+            )},
+            {'DeployRevision': Equals(Ref('UpdateMode'), 'CodeDeploy')},
         ])
-        do_no_override(False)
 
         # Resources
         # FOR SINGLEAPP CODEDEPLOY

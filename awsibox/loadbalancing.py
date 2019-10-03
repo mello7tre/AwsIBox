@@ -291,13 +291,9 @@ class ELBV2ListenerAction404(elbv2.Action):
 class LB_Listeners(object):
     def __init__(self):
         # Conditions
-        do_no_override(True)
         for i in cfg.AllowedIp:
             condname = 'AllowedIp%s' % i  # Ex. AllowedIp1
-            add_obj({
-                condname: Not(Equals(get_endvalue(condname + 'Enabled'), 'None'))
-            })
-        do_no_override(False)
+            add_obj(get_condition(condname, 'not_equals', 'None', condname + 'Enabled'))
 
 
 class LB_ListenersEC2(LB_Listeners):
@@ -321,14 +317,12 @@ class LB_ListenersEC2(LB_Listeners):
                 condnamepublic = 'SecurityGroupRulePublic' + mapname # Ex. SecurityGroupRulePublicListeners1
 
                 # conditions
-                do_no_override(True)
-                c_ListenerAllowedIpPrivate = {condnameprivate: And(
-                    Condition(ipname),
-                    Equals(get_endvalue(mapname + 'LoadBalancerAccess'), 'Private')
-                )}
-
-                add_obj(c_ListenerAllowedIpPrivate)
-                do_no_override(False)
+                add_obj(
+                    {condnameprivate: And(
+                        Condition(ipname),
+                        get_condition('', 'equals', 'Private', mapname + 'LoadBalancerAccess')
+                    )}
+                )
 
                 SGRule = SecurityGroupRuleELBPorts(mapname)
                 SGRule.setup()
@@ -343,13 +337,7 @@ class LB_ListenersEC2(LB_Listeners):
                 )
 
             # conditions
-            do_no_override(True)
-            c_ListenerPublic = {condnamepublic: Equals(
-                get_endvalue(mapname + 'LoadBalancerAccess'), 'Public'
-            )}
-
-            add_obj(c_ListenerPublic)
-            do_no_override(False)
+            add_obj(get_condition(condnamepublic, 'equals', 'Public', mapname + 'LoadBalancerAccess'))
 
             SGRule = SecurityGroupRuleELBPorts(mapname)
             SGRule.setup()
@@ -499,22 +487,16 @@ class LB_ListenerRules(object):
 class LB_ListenersV2ExternalInternal(object):
     def __init__(self, scheme):
         # Conditions
-        do_no_override(True)
-        C_SGIHttpPublic = {'SecurityGroupIngressPublicLoadBalancerHttp' + scheme: And(
-            Condition('ListenerLoadBalancerHttpPort'),
-            Condition('LoadBalancerPublic')
-        )}
-
-        C_SGIHttpsPublic = {'SecurityGroupIngressPublicLoadBalancerHttps' + scheme: And(
-            Condition('ListenerLoadBalancerHttpsPort'),
-            Condition('LoadBalancerPublic')
-        )}
-
         add_obj([
-            C_SGIHttpPublic,
-            C_SGIHttpsPublic,
+            {'SecurityGroupIngressPublicLoadBalancerHttp' + scheme: And(
+                Condition('ListenerLoadBalancerHttpPort'),
+                Condition('LoadBalancerPublic')
+            )},
+            {'SecurityGroupIngressPublicLoadBalancerHttps' + scheme: And(
+                Condition('ListenerLoadBalancerHttpsPort'),
+                Condition('LoadBalancerPublic')
+            )}
         ])
-        do_no_override(False)
 
         # Resources
         R_SGIHttpPublic = SecurityGroupsIngressEcs('SecurityGroupIngressPublicLoadBalancerHttp' + scheme)
@@ -613,15 +595,7 @@ class LB_ListenersV2ECS(LB_Listeners):
     def __init__(self):
         super(LB_ListenersV2ECS, self).__init__()
         # Conditions
-        do_no_override(True)
-        C_ELBPublic = {'LoadBalancerPublic': Equals(
-            get_endvalue('LoadBalancerAccess'), 'Public'
-        )}
-
-        add_obj([
-            C_ELBPublic,
-        ])
-        do_no_override(False)
+        add_obj(get_condition('LoadBalancerPublic', 'equals', 'Public', 'LoadBalancerAccess'))
 
         # Resources
         if cfg.LoadBalancerApplicationExternal:
@@ -723,15 +697,7 @@ class LB_ListenersV2ALB(object):
 class LB_TargetGroups(object):
     def __init__(self):
         # Conditions
-        do_no_override(True)
-        C_TargetGroupCookieSticky = {'TargetGroupCookieSticky': Not(
-            Equals(get_endvalue('TargetGroupCookieSticky'), 'None')
-        )}
-
-        add_obj([
-            C_TargetGroupCookieSticky
-        ])
-        do_no_override(False)
+        add_obj(get_condition('TargetGroupCookieSticky', 'not_equals', 'None'))
 
 
 class LB_TargetGroupsEC2(LB_TargetGroups):
@@ -807,22 +773,7 @@ class LB_ElasticLoadBalancing(object):
         ])
 
         # Conditions
-        do_no_override(True)
-        C_Log = {'LoadBalancerLog': Or(
-            And(
-                Condition('LoadBalancerLogOverride'),
-                Not(Equals(Ref('LoadBalancerLog'), 'None'))
-            ),
-            And(
-                Not(Condition('LoadBalancerLogOverride')),
-                Not(Equals(get_endvalue('LoadBalancerLog'), 'None'))
-            )
-        )}
-
-        add_obj([
-            C_Log,
-        ])
-        do_no_override(False)
+        add_obj(get_condition('LoadBalancerLog', 'not_equals', 'None'))
 
         # Outputs
         O_Log = Output('LoadBalancerLog')
@@ -845,36 +796,14 @@ class LB_ElasticLoadBalancingApplication(object):
         ])
 
         # Conditions
-        do_no_override(True)
-        C_Http2 = {'LoadBalancerHttp2': Or(
-            And(
-                Condition('LoadBalancerHttp2Override'),
-                Not(Equals(Ref('LoadBalancerHttp2'), 'None'))
-            ),
-            And(
-                Not(Condition('LoadBalancerHttp2Override')),
-                Not(Equals(get_endvalue('LoadBalancerHttp2'), 'None'))
-            )
-        )}
-
-        add_obj([
-            C_Http2,
-        ])
-        do_no_override(False)
+        add_obj(get_condition('LoadBalancerHttp2', 'not_equals', 'None'))
 
 
 class LB_ElasticLoadBalancingClassicEC2(LB_ListenersEC2):
     def __init__(self):
         super(LB_ElasticLoadBalancingClassicEC2, self).__init__()
         # Conditions
-        C_CookieSticky = {'LoadBalancerCookieSticky': Not(
-            Equals(get_endvalue('LoadBalancerCookieSticky'), 'None')
-        )}
-
-        add_obj([
-            C_CookieSticky,
-        ])
-        do_no_override(False)
+        add_obj(get_condition('LoadBalancerCookieSticky', 'not_equals', 'None'))
 
         # Resources
         if cfg.LoadBalancerClassicExternal:
@@ -983,22 +912,16 @@ class LB_ElasticLoadBalancingALB(LB_ElasticLoadBalancing):
         ])
 
         # Conditions
-        do_no_override(True)
-        C_ELBExternal = {'LoadBalancerApplicationExternal': Or(
-            Equals(Ref('LoadBalancerApplication'), 'External'),
-            Equals(Ref('LoadBalancerApplication'), ''),
-        )}
-
-        C_ELBInternal = {'LoadBalancerApplicationInternal': Or(
-            Equals(Ref('LoadBalancerApplication'), 'Internal'),
-            Equals(Ref('LoadBalancerApplication'), ''),
-        )}
-
         add_obj([
-            C_ELBExternal,
-            C_ELBInternal,
+            {'LoadBalancerApplicationExternal': Or(
+                Equals(Ref('LoadBalancerApplication'), 'External'),
+                Equals(Ref('LoadBalancerApplication'), ''),
+            )},    
+            {'LoadBalancerApplicationInternal': Or(
+                Equals(Ref('LoadBalancerApplication'), 'Internal'),
+                Equals(Ref('LoadBalancerApplication'), ''),
+            )}
         ])
-        do_no_override(False)
 
         if cfg.LoadBalancerApplicationExternal:
             # Resources

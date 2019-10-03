@@ -39,13 +39,12 @@ class EFS_FileStorage(object):
             for i in range(cfg.AZones['MAX']):
                 mountname = 'EFSMountTarget%s%s' % (n, i)  # Ex. EFSMountTargetWordPress3
                 # conditions
-                do_no_override(True)
-                c_FileZone = {mountname: And(
-                    Condition(resname),
-                    Equals(FindInMap('AvabilityZones', Ref('AWS::Region'), 'Zone%s' % i), 'True')
-                )}
-                add_obj(c_FileZone)
-                do_no_override(False)
+                add_obj(
+                    {mountname: And(
+                        Condition(resname),
+                        Equals(FindInMap('AvabilityZones', Ref('AWS::Region'), 'Zone%s' % i), 'True')
+                    )}
+                )
 
                 # resources
                 r_Mount = EFSMountTarget(mountname)
@@ -53,12 +52,7 @@ class EFS_FileStorage(object):
 
                 add_obj(r_Mount)
             # conditions
-            do_no_override(True)
-            c_File = {resname: Not(
-                Equals(get_endvalue(resname + 'Enabled'), 'None')
-            )}
-            add_obj(c_File)
-            do_no_override(False)
+            add_obj(get_condition(resname, 'not_equals', 'None', resname + 'Enabled'))
 
             # resources
             r_File = EFSFileSystem(resname)

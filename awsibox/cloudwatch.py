@@ -31,20 +31,7 @@ class CW_Alarms(object):
             ])
 
             # conditions
-            do_no_override(True)
-            c_Alarm = { resname: Or(
-                And(
-                    Condition(resname + 'EvaluationPeriodsOverride'),
-                    Not(Equals(Ref(resname + 'EvaluationPeriods'), '0')),
-                ),
-                And(
-                    Not(Condition(resname + 'EvaluationPeriodsOverride')),
-                    Not(Equals(get_endvalue(resname + 'EvaluationPeriods'), '0')),
-                )
-            )}
-            do_no_override(False)
-
-            add_obj(c_Alarm)
+            add_obj(get_condition(resname, 'not_equals', '0', resname + 'EvaluationPeriods'))
 
             # resources
             r_Alarm = clw.Alarm(resname)

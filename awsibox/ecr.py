@@ -116,15 +116,7 @@ class ECR_Repositories(object):
         for n, v in cfg.EcrAccount.iteritems():
             mapname = 'EcrAccount' + n  + 'Id'  # Ex. EcrAccountPrdId
             # conditions
-            do_no_override(True)
-            c_Account = {mapname: Not(
-                Equals(get_endvalue(mapname), 'None')
-            )}
-
-            add_obj([
-                c_Account,
-            ])
-            do_no_override(False)
+            add_obj(get_condition(mapname, 'not_equals', 'None'))
 
             if 'Pull' in v['Policy']:
                 PolicyStatementAccount = ECRRepositoryPolicyStatementAccountPull(name=mapname)
