@@ -1,9 +1,12 @@
 include: !include [
-  cloudfront.yml,
+  cloudfront-ios.yml,
   certificate.yml,
 ]
 
 agw:
+  Output:
+    - InvokeUrl:
+        Value: Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/' + cfg.Stage)
   ApiKeySourceType: HEADER
   BinaryMediaTypes:
     - '*/*'

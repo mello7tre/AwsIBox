@@ -699,7 +699,7 @@ class AS_ScheduledAction(object):
             'Recurrence',
             'StartTime',
         ])
-        # Parameters
+        # parameters
         P_MinSize = Parameter(resname + 'MinSize')
         P_MinSize.Description = resname + 'Min Capacity - k to keep current value - empty for default based on env/role'
 
@@ -719,7 +719,7 @@ class AS_ScheduledAction(object):
             P_StartTime,
         ])
 
-        # Conditions
+        # conditions
         add_obj([
             get_condition(resname + 'KeepMinSize', 'equals', 'k', resname + 'MinSize'),
             get_condition(resname + 'KeepMaxSize', 'equals', 'k', resname + 'MaxSize'),

@@ -2,7 +2,7 @@ include: !include [
   autoscaling.yml,
   loadbalancing.yml,
   alarms.yml,
-  cloudfront.yml,
+  cloudfront-ios.yml,
   ecs-task.yml,
 ]
 

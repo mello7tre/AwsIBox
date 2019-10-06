@@ -1,13 +1,16 @@
 global:
   Parameter:
+    - CloudFrontLogging:
+        Description: 'CloudFront Logging - None to disable - empty for default based on env/role'
     - CloudFrontWebACLId:
         Description: 'CloudFront WebACLId - empty for default based on env/role'
   Condition:
+    - CloudFrontAcmCertificate:
+        get_condition('', 'not_equals', 'None', 'CloudFrontAcmCertificate')
+    - CloudFrontLogging:
+        get_condition('', 'not_equals', 'None', 'CloudFrontLogging')
     - CloudFrontWebACLId:
-        Or(
-          And(Condition('CloudFrontWebACLIdOverride'),Not(Equals(Ref('CloudFrontWebACLId'), 'None'))),
-          And(Not(Condition('CloudFrontWebACLIdOverride')),Not(Equals(get_endvalue('CloudFrontWebACLId'), 'None')))
-        )
+        get_condition('', 'not_equals', 'None', 'CloudFrontWebACLId')
   Output:
     - CloudFrontWebACLId:
         Value: get_endvalue('CloudFrontWebACLId')

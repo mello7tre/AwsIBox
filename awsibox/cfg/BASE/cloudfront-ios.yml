@@ -1,0 +1,31 @@
+include: !include [
+  cloudfront.yml,
+]
+
+global:
+  Parameter:
+    - CloudFront:
+        Description: 'Create CloudFront Distribution - empty for default based on env/role'
+        AllowedValues: ['', 'None', 'True']
+    - RecordSetCloudFrontSuffix:
+        Description: 'RecordSetCloudFront DNS Name Suffix - empty to disable'
+  Condition:
+    - CloudFrontAliasZone:
+        get_condition('', 'not_equals', 'None', 'CloudFrontAliasZone')
+    - CloudFrontDistribution:
+        get_condition('', 'not_equals', 'None', 'CloudFront')
+    - CloudFrontOriginAdHoc:
+        get_condition('', 'equals', True, 'CloudFrontOriginAdHoc')
+    - CloudFrontOriginProtocolHTTP:
+        And(
+          Condition('ListenerLoadBalancerHttpPort'),
+          get_condition('', 'not_equals', 'https-only', 'CloudFrontOriginProtocolPolicy')
+        )
+    - CloudFrontOriginProtocolHTTPS:
+        And(
+          Condition('ListenerLoadBalancerHttpsPort'),
+          get_condition('', 'not_equals', 'http-only', 'CloudFrontOriginProtocolPolicy')
+        )
+  Output:
+    - CloudFront:
+        Value: get_endvalue('CloudFront')

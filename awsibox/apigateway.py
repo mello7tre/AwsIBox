@@ -145,7 +145,7 @@ class AGW_ApiKeys(object):
 
                 add_obj(r_UsagePlanKey)
             
-            # Outputs
+            # outputs
             o_ApiKey = Output(resname)
             o_ApiKey.Value = Ref(resname)
 
@@ -212,11 +212,3 @@ class AGW_RestApi(object):
             )
 
             add_obj(r_LambdaPermission)
-
-        # Outputs
-        O_InvokeUrl = Output('InvokeUrl')
-        O_InvokeUrl.Value = Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/' + cfg.Stage)
-
-        add_obj([
-            O_InvokeUrl,
-        ])

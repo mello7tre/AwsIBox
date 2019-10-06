@@ -290,20 +290,6 @@ class CFCustomErrorResponse(clf.CustomErrorResponse):
 # S - CLOUDFRONT #
 class CF_CloudFront(object):
     def __init__(self):
-        # Parameters
-        P_Logging = Parameter('CloudFrontLogging')
-        P_Logging.Description = 'CloudFront Logging - None to disable - empty for default based on env/role'
-
-        add_obj([
-            P_Logging,
-        ])
-
-        # Conditions
-        add_obj([
-            get_condition('CloudFrontLogging', 'not_equals', 'None'),
-            get_condition('CloudFrontAcmCertificate', 'not_equals', 'None'),
-        ])
-
         # Resources
         CloudFrontDistribution = clf.Distribution('CloudFrontDistribution')
 
@@ -404,34 +390,6 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
     def __init__(self, key):
         super(CF_CloudFrontInOtherService, self).__init__()
 
-        # Parameters
-        P_CloudFront = Parameter('CloudFront')
-        P_CloudFront.Description = 'Create CloudFront Distribution - empty for default based on env/role'
-        P_CloudFront.AllowedValues = ['', 'None', 'True']
-
-        P_RecordSetCloudFrontSuffix = Parameter('RecordSetCloudFrontSuffix')
-        P_RecordSetCloudFrontSuffix.Description = 'RecordSetCloudFront DNS Name Suffix - empty to disable'
-
-        add_obj([
-            P_CloudFront,
-            P_RecordSetCloudFrontSuffix,
-        ])
-
-        # Conditions
-        add_obj([
-            get_condition('CloudFrontAliasZone', 'not_equals', 'None'),
-            get_condition('CloudFrontDistribution', 'not_equals', 'None', 'CloudFront'),
-            get_condition('CloudFrontOriginAdHoc', 'equals', True),
-            {'CloudFrontOriginProtocolHTTP': And(
-                Condition('ListenerLoadBalancerHttpPort'),
-                get_condition('', 'not_equals', 'https-only', 'CloudFrontOriginProtocolPolicy')
-            )},
-            {'CloudFrontOriginProtocolHTTPS': And(
-                Condition('ListenerLoadBalancerHttpsPort'),
-                get_condition('', 'not_equals', 'http-only', 'CloudFrontOriginProtocolPolicy')
-            )}
-        ])
-
         # Resources
         self.CloudFrontDistribution.DistributionConfig.Aliases[0:0] = [
             If(
@@ -455,14 +413,6 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
         self.CloudFrontDistribution.DistributionConfig.Comment = Sub('${AWS::StackName}-${EnvRole}')
 
         R53_RecordSetCloudFront()
-
-        # Outputs
-        O_CloudFront = Output('CloudFront')
-        O_CloudFront.Value = get_endvalue('CloudFront')
-
-        add_obj([
-            O_CloudFront,
-        ])
 
 
 class CF_CloudFrontEC2(CF_CloudFrontInOtherService):
