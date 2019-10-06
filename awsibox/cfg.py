@@ -58,8 +58,9 @@ EVAL_FUNCTIONS_IN_CFG = (
     'Sub(',
     'Ref(',
     'get_subvalue(',
-    'GetAtt(',
     'get_endvalue(',
+    'get_condition(',
+    'GetAtt(',
     'Split(',
     'Export(',
     'Join(',
@@ -114,7 +115,6 @@ CFG_TO_CLASS = OrderedDict([
     ('Parameter', {'module': 'cloudformation', 'class': 'CFM_Parameters'}),
     ('Condition', {'module': 'cloudformation', 'class': 'CFM_Conditions'}),
     ('Mapping', {'module': 'cloudformation', 'class': 'CFM_Mappings'}),
-    ('Output', {'module': 'cloudformation', 'class': 'CFM_Outputs'}),
     ('CapacityDesired', {'module': 'autoscaling', 'class': 'AS_Autoscaling'}),
     ('ScalingPolicyUpScalingAdjustment1', {'module': 'autoscaling', 'class': 'AS_ScalingPoliciesStep'}),
     ('ScalingPolicyTrackings', {'module': 'autoscaling', 'class': 'AS_ScalingPoliciesTracking'}),
@@ -165,4 +165,6 @@ CFG_TO_CLASS = OrderedDict([
     ('SecurityGroupBase', {'module': 'securitygroup', 'class': 'SG_SecurityGroup'}),
     ('SecurityGroupIngress', {'module': 'securitygroup', 'class': 'SG_SecurityGroupIngressesExtra'}),
     ('VPC', {'module': 'vpc', 'class': 'VPC_VPC'}),
+    # Output need to be as last line
+    ('Output', {'module': 'cloudformation', 'class': 'CFM_Outputs'}),
 ])

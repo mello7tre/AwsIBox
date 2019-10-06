@@ -4,7 +4,8 @@ include: !include [
   alarms.yml,
   cloudfront.yml,
   parameterstore.yml,
-  imageid-ec2.yml
+  imageid-ec2.yml,
+  launchconfiguration.yml,
 ]
 
 ec2:
@@ -32,6 +33,9 @@ ec2:
           Condition('SpotPrice'),
           Equals('1', '1'),
         )
+  Output:
+    - UpdateMode:
+        Value: Ref('UpdateMode')
   MappingClass:
     - EC2:
   AdditionalStorage:
@@ -124,10 +128,6 @@ dev: &cfg_dev
 
 stg: *cfg_dev 
 
-prd:
-  ScheduledAction:
-    - Down:
-        MinSize: 2
 
 includeAfter: !include [
   spot-auto.yml,

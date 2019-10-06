@@ -1,0 +1,62 @@
+global:
+  Parameter:
+    - AdditionalStorageSize:
+        Description: 'Size in GiB of additional EBS storage - 0 to disable - empty for default'
+        AllowedValues: ['', '0', '4', '8', '16', '32', '64', '128', '256', '512', '1024']
+    - DoNotSignal:
+        Description: 'Do Not Signal ASG - WARNING need to manually exec cfn-signal!'
+        AllowedValues: ['False', 'True']
+        Default: 'False'
+    - EfsMounts:
+        Description: 'Efs Mounts List'
+        Type: 'CommaDelimitedList'
+    - ImageId:
+        Description: 'AMI ID - empty for default based on env/role/region'
+    - InstanceType:
+        Description: 'InstanceType - default for default based on env/role'
+        ConstraintDescription: 'must be a valid EC2 instance type.'
+        AllowedValues: cfg.INSTANCE_LIST
+        Default: 'default'
+    - KeyName:
+        Description: 'EC2 SSH Key - empty for default'
+    - VolumeSize:
+        Description: 'Size of HD in GB - empty for default based on env/role'
+  Condition:
+    - AdditionalStorage:
+        get_condition('', 'not_equals', '0', 'AdditionalStorageSize')
+    - AdditionalStorageMount:
+        And(
+          Condition('AdditionalStorage'),
+          get_condition('', 'not_equals', 'None', 'AdditionalStorageMount')
+        )
+    - CloudFormationInit:
+        Equals(Ref('UpdateMode'), 'Cfn')
+    - DoNotSignal:
+        And(
+          Condition('RollingUpdate'),
+          Equals(Ref('DoNotSignal'), 'True')
+        )
+    - EfsMounts:
+         Not(Equals(Select('0', Ref('EfsMounts')), ''))
+    - InstaceEphemeral0:
+        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'InstanceType', 'InstaceEphemeral0'))
+    - InstaceEphemeral1:
+        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'InstanceType', 'InstaceEphemeral1'))
+    - InstaceEphemeral2:
+        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'InstanceType', 'InstaceEphemeral2'))
+  Output:
+    - AdditionalStorageSize:
+        Value: get_endvalue('AdditionalStorageSize')
+    - DoNotSignal:
+        Value: Ref('DoNotSignal')
+    - EfsMounts:
+        Condition: 'EfsMounts'
+        Value: Join(',', Ref('EfsMounts'))
+    - ImageId:
+        Value: cfg.Resources['LaunchConfiguration'].ImageId
+    - InstanceType:
+        Value: get_endvalue('InstanceType')
+    - KeyName:
+        Value: get_endvalue('KeyName')
+    - VolumeSize:
+        Value: get_endvalue('VolumeSize')

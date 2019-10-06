@@ -922,94 +922,6 @@ class AS_Autoscaling(object):
 
 class AS_LaunchConfiguration(object):
     def __init__(self):
-        # Parameters
-        P_AdditionalStorageSize = Parameter('AdditionalStorageSize')
-        P_AdditionalStorageSize.Description = 'Size in GiB of additional EBS storage - 0 to disable - empty for default'
-        P_AdditionalStorageSize.AllowedValues = ['', '0', '4', '8', '16', '32', '64', '128', '256', '512', '1024']
-
-        P_DoNotSignal = Parameter('DoNotSignal')
-        P_DoNotSignal.Description = 'Do Not Signal ASG - WARNING need to manually exec cfn-signal!'
-        P_DoNotSignal.AllowedValues = ['False', 'True']
-        P_DoNotSignal.Default = 'False'
-
-        P_EfsMounts = Parameter('EfsMounts')
-        P_EfsMounts.Type = 'CommaDelimitedList'
-        P_EfsMounts.Description = 'Efs Mounts List'
-        # to use String Default Type - need to change cfn scripts too, using IFS a storing value in a bash var:
-        # P_EfsMounts.AllowedPattern = '^(\w+(,\w+)?)*$'
-
-        P_ImageId = Parameter('ImageId')
-        P_ImageId.Description = 'AMI ID - empty for default based on env/role/region'
-
-        P_InstanceType = Parameter('InstanceType')
-        P_InstanceType.ConstraintDescription = 'must be a valid EC2 instance type.'
-        P_InstanceType.Description = 'InstanceType - default for default based on env/role'
-        P_InstanceType.AllowedValues = cfg.INSTANCE_LIST
-        P_InstanceType.Default = 'default'
-
-        P_KeyName = Parameter('KeyName')
-        P_KeyName.Description = 'EC2 SSH Key - empty for default'
-
-        P_VolumeSize = Parameter('VolumeSize')
-        P_VolumeSize.Description = 'Size of HD in GB - empty for default based on env/role'
-
-        add_obj([
-            P_AdditionalStorageSize,
-            P_DoNotSignal,
-            P_EfsMounts,
-            P_ImageId,
-            P_InstanceType,
-            P_KeyName,
-            P_VolumeSize,
-        ])
-
-        # Conditions
-        C_AdditionalStorage = get_condition('AdditionalStorage', 'not_equals', '0', 'AdditionalStorageSize')
-
-        C_AdditionalStorageMount = {'AdditionalStorageMount': And(
-            Condition('AdditionalStorage'),
-            get_condition('', 'not_equals', 'None', 'AdditionalStorageMount')
-        )}
-
-        C_CloudFormationInit = {'CloudFormationInit': Equals(
-            Ref('UpdateMode'), 'Cfn'
-        )}
-
-        C_DoNotSignal = {'DoNotSignal': And(
-            Condition('RollingUpdate'),
-            Equals(Ref('DoNotSignal'), 'True')
-        )}
-
-        C_EfsMounts = {'EfsMounts': Not(
-            Equals(Select('0', Ref('EfsMounts')), '')
-        )}
-
-        C_InstaceEphemeral0 = get_condition(
-            'InstaceEphemeral0', 'equals', '1',
-            FindInMap('InstanceTypes', 'InstanceType', '')
-        )
-
-        C_InstaceEphemeral1 = get_condition(
-            'InstaceEphemeral1', 'equals', '1',
-            FindInMap('InstanceTypes', 'InstanceType', '')
-        )
-
-        C_InstaceEphemeral2 = get_condition(
-            'InstaceEphemeral2', 'equals', '1',
-            FindInMap('InstanceTypes', 'InstanceType', '')
-        )
-
-        add_obj([
-            C_AdditionalStorage,
-            C_AdditionalStorageMount,
-            C_CloudFormationInit,
-            C_DoNotSignal,
-            C_EfsMounts,
-            C_InstaceEphemeral0,
-            C_InstaceEphemeral1,
-            C_InstaceEphemeral2,
-        ])
-
         InitConfigSets = ASInitConfigSets()
         InitConfigSets.setup()
 
@@ -1164,46 +1076,12 @@ class AS_LaunchConfiguration(object):
         add_obj([
             R_LaunchConfiguration,
             R_InstanceProfile,
-        ])
-
+        ]) 
         if cfg.SpotASG:
             add_obj(R_LaunchConfigurationSpot)
 
         self.LaunchConfiguration = R_LaunchConfiguration
         self.Tags = Tags
-
-        # Outputs
-        O_AdditionalStorageSize = Output('AdditionalStorageSize')
-        O_AdditionalStorageSize.Value = get_endvalue('AdditionalStorageSize')
-
-        O_DoNotSignal = Output('DoNotSignal')
-        O_DoNotSignal.Value = Ref('DoNotSignal')
-
-        O_EfsMounts = Output('EfsMounts')
-        O_EfsMounts.Condition = 'EfsMounts'
-        O_EfsMounts.Value = Join(',', Ref('EfsMounts'))
-
-        O_ImageId = Output('ImageId')
-        O_ImageId.Value = self.LaunchConfiguration.ImageId
-
-        O_InstanceType = Output('InstanceType')
-        O_InstanceType.Value = get_endvalue('InstanceType')
-
-        O_KeyName = Output('KeyName')
-        O_KeyName.Value = get_endvalue('KeyName')
-
-        O_VolumeSize = Output('VolumeSize')
-        O_VolumeSize.Value = get_endvalue('VolumeSize')
-
-        add_obj([
-            O_AdditionalStorageSize,
-            O_DoNotSignal,
-            O_EfsMounts,
-            O_ImageId,
-            O_InstanceType,
-            O_KeyName,
-            O_VolumeSize,
-        ])
 
 
 class AS_AutoscalingEC2(AS_Autoscaling):
@@ -1263,14 +1141,6 @@ class AS_AutoscalingEC2(AS_Autoscaling):
             add_obj(R_ASGSpot)
 
         self.LaunchConfiguration = LaunchConfiguration
-
-        # Outputs
-        O_UpdateMode = Output('UpdateMode')
-        O_UpdateMode.Value = Ref('UpdateMode')
-
-        add_obj([
-            O_UpdateMode,
-        ])
 
 
 class AS_AutoscalingECS(AS_Autoscaling):
