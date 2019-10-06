@@ -886,40 +886,6 @@ class AS_ScalingPoliciesTracking(object):
         ])
 
 
-class AS_Autoscaling(object):
-    def __init__(self):
-        # Parameters
-        P_Desired = Parameter('CapacityDesired')
-        P_Desired.Description = 'Desired Autoscaling Capacity - empty for default based on env/role'
-
-        P_Min = Parameter('CapacityMin')
-        P_Min.Description = 'Min Autoscaling Capacity - empty for default based on env/role'
-
-        P_Max = Parameter('CapacityMax')
-        P_Max.Description = 'Max Autoscaling Capacity - empty for default based on env/role'
-
-        add_obj([
-            P_Desired,
-            P_Min,
-            P_Max,
-        ])
-
-        # Outputs
-        O_Capacity = Output('Capacity')
-        O_Capacity.Value = get_subvalue(
-            'Desired=${1M},Min=${2M},Max=${3M}',
-            [
-                'CapacityDesired',
-                'CapacityMin',
-                'CapacityMax',
-            ]
-        )
-
-        add_obj([
-            O_Capacity,
-        ])
-
-
 class AS_LaunchConfiguration(object):
     def __init__(self):
         InitConfigSets = ASInitConfigSets()
@@ -1084,10 +1050,8 @@ class AS_LaunchConfiguration(object):
         self.Tags = Tags
 
 
-class AS_AutoscalingEC2(AS_Autoscaling):
+class AS_AutoscalingEC2(object):
     def __init__(self, key):
-        super(AS_AutoscalingEC2, self).__init__()
-
         LoadBalancers = []
         for n in cfg.LoadBalancerClassic:
             LoadBalancers.append(Ref('LoadBalancerClassic' + n))
@@ -1143,9 +1107,8 @@ class AS_AutoscalingEC2(AS_Autoscaling):
         self.LaunchConfiguration = LaunchConfiguration
 
 
-class AS_AutoscalingECS(AS_Autoscaling):
+class AS_AutoscalingECS(object):
     def __init__(self, key):
-        super(AS_AutoscalingECS, self).__init__()
         # Resources
         R_ScalableTarget = APPASScalableTarget('ScalableTarget')
         R_ScalableTarget.setup()

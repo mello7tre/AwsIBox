@@ -113,10 +113,16 @@ def replace_not_allowed_char(s):
 
 
 def gen_dict_extract(cfg, envs):
+    global enforce_list
     if hasattr(cfg, 'iteritems'):
         for k, v in cfg.iteritems():
             # for final values
             if isinstance(v, (str, int, list)) and (k != 'include' and k != 'includeAfter'):
+                if k in enforce_list:
+                    continue
+                elif k.endswith('_IBOXENFORCE'):
+                    k = k.replace('_IBOXENFORCE', '')
+                    enforce_list.append(k)
                 yield {k: v}
             # for empty dict in common.yml
             if isinstance(v, dict) and len(v) == 0:
@@ -414,6 +420,9 @@ def build_RP():
     global brand
     global CFG_FILE_INT
     global CFG_FILE_EXT
+    global enforce_list
+
+    enforce_list = []
 
     CFG_FILE_INT = '%s/cfg' % os.path.dirname(os.path.realpath(__file__))
     CFG_FILE_INT = os.path.normpath(CFG_FILE_INT)
@@ -474,6 +483,10 @@ def build_RP():
         # TO DEBUG - NICELY PRINT NESTED ORDEREDDICT
         show_odict(RP)
         print('##########RP#########END#######')
+        print('##########ENFORCED######START#####')
+        pprint(enforce_list)
+        print('##########ENFORCED######END#######')
+
 
     try:
         stacktype = RP['cmm']['cmm']['StackType']
