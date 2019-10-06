@@ -350,13 +350,7 @@ class R53_RecordSetCCH(object):
 class R53_HostedZones(object):
     def __init__(self, key):
         # Conditions
-        do_no_override(True)
-        C_Env = get_condition('HostedZoneEnv', 'not_equals', 'None')
-        do_no_override(False)
-
-        add_obj([
-            C_Env,
-        ])
+        add_obj(get_condition('HostedZoneEnv', 'not_equals', 'None'))
 
         # Resources
         R_Private = R53HostedZonePrivate('HostedZonePrivate')
@@ -370,12 +364,7 @@ class R53_HostedZones(object):
             pass
         else:
             # Conditions
-            do_no_override(True)
-            C_EnvExtra1 = {'HostedZoneEnvExtra1': Not(
-                Equals(get_endvalue('HostedZoneEnvExtra1'), 'None')
-            )}
-            add_obj(C_EnvExtra1)
-            do_no_override(False)
+            add_obj(get_condition('HostedZoneEnvExtra1', 'not_equals', 'None'))
 
             # Resources
             R_EnvExtra1 = R53HostedZoneEnvExtra1('HostedZoneEnvExtra1')

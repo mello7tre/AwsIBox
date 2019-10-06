@@ -120,6 +120,17 @@ class WAFWebACLRule(waf.Rules, wafr.Rules):
         self.Priority = index
         self.RuleId = Ref('Waf' + wtype + 'Rule' + self.title)
 
+
+def WAF_condition(condname, mapname, wtype):
+    return {condname: And(
+        get_condition('', 'not_equals', 'None', mapname + 'Enabled'),
+        Condition('Global') if wtype == 'Global' else Equals('1', '1'),
+        Or( 
+            get_condition('', 'equals', wtype, mapname + 'WafType'),
+            get_condition('', 'equals', 'Common', mapname + 'WafType')
+        )
+    )}
+
 # ##########################################
 # ### END STACK META CLASSES AND METHODS ###
 # ##########################################
@@ -133,18 +144,7 @@ class WAF_IPSets(object):
             mapname = key + n  # Ex. WafIPSetAwsNat
 
             # conditions
-            do_no_override(True)
-            C_Waf = {resname: And(
-                Not(Equals(get_endvalue(mapname + 'Enabled'), 'None')),
-                Condition('Global') if wtype == 'Global' else Equals('1', '1'),
-                Or(
-                    Equals(get_endvalue(mapname + 'WafType'), wtype),
-                    Equals(get_endvalue(mapname + 'WafType'), 'Common'),
-                )
-            )}
-            
-            add_obj(C_Waf)
-            do_no_override(False)
+            add_obj(WAF_condition(resname, mapname, wtype))
 
             # resources
             IPSetDescriptors = []
@@ -168,19 +168,7 @@ class WAF_ByteMatchSets(object):
             mapname = key + n
 
             # conditions
-            do_no_override(True)
-            C_Waf = {resname: And(
-                Not(Equals(get_endvalue(mapname + 'Enabled'), 'None')),
-                Condition('Global') if wtype == 'Global' else Equals('1', '1'),
-                Or(
-                    Equals(get_endvalue(mapname + 'WafType'), wtype),
-                    Equals(get_endvalue(mapname + 'WafType'), 'Common'),
-                )
-            )}
-            
-            add_obj(C_Waf)
-            do_no_override(False)
-
+            add_obj(WAF_condition(resname, mapname, wtype))
 
             # resources
             ByteMatchTuples = []
@@ -206,19 +194,7 @@ class WAF_Rules(object):
             mapname = key + n  # Ex. WafIPSetAwsNat
 
             # conditions
-            do_no_override(True)
-            C_Waf = {resname: And(
-                Not(Equals(get_endvalue(mapname + 'Enabled'), 'None')),
-                Condition('Global') if wtype == 'Global' else Equals('1', '1'),
-                Or(
-                    Equals(get_endvalue(mapname + 'WafType'), wtype),
-                    Equals(get_endvalue(mapname + 'WafType'), 'Common'),
-                )
-            )}
-            
-            add_obj(C_Waf)
-            do_no_override(False)
-
+            add_obj(WAF_condition(resname, mapname, wtype))
 
             # resources
             Predicates = []
@@ -262,19 +238,7 @@ class WAF_WebAcls(object):
             mapname = key + n  # Ex. WafIPSetAwsNat
 
             # conditions
-            do_no_override(True)
-            C_Waf = {resname: And(
-                Not(Equals(get_endvalue(mapname + 'Enabled'), 'None')),
-                Condition('Global') if wtype == 'Global' else Equals('1', '1'),
-                Or(
-                    Equals(get_endvalue(mapname + 'WafType'), wtype),
-                    Equals(get_endvalue(mapname + 'WafType'), 'Common'),
-                )
-            )}
-            
-            add_obj(C_Waf)
-            do_no_override(False)
-
+            add_obj(WAF_condition(resname, mapname, wtype))
 
             # resources
             Rules = []

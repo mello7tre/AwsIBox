@@ -221,6 +221,14 @@ def get_condition(cond_name, cond, value2, key=None):
 
         value1_param = FindInMap(map_name, Ref(key_name), value_name)
         value1_map = FindInMap(map_name, get_endvalue(key_name), value_name)
+    elif isinstance(key, Select):
+        select_index = key.data['Fn::Select'][0]
+        select_list = key.data['Fn::Select'][1]
+        split_sep = select_list.data['Fn::Split'][0]
+        key_name = select_list.data['Fn::Split'][1]
+
+        value1_param = Select(select_index, Split(split_sep, Ref(key_name)))
+        value1_map = Select(select_index, Split(split_sep, get_endvalue(key_name)))
     else:
         value1_param = Ref(key_name)
         value1_map = get_endvalue(key_name)

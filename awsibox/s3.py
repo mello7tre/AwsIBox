@@ -252,11 +252,7 @@ class S3_Buckets(object):
             for m, w in v['AccountsRO'].iteritems():
                 accountro_name = resname + 'AccountsRO' + m 
                 # conditions
-                do_no_override(True)
-                c_AccountRO = get_condition(accountro_name, 'not_equals', 'None')
-
-                add_obj(c_AccountRO)
-                do_no_override(False)
+                add_obj(get_condition(accountro_name, 'not_equals', 'None'))
 
                 PolicyROConditions.append(Condition(accountro_name))
                 PolicyROPrincipal.append(If(
@@ -266,7 +262,6 @@ class S3_Buckets(object):
                 ))
 
             # conditions
-            do_no_override(True)
             if PolicyROConditions:
                 c_PolicyRO = {resname + 'PolicyRO': Or(
                     Equals('1', '0'),
@@ -283,23 +278,12 @@ class S3_Buckets(object):
                 get_condition(resname + 'Cors', 'not_equals', 'None'),
                 get_condition(resname + 'ReplicaSrcAccount', 'not_equals', 'None'),
                 get_condition(resname + 'ReplicaDstOwner', 'not_equals', 'None'),
-                #{resname + 'AccountRO': Not(
-                #    Equals(get_endvalue(resname + 'AccountRO'), 'None')
-                #)},
-                {resname + 'Replica': Or(
-                    And(
-                        Condition(resname),
-                        Condition(resname + 'ReplicaDstRegionOverride'),
-                        Not(Equals(Ref(resname + 'ReplicaDstRegion'), 'None'))
-                    ),
-                    And(
-                        Condition(resname),
-                        Not(Condition(resname + 'ReplicaDstRegionOverride')),
-                        Not(Equals(get_endvalue(resname + 'ReplicaDstRegion'), 'None'))
-                    )
-                )}
+                #get_condition(resname + 'AccountRO', 'not_equals', 'None'),
+                {resname + 'Replica': And(
+                    Condition(resname),
+                    get_condition('', 'not_equals', 'None', resname + 'ReplicaDstRegion')
+                )},
             ])
-            do_no_override(False)
  
             # resources
             BucketPolicyStatement = []
@@ -359,13 +343,7 @@ class S3_Buckets(object):
                 for ixn, ixv in v['CloudFrontOriginAccessIdentityExtra'].iteritems():
                     ixname = resname + 'CloudFrontOriginAccessIdentityExtra' + ixn
                     # conditions
-                    do_no_override(True)
-                    c_CloudFrontOriginAccessIdentityExtra = get_condition(ixname, 'not_equals', 'None')
-
-                    add_obj([
-                        c_CloudFrontOriginAccessIdentityExtra,
-                    ])
-                    do_no_override(False)
+                    add_obj(get_condition(ixname, 'not_equals', 'None'))
 
                     PolicyCloudFrontOriginAccessIdentityPrincipal.append(If(
                         ixname,
@@ -409,11 +387,7 @@ class S3_Buckets(object):
             if 'OutputValueRegion' in v:
                 condname = resname + 'OutputValueRegion'
                 # conditions
-                do_no_override(False)
-                c_OutputValueRegion = get_condition(condname, 'not_equals', 'AWSRegion')
-
-                add_obj(c_OutputValueRegion)
-                do_no_override(False)
+                add_obj(get_condition(condname, 'not_equals', 'AWSRegion'))
 
                 outvaluebase = If(
                     condname,

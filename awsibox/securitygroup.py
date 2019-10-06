@@ -108,21 +108,13 @@ class SG_SecurityGroupsExtra(object):
             outvaluename = 'SecurityGroupValue%s' % n  # Ex. SecurityGroupValue1
 
             # conditions
-            do_no_override(True)
-            c_OverrideCondition = {name: Not(
-                Or(
-                    And(
-                        Condition('SecurityGroupsOverride'),
-                        Equals(Select(n, Split(',', Ref('SecurityGroups'))), 'None')
-                    ),
-                    And(
-                        Not(Condition('SecurityGroupsOverride')),
-                        Equals(Select(n, Split(',', get_endvalue('SecurityGroups'))), 'None')
+            add_obj(
+                {name: Not(
+                    get_condition('', 'equals', 'None',
+                        Select(n, Split(',', 'SecurityGroups'))
                     )
-                )
-            )}
-            add_obj(c_OverrideCondition)
-            do_no_override(False)
+                )}
+            )
 
             SecurityGroups.append(If(
                 name,
@@ -223,11 +215,7 @@ def SG_SecurityGroupIngressBaseInstance():
     for n, v in cfg.AllowedIp.iteritems():
         name = 'AllowedIp%s' % n
         # conditions
-        do_no_override(True)
-        add_obj({
-            name: Not(Equals(get_endvalue(name + 'Enabled'), 'None'))
-        })
-        do_no_override(False)
+        add_obj(get_condition(name, 'not_equals', 'None', name + 'Enabled'))
 
         # resources
         Rule = SecurityGroupRule()
@@ -289,21 +277,13 @@ class SG_SecurityGroupIngressesExtraService(object):
                 condnameprivate = 'SecurityGroupRulePrivatePort' + name + ipname  # Ex. SecurityGroupRulePrivatePorts3306AllowedIp1
 
                 # conditions
-                do_no_override(True)
-                c_AllowedIp = {ipname: Not(
-                    Equals(get_endvalue(ipname + 'Enabled'), 'None')
-                )}
-
-                c_SGRulePrivate = {condnameprivate: And(
-                    Condition(ipname),
-                    Equals(get_endvalue(service + 'Access'), 'Private')
-                )}
-
                 add_obj([
-                    c_AllowedIp,
-                    c_SGRulePrivate,
+                    get_condition(ipname, 'not_equals', 'None', ipname + 'Enabled'),
+                    {condnameprivate: And(
+                        Condition(ipname),
+                        get_condition('', 'equals', 'Private', service + 'Access')
+                    )},
                 ])
-                do_no_override(False)
 
                 SGRule = SecurityGroupRuleNamePorts(name)
                 SGRule.setup()

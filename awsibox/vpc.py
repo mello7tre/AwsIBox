@@ -109,15 +109,7 @@ class EC2SubnetRouteTableAssociationPublic(ec2.SubnetRouteTableAssociation):
 class VPC_Endpoint(object):
     def __init__(self, key):
         # Conditions
-        do_no_override(True)
-        C_S3 = {'EC2VPCEndpointS3': Not(
-            Equals(get_endvalue('VPCEndpoint'), 'None')
-        )}
-
-        add_obj([
-            C_S3,
-        ])
-        do_no_override(False)
+        add_obj(get_condition('EC2VPCEndpointS3', 'not_equals', 'None', 'VPCEndpoint'))
 
         # Resources
         R_S3 = EC2VPCEndpointS3('EC2VPCEndpointS3')
@@ -211,12 +203,11 @@ class VPC_VPC(object):
             ])
 
             # conditions
-            do_no_override(True)
-            c_Zone = {zone_cond: Equals(
-                FindInMap('AvabilityZones', Ref('AWS::Region'), 'Zone%s' % i), 'True'
-            )}
-            add_obj(c_Zone)
-            do_no_override(False)
+            add_obj(
+                {zone_cond: Equals(
+                    FindInMap('AvabilityZones', Ref('AWS::Region'), 'Zone%s' % i), 'True'
+                )},
+            )
 
             # resources
 
