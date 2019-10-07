@@ -59,14 +59,27 @@ class Loader(yaml.Loader):
         super(Loader, self).__init__(stream)
         Loader.add_constructor('!include', Loader.include)
         Loader.add_constructor('!import',  Loader.include)
+        Loader.add_constructor('!exclude',  Loader.exclude)
+
+
+    def exclude(self, node):
+        global exclude_list
+        if   isinstance(node, yaml.ScalarNode):
+            exclude_list.append(node)
+        elif isinstance(node, yaml.SequenceNode):
+            for filename in self.construct_sequence(node):
+                exclude_list.append(filename)
+
 
     def include(self, node):
-        if   isinstance(node, yaml.ScalarNode):
+        if isinstance(node, yaml.ScalarNode) and node not in exclude_list:
             return self.extractFile(self.construct_scalar(node), self._root_current)
 
         elif isinstance(node, yaml.SequenceNode):
             result = []
             for filename in self.construct_sequence(node):
+                if filename in exclude_list:
+                    continue
                 # if including Ext cfg try to include BASE file from CFG_FILE_INT too
                 if CFG_FILE_EXT in self.stream.name:
                     result.append(self.extractFile(filename, self._root_base))
@@ -81,6 +94,8 @@ class Loader(yaml.Loader):
         elif isinstance(node, yaml.MappingNode):
             result = {}
             for k,v in self.construct_mapping(node).iteritems():
+                if k in exclude_list:
+                    continue
                 result[k] = self.extractFile(v, self._root_current)
             return result
 
@@ -117,7 +132,7 @@ def gen_dict_extract(cfg, envs):
     if hasattr(cfg, 'iteritems'):
         for k, v in cfg.iteritems():
             # for final values
-            if isinstance(v, (str, int, list)) and (k != 'include' and k != 'includeAfter'):
+            if isinstance(v, (str, int, list)) and not k.startswith('IBoxLoader'):
                 if k in enforce_list:
                     continue
                 elif k.endswith('_IBOXENFORCE'):
@@ -251,7 +266,7 @@ def merge_cfg(cfgs, cfg_key, list_base=None):
 
     for cfg, v in cfgs.iteritems():
         for c in v:
-            keys = ['include', 'includeAfter'] + cfg_key[cfg]
+            keys = ['IBoxLoader', 'IBoxLoaderAfter'] + cfg_key[cfg]
             parsed_cfg = parse_cfg(c, keys)
             RP_list.append(parsed_cfg)
 
@@ -421,8 +436,10 @@ def build_RP():
     global CFG_FILE_INT
     global CFG_FILE_EXT
     global enforce_list
+    global exclude_list
 
     enforce_list = []
+    exclude_list = []
 
     CFG_FILE_INT = '%s/cfg' % os.path.dirname(os.path.realpath(__file__))
     CFG_FILE_INT = os.path.normpath(CFG_FILE_INT)
@@ -486,6 +503,9 @@ def build_RP():
         print('##########ENFORCED######START#####')
         pprint(enforce_list)
         print('##########ENFORCED######END#######')
+        print('##########EXCLUDE#######START#####')
+        pprint(exclude_list)
+        print('##########EXCLUDE#######END#######')
 
 
     try:

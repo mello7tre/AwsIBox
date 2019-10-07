@@ -1,8 +1,13 @@
+IBoxLoader: !exclude [
+  autoscaling.yml,
+  loadbalancing.yml,
+  alarms.yml,
+  cloudfront-ios.yml,
+]
+
 reserve-cpu:
   StackType: ecs
   StackName: rsc
-  CapacityDesired_IBOXENFORCE: SkipClass
-  CloudFront: SkipClass
   ScalingPolicyTrackings: SkipClass
   ContainerDefinitions:
     - 1:

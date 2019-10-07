@@ -1,4 +1,4 @@
-include: !include [
+IBoxLoader: !include [
   autoscaling.yml,
   loadbalancing.yml,
   alarms.yml,

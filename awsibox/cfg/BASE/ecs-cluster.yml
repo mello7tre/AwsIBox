@@ -1,6 +1,10 @@
-include: !include [
-  imageid-ecs.yml,
-]
+IBoxLoader: 
+  - !include [
+      imageid-ecs.yml,
+    ]
+  - !exclude [
+      cloudfront-ios.yml,
+    ]
 
 ecs-cluster:
   StackType: ec2
@@ -43,7 +47,6 @@ ecs-cluster:
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
         NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
         RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance') 
-  CloudFront: SkipClass
   Apps: []
   Cluster: True
   HealthCheckType: EC2

@@ -89,6 +89,13 @@ class SecurityGroupRuleEcsService(SecurityGroupRule):
 
 class SG_SecurityGroupsExtra(object):
     def __init__(self, Out_String, Out_Map):
+        # if key SecurityGroups not present, set and empty SecurityGroups list and output (not added)
+        try: cfg.SecurityGroups
+        except:
+            self.SecurityGroups = []
+            self.O_SecurityGroups = Output('') 
+            return
+
         # Parameters
         P_SecurityGroups = Parameter('SecurityGroups')
         P_SecurityGroups.Description = 'SecurityGroups List Extra - %s for default based on env/role' % SECURITY_GROUPS_DEFAULT

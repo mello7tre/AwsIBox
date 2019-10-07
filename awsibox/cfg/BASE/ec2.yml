@@ -1,4 +1,4 @@
-include: !include [
+IBoxLoader: !include [
   autoscaling.yml,
   loadbalancing.yml,
   alarms.yml,
@@ -129,7 +129,7 @@ dev: &cfg_dev
 stg: *cfg_dev 
 
 
-includeAfter: !include [
+IBoxLoaderAfter: !include [
   spot-auto.yml,
   #  spot-asg.yml,
 ]

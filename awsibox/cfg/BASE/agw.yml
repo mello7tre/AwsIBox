@@ -1,4 +1,4 @@
-include: !include [
+IBoxLoader: !include [
   cloudfront-ios.yml,
   certificate.yml,
 ]

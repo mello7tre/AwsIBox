@@ -1,7 +1,10 @@
+IBoxLoader : !exclude [
+  cloudfront-ios.yml,
+]
+
 buildkite:
   StackType: ecs
   StackName: bkt
-  CloudFront: SkipClass
   ScalingPolicyTrackings: SkipClass
   Capacity:
     Desired: 3
