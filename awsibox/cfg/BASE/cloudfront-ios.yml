@@ -29,3 +29,13 @@ global:
   Output:
     - CloudFront:
         Value: get_endvalue('CloudFront')
+  CloudFrontAliasExtra:
+    - 1: None
+    - 2: None
+  CloudFrontAliasZone: None
+  CloudFrontOriginAdHoc: False
+  CloudFrontOriginPath: ''
+  CloudFrontOriginProtocolPolicy: https-only
+  CloudFrontOriginKeepaliveTimeout: 5
+  CloudFrontOriginReadTimeout: 30
+  RecordSetCloudFront: None

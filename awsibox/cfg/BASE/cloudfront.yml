@@ -16,10 +16,6 @@ global:
         Value: get_endvalue('CloudFrontWebACLId')
   CloudFront: None
   CloudFrontAcmCertificate: True
-  CloudFrontAliasExtra:
-    - 1: None
-    - 2: None
-  CloudFrontAliasZone: None
   CloudFrontCacheBehaviors:
     - 0:
         AllowedMethods: ['HEAD', 'GET']
@@ -36,11 +32,6 @@ global:
         ViewerProtocolPolicy: allow-all
   CloudFrontHttpVersion: 'http2'
   CloudFrontLogging: None
-  CloudFrontOriginAdHoc: False
-  CloudFrontOriginPath: ''
-  CloudFrontOriginProtocolPolicy: https-only
-  CloudFrontOriginKeepaliveTimeout: 5
-  CloudFrontOriginReadTimeout: 30
   CustomErrorResponses:
     - 1:
         ErrorCode: 404
@@ -65,4 +56,3 @@ global:
         ErrorCachingMinTTL: 300
         ResponsePagePath: '/error-pages/504.html'
         ResponseCode: 504
-  RecordSetCloudFront: None

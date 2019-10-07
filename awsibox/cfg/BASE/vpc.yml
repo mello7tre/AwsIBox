@@ -1,6 +1,24 @@
 vpc:
   StackType: res
   StackName: vpc
+  Parameter:
+    - VPCCidrBlock:
+        Description: 'CIDR Block for VPC'
+        Default: '10.80.0.0/16'
+    - VPCName:
+        Description: 'VPC Tag Name'
+  Output:
+    - VpcId:
+        Value: Ref('VPC')
+        Export: Export('VpcId')
+    - VPCCidr:
+        Value: GetAtt('VPC', 'CidrBlock')
+        Export: Export('VPCCidr')
+    - RouteTablePrivate:
+        Value: Ref('RouteTablePrivate')
+        Export: Export('RouteTablePrivate')
+    - EIPNat:
+        Value: Ref('O_EIPNat')
   MappingClass:
     - AZones:
   VPC: True

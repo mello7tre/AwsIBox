@@ -1,0 +1,26 @@
+global:
+  Parameter:
+    - HostedZoneEnv:
+        Description: 'Create HostedZoneEnv - can be created in only one Region - empty for default based on env/role'
+        AllowedValue: ['', 'True', 'None']
+    - HostedZoneIdEnv:
+        Description: 'Id of HostedZoneEnv - must be submitted in all others Regions where HostedZoneEnv is not created - empty for default based on env/role'
+  Condition:
+    - HostedZoneEnv:
+        get_condition('', 'not_equals', 'None', 'HostedZoneEnv')
+  Output:
+    - HostedZoneIdPrivate:
+        Value: Ref('HostedZonePrivate')
+        Export: Export('HostedZoneIdPrivate')
+    - HostedZoneNamePrivate:
+        Value: Sub(cfg.HostedZoneNamePrivate)
+    - HostedZoneIdEnv:
+        Value: If('HostedZoneEnv', Ref('HostedZoneEnv'), get_endvalue('HostedZoneIdEnv'))
+        Export: Export('HostedZoneIdEnv')
+    - HostedZoneNameEnv:
+        Value: Sub(cfg.HostedZoneNameEnv)
+    - HostedZoneNameRegionEnv:
+        Value: Sub(cfg.HostedZoneNameRegionEnv)
+  HostedZoneEnv: None
+  HostedZoneEnvExtra1: None
+  HostedZoneIdEnv: None

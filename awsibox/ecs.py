@@ -238,14 +238,6 @@ class ECS_TaskDefinition(object):
             ),
         ]
 
-        # Parameters
-        P_DockerLabelLastUpdate = Parameter('DockerLabelLastUpdate')
-        P_DockerLabelLastUpdate.Description = 'Use to force redeploy'
-
-        add_obj([
-            P_DockerLabelLastUpdate,
-        ])
-
         Containers = []
         for n, v in cfg.ContainerDefinitions.iteritems():
             Environments = []
@@ -394,18 +386,6 @@ class ECS_TaskDefinition(object):
 
 class ECS_Service(object):
     def __init__(self, key):
-        # Parameters
-        P_MaximumPercent = Parameter('DeploymentConfigurationMaximumPercent')
-        P_MaximumPercent.Description = 'DeploymentConfiguration MaximumPercent - empty for default based on env/role'
-
-        P_MinimumHealthyPercent = Parameter('DeploymentConfigurationMinimumHealthyPercent')
-        P_MinimumHealthyPercent.Description = 'DeploymentConfiguration MinimumHealthyPercent - empty for default based on env/role'
-
-        add_obj([
-            P_MaximumPercent,
-            P_MinimumHealthyPercent,
-        ])
-
         # Resources
         R_SG = SecurityGroupEcsService('SecurityGroupEcsService')
         R_SG.setup()
@@ -443,21 +423,6 @@ class ECS_Service(object):
             R_Service,
             R_SG,
         ])
-
-        # Output
-        try:
-            O_MaximumPercent = Output('DeploymentConfigurationMaximumPercent')
-            O_MaximumPercent.Value = R_Service.DeploymentConfiguration.MaximumPercent
-    
-            O_MinimumHealthyPercent = Output('DeploymentConfigurationMinimumHealthyPercent')
-            O_MinimumHealthyPercent.Value = R_Service.DeploymentConfiguration.MinimumHealthyPercent
-    
-            add_obj([
-                O_MaximumPercent,
-                O_MinimumHealthyPercent,
-            ])
-        except AttributeError:
-            pass
 
 
 class ECS_Cluster(object):

@@ -127,19 +127,6 @@ class VPC_VPC(object):
         o_subnetprivate = []
         o_subnetpublic = []
 
-        # Parameters
-        P_CidrBlock = Parameter('VPCCidrBlock')
-        P_CidrBlock.Description = 'CIDR Block for VPC'
-        P_CidrBlock.Default = '%s.0.0/16' % vpc_net
-
-        P_Name = Parameter('VPCName')
-        P_Name.Description = 'VPC Tag Name'
-
-        add_obj([
-            P_CidrBlock,
-            P_Name,
-        ])
-
         # Resources
         R_VPC = ec2.VPC('VPC')
         auto_get_props(R_VPC, mapname='')
@@ -249,21 +236,6 @@ class VPC_VPC(object):
 
 
         # Outputs
-        O_VpcId = Output('VpcId')
-        O_VpcId.Value = Ref('VPC')
-        O_VpcId.Export = Export('VpcId')
-
-        O_VPCCidr = Output('VPCCidr')
-        O_VPCCidr.Value = GetAtt('VPC', 'CidrBlock')
-        O_VPCCidr.Export = Export('VPCCidr')
-
-        O_RouteTablePrivate = Output('RouteTablePrivate')
-        O_RouteTablePrivate.Value = Ref('RouteTablePrivate')
-        O_RouteTablePrivate.Export = Export('RouteTablePrivate')
-
-        O_EIPNat = Output('EIPNat')
-        O_EIPNat.Value = Ref('O_EIPNat')
-
         O_SubnetsPrivate = Output('SubnetsPrivate')
         O_SubnetsPrivate.Value = Join(',', o_subnetprivate)
         O_SubnetsPrivate.Export = Export('SubnetsPrivate')
@@ -273,10 +245,6 @@ class VPC_VPC(object):
         O_SubnetsPublic.Export = Export('SubnetsPublic')
 
         add_obj([
-            O_VpcId,
-            O_VPCCidr,
-            O_RouteTablePrivate,
-            O_EIPNat,
             O_SubnetsPrivate,
             O_SubnetsPublic,
         ])

@@ -349,9 +349,6 @@ class R53_RecordSetCCH(object):
 
 class R53_HostedZones(object):
     def __init__(self, key):
-        # Conditions
-        add_obj(get_condition('HostedZoneEnv', 'not_equals', 'None'))
-
         # Resources
         R_Private = R53HostedZonePrivate('HostedZonePrivate')
         R_Private.setup()
@@ -374,34 +371,4 @@ class R53_HostedZones(object):
         add_obj([
             R_Private,
             R_Env,
-        ])
-
-        # Outputs
-        O_Private = Output('HostedZoneIdPrivate')
-        O_Private.Value = Ref('HostedZonePrivate')
-        O_Private.Export = Export('HostedZoneIdPrivate')
-
-        O_PrivateName = Output('HostedZoneNamePrivate')
-        O_PrivateName.Value =  Sub(cfg.HostedZoneNamePrivate)
-
-        O_Env = Output('HostedZoneIdEnv')
-        O_Env.Value = If(
-            'HostedZoneEnv',
-            Ref('HostedZoneEnv'),
-            get_endvalue('HostedZoneIdEnv')
-        )
-        O_Env.Export = Export('HostedZoneIdEnv')
-
-        O_EnvName = Output('HostedZoneNameEnv')
-        O_EnvName.Value = Sub(cfg.HostedZoneNameEnv)
-
-        O_EnvNameRegion = Output('HostedZoneNameRegionEnv')
-        O_EnvNameRegion.Value = Sub(cfg.HostedZoneNameRegionEnv)
-
-        add_obj([
-            O_Private,
-            O_PrivateName,
-            O_Env,
-            O_EnvName,
-            O_EnvNameRegion,
         ])

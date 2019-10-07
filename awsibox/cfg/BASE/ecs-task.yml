@@ -5,7 +5,7 @@ IBoxLoader: !include [
 global:
   Parameter:
     - ClusterStack:
-        Description: 'Cluster Stack Name used to launch service on - - empty for default based on env/role'
+        Description: 'Cluster Stack Name used to launch service on - empty for default based on env/role'
     - Cpu:
         Description: 'Cpu used by task - empty for default based on env/role'
         AllowedValues: [
@@ -14,6 +14,8 @@ global:
           '2176', '2304', '2432', '2560', '2688', '2816', '2944', '3072',
           '3200', '3328', '3456', '3584', '3712', '3840', '3968', '4096',
         ]
+    - DockerLabelLastUpdate:
+        Description: 'Use to force redeploy - can use: $(date +%F_%T)'
     - LaunchType:
         Description: RunTask LaunchType - empty for default based on env/role
         AllowedValues: ['', 'EC2', 'FARGATE']

@@ -8,8 +8,17 @@ IBoxLoader: !include [
 
 ecs:
   Parameter:
+    - DeploymentConfigurationMaximumPercent:
+        Description: 'DeploymentConfiguration MaximumPercent - empty for default based on env/role'
+    - DeploymentConfigurationMinimumHealthyPercent:
+        Description: 'DeploymentConfiguration MinimumHealthyPercent - empty for default based on env/role'
     - LoadBalancerApplicationStack:
         Description: 'LoadBalancer Application Stack to use - empty for default based on env/role'
+  Output:
+    - DeploymentConfigurationMaximumPercent:
+        Value: get_endvalue('DeploymentConfigurationMaximumPercent')
+    - DeploymentConfigurationMinimumHealthyPercent:
+        Value: get_endvalue('DeploymentConfigurationMinimumHealthyPercent')
   LaunchType: EC2
   AlarmCPUBase: &cpu
     Dimensions:

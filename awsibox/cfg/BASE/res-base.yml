@@ -1,17 +1,12 @@
 IBoxLoader: !include [
   lb-accountid.yml,
   ssm.yml,
+  hostedzones.yml,
 ]
 
 res-base:
   StackType: res
   StackName: r-base
-  Parameter:
-    - HostedZoneEnv:
-        Description: 'Create HostedZoneEnv - can be created in only one Region - empty for default based on env/role'
-        AllowedValue: ['', 'True', 'None']
-    - HostedZoneIdEnv:
-        Description: 'Id of HostedZoneEnv - must be submitted in all others Regions where HostedZoneEnv is not created - empty for default based on env/role'
   Output:
     - LambdaECSRunTaskArn:
         Value: GetAtt('LambdaECSRunTask', 'Arn')
@@ -39,8 +34,6 @@ res-base:
               Resource: Sub('arn:aws:s3:::${BucketLogs}/*')
               Principal: get_endvalue('LoadBalancerAccountID')
               Sid: AllowLBLogs
-  HostedZoneEnv: None
-  HostedZoneIdEnv: None
   IAMPolicy:
     - BaseInstance:
         Type: Managed
