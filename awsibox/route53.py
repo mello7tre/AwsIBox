@@ -158,9 +158,9 @@ class R53HostedZoneEnvExtra1(r53.HostedZone):
     def setup(self):
         self.Condition = self.title  # Ex. HostedZoneEnvExtra1
         self.HostedZoneConfig = r53.HostedZoneConfiguration(
-            Comment=get_subvalue('${EnvShort} ${1M} public zone', 'HostedZoneEnvExtra1')
+            Comment=get_subvalue('${EnvShort} ${1M} public zone', 'R53HostedZoneEnvExtra1')
         )
-        self.Name = get_subvalue('${EnvShort}.${1M}', 'HostedZoneEnvExtra1')
+        self.Name = get_subvalue('${EnvShort}.${1M}', 'R53HostedZoneEnvExtra1')
 
 # E - ROUTE53 #
 
@@ -348,7 +348,7 @@ class R53_RecordSetCCH(object):
 
 
 class R53_HostedZones(object):
-    def __init__(self, key):
+    def __inita__(self, key):
         # Resources
         R_Private = R53HostedZonePrivate('HostedZonePrivate')
         R_Private.setup()
@@ -356,13 +356,10 @@ class R53_HostedZones(object):
         R_Env = R53HostedZoneEnv('HostedZoneEnv')
         R_Env.setup()
 
-        try: cfg.HostedZoneEnvExtra1
+        try: cfg.R53HostedZoneEnvExtra1
         except:
             pass
         else:
-            # Conditions
-            add_obj(get_condition('HostedZoneEnvExtra1', 'not_equals', 'None'))
-
             # Resources
             R_EnvExtra1 = R53HostedZoneEnvExtra1('HostedZoneEnvExtra1')
             R_EnvExtra1.setup()
@@ -372,3 +369,44 @@ class R53_HostedZones(object):
             R_Private,
             R_Env,
         ])
+
+    def __init__(self, key):
+        for n, v in getattr(cfg, key).iteritems():
+            mapname = key + n
+            resname = v['ResourceName']
+            # parameters
+            if n.startswith('Public'):
+                p_HostedZone = Parameter(mapname)
+                p_HostedZone.Description = 'Create Public %s - can be created in only one Region - empty for default based on env/role' % resname
+
+                p_HostedZoneId = Parameter(mapname + 'Id')
+                p_HostedZoneId.Description = 'Id of Public %s - required in all Regions where HostedZonePublicEnv is not created - empty for default based on env/role' % resname
+
+                add_obj([
+                    p_HostedZone,
+                    p_HostedZoneId,
+                ])
+
+                # conditions
+                add_obj([
+                    get_condition(resname, 'not_equals', 'None', mapname)
+                ])
+
+            # resources
+            r_HostedZone = r53.HostedZone(v['ResourceName'])
+            auto_get_props(r_HostedZone, v, recurse=True, mapname=mapname)
+
+            add_obj(r_HostedZone)
+
+            # outputs
+            o_HostedZoneName = Output(resname.replace('HostedZone', 'HostedZoneName'))
+            o_HostedZoneName.Value = Sub(cfg.HostedZoneNamePrivate)
+                
+            o_HostedZoneId = Output(resname.replace('HostedZone', 'HostedZoneId'))
+            o_HostedZoneId.Value = If(resname, Ref(resname), get_endvalue(mapname)) if n.startswith('Public') else Ref(resname)
+            o_HostedZoneId.Export = Export(resname)
+
+            add_obj([
+                o_HostedZoneName,
+                o_HostedZoneId,
+            ])

@@ -155,7 +155,7 @@ CFG_TO_CLASS = OrderedDict([
     ('DBInstanceClass', {'module': 'rds', 'class': 'RDS_DB'}),
     ('DBParameterGroup', {'module': 'rds', 'class': 'RDS_ParameterGroups'}),
     ('DBSubnetGroup', {'module': 'rds', 'class': 'RDS_SubnetGroups'}),
-    ('HostedZoneEnv', {'module': 'route53', 'class': 'R53_HostedZones'}),
+    ('HostedZone', {'module': 'route53', 'class': 'R53_HostedZones'}),
     ('WafByteMatchSet', {'module': 'waf', 'class': ['WAF_GlobalByteMatchSets', 'WAF_RegionalByteMatchSets']}),
     ('WafIPSet', {'module': 'waf', 'class': ['WAF_GlobalIPSets', 'WAF_RegionalIPSets']}),
     ('WafRule', {'module': 'waf', 'class': ['WAF_GlobalRules', 'WAF_RegionalRules']}),
