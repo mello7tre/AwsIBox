@@ -1,42 +1,13 @@
 global:
-  Parametera:
-    - HostedZonePublicEnv:
-        Description: 'Create Public HostedZoneEnv - can be created in only one Region - empty for default based on env/role'
-        AllowedValue: ['', 'True', 'None']
-    - HostedZonePublicIdEnv:
-        Description: 'Id of Public HostedZoneEnv - required in all Regions where HostedZonePublicEnv is not created - empty for default based on env/role'
-  Conditiona:
-    - HostedZoneEnv:
-        get_condition('', 'not_equals', 'None', 'HostedZonePublicEnv')
-    - HostedZoneEnvExtra1:
-        get_condition('', 'not_equals', 'None', 'HostedZoneEnvExtra1')
-  Outputa:
-    - HostedZoneIdPrivate:
-        Value: Ref('HostedZonePrivate')
-        Export: Export('HostedZoneIdPrivate')
-    - HostedZoneNamePrivate:
-        Value: Sub(cfg.HostedZoneNamePrivate)
-    - HostedZoneIdEnv:
-        Value: If('HostedZoneEnv', Ref('HostedZoneEnv'), get_endvalue('HostedZoneIdEnv'))
-        Export: Export('HostedZoneIdEnv')
-    - HostedZoneNameEnv:
-        Value: Sub(cfg.HostedZoneNameEnv)
-    - HostedZoneNameRegionEnv:
-        Value: Sub(cfg.HostedZoneNameRegionEnv)
   HostedZone:
     - PublicEnv:
-        Condition: HostedZonePublicEnv
+        Id: None
         ResourceName: HostedZoneEnv
         HostedZoneConfig:
-          Comment: Sub('${EnvShort} private zone ${AWS::Region}')
-        Name: Sub(cfg.HostedZoneNamePrivate)
-    - PublicEnvExtra1:
-        Condition: HostedZoneEnvPublicExtra1
-        ResourceName: HostedZoneEnvExtra1
-        HostedZoneConfig:
-          Comment: get_subvalue('${EnvShort} ${1M} public zone', 'HostedZonePublicEnvExtra1')
-        Name:  get_subvalue('${EnvShort}.${1M}', 'HostedZonePublicEnvExtra1')
+          Comment: Sub('${EnvShort} public zone')
+        Name: Sub(cfg.HostedZoneNameEnv)
     - PrivateEnv:
+        Id: None
         ResourceName: HostedZonePrivate
         HostedZoneConfig:
             Comment: Sub('${EnvShort} private zone ${AWS::Region}')
@@ -45,7 +16,3 @@ global:
           - Vpc1:
               VPCId: get_expvalue('VpcId')
               VPCRegion: Ref('AWS::Region')
-        
-  HostedZonePublicEnv: None
-  HostedZonePublicEnvExtra1: None
-  HostedZoneIdPublicEnv: None

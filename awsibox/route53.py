@@ -5,7 +5,6 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
     get_subvalue, auto_get_props, get_condition, add_obj)
 
 
-# S - ROUTE53 #
 class R53RecordSet(r53.RecordSetType):
     def setup(self):
         pass
@@ -131,73 +130,19 @@ class R53RecordSetNSServiceDiscovery(R53RecordSet):
         self.TTL = '300'
 
 
-class R53HostedZonePrivate(r53.HostedZone):
-    def setup(self):
-        self.HostedZoneConfig = r53.HostedZoneConfiguration(
-            Comment=Sub('${EnvShort} private zone ${AWS::Region}')
-        )
-        self.Name = Sub(cfg.HostedZoneNamePrivate)
-        self.VPCs = [
-            r53.HostedZoneVPCs(
-                VPCId=get_expvalue('VpcId'),
-                VPCRegion=Ref('AWS::Region')
-            )
-        ]
-
-
-class R53HostedZoneEnv(r53.HostedZone):
-    def setup(self):
-        self.Condition = self.title  # Ex. HostedZoneEnv
-        self.HostedZoneConfig = r53.HostedZoneConfiguration(
-            Comment=Sub('${EnvShort} public zone')
-        )
-        self.Name = Sub(cfg.HostedZoneNameEnv)
-
-
-class R53HostedZoneEnvExtra1(r53.HostedZone):
-    def setup(self):
-        self.Condition = self.title  # Ex. HostedZoneEnvExtra1
-        self.HostedZoneConfig = r53.HostedZoneConfiguration(
-            Comment=get_subvalue('${EnvShort} ${1M} public zone', 'R53HostedZoneEnvExtra1')
-        )
-        self.Name = get_subvalue('${EnvShort}.${1M}', 'R53HostedZoneEnvExtra1')
-
-# E - ROUTE53 #
-
 # #################################
 # ### START STACK INFRA CLASSES ###
 # #################################
 
-# S - ROUTE53 #
+
 class R53_RecordSetCloudFront(object):
     def __init__(self):
-        # Conditions
-        C_RecordSet = {'RecordSetCloudFront': And(
-            Condition('CloudFrontDistribution'),
-            Not(
-                Equals(get_endvalue('RecordSetCloudFront'), 'None')
-            )
-        )}
-
-        add_obj([
-            C_RecordSet,
-        ])
-
-        # Resources
+       # Resources
         R_RecordSet = R53RecordSetCloudFront('RecordSetCloudFront')
         R_RecordSet.setup()
 
         add_obj([
             R_RecordSet,
-        ])
-
-        # Outputs
-        O_CloudFront = Output('RecordSetCloudFront')
-        O_CloudFront.Condition = 'RecordSetCloudFront'
-        O_CloudFront.Value = Sub('${RecordSet} --> ${CloudFrontDistribution.DomainName}', **{'RecordSet': R_RecordSet.Name})
-
-        add_obj([
-            O_CloudFront
         ])
 
 
@@ -254,7 +199,6 @@ class R53_RecordSetEC2LoadBalancer(object):
             O_Internal.Value = Ref('RecordSetInternal')
 
             add_obj(O_Internal)
-# E - ROUTE53 #
 
 
 class R53_RecordSetECSLoadBalancer(object):
@@ -348,35 +292,13 @@ class R53_RecordSetCCH(object):
 
 
 class R53_HostedZones(object):
-    def __inita__(self, key):
-        # Resources
-        R_Private = R53HostedZonePrivate('HostedZonePrivate')
-        R_Private.setup()
-
-        R_Env = R53HostedZoneEnv('HostedZoneEnv')
-        R_Env.setup()
-
-        try: cfg.R53HostedZoneEnvExtra1
-        except:
-            pass
-        else:
-            # Resources
-            R_EnvExtra1 = R53HostedZoneEnvExtra1('HostedZoneEnvExtra1')
-            R_EnvExtra1.setup()
-            add_obj(R_EnvExtra1)
-
-        add_obj([
-            R_Private,
-            R_Env,
-        ])
-
     def __init__(self, key):
         for n, v in getattr(cfg, key).iteritems():
             mapname = key + n
             resname = v['ResourceName']
             # parameters
             if n.startswith('Public'):
-                p_HostedZone = Parameter(mapname)
+                p_HostedZone = Parameter(mapname + 'Enabled')
                 p_HostedZone.Description = 'Create Public %s - can be created in only one Region - empty for default based on env/role' % resname
 
                 p_HostedZoneId = Parameter(mapname + 'Id')
@@ -389,12 +311,14 @@ class R53_HostedZones(object):
 
                 # conditions
                 add_obj([
-                    get_condition(resname, 'not_equals', 'None', mapname)
+                    get_condition(resname, 'not_equals', 'None', mapname + 'Enabled')
                 ])
 
             # resources
             r_HostedZone = r53.HostedZone(v['ResourceName'])
             auto_get_props(r_HostedZone, v, recurse=True, mapname=mapname)
+            if n.startswith('Public'):
+                r_HostedZone.Condition = resname
 
             add_obj(r_HostedZone)
 
@@ -403,7 +327,7 @@ class R53_HostedZones(object):
             o_HostedZoneName.Value = Sub(cfg.HostedZoneNamePrivate)
                 
             o_HostedZoneId = Output(resname.replace('HostedZone', 'HostedZoneId'))
-            o_HostedZoneId.Value = If(resname, Ref(resname), get_endvalue(mapname)) if n.startswith('Public') else Ref(resname)
+            o_HostedZoneId.Value = If(resname, Ref(resname), get_endvalue(mapname + 'Id')) if n.startswith('Public') else Ref(resname)
             o_HostedZoneId.Export = Export(resname)
 
             add_obj([

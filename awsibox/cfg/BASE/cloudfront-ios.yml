@@ -26,9 +26,17 @@ global:
           Condition('ListenerLoadBalancerHttpsPort'),
           get_condition('', 'not_equals', 'http-only', 'CloudFrontOriginProtocolPolicy')
         )
+    - RecordSetCloudFront:
+        And(
+          Condition('CloudFrontDistribution'),
+          get_condition('', 'not_equals', 'None', 'RecordSetCloudFront')
+        )
   Output:
     - CloudFront:
         Value: get_endvalue('CloudFront')
+    - RecordSetCloudFront:
+        Condition: RecordSetCloudFront
+        Value: Sub('${RecordSetCloudFront} --> ${CloudFrontDistribution.DomainName}')
   CloudFrontAliasExtra:
     - 1: None
     - 2: None
