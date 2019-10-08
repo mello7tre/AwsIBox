@@ -1,10 +1,12 @@
 global:
   Parameter:
     - SpotAuto:
-        Description: 'Set ASG TAG for autospotting https://github.com/AutoSpotting/AutoSpotting - empty for default based on env/role'
+        Description: 'ASG TAG for autospotting https://github.com/AutoSpotting/AutoSpotting - empty for default based on env/role'
         AllowedValues: ['', 'True', 'None']
     - SpotAutoMinOnDemandNumber:
-        Description: 'Set ASG TAG for autospotting minimum on deman instance to be keept - empty for default based on env/role - None to disable'
+        Description: 'ASG TAG for autospotting minimum on-demand instance to keep - empty for default based on env/role - None to disable'
+    - SpotAutoAllowedInstances:
+        Description: 'ASG TAG for autospotting allowed instance types (space delimited) - current to use the same of ASG - empty for default based on env/role - None to disable'
   Condition:
     - Spot:
         Or(
@@ -18,5 +20,11 @@ global:
           Condition('SpotAuto'),
           get_condition('', 'not_equals', 'None', 'SpotAutoMinOnDemandNumber')
         )
+    - SpotAutoAllowedInstances:
+        And(
+          Condition('SpotAuto'),
+          get_condition('', 'not_equals', 'None', 'SpotAutoAllowedInstances')
+        )
   SpotAuto: None
   SpotAutoMinOnDemandNumber: None
+  SpotAutoAllowedInstances: None

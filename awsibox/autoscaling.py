@@ -1085,6 +1085,11 @@ class AS_AutoscalingEC2(object):
                 'SpotAutoMinOnDemandNumber',
                 asg.Tag(('autospotting_min_on_demand_number'), get_endvalue('SpotAutoMinOnDemandNumber'), True),
                 Ref('AWS::NoValue')
+            ),
+            If(
+                'SpotAutoAllowedInstances',
+                asg.Tag(('autospotting_allowed_instance_types'), get_endvalue('SpotAutoAllowedInstances'), True),
+                Ref('AWS::NoValue')
             )
         ])
         # Notifications currently are not associeted to "any actions" - now using CW events - this way works with autospotting too
