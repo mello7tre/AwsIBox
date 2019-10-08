@@ -24,10 +24,7 @@ ec2:
     - WillReplace:
         Equals(Ref('UpdateMode'), 'Replace')
     - SpotPrice:
-        Or(
-          And(Condition('SpotPriceOverride'),Not(Equals(Ref('SpotPrice'), '0'))),
-          And(Not(Condition('SpotPriceOverride')),Not(Equals(get_endvalue('SpotPrice'), '0')))
-        )
+        get_condition('', 'not_equals', '0', 'SpotPrice')
     - Spot:
         And(
           Condition('SpotPrice'),

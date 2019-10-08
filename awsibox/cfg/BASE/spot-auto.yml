@@ -12,17 +12,11 @@ global:
           Condition('SpotPrice'),
         )
     - SpotAuto:
-        Or(
-          And(Condition('SpotAutoOverride'),Not(Equals(Ref('SpotAuto'), 'None'))),
-          And(Not(Condition('SpotAutoOverride')),Not(Equals(get_endvalue('SpotAuto'), 'None')))
-        )
+        get_condition('', 'not_equals', 'None', 'SpotAuto')
     - SpotAutoMinOnDemandNumber:
         And(
           Condition('SpotAuto'),
-          Or(
-            And(Condition('SpotAutoMinOnDemandNumberOverride'),Not(Equals(Ref('SpotAutoMinOnDemandNumber'), 'None'))),
-            And(Not(Condition('SpotAutoMinOnDemandNumberOverride')),Not(Equals(get_endvalue('SpotAutoMinOnDemandNumber'), 'None')))
-          )
+          get_condition('', 'not_equals', 'None', 'SpotAutoMinOnDemandNumber')
         )
   SpotAuto: None
   SpotAutoMinOnDemandNumber: None

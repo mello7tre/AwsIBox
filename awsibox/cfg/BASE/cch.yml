@@ -25,7 +25,7 @@ cch:
         Description: 'Access type public or private - empty for default based on env/role'
         AllowedValues: ['', 'Private', 'Public']
   Condition:
-    - CCHPublic: Equals(get_endvalue('CCHAccess'), 'Public')
+    - CCHPublic: get_condition('', 'equals', 'Public', 'CCHAccess')
     - CacheEnabled: Equals(Ref('CacheEnabled'), 'True')
   Output:
     - CacheNodeType:

@@ -14,19 +14,13 @@ global:
         Description: 'Load Balancer External Ssl Certificate - None to disable - empty for default based on env/role'
   Condition:
     - ListenerLoadBalancerHttpPort:
-        Or(
-          And(Condition('ListenerLoadBalancerHttpPortOverride'),Not(Equals(Ref('ListenerLoadBalancerHttpPort'), 'None'))),
-          And(Not(Condition('ListenerLoadBalancerHttpPortOverride')),Not(Equals(get_endvalue('ListenerLoadBalancerHttpPort'), 'None'))),
-        )
+        get_condition('', 'not_equals', 'None', 'ListenerLoadBalancerHttpPort')
     - ListenerLoadBalancerHttpsPort:
-        Or(
-          And(Condition('ListenerLoadBalancerHttpsPortOverride'),Not(Equals(Ref('ListenerLoadBalancerHttpsPort'), 'None'))),
-          And(Not(Condition('ListenerLoadBalancerHttpsPortOverride')),Not(Equals(get_endvalue('ListenerLoadBalancerHttpsPort'), 'None'))),
-        )
+        get_condition('', 'not_equals', 'None', 'ListenerLoadBalancerHttpsPort')
     - LoadBalancerSslCertificateAdHoc:
         And(
           Condition('ListenerLoadBalancerHttpsPort'),
-          Equals(get_endvalue('LoadBalancerSslCertificate'), 'None')
+          get_condition('', 'equals', 'None', 'LoadBalancerSslCertificate')
         )
   Output:
     - LoadBalancerSslCertificate:

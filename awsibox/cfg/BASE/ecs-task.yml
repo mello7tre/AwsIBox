@@ -29,28 +29,15 @@ global:
         AllowedValues: ['', 'awsvpc', 'bridge']
   Condition:
     - CpuTask:
-        Or(
-          And(Condition('CpuOverride'),Not(Equals(Ref('Cpu'), 'None'))),
-          And(Not(Condition('CpuOverride')),Not(Equals(get_endvalue('Cpu'), 'None')))
-        )
+        get_condition('', 'not_equals', 'None', 'Cpu')
     - LaunchTypeFarGate:
-        Or(
-          And(Condition('LaunchTypeOverride'),Equals(Ref('LaunchType'), 'FARGATE')),
-          And(Not(Condition('LaunchTypeOverride')),Equals(get_endvalue('LaunchType'), 'FARGATE'))
-        )
+        get_condition('', 'equals', 'FARGATE', 'LaunchType')
     - LogConfiguration:
-        Not(Equals(get_endvalue('LogDriver'), 'None'))
+        get_condition('', 'not_equals', 'None', 'LogDriver')
     - NetworkModeAwsVpc:
-        Or(
-          And(Condition('NetworkModeOverride'),Equals(Ref('NetworkMode'), 'awsvpc')),
-          And(Not(Condition('NetworkModeOverride')),Equals(get_endvalue('NetworkMode'), 'awsvpc')),
-          Condition('LaunchTypeFarGate')
-        )
+        get_condition('', 'equals', 'awsvpc', 'NetworkMode', OrExtend=[Condition('LaunchTypeFarGate')])
     - NetworkModeStandard:
-        Or(
-          And(Condition('NetworkModeOverride'),Not(Equals(Ref('NetworkMode'), 'awsvpc'))),
-          And(Not(Condition('NetworkModeOverride')),Not(Equals(get_endvalue('NetworkMode'), 'awsvpc')))
-        )
+        get_condition('', 'not_equals', 'awsvpc', 'NetworkMode')
   Output:
     - Cpu:
         Value: get_endvalue('Cpu')

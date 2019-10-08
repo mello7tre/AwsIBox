@@ -44,21 +44,13 @@ rds:
         AllowedValues: ['', 'standard', 'gp2']
   Condition:
     - DBName:
-        Or(
-          And(Condition('DBNameOverride'), Not(Equals(Ref('DBName'), 'None'))),
-          And(Not(Condition('DBNameOverride')), Not(Equals(get_endvalue('DBName'), 'None')))
-        )
-    - RDSPublic: Equals(get_endvalue('RDSAccess'), 'Public')
+        get_condition('', 'not_equals', 'None', 'DBName')
+    - RDSPublic:
+        get_condition('', 'equals', 'Public', 'RDSAccess')
     - DBSnapshotIdentifier:
-        Or(
-          And(Condition('DBSnapshotIdentifierOverride'), Not(Equals(Ref('DBSnapshotIdentifier'), 'None'))),
-          And(Not(Condition('DBSnapshotIdentifierOverride')), Not(Equals(get_endvalue('DBSnapshotIdentifier'), 'None')))
-        )
+        get_condition('', 'not_equals', 'None', 'DBSnapshotIdentifier')
     - SourceDBInstanceIdentifier:
-        Or(
-          And(Condition('SourceDBInstanceIdentifierOverride'), Not(Equals(Ref('SourceDBInstanceIdentifier'), 'None'))),
-          And(Not(Condition('SourceDBInstanceIdentifierOverride')), Not(Equals(get_endvalue('SourceDBInstanceIdentifier'), 'None')))
-        )
+        get_condition('', 'not_equals', 'None', 'SourceDBInstanceIdentifier')
     - DBInstanceSkipProperties: Or(Condition('DBSnapshotIdentifier'), Condition('SourceDBInstanceIdentifier'))
   Output:
     - AllocatedStorage:

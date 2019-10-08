@@ -27,10 +27,7 @@ ecs-cluster:
     - GPUInstance:
         Equals(Ref('GPUInstance'), 'True')
     - ImageIdLatest:
-        Or(
-          And(Condition('ImageIdOverride'),Equals(Ref('ImageId'), 'latest')),
-          And(Not(Condition('ImageIdOverride')),Equals(get_endvalue('ImageId'), 'latest'))
-        )
+        get_condition('', 'equals', 'latest', 'ImageId')
   Output:
     - Cluster:
         Value: Ref('Cluster')
