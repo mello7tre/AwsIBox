@@ -1,0 +1,27 @@
+IBoxLoader: !include [
+  loadbalancing.yml
+]
+
+global:
+  Condition:
+    - LoadBalancerPublic:
+        get_condition('', 'equals', 'Public', 'LoadBalancerAccess')
+  Output:
+    - HealthCheck:
+        Value:
+          get_subvalue(
+            'Path=${1M},Interval=${2M},Timeout=${3M},Healthy=${4M},Unhealthy=${5M}',
+            [
+              'HealthCheckPath',
+              'HealthCheckIntervalSeconds',
+              'HealthCheckTimeoutSeconds',
+              'HealthyThresholdCount',
+              'UnhealthyThresholdCount',
+            ]
+          )
+    - LoadBalancerAccess:
+        Value: get_endvalue('LoadBalancerAccess')
+    - LoadBalancerApplication:
+        Value: get_endvalue('LoadBalancerApplication', nolist=True)
+    - ListenerLoadBalancer:
+        Value: get_subvalue('HttpPort=${1M},HttpsPort=${2M}', ['ListenerLoadBalancerHttpPort', 'ListenerLoadBalancerHttpsPort'])

@@ -1,9 +1,29 @@
 IBoxLoader: !include [
-  loadbalancing.yml,
+  loadbalancing-elb.yml,
 ]
 
 ecs-alb:
   StackType: alb
   StackName: alb
+  Parameter:
+    - LoadBalancerApplication:
+        Description: 'Application Load Balancer to conditionally create - empty for default based on role - need to be already defined'
+        AllowedValues: ['External', 'Internal', '']
+    - RegionalCertificateArn:
+        Description: 'LoadBalancer CertificateArn - empty for default based on env/role'
+  Condition:
+    - LoadBalancerApplicationExternal:
+        Or(
+          Equals(Ref('LoadBalancerApplication'), 'External'),
+          Equals(Ref('LoadBalancerApplication'), '')
+        )
+    - LoadBalancerApplicationInternal:
+        Or(
+          Equals(Ref('LoadBalancerApplication'), 'Internal'),
+          Equals(Ref('LoadBalancerApplication'), ''),
+        )
+  Output:
+    - LoadBalancerApplication:
+        Value: get_endvalue('LoadBalancerApplication', nolist=True)
   LoadBalancerApplication: ['External', 'Internal']
   RecordSet: []

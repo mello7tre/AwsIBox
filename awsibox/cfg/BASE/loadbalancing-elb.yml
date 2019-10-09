@@ -1,0 +1,14 @@
+IBoxLoader: !include [
+  loadbalancing.yml,
+]
+
+global:
+  Parameter:
+    - LoadBalancerLog:
+        Description: 'Load Balancer Log - None to disable - empty for default based on env/role - for Classic Value is used for EmitInterval too'
+  Condition:
+    - LoadBalancerLog:
+        get_condition('', 'not_equals', 'None', 'LoadBalancerLog')
+  Output:
+    - LoadBalancerLog:
+        Value: get_endvalue('LoadBalancerLog')

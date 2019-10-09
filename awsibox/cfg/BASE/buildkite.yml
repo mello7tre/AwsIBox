@@ -1,5 +1,6 @@
 IBoxLoader : !exclude [
   cloudfront-ios.yml,
+  loadbalancing-ecs.yml,
 ]
 
 buildkite:

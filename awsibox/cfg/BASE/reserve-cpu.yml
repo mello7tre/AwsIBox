@@ -1,6 +1,7 @@
 IBoxLoader: !exclude [
   autoscaling.yml,
-  loadbalancing.yml,
+  loadbalancing-ecs.yml,
+  securitygroup.yml,
   alarms.yml,
   cloudfront-ios.yml,
 ]

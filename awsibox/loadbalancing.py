@@ -594,9 +594,6 @@ class LB_ListenersV2EC2(LB_ListenersEC2):
 class LB_ListenersV2ECS(LB_Listeners):
     def __init__(self):
         super(LB_ListenersV2ECS, self).__init__()
-        # Conditions
-        add_obj(get_condition('LoadBalancerPublic', 'equals', 'Public', 'LoadBalancerAccess'))
-
         # Resources
         if cfg.LoadBalancerApplicationExternal:
             LB_ListenersV2ExternalInternal(scheme='External')
@@ -607,31 +604,9 @@ class LB_ListenersV2ECS(LB_Listeners):
         LB_TargetGroupsECS()
         LB_ListenerRules()
 
-        # Outputs
-        O_Listener = Output('ListenerLoadBalancer')
-        O_Listener.Value = Sub(
-            'HttpPort=${HttpPort},HttpsPort=${HttpsPort}',
-            **{ 
-                'HttpPort': get_endvalue('ListenerLoadBalancerHttpPort'),
-                'HttpsPort': get_endvalue('ListenerLoadBalancerHttpsPort'),
-            }
-        )
-
-        add_obj([
-            O_Listener,
-        ])
-
 
 class LB_ListenersV2ALB(object):
     def __init__(self):
-        # Parameters
-        P_CertificateArn = Parameter('RegionalCertificateArn')
-        P_CertificateArn.Description = 'LoadBalancer CertificateArn - empty for default based on env/role'
-
-        add_obj([
-            P_CertificateArn,
-        ])
-
         # Resources
         if cfg.LoadBalancerApplicationExternal:
             # CREATE SPECIFIC CLASS - EXTERNAL INTERNAL AS PARAMETER
@@ -762,28 +737,6 @@ class LB_TargetGroupsALB(object):
             add_obj(R_TargetGroup)
             
 
-class LB_ElasticLoadBalancing(object):
-    def __init__(self):
-        # Parameters
-        P_Log = Parameter('LoadBalancerLog')
-        P_Log.Description = 'Load Balancer EmitInterval - None to disable - empty for default based on env/role'
-
-        add_obj([
-            P_Log,
-        ])
-
-        # Conditions
-        add_obj(get_condition('LoadBalancerLog', 'not_equals', 'None'))
-
-        # Outputs
-        O_Log = Output('LoadBalancerLog')
-        O_Log.Value = get_endvalue('LoadBalancerLog')
-
-        add_obj([
-            O_Log,
-        ])
-
-
 class LB_ElasticLoadBalancingApplication(object):
     def __init__(self):
         # Parameters
@@ -885,9 +838,8 @@ class LB_ElasticLoadBalancingApplicationEC2(object):
 
 
 
-class LB_ElasticLoadBalancingEC2(LB_ElasticLoadBalancing):
+class LB_ElasticLoadBalancingEC2(object):
     def __init__(self, key):
-        super(LB_ElasticLoadBalancingEC2, self).__init__()
         # Resources
         R53_RecordSetEC2LoadBalancer()
         
@@ -898,30 +850,9 @@ class LB_ElasticLoadBalancingEC2(LB_ElasticLoadBalancing):
             LB_ElasticLoadBalancingApplicationEC2()
 
 
-class LB_ElasticLoadBalancingALB(LB_ElasticLoadBalancing):
+class LB_ElasticLoadBalancingALB(object):
     def __init__(self, key):
-        super(LB_ElasticLoadBalancingALB, self).__init__()
         LB_ElasticLoadBalancingApplication()
-        # Parameters
-        P_ELBAPP = Parameter('LoadBalancerApplication')
-        P_ELBAPP.Description = 'Application Load Balancer to conditionally create - empty for default based on role - need to be already defined'
-        P_ELBAPP.AllowedValues=['External', 'Internal', '']
-
-        add_obj([
-            P_ELBAPP,
-        ])
-
-        # Conditions
-        add_obj([
-            {'LoadBalancerApplicationExternal': Or(
-                Equals(Ref('LoadBalancerApplication'), 'External'),
-                Equals(Ref('LoadBalancerApplication'), ''),
-            )},    
-            {'LoadBalancerApplicationInternal': Or(
-                Equals(Ref('LoadBalancerApplication'), 'Internal'),
-                Equals(Ref('LoadBalancerApplication'), ''),
-            )}
-        ])
 
         if cfg.LoadBalancerApplicationExternal:
             # Resources
@@ -986,42 +917,9 @@ class LB_ElasticLoadBalancingALB(LB_ElasticLoadBalancing):
         # Now that AWS allow to send a fixed response, there is no need to have a DefaultTarget Group pointing to nothing
         # LB_TargetGroupsALB()
 
-        # Outputs
-        O_ELB = Output('LoadBalancerApplication')
-        O_ELB.Value = get_endvalue('LoadBalancerApplication', nolist=True)
-
-        add_obj([
-            O_ELB,
-        ])
-
 
 class LB_ElasticLoadBalancingECS(object):
     def __init__(self, key):
         # Resources
         LB_ListenersV2ECS()
         R53_RecordSetECSLoadBalancer()
-
-        # Outputs
-        O_HealthCheck = Output('HealthCheck')
-        O_HealthCheck.Value = Sub(
-            'Path=${Path},Interval=${Interval},Timeout=${Timeout},Healthy=${Healthy},Unhealthy=${Unhealthy}',
-            **{
-                'Path': get_endvalue('HealthCheckPath'),
-                'Interval': get_endvalue('HealthCheckIntervalSeconds'),
-                'Timeout': get_endvalue('HealthCheckTimeoutSeconds'),
-                'Healthy': get_endvalue('HealthyThresholdCount'),
-                'Unhealthy': get_endvalue('UnhealthyThresholdCount'),
-            }
-        )
-
-        O_Access = Output('LoadBalancerAccess')
-        O_Access.Value = get_endvalue('LoadBalancerAccess')
-
-        O_Scheme = Output('LoadBalancerApplication')
-        O_Scheme.Value = get_endvalue('LoadBalancerApplication', nolist=True)
-
-        add_obj([
-            O_HealthCheck,
-            O_Access,
-            O_Scheme,
-        ])

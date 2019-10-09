@@ -1,5 +1,6 @@
 IBoxLoader: !include [
   parameterstore.yml,
+  securitygroup.yml,
 ]
 
 global:
