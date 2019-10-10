@@ -94,20 +94,23 @@ BASE_CFGS = {
 
 INSTANCE_LIST = [
     'default',
+    'm3.medium', 'm3.large', 'm3.xlarge', 'm3.2xlarge',
+    'c3.large', 'c3.xlarge', 'c3.2xlarge', 'c3.4xlarge',
+    'r3.large', 'r3.xlarge', 'r3.2xlarge', 'r3.4xlarge',
     'i2.xlarge', 'i2.2xlarge', 'i2.4xlarge',
     'd2.xlarge', 'd2.2xlarge', 'd2.4xlarge',
     't2.nano', 't2.micro', 't2.small', 't2.medium', 't2.large', 't2.xlarge', 't2.2xlarge',
-    't3.nano', 't3.micro', 't3.small', 't3.medium', 't3.large', 't3.xlarge', 't3.2xlarge',
-    'm3.medium', 'm3.large', 'm3.xlarge', 'm3.2xlarge',
     'm4.large', 'm4.xlarge', 'm4.2xlarge', 'm4.4xlarge',
-    'm5.large', 'm5.xlarge', 'm5.2xlarge', 'm5.4xlarge',
-    'c3.large', 'c3.xlarge', 'c3.2xlarge', 'c3.4xlarge',
     'c4.large', 'c4.xlarge', 'c4.2xlarge', 'c4.4xlarge',
-    'c5.large', 'c5.xlarge', 'c5.2xlarge', 'c5.4xlarge',
-    'r3.large', 'r3.xlarge', 'r3.2xlarge', 'r3.4xlarge',
     'r4.large', 'r4.xlarge', 'r4.2xlarge', 'r4.4xlarge',
-    'r5.large', 'r5.xlarge', 'r5.2xlarge', 'r5.4xlarge',
     'g2.2xlarge', 'g3s.xlarge',
+    't3.nano', 't3.micro', 't3.small', 't3.medium', 't3.large', 't3.xlarge', 't3.2xlarge',
+    'm5.large', 'm5.xlarge', 'm5.2xlarge', 'm5.4xlarge', 'm5.8xlarge', 'm5.12xlarge', 'm5.16xlarge', 'm5.24xlarge',
+    'c5.large', 'c5.xlarge', 'c5.2xlarge', 'c5.4xlarge', 'c5.9xlarge', 'c5.12xlarge', 'c5.18xlarge', 'c5.24xlarge',
+    'r5.large', 'r5.xlarge', 'r5.2xlarge', 'r5.4xlarge', 'r5.8xlarge', 'r5.12xlarge', 'r5.16xlarge', 'r5.24xlarge',
+    'a1.medium', 'a1.large', 'a1.xlarge', 'a1.2xlarge', 'a1.4xlarge',
+    'm5a.large', 'm5a.xlarge', 'm5a.2xlarge', 'm5a.4xlarge', 'm5a.8xlarge', 'm5a.12xlarge', 'm5a.16xlarge', 'm5a.24xlarge',
+    'r5a.large', 'r5a.xlarge', 'r5a.2xlarge', 'r5a.4xlarge', 'r5a.8xlarge', 'r5a.12xlarge', 'r5a.16xlarge', 'r5a.24xlarge',
 ]
 
 CFG_TO_CLASS = OrderedDict([
@@ -165,6 +168,6 @@ CFG_TO_CLASS = OrderedDict([
     ('SecurityGroupBase', {'module': 'securitygroup', 'class': 'SG_SecurityGroup'}),
     ('SecurityGroupIngress', {'module': 'securitygroup', 'class': 'SG_SecurityGroupIngressesExtra'}),
     ('VPC', {'module': 'vpc', 'class': 'VPC_VPC'}),
-    # Output need to be as last line
+    # Output need to be last line
     ('Output', {'module': 'cloudformation', 'class': 'CFM_Outputs'}),
 ])
