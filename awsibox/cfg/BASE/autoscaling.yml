@@ -35,6 +35,14 @@ global:
       ScaleOutCooldown: 60
       TargetValue: 80
 
+  ASScalingPolicyTrackingsCustom: &apptrackingcustom
+    <<: *apptracking
+    Type: Custom
+    TargetTrackingScalingPolicyConfiguration:
+      CustomizedMetricSpecification:
+        Dimensions: []
+        Namespace: 'AWS/ECS'
+
   Parameter:
     - CapacityDesired:
         Description: 'Desired Autoscaling Capacity - empty for default based on env/role'
@@ -77,3 +85,6 @@ global:
     - APPCpu:
         <<: *apptrackingcpu
         PolicyName: ScalingPolicyTrackingsAPPCpu
+    - APPCustom:
+        <<: *apptrackingcustom
+        PolicyName: ScalingPolicyTrackingsAPPCustom

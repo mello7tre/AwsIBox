@@ -47,6 +47,16 @@ ecs:
   ScalingPolicyTrackings:
     - APPCpu:
         Enabled: True
+    - APPCustom:
+        TargetTrackingScalingPolicyConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions:
+              - Cluster:
+                  Name: ClusterName
+                  Value: get_expvalue('Cluster', 'ClusterStack')
+              - Service:
+                  Name: ServiceName
+                  Value: GetAtt('Service', 'Name')
   ScheduledAction:
     - Down:
         MaxSize: k
