@@ -127,13 +127,13 @@ class ELBV2TargetGroup(elbv2.TargetGroup):
                 Key='deregistration_delay.timeout_seconds',
                 Value=get_endvalue('TargetGroupDeregistrationDelay')
             ),
-            If(
-                'TargetGroupCookieSticky',
-                elbv2.TargetGroupAttribute(
-                    Key='stickiness.enabled',
-                    Value='true'
-                ),
-                Ref('AWS::NoValue')
+            elbv2.TargetGroupAttribute(
+                Key='stickiness.enabled',
+                Value=If(
+                    'TargetGroupCookieSticky',
+                    'true',
+                    'false',
+                )
             ),
             If(
                 'TargetGroupCookieSticky',
