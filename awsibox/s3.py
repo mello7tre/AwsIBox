@@ -128,36 +128,6 @@ def S3BucketPolicyStatementReplica(bucket):
     return if_statements
 
 
-def S3BucketPolicyStatementCFOriginAccessIdentity(bucket, identity):
-    statements = []
-    statements.append({
-        'Action': [
-            's3:GetObject'
-        ],
-        'Effect': 'Allow',
-        'Resource': [
-            Sub('arn:aws:s3:::%s/*' % bucket_name)
-        ],
-        'Principal': {
-            'CanonicalUser': GetAtt(identity, 'S3CanonicalUserId')
-        },
-        'Sid': 'AllowCFAccess'
-    })
-                #{
-                #    'Action': [
-                #        's3:ListBucket'
-                #    ],
-                #    'Effect': 'Allow',
-                #    'Resource': [
-                #        Sub('arn:aws:s3:::${AWS::Region}-' + bucket_name)
-                #    ],
-                #    'Principal': {
-                #        'CanonicalUser': GetAtt(identity, 'S3CanonicalUserId')
-                #    }
-                #}
-    return statements
-
-
 def S3BucketPolicyStatementCFOriginAccessIdentity(bucket, principal):
     statements = []
     statements.append(
@@ -173,6 +143,31 @@ def S3BucketPolicyStatementCFOriginAccessIdentity(bucket, principal):
                 'AWS': principal
             },
             'Sid': 'AllowCFAccess'
+        },
+    )
+    return statements
+
+
+def S3BucketPolicyStatementSes(bucket):
+    statements = []
+    statements.append(
+        {
+            'Action': [
+                's3:PutObject'
+            ],
+            'Effect': 'Allow',
+            'Resource': [
+                Sub('arn:aws:s3:::%s/*' % bucket_name)
+            ],
+            'Principal': {
+                'Service': 'ses.amazonaws.com'
+            },
+            'Condition': {
+                'StringEquals': {
+                    'aws:Referer': Ref('AWS::AccountId')
+                },
+            },
+            'Sid': 'AllowSES'
         },
     )
     return statements
@@ -332,6 +327,8 @@ class S3_Buckets(object):
                 r_LambdaPermission.setup(key=lambda_arn, source=resname)
 
                 add_obj(r_LambdaPermission)
+
+                BucketPolicyStatement.extend(S3BucketPolicyStatementSes(resname))
 
             if 'WebsiteConfiguration' in v:
                 r_Bucket.WebsiteConfiguration = s3.WebsiteConfiguration(resname + 'WebsiteConfiguration')
