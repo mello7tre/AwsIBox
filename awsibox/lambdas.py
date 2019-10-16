@@ -18,6 +18,14 @@ class LambdaPermissionEvent(LambdaPermission):
         self.SourceArn = GetAtt(source, 'Arn')
 
 
+class LambdaPermissionS3(LambdaPermission):
+    def setup(self, key, source):
+        super(LambdaPermissionS3, self).setup()
+        self.Principal = 's3.amazonaws.com'
+        self.FunctionName = key
+        self.SourceArn = Sub('arn:aws:s3:::%s' % getattr(cfg, source))
+
+
 class LambdaPermissionSNS(LambdaPermission):
     def setup(self, key, **kwargs):
         super(LambdaPermissionSNS, self).setup(**kwargs)

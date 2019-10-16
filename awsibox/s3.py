@@ -5,6 +5,7 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
     get_subvalue, auto_get_props, get_condition, add_obj)
 from .iam import IAMRoleBucketReplica, IAMPolicyBucketReplica, IAMPolicyStatement
 from .cloudfront import CFOriginAccessIdentity
+from .lambdas import LambdaPermissionS3
 
 class S3Bucket(s3.Bucket):
     def setup(self, key):
@@ -315,6 +316,22 @@ class S3_Buckets(object):
 
             r_IAMPolicyReplica = IAMPolicyBucketReplica('IAMPolicyReplicaBucket' + name)
             r_IAMPolicyReplica.setup(bucket=resname, bucket_name=bucket_name, key=v)
+
+            try:
+                lambda_arn = eval(
+                    v['NotificationConfiguration']['LambdaConfigurations']['Trigger']['Function']
+                )
+            except:
+                pass
+            else:
+                if 'Fn::GettAtt' in lambda_arn.data:
+                    permname = lambda_arn.data['Fn::GettAtt'].replace('Lambda', 'LambdaPermission') + resname
+                else:
+                    permname = 'LambdaPermission'
+                r_LambdaPermission = LambdaPermissionS3(permname)
+                r_LambdaPermission.setup(key=lambda_arn, source=resname)
+
+                add_obj(r_LambdaPermission)
 
             if 'WebsiteConfiguration' in v:
                 r_Bucket.WebsiteConfiguration = s3.WebsiteConfiguration(resname + 'WebsiteConfiguration')
