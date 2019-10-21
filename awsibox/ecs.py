@@ -326,6 +326,13 @@ class ECS_TaskDefinition(object):
 
                 add_obj(p_MemoryReservation)
 
+            if 'Command' in v:
+                p_Command = Parameter(name + 'Command')
+                p_Command.Description = 'Command to execute'
+                p_Command.Type = 'CommaDelimitedList'
+
+                add_obj(p_Command)
+
             Container = ECSContainerDefinition(name)
             Container.setup(key=v, index=n)
             Container.Environment = Environments
@@ -365,6 +372,12 @@ class ECS_TaskDefinition(object):
                 o_Constraints.Value = Sub(','.join(Constraints_Out_String), **Constraints_Out_Map)
 
                 add_obj(o_Constraints)
+
+            if 'Command' in v:
+                o_Command = Output(name + 'Command')
+                o_Command.Value = get_endvalue(name + 'Command', nolist=True)
+
+                add_obj(o_Command)
 
         # Resources
         R_TaskDefinition = ECSTaskDefinition('TaskDefinition')
