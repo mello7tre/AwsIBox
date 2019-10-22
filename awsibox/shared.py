@@ -5,8 +5,10 @@ from .common import *
 
 # S - PARAMETERS #
 class Parameter(Parameter):
-    Type = 'String'
-    Default = ''
+    def __init__(self, title, **kwargs):
+        super(Parameter, self).__init__(title, **kwargs)
+        self.Type = 'String'
+        self.Default = ''
 
 
 class SSMParameter(ssm.Parameter):
@@ -27,6 +29,8 @@ def stack_add_res():
                 default = ''
 
             condition = {
+                n + 'Override': Not(Equals(Select(0, Ref(n)), default))
+            } if v.Type == 'CommaDelimitedList' else {
                 n + 'Override': Not(Equals(Ref(n), default))
             }
 

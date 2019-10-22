@@ -296,6 +296,8 @@ class R53_HostedZones(object):
         for n, v in getattr(cfg, key).iteritems():
             mapname = key + n
             resname = v['ResourceName']
+            output_zonename = resname.replace('HostedZone', 'HostedZoneName')
+            output_zoneidname = resname.replace('HostedZone', 'HostedZoneId')
             # parameters
             if n.startswith('Public'):
                 p_HostedZone = Parameter(mapname + 'Enabled')
@@ -323,12 +325,13 @@ class R53_HostedZones(object):
             add_obj(r_HostedZone)
 
             # outputs
-            o_HostedZoneName = Output(resname.replace('HostedZone', 'HostedZoneName'))
-            o_HostedZoneName.Value = Sub(cfg.HostedZoneNamePrivate)
+            o_HostedZoneName = Output(output_zonename)
+            #o_HostedZoneName.Value = Sub(cfg.HostedZoneNamePrivate)
+            o_HostedZoneName.Value = get_endvalue(mapname + 'Name')
                 
-            o_HostedZoneId = Output(resname.replace('HostedZone', 'HostedZoneId'))
+            o_HostedZoneId = Output(output_zoneidname)
             o_HostedZoneId.Value = If(resname, Ref(resname), get_endvalue(mapname + 'Id')) if n.startswith('Public') else Ref(resname)
-            o_HostedZoneId.Export = Export(resname)
+            o_HostedZoneId.Export = Export(output_zoneidname)
 
             add_obj([
                 o_HostedZoneName,

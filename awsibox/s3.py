@@ -53,7 +53,7 @@ class S3Bucket(s3.Bucket):
                                 Ref('AWS::NoValue')
                             ),
                         ),
-                        Prefix='',
+                        Prefix=get_endvalue(name + 'ReplicaDstPrefix') if 'ReplicaDstPrefix' in key else '',
                         Status='Enabled'
                     )
                 ]
@@ -94,7 +94,7 @@ def S3BucketPolicyStatementBase(bucket):
     return statements
 
 
-def S3BucketPolicyStatementReplica(bucket):
+def S3BucketPolicyStatementReplica(bucket, key):
     statements = []
     if_statements = []
     condition = bucket  + 'ReplicaSrcAccount'
@@ -106,7 +106,10 @@ def S3BucketPolicyStatementReplica(bucket):
             ],
         'Effect': 'Allow',
         'Resource': [
-            Sub('arn:aws:s3:::%s/*' % bucket_name)
+            get_subvalue(
+                'arn:aws:s3:::%s/${1M}*' % bucket_name,
+                bucket + 'ReplicaSrcPrefix'
+            ) if 'ReplicaSrcPrefix' in key else Sub('arn:aws:s3:::%s/*' % bucket_name),
         ],
         'Principal': {
             'AWS': [
@@ -238,7 +241,7 @@ class S3_Buckets(object):
             # parameters
             p_ReplicaDstRegion = Parameter(resname + 'ReplicaDstRegion')
             p_ReplicaDstRegion.Description = 'Region to Replicate Bucket - None to disable - empty for default based on env/role'
-            p_ReplicaDstRegion.AllowedValues = ['', 'None', 'eu-central-1']
+            p_ReplicaDstRegion.AllowedValues = ['', 'None'] + cfg.regions
 
             add_obj(p_ReplicaDstRegion)
 
@@ -296,7 +299,7 @@ class S3_Buckets(object):
             # At least one statement must be always present, create a simple one with no conditions
             BucketPolicyStatement.extend(S3BucketPolicyStatementBase(resname))
 
-            BucketPolicyStatement.extend(S3BucketPolicyStatementReplica(resname))
+            BucketPolicyStatement.extend(S3BucketPolicyStatementReplica(resname, v))
 
             #r_PolicyReplica = S3BucketPolicyStatementReplica('BucketPolicy' + name)
             #r_PolicyReplica.setup(bucket=resname)
