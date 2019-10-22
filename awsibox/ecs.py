@@ -375,7 +375,7 @@ class ECS_TaskDefinition(object):
 
             if 'Command' in v:
                 o_Command = Output(name + 'Command')
-                o_Command.Value = get_endvalue(name + 'Command', nolist=True)
+                o_Command.Value = Join(',', get_endvalue(name + 'Command'))
 
                 add_obj(o_Command)
 
