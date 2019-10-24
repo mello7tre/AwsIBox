@@ -80,6 +80,24 @@ class LBD_Lambdas(object):
         # Resources
         for n, v in getattr(cfg, key).iteritems():
             resname = key + n
+
+            try: v['Code']['S3Key']
+            except: pass
+            else:
+                s3keyname = resname + 'Code' + 'S3Key'
+                # parameters
+                p_S3Key = Parameter(s3keyname)
+                p_S3Key.Description = 'S3Key Name for lambda %s Code' % n
+
+                add_obj(p_S3Key)
+
+                # outputs
+                o_S3Key = Output(s3keyname)
+                o_S3Key.Value = get_endvalue(s3keyname)
+
+                add_obj(o_S3Key)
+
+            # resources
             r_Lambda = LambdaFunction(resname)
             r_Lambda.setup(key=v, name=n)
 
@@ -124,7 +142,7 @@ class LBD_Lambdas(object):
                     r_VersionB,
                 ])
 
-                # output
+                # outputs
                 o_Version = Output(versionname)
                 o_Version.Value = If(
                     versionname + 'A',
