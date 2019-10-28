@@ -147,6 +147,7 @@ CFG_TO_CLASS = OrderedDict([
     ('IAMUserToGroupAddition', {'module': 'iam', 'class': 'IAM_UserToGroupAdditions'}),
     ('KMSKey', {'module': 'kms', 'class': 'KMS_Keys'}),
     ('Lambda', {'module': 'lambdas', 'class': 'LBD_Lambdas'}),
+    ('LambdaLayerVersion', {'module': 'lambdas', 'class': 'LBD_LayerVersions'}),
     ('LoadBalancerApplication', {'module': 'loadbalancing', 'class': 'LB_ElasticLoadBalancing'}),
     ('LoadBalancerClassic', {'module': 'loadbalancing', 'class': 'LB_ElasticLoadBalancing'}),
     ('Alarm', {'module': 'cloudwatch', 'class': 'CW_Alarms'}),

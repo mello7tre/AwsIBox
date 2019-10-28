@@ -172,3 +172,38 @@ class LBD_Lambdas(object):
                 O_Lambda.Export = Export(resname)
 
                 add_obj(O_Lambda)
+
+
+class LBD_LayerVersions(object):
+    def __init__(self, key):
+        # Resources
+        for n, v in getattr(cfg, key).iteritems():
+            resname = key + n
+
+            try: v['Content']['S3Key']
+            except: pass
+            else:
+                s3keyname = resname + 'Content' + 'S3Key'
+                # parameters
+                p_S3Key = Parameter(s3keyname)
+                p_S3Key.Description = 'S3Key Name for lambda %s Content' % n
+
+                add_obj(p_S3Key)
+
+                # outputs
+                o_S3Key = Output(s3keyname)
+                o_S3Key.Value = get_endvalue(s3keyname)
+
+                add_obj(o_S3Key)
+
+            # resources
+            r_Layer = lbd.LayerVersion(resname)
+            auto_get_props(r_Layer, v, recurse=True)
+
+            add_obj(r_Layer)
+
+            # output
+            o_Layer = Output(resname)
+            o_Layer.Value = Ref(resname)
+
+            add_obj(o_Layer)
