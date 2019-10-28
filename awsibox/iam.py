@@ -399,5 +399,7 @@ class IAM_Roles(object):
                 o_Role = Output(resname)
                 o_Role.Value = GetAtt(resname, 'Arn')
                 o_Role.Export = Export(resname)
+                if 'Condition' in v:
+                    o_Role.Condition = v['Condition']
 
                 add_obj(o_Role)
