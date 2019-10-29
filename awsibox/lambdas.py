@@ -72,7 +72,15 @@ class LambdaFunction(lbd.Function):
                     varname: get_endvalue(self.title + 'Variables' + varname) for varname in key['Variables']
                 }
             )
-##
+
+
+class LambdaLayerVersionPermission(lbd.LayerVersionPermission):
+    def __init__(self, title, **kwargs):
+        super(LambdaLayerVersionPermission, self).__init__(title, **kwargs)
+        self.Action = 'lambda:GetLayerVersion'
+        self.Principal = Ref('AWS::AccountId')
+
+
 ##
 
 class LBD_Lambdas(object):
@@ -199,8 +207,13 @@ class LBD_LayerVersions(object):
             # resources
             r_Layer = lbd.LayerVersion(resname)
             auto_get_props(r_Layer, v, recurse=True)
+            r_LayerPermission = LambdaLayerVersionPermission('LambdaLayerPermission' + n)
+            r_LayerPermission.LayerVersionArn = Ref(resname)
 
-            add_obj(r_Layer)
+            add_obj([
+                r_Layer,
+                r_LayerPermission,
+            ])
 
             # output
             o_Layer = Output(resname)
