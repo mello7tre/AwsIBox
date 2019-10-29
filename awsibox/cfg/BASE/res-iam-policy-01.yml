@@ -131,6 +131,17 @@ res-iam-policy-01:
                 - 'cloudwatch:GetMetricStatistics'
                 - 'cloudwatch:ListMetrics'
               Resource: '*'
+    - BackEndDeveloper:
+        Export: True
+        Type: Managed
+        Description: 'Access to specific ECR and SSM Parameters'
+        Statement:
+          - 1:
+              Action:
+                - 'ssm:PutParameter'
+                - 'ssm:GetParameter*'
+                - 'ssm:DeleteParameter*'
+              Resource: '*'
     - ECRRead:
         Export: True
         Type: Managed
