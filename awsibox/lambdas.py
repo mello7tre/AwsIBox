@@ -91,7 +91,7 @@ def LambdaLayers(obj, resname, i):
 
     # condition
     add_obj(
-        get_condition(layername, 'not_equals', 'None')
+        get_condition(layername, 'not_equals', '')
     )
 
     # output

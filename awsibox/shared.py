@@ -129,18 +129,9 @@ def _get_overridevalue(param, condname, value, issub):
     return override_value
 
 
-def get_endvalue(
-        param,
-        ssm=False,
-        condition=False,
-        nocondition=False,
-        nolist=False,
-        inlist=False,
-        split=False,
-        issub=False,
-        strout=False,
-        fixedvalues=None,
-        mapinlist=False,
+def get_endvalue(param, ssm=False, condition=False, nocondition=False,
+    nolist=False, inlist=False, split=False, issub=False, strout=False,
+    fixedvalues=None, mapinlist=False,
 ):
 
     value = _get_value(param, fixedvalues, strout, nolist)
@@ -158,18 +149,11 @@ def get_endvalue(
 
         value = _get_overridevalue(param, condname, value, issub)
 
-        if condition:
-            value = If(
-                condname,
-                value,
-                Ref('AWS::NoValue'),
-            )
-        elif nocondition:
-            value = If(
-                condname,
-                Ref('AWS::NoValue'),
-                value,
-            )
+        value = If(
+            condname,
+            value if condition else Ref('AWS::NoValue'),
+            Ref('AWS::NoValue') if condition else value,
+        )
     else:
         value = _get_overridevalue(param, param, value, issub)
 
