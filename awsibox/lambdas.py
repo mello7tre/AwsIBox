@@ -81,6 +81,26 @@ class LambdaLayerVersionPermission(lbd.LayerVersionPermission):
         self.Principal = Ref('AWS::AccountId')
 
 
+def LambdaLayers(obj, resname, i):
+    layername = '%s%s' % (resname, i)
+    # parameters
+    p_Layer = Parameter(layername)
+    p_Layer.Description = layername
+
+    add_obj(p_Layer)
+
+    # condition
+    add_obj(
+        get_condition(layername, 'not_equals', 'None')
+    )
+
+    # output
+    o_Layer = Output(layername)
+    o_Layer.Value = Select(i, get_endvalue(resname, condition=layername))
+    o_Layer.Value = get_endvalue(resname, condition=layername, mapinlist=i)
+
+    return o_Layer.Value
+
 ##
 
 class LBD_Lambdas(object):
@@ -114,6 +134,14 @@ class LBD_Lambdas(object):
                 add_obj(get_condition(resname, 'not_equals', 'None', resname + 'Enabled'))
 
                 r_Lambda.Condition = resname
+
+            if 'Layers' in v:
+                r_Lambda.Layers = []
+                for i, j in enumerate(v['Layers']):
+                    r_Lambda.Layers.append(
+                        LambdaLayers(r_Lambda, '%s%s' % (resname, 'Layers'), i)
+                    )
+
             if 'Version' in v:
                 versionname = resname + 'Version'
                 # parameters

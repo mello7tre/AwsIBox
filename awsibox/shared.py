@@ -84,6 +84,51 @@ def do_no_override(action):
 #         gbl.update(mod.__dict__)
 
 
+def _get_value(param, fixedvalues, strout, nolist):
+    # Its not pythonic, but it's only way to avoid circular import problems
+    from securitygroup import SG_SecurityGroupsTSK
+
+    # set default if not defined
+    if not fixedvalues:
+        fixedvalues = cfg.fixedvalues
+
+    # if param in fixedvalues means its value do not changes based on Env/Region so hardcode the value in json, ...
+    if param in fixedvalues:
+        value = fixedvalues[param]
+        # check if value start with method and use eval to run code ... in list too
+        if isinstance(value, list):
+            value = [eval(r) if r.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else r for r in value]
+        if isinstance(value, str):
+            value = eval(value.replace('\n', '')) if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else value
+    # ... otherway use mapping
+    else:
+        value = FindInMap(Ref('EnvShort'), Ref("AWS::Region"), param)
+
+    if strout is True and isinstance(value, int):
+        value = str(value)
+
+    if nolist is True and isinstance(value, list):
+        value = ','.join(value)
+
+    return value
+
+
+def _get_overridevalue(param, condname, value, issub):
+    if issub:
+        value = Sub(value)
+
+    if param not in cfg.Parameters:
+        param = condname
+
+    if (cfg.no_override is False and param in cfg.Parameters and not
+            param.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
+        override_value = If(param + 'Override', Ref(param), value)
+    else:
+        override_value = value
+
+    return override_value
+
+
 def get_endvalue(
         param,
         ssm=False,
@@ -94,80 +139,47 @@ def get_endvalue(
         split=False,
         issub=False,
         strout=False,
-        fixedvalues=None
+        fixedvalues=None,
+        mapinlist=False,
 ):
-    # Its not pythonic, but it's only way to avoid circular import problems
-    from securitygroup import SG_SecurityGroupsTSK
 
-    v = ''
-    param_override = param + 'Override'
+    value = _get_value(param, fixedvalues, strout, nolist)
 
-    # set default if not defined
-    if not fixedvalues:
-        fixedvalues = cfg.fixedvalues
+    if mapinlist is not False:
+        value = Select(mapinlist, value) 
 
-    # if param in fixedvalues means its value do not changes based on Env/Region so hardcode the value in json, ...
-    if param in fixedvalues:
-        endvalue = fixedvalues[param]
-        # check if value start with method and use eval to run code ... in list too
-        if isinstance(endvalue, list):
-            endvalue = [eval(r) if r.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else r for r in endvalue]
-        if isinstance(endvalue, str):
-            endvalue = eval(endvalue.replace('\n', '')) if endvalue.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else endvalue
-    # ... otherway use mapping
-    else:
-        endvalue = FindInMap(Ref('EnvShort'), Ref("AWS::Region"), param)
-
-    if strout is True and isinstance(endvalue, int):
-        endvalue = str(endvalue)
-
-    if nolist is True and isinstance(endvalue, list):
-        endvalue = ','.join(endvalue)
-
-    if issub is False:
-        override_value = If(param_override, Ref(param), endvalue)
-    else:
-        override_value = If(param_override, Ref(param), Sub(endvalue))
-
-    if (cfg.no_override is False and param in cfg.Parameters and not
-            param.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
-        v = override_value
-    # elif param in mappings['dev']['eu-west-1'] or param in fixedvalues:
-    else:
-        v = endvalue
-        # using ssm - DISABLED FOR NOW
-        # v = endvalue if ssm is True else GetAtt('SSMParameter' + param, 'Value')
-
-    if condition:
-        if condition is True:
+    if condition or nocondition:
+        if condition is True or nocondition is True:
             condname = param
-        else:
+        elif condition:
             condname = condition
-
-        v = If(
-            condname,
-            v,
-            Ref('AWS::NoValue'),
-        )
-    elif nocondition:
-        if nocondition is True:
-            condname = param
-        else:
+        elif nocondition:
             condname = nocondition
 
-        v = If(
-            condname,
-            Ref('AWS::NoValue'),
-            v,
-        )
+        value = _get_overridevalue(param, condname, value, issub)
 
-    if split:
-        v = Select(split, Split(',', v))
+        if condition:
+            value = If(
+                condname,
+                value,
+                Ref('AWS::NoValue'),
+            )
+        elif nocondition:
+            value = If(
+                condname,
+                Ref('AWS::NoValue'),
+                value,
+            )
+    else:
+        value = _get_overridevalue(param, param, value, issub)
 
-    if inlist:
-        v = Select(inlist, v)
+    if split is not False:
+        value = Select(split, Split(',', value))
 
-    return v
+    if inlist is not False:
+        value = Select(inlist, value)
+
+    return value
 
 
 def get_expvalue(param, stack=False, prefix=''):
