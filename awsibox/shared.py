@@ -84,7 +84,7 @@ def do_no_override(action):
 #         gbl.update(mod.__dict__)
 
 
-def _get_value(param, fixedvalues, strout, nolist):
+def _get_value(param, fixedvalues, strout, nolist, issub):
     # Its not pythonic, but it's only way to avoid circular import problems
     from securitygroup import SG_SecurityGroupsTSK
 
@@ -110,14 +110,14 @@ def _get_value(param, fixedvalues, strout, nolist):
     if nolist is True and isinstance(value, list):
         value = ','.join(value)
 
-    return value
-
-
-def _get_overridevalue(param, condname, value, issub):
     if issub:
         value = Sub(value)
 
-    if param not in cfg.Parameters:
+    return value
+
+
+def _get_overridevalue(param, value, condname=None):
+    if param not in cfg.Parameters and condname in cfg.Parameters:
         param = condname
 
     if (cfg.no_override is False and param in cfg.Parameters and not
@@ -134,7 +134,7 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
     fixedvalues=None, mapinlist=False,
 ):
 
-    value = _get_value(param, fixedvalues, strout, nolist)
+    value = _get_value(param, fixedvalues, strout, nolist, issub)
 
     if mapinlist is not False:
         value = Select(mapinlist, value) 
@@ -147,7 +147,7 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
         elif nocondition:
             condname = nocondition
 
-        value = _get_overridevalue(param, condname, value, issub)
+        value = _get_overridevalue(param, value, condname)
 
         value = If(
             condname,
@@ -155,7 +155,7 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
             Ref('AWS::NoValue') if condition else value,
         )
     else:
-        value = _get_overridevalue(param, param, value, issub)
+        value = _get_overridevalue(param, value)
 
     if split is not False:
         value = Select(split, Split(',', value))
