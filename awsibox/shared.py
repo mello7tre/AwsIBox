@@ -206,7 +206,7 @@ def get_subvalue(substring, subvar, stack=False):
     return v
 
 
-def get_condition(cond_name, cond, value2, key=None, OrExtend=[]):
+def get_condition(cond_name, cond, value2, key=None, OrExtend=[], mapinlist=False):
     # record current state
     override_state = cfg.no_override
     do_no_override(True)
@@ -231,7 +231,11 @@ def get_condition(cond_name, cond, value2, key=None, OrExtend=[]):
         value1_map = Select(select_index, Split(split_sep, get_endvalue(key_name)))
     else:
         value1_param = Ref(key_name)
-        value1_map = get_endvalue(key_name)
+        # Used new param "mapinlist" when you have a mapped value in a list but multiple values as override parameters
+        if mapinlist:
+            value1_map = get_endvalue(mapinlist[0], mapinlist=mapinlist[1])
+        else:
+            value1_map = get_endvalue(key_name)
 
     # if beginning state was False set it back
     if not override_state:
