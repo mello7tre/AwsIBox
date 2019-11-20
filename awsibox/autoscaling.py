@@ -1067,9 +1067,6 @@ class AS_AutoscalingEC2(object):
         LaunchConfiguration = AS_LaunchConfiguration()
         Tags = LaunchConfiguration.Tags
 
-        NotificationConfiguration = ASNotificationConfiguration()
-        NotificationConfiguration.setup()
-
         R_ASG = ASAutoScalingGroup('AutoScalingGroup')
         R_ASG.setup()
         R_ASG.LoadBalancerNames = LoadBalancers
@@ -1092,16 +1089,23 @@ class AS_AutoscalingEC2(object):
                 Ref('AWS::NoValue')
             )
         ])
-        # Notifications currently are not associeted to "any actions" - now using CW events - this way works with autospotting too
-        R_ASG.NotificationConfigurations = [NotificationConfiguration]
 
         R_ASGSpot = ASAutoScalingGroup('AutoScalingGroupSpot')
         R_ASGSpot.setup(spot=True)
         R_ASGSpot.LoadBalancerNames = LoadBalancers
         R_ASGSpot.TargetGroupARNs = TargetGroups
         R_ASGSpot.Tags.extend(Tags)
-        R_ASGSpot.NotificationConfigurations = [NotificationConfiguration]
-        
+
+        # Notifications currently are not associeted to "any actions" - now using CW events - this way works with autospotting too
+        try: cfg.NotificationConfiguration
+        except:
+            pass
+        else:
+            NotificationConfiguration = ASNotificationConfiguration()
+            NotificationConfiguration.setup()
+            R_ASG.NotificationConfigurations = [NotificationConfiguration]
+            R_ASGSpot.NotificationConfigurations = [NotificationConfiguration]
+
         add_obj([
             R_ASG,
         ])
