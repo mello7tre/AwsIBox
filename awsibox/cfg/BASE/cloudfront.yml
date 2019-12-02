@@ -32,27 +32,3 @@ global:
         ViewerProtocolPolicy: allow-all
   CloudFrontHttpVersion: 'http2'
   CloudFrontLogging: None
-  CustomErrorResponses:
-    - 1:
-        ErrorCode: 404
-        ErrorCachingMinTTL: 0
-    - 2:
-        ErrorCode: 500
-        ErrorCachingMinTTL: 300
-        ResponsePagePath: '/error-pages/500.html'
-        ResponseCode: 500
-    - 3:
-        ErrorCode: 502
-        ErrorCachingMinTTL: 10
-        ResponsePagePath: '/error-pages/502.html'
-        ResponseCode: 502
-    - 4:
-        ErrorCode: 503
-        ErrorCachingMinTTL: 300
-        ResponsePagePath: '/error-pages/503.html'
-        ResponseCode: 503
-    - 5:
-        ErrorCode: 504
-        ErrorCachingMinTTL: 300
-        ResponsePagePath: '/error-pages/504.html'
-        ResponseCode: 504

@@ -1,0 +1,39 @@
+global:
+  CloudFrontCacheBehaviors:
+    - /error-pages/*:
+        Order: 599
+        PathPattern:  '/error-pages/*'
+        DefaultTTL: 31536000
+        QueryString: False
+        Headers: []
+        TargetOriginId: portal-static
+  CloudFrontOrigins:
+    - PortalStatic:
+        DomainName: Sub(cfg.BucketPortalStatic + '.s3.amazonaws.com')
+        Id: portal-static
+        Path: ''
+        Type: s3
+  CloudFrontCustomErrorResponses:
+    - 1:
+        ErrorCode: 404
+        ErrorCachingMinTTL: 0
+    - 2:
+        ErrorCode: 500
+        ErrorCachingMinTTL: 300
+        ResponsePagePath: '/error-pages/500.html'
+        ResponseCode: 500
+    - 3:
+        ErrorCode: 502
+        ErrorCachingMinTTL: 10
+        ResponsePagePath: '/error-pages/502.html'
+        ResponseCode: 502
+    - 4:
+        ErrorCode: 503
+        ErrorCachingMinTTL: 300
+        ResponsePagePath: '/error-pages/503.html'
+        ResponseCode: 503
+    - 5:
+        ErrorCode: 504
+        ErrorCachingMinTTL: 300
+        ResponsePagePath: '/error-pages/504.html'
+        ResponseCode: 504

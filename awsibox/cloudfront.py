@@ -16,7 +16,6 @@ class CFOriginAccessIdentity(clf.CloudFrontOriginAccessIdentity):
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################
 
-# S - CLOUDFRONT #
 class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
     def setup(self, key):
         name = self.title
@@ -275,7 +274,23 @@ class CFCustomErrorResponse(clf.CustomErrorResponse):
 
         if 'ResponseCode' in key:
             self.ResponseCode = get_endvalue(name + 'ResponseCode')
-# E - CLOUDFRONT #
+
+
+def CFCustomErrors():
+    CustomErrorResponses = []
+    mapname = 'CloudFrontCustomErrorResponses'
+
+    try: ErrorResponses = getattr(cfg, mapname)
+    except:
+        pass
+    else:
+        for n, v in ErrorResponses.iteritems():
+            name = '%s%s' % (mapname, n)
+            CustomErrorResponse = CFCustomErrorResponse(name)
+            CustomErrorResponse.setup(key=v)
+            CustomErrorResponses.append(CustomErrorResponse)
+
+    return CustomErrorResponses
 
 
 # ##########################################
@@ -412,6 +427,12 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
         self.CloudFrontDistribution.DistributionConfig.Origins.append(Origin)
         self.CloudFrontDistribution.DistributionConfig.Comment = Sub('${AWS::StackName}-${EnvRole}')
 
+        try: cfg.CloudFrontCustomErrorResponses
+        except:
+            pass
+        else:
+            self.CloudFrontDistribution.DistributionConfig.CustomErrorResponses = CFCustomErrors()
+
         R53_RecordSetCloudFront()
 
 
@@ -452,12 +473,4 @@ class CF_CloudFrontCLF(CF_CloudFront):
     def __init__(self, key):
         super(CF_CloudFrontCLF, self).__init__()
 
-        CustomErrorResponses = []
-        if hasattr(cfg.CustomErrorResponses, 'iteritems'):
-            for n, v in cfg.CustomErrorResponses.iteritems():
-                name = 'CustomErrorResponses%s' % n
-                CustomErrorResponse = CFCustomErrorResponse(name)
-                CustomErrorResponse.setup(key=v)
-                CustomErrorResponses.append(CustomErrorResponse)
-
-        self.CloudFrontDistribution.DistributionConfig.CustomErrorResponses = CustomErrorResponses
+        self.CloudFrontDistribution.DistributionConfig.CustomErrorResponses = CFCustomErrors()
