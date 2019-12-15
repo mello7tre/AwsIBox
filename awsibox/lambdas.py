@@ -43,6 +43,13 @@ class LambdaPermissionApiGateway(LambdaPermission):
         self.SourceArn = source
 
 
+class LambdaPermissionLoadBalancing(LambdaPermission):
+    def setup(self, name):
+        super(LambdaPermissionLoadBalancing, self).setup()
+        self.Principal = 'elasticloadbalancing.amazonaws.com'
+        self.FunctionName = name
+
+
 class LambdaVersion(lbd.Version):
     def __init__(self, title, name, **kwargs):
         super(LambdaVersion, self).__init__(title, **kwargs)

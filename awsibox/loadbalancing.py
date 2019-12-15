@@ -8,7 +8,7 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
 from .route53 import R53_RecordSetEC2LoadBalancer, R53_RecordSetECSLoadBalancer
 from .securitygroup import (SecurityGroupRuleELBPorts,SecurityGroupIngressInstanceELBPorts,
     SecurityGroupLoadBalancer, SecurityGroupsIngressEcs)
-
+from .lambdas import LambdaPermissionLoadBalancing
 
 # S - CLASSIC LOAD BALANCING #
 class ELBListener(elb.Listener):
@@ -155,10 +155,16 @@ class ELBV2TargetGroupEC2(ELBV2TargetGroup):
 
 
 class ELBV2TargetGroupALB(elbv2.TargetGroup):
-    def setup(self):
-        self.Port = 80
-        self.Protocol = 'HTTP'
-        self.VpcId = get_expvalue('VpcId')
+    def setup(self, lambda_arn):
+        self.Protocol = Ref('AWS::NoValue')
+        self.Port = Ref('AWS::NoValue')
+        self.Targets = [
+            elbv2.TargetDescription(
+                Id=lambda_arn,
+            )
+        ]
+        self.TargetType = 'lambda'
+        self.VpcId = Ref('AWS::NoValue')
 
 
 class ELBV2TargetGroupECS(ELBV2TargetGroup):
@@ -717,24 +723,42 @@ class LB_TargetGroupsECS(LB_TargetGroups):
             cfg.Alarm['TargetInternal5XX']['Enabled'] = True
 
 
-# Now that AWS allow to send a fixed response, there is no need to have a DefaultTarget Group pointing to nothing
-# this class is no more used
 class LB_TargetGroupsALB(object):
     def __init__(self):
+        lambda_name = 'ServiceUnavailable'
+        lambda_arn = get_expvalue('Lambda' + lambda_name + 'Arn')
+        perm_name = 'LambdaPermission' + lambda_name + 'LoadBalancerApplication'
+
         # Resources
         if cfg.LoadBalancerApplicationExternal:
-            R_TargetGroup = ELBV2TargetGroupALB('TargetGroupDefaultExternal')
+            R_TargetGroup = ELBV2TargetGroupALB('TargetGroupServiceUnavailableExternal')
             R_TargetGroup.Condition = 'LoadBalancerApplicationExternal'
-            R_TargetGroup.setup()
+            R_TargetGroup.DependsOn = perm_name + 'External'
+            R_TargetGroup.setup(lambda_arn=lambda_arn)
 
-            add_obj(R_TargetGroup)
+            R_Permission = LambdaPermissionLoadBalancing(perm_name + 'External')
+            R_Permission.Condition = 'LoadBalancerApplicationExternal'
+            R_Permission.setup(name=lambda_arn)
+
+            add_obj([
+                R_TargetGroup,
+                R_Permission,
+            ])
 
         if cfg.LoadBalancerApplicationInternal:
-            R_TargetGroup = ELBV2TargetGroupALB('TargetGroupDefaultInternal')
+            R_TargetGroup = ELBV2TargetGroupALB('TargetGroupServiceUnavailableInternal')
             R_TargetGroup.Condition = 'LoadBalancerApplicationInternal'
-            R_TargetGroup.setup()
+            R_TargetGroup.DependsOn = perm_name + 'Internal'
+            R_TargetGroup.setup(lambda_arn=lambda_arn)
+            
+            R_Permission = LambdaPermissionLoadBalancing(perm_name + 'Internal')
+            R_Permission.Condition = 'LoadBalancerApplicationInternal'
+            R_Permission.setup(name=lambda_arn)
 
-            add_obj(R_TargetGroup)
+            add_obj([
+                R_TargetGroup,
+                R_Permission,
+            ])
             
 
 class LB_ElasticLoadBalancingApplication(object):
@@ -914,8 +938,12 @@ class LB_ElasticLoadBalancingALB(object):
 
         # Resources
         LB_ListenersV2ALB()
-        # Now that AWS allow to send a fixed response, there is no need to have a DefaultTarget Group pointing to nothing
-        # LB_TargetGroupsALB()
+        # Create TargetGroups pointing to LambdaServiceUnavailable
+        try: cfg.ServiceUnavailable
+        except:
+            pass
+        else:
+            LB_TargetGroupsALB()
 
 
 class LB_ElasticLoadBalancingECS(object):
