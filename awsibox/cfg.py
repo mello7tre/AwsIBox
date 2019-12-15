@@ -68,6 +68,7 @@ EVAL_FUNCTIONS_IN_CFG = (
     'dict(',
     'eval(',
     'Tags(',
+    'str(',
 )
 
 BASE_CFGS = {

@@ -740,9 +740,14 @@ class LB_TargetGroupsALB(object):
             R_Permission.Condition = 'LoadBalancerApplicationExternal'
             R_Permission.setup(name=lambda_arn)
 
+            O_TargetGroup = Output('TargetGroupServiceUnavailableExternal')
+            O_TargetGroup.Condition = 'LoadBalancerApplicationExternal'
+            O_TargetGroup.Value = Ref('TargetGroupServiceUnavailableExternal')
+
             add_obj([
                 R_TargetGroup,
                 R_Permission,
+                O_TargetGroup,
             ])
 
         if cfg.LoadBalancerApplicationInternal:
@@ -755,9 +760,14 @@ class LB_TargetGroupsALB(object):
             R_Permission.Condition = 'LoadBalancerApplicationInternal'
             R_Permission.setup(name=lambda_arn)
 
+            O_TargetGroup = Output('TargetGroupServiceUnavailableInternal')
+            O_TargetGroup.Condition = 'LoadBalancerApplicationInternal'
+            O_TargetGroup.Value = Ref('TargetGroupServiceUnavailableInternal')
+
             add_obj([
                 R_TargetGroup,
                 R_Permission,
+                O_TargetGroup,
             ])
             
 
