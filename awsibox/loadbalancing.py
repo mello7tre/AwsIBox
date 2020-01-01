@@ -410,7 +410,7 @@ class LB_ListenerRulesExternalInternal(object):
         # Create ListenerRule only in stack's specific new Listener
         ListenerHttpPort = cfg.ListenerLoadBalancerHttpPort
         ListenerHttpsPort = cfg.ListenerLoadBalancerHttpsPort
-        Protocol = key['Protocol'] if 'Protocol' in key else ''
+        Protocol = key['Protocol'] if 'Protocol' in key else 'any'
         RuleHttpAdd = None
         RuleHttpsAdd = None
 
@@ -425,12 +425,10 @@ class LB_ListenerRulesExternalInternal(object):
             RuleHttpAdd = True
             RuleHttpsAdd = True
 
-        if Protocol == 'http':
-            RuleHttpAdd = True
-            RuleHttpsAdd = None
-        if Protocol == 'https':
-            RuleHttpAdd = None
-            RuleHttpsAdd = True
+            if Protocol == 'http':
+                RuleHttpsAdd = None
+            if Protocol == 'https':
+                RuleHttpAdd = None
 
         if RuleHttpAdd:
             add_obj(R_RuleHttp)
