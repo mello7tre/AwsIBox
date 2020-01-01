@@ -48,6 +48,10 @@ class ECSService(ecs.Service):
                 Ref('AWS::NoValue'),
                 get_expvalue('RoleECSService')
             )
+            # When creating a service that specifies multiple target groups, the Amazon ECS service-linked role must be created.
+            # The role is created by omitting the Role property in AWS CloudFormation
+            if cfg.LoadBalancerApplicationExternal and cfg.LoadBalancerApplicationInternal:
+                self.Role = Ref('AWS::NoValue') 
 
         self.TaskDefinition = Ref('TaskDefinition')
 
