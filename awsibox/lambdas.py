@@ -255,3 +255,19 @@ class LBD_LayerVersions(object):
             o_Layer.Value = Ref(resname)
 
             add_obj(o_Layer)
+
+
+class LBD_Permissions(object):
+    def __init__(self, key):
+        # Resources
+        for n, v in getattr(cfg, key).iteritems():
+            resname = key + n
+
+            # resources
+            r_Permission = LambdaPermission(resname)
+            r_Permission.setup()
+            auto_get_props(r_Permission, v, recurse=True)
+
+            add_obj([
+                r_Permission,
+            ])
