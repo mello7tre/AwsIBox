@@ -150,6 +150,7 @@ CFG_TO_CLASS = OrderedDict([
     ('Lambda', {'module': 'lambdas', 'class': 'LBD_Lambdas'}),
     ('LambdaLayerVersion', {'module': 'lambdas', 'class': 'LBD_LayerVersions'}),
     ('LambdaPermission', {'module': 'lambdas', 'class': 'LBD_Permissions'}),
+    ('LambdaEventSourceMapping', {'module': 'lambdas', 'class': 'LBD_EventSourceMappings'}),
     ('LoadBalancerApplication', {'module': 'loadbalancing', 'class': 'LB_ElasticLoadBalancing'}),
     ('LoadBalancerClassic', {'module': 'loadbalancing', 'class': 'LB_ElasticLoadBalancing'}),
     ('Alarm', {'module': 'cloudwatch', 'class': 'CW_Alarms'}),

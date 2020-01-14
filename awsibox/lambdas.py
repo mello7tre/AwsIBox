@@ -268,12 +268,21 @@ class LBD_Permissions(object):
             r_Permission.setup()
             auto_get_props(r_Permission, v, recurse=True)
 
-            if v['Principal'] == 'sqs.amazonaws.com':
-                r_EventSourceMapping = lbd.EventSourceMapping('LambdaEventSourceMapping')
-                r_EventSourceMapping.FunctionName = r_Permission.FunctionName
-                r_EventSourceMapping.EventSourceArn = r_Permission.SourceArn
-                add_obj(r_EventSourceMapping)
-
             add_obj([
                 r_Permission,
+            ])
+
+
+class LBD_EventSourceMappings(object):
+    def __init__(self, key):
+        # Resources
+        for n, v in getattr(cfg, key).iteritems():
+            resname = key + n
+
+            # resources
+            r_EventSourceMapping = lbd.EventSourceMapping(resname)
+            auto_get_props(r_EventSourceMapping, v, recurse=True)
+
+            add_obj([
+                r_EventSourceMapping,
             ])
