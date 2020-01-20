@@ -21,7 +21,7 @@ setuptools.setup(
         'awsibox': ['lambdas/*'],
     },
     install_requires=[
-        'troposphere==2.4.1',
+        'troposphere',
         'PyYAML>=5,==5.*',
     ],
     python_requires='~=2.7',

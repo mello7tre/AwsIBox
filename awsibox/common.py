@@ -43,3 +43,17 @@ from .cfg import (
     SECURITY_GROUPS_DEFAULT,
     PARAMETERS_SKIP_OVERRIDE_CONDITION,
 )
+
+
+# Temporary fix for https://github.com/cloudtools/troposphere/issues/1474
+def my_one_of(class_name, properties, property, conditionals):
+    if (properties.get(property) not in conditionals and
+            not isinstance(properties.get(property), If)):
+        raise ValueError(
+            # Ensure we handle None as a valid value
+            '%s.%s must be one of: "%s"' % (
+                class_name, property, ', '.join(
+                    condition for condition in conditionals if condition
+                )
+            )
+        )

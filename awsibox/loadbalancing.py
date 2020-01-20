@@ -10,6 +10,10 @@ from .securitygroup import (SecurityGroupRuleELBPorts,SecurityGroupIngressInstan
     SecurityGroupLoadBalancer, SecurityGroupsIngressEcs)
 from .lambdas import LambdaPermissionLoadBalancing
 
+
+# Temporary fix for https://github.com/cloudtools/troposphere/issues/1474
+elbv2.one_of = my_one_of
+
 # S - CLASSIC LOAD BALANCING #
 class ELBListener(elb.Listener):
     def setup(self, key):
@@ -156,15 +160,12 @@ class ELBV2TargetGroupEC2(ELBV2TargetGroup):
 
 class ELBV2TargetGroupALB(elbv2.TargetGroup):
     def setup(self, lambda_arn):
-        self.Protocol = Ref('AWS::NoValue')
-        self.Port = Ref('AWS::NoValue')
         self.Targets = [
             elbv2.TargetDescription(
                 Id=lambda_arn,
             )
         ]
         self.TargetType = 'lambda'
-        self.VpcId = Ref('AWS::NoValue')
 
 
 class ELBV2TargetGroupECS(ELBV2TargetGroup):
