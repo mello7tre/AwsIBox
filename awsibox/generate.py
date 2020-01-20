@@ -8,12 +8,12 @@ from . import (mappings, lambdas, securitygroup, cloudwatch, loadbalancing, auto
 
 
 def execute_class(RP_cmm):
-    for k, v in cfg.CFG_TO_CLASS.iteritems():
+    for k, v in cfg.CFG_TO_CLASS.items():
         class_name = v['class']
         module_name = v['module']
         module = globals()[module_name]
 
-        if k in RP_cmm.keys():
+        if k in list(RP_cmm.keys()):
             RP_value = RP_cmm[k]
             if isinstance(RP_value, str) and RP_value == 'SkipClass':
                 continue

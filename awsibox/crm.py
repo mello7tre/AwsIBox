@@ -16,7 +16,7 @@ class CRMCertificate(crm.Certificate):
 
 class CRM_Certificate(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             if 'Enabled' in v and not v['Enabled']:
                 continue
             # resources

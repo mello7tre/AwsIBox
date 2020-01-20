@@ -5,7 +5,8 @@ import os
 import copy
 import json
 import logging
-from collections import OrderedDict, Mapping
+from collections import OrderedDict
+from collections.abc import Mapping
 from pprint import pprint, pformat
 
 from . import cfg
@@ -36,7 +37,7 @@ def construct_mapping(self, node, deep=False):
         key = self.construct_object(key_node, deep=deep)
         try:
             hash(key)
-        except TypeError, exc:
+        except TypeError as exc:
             raise yaml.constructor.ConstructorError(
                 'while constructing a mapping', node.start_mark,
                 'found unacceptable key (%s)' % exc, key_node.start_mark)
@@ -93,14 +94,14 @@ class Loader(yaml.Loader):
 
         elif isinstance(node, yaml.MappingNode):
             result = {}
-            for k,v in self.construct_mapping(node).iteritems():
+            for k,v in self.construct_mapping(node).items():
                 if k in exclude_list:
                     continue
                 result[k] = self.extractFile(v, self._root_current)
             return result
 
         else:
-            print "Error:: unrecognised node type in !include statement"
+            print('Error:: unrecognised node type in !include statement')
             raise yaml.constructor.ConstructorError
 
     def extractFile(self, filename, root):
@@ -121,7 +122,7 @@ def replace_not_allowed_char(s):
             '?': 'QUEST',
             '.': 'DOT',
             '_': 'USCORE',
-    }.iteritems():
+    }.items():
         key = key.replace(s, w)
 
     return int(key) if key.isdigit() else key
@@ -129,8 +130,10 @@ def replace_not_allowed_char(s):
 
 def gen_dict_extract(cfg, envs):
     global enforce_list
-    if hasattr(cfg, 'iteritems'):
-        for k, v in cfg.iteritems():
+    if hasattr(cfg, 'items'):
+        # This method allow to delete items from a dictionary while iterating over it
+        for k in list(cfg):
+            v = cfg[k]
             # for final values
             if isinstance(v, (str, int, list)) and not k.startswith('IBoxLoader'):
                 if k in enforce_list:
@@ -147,7 +150,7 @@ def gen_dict_extract(cfg, envs):
                 try:
                     # after descending in env main key (not the one nested under region) delete key
                     # this way when envs include both (env and region) i do not process it again
-                    if k in RP_base.keys():
+                    if k in list(RP_base.keys()):
                         del cfg[k]
                 except:
                     pass
@@ -156,7 +159,7 @@ def gen_dict_extract(cfg, envs):
             # for recursively descending in dict not in RP_base_keys (env/region/envrole/stacktype) 
             # (final key is the concatenation of traversed dict keys)
             if k not in RP_base_keys and isinstance(v, (dict)):
-                for j, w in v.iteritems():
+                for j, w in v.items():
                     for result in gen_dict_extract({k + j: w}, envs):
                         yield result
     if isinstance(cfg, list):
@@ -169,11 +172,11 @@ def my_merge_dict(basedict, workdict):
     if isinstance(workdict, (str, list)):
         return workdict
     if len(basedict) > 0:
-        sumdict = dict(basedict.items() + workdict.items())
+        sumdict = dict(list(basedict.items()) + list(workdict.items()))
     else:
-        return dict(workdict.items())
+        return dict(list(workdict.items()))
 
-    for k in sumdict.iterkeys():
+    for k in sumdict.keys():
         try:
             is_dict = isinstance(workdict[k], dict)
             is_map = isinstance(basedict[k], Mapping)
@@ -210,12 +213,12 @@ def get_RP_for_envs(value):
     except:
         is_dict = False
 
-    if hasattr(value, 'iteritems'):
-        for d, v in value.iteritems():
+    if hasattr(value, 'items'):
+        for d, v in value.items():
             RP[d] = get_RP_for_envs(v)
     elif is_dict:
         for d, v in enumerate(value):
-            for i, j in v.iteritems():
+            for i, j in v.items():
                 # CF Mapping allow for index only alfanumeric char,
                 # this way i can specify more "clear" name for index in CloudFormation behaviours
                 key = replace_not_allowed_char(i)
@@ -235,7 +238,7 @@ def get_RP_for_envs(value):
 def read_yaml(file_type, brand, base_dir):
     cfg_file = os.path.join(base_dir, brand, file_type + '.yml')
 
-    yaml.Loader.add_constructor(u'tag:yaml.org,2002:map', construct_ordereddict)
+    yaml.Loader.add_constructor('tag:yaml.org,2002:map', construct_ordereddict)
     try:
         with open(cfg_file, 'r') as ymlfile:
             cfg = yaml.load(ymlfile, Loader=Loader)
@@ -249,7 +252,7 @@ def parse_cfg(cfg, envs=[]):
     odict = OrderedDict([])
 
     for value in gen_dict_extract(cfg, envs):
-        for k, v in value.iteritems():
+        for k, v in value.items():
             try:
                 if isinstance(v[0], dict):
                     odict[k] = odict[k] + v
@@ -264,7 +267,7 @@ def parse_cfg(cfg, envs=[]):
 def merge_cfg(cfgs, cfg_key, list_base=None):
     RP_list = copy.deepcopy(list_base) if list_base else []
 
-    for cfg, v in cfgs.iteritems():
+    for cfg, v in cfgs.items():
         for c in v:
             keys = ['IBoxLoader', 'IBoxLoaderAfter'] + cfg_key[cfg]
             parsed_cfg = parse_cfg(c, keys)
@@ -274,12 +277,12 @@ def merge_cfg(cfgs, cfg_key, list_base=None):
 
 
 def prepend_base_cfgs(cfg_cmm):
-    for cfg_key, cfg_value in cfg.BASE_CFGS.iteritems():
+    for cfg_key, cfg_value in cfg.BASE_CFGS.items():
         key_names = []
         for c in cfg_cmm:
             if cfg_key in c:
                 for k in c[cfg_key]:
-                    key_names.extend(k.keys())
+                    key_names.extend(list(k.keys()))
 
         if key_names:
             keys = []
@@ -309,7 +312,7 @@ def get_RP(cfgs):
 
     RP['cmm']['cmm'] = get_RP_for_envs(cfg_merge_cmm)
 
-    for env, rvalue in RP.iteritems():
+    for env, rvalue in RP.items():
         if env == 'cmm':
             continue
 
@@ -321,7 +324,7 @@ def get_RP(cfgs):
 
         cfg_merge_env = merge_cfg(cfgs, cfg_key_env)
 
-        for region in rvalue.iterkeys():
+        for region in rvalue.keys():
 
             cfg_key_region = {
                 'common': [region],
@@ -345,9 +348,9 @@ def get_RP(cfgs):
 
 def get_RP_base_keys():
     RP_base_keys = ['global']
-    for n, v in RP_base.iteritems():
+    for n, v in RP_base.items():
         RP_base_keys.append(n)
-        for m, w in v.iteritems():
+        for m, w in v.items():
             RP_base_keys.append(m)
 
     return RP_base_keys + [stacktype, envrole]
@@ -363,7 +366,7 @@ def get_stack_type(cfgs):
 
 
 def set_cfg():
-    for n, v in cfg.RP_cmm.iteritems():
+    for n, v in cfg.RP_cmm.items():
         setattr(cfg, n, v)
     
     # set generic attribute based on condition:
@@ -511,6 +514,7 @@ def build_RP():
     try:
         stacktype = RP['cmm']['cmm']['StackType']
     except KeyError:
+        print('StackType key not found!')
         exit(1)
 
     cfg.RP = RP

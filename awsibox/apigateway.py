@@ -66,7 +66,7 @@ class AGW_Account(object):
 
 class AGW_DomainName(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
             # resources
             r_Domain = agw.DomainName(resname)
@@ -85,9 +85,9 @@ class AGW_DomainName(object):
 
 class AGW_UsagePlans(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
-            for m, w in v['ApiStages'].iteritems():
+            for m, w in v['ApiStages'].items():
                 # parameters
                 p_Stage = Parameter(resname + 'ApiStages' + m + 'Stage')
                 p_Stage.Description = m + ' Stage - empty for default based on env/role'
@@ -114,7 +114,7 @@ class AGW_UsagePlans(object):
 
 class AGW_ApiKeys(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
             # parameters
             p_Enabled = Parameter(resname + 'Enabled')
@@ -152,7 +152,7 @@ class AGW_ApiKeys(object):
 
 class AGW_Stages(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             # parameters
             p_DeploymentDescription = Parameter('Deployment' + n + 'Description')
             p_DeploymentDescription.Description = 'Deployment' + n + ' Description'
@@ -189,13 +189,13 @@ class AGW_RestApi(object):
             R_RestApi,
         ])
 
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
             agw_stage = cfg.Stage
             r_Resource = ApiGatewayResource(resname)
             r_Resource.setup(key=v, stage=agw_stage)
 
-            for m, w in v['Method'].iteritems():
+            for m, w in v['Method'].items():
                 r_Method = ApiGatewayMethod(resname + 'Method' + m)
                 r_Method.setup(key=w, basename=n, name=m, stage=agw_stage)
 
@@ -204,7 +204,7 @@ class AGW_RestApi(object):
                     r_Method,
                 ])
 
-        for l, w in cfg.Lambda.iteritems():
+        for l, w in cfg.Lambda.items():
             r_LambdaPermission = LambdaPermissionApiGateway('LambdaPermission' + l)
             r_LambdaPermission.setup(
                 name=Ref('Lambda' + l),

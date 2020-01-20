@@ -310,7 +310,7 @@ class LB_ListenersEC2(LB_Listeners):
         Listeners = []
         Securitygroup_Rules = []
         SecuritygroupIngress_InstanceRules = []
-        for n, v in cfg.Listeners.iteritems():
+        for n, v in cfg.Listeners.items():
             mapname = 'Listeners%s' % n  # Ex Listeners1
 
             if cfg.LoadBalancerClassic:
@@ -448,7 +448,7 @@ class LB_ListenerRulesExternalInternal(object):
 
 class LB_ListenerRules(object):
     def __init__(self):
-        for n, v in cfg.ListenerRules.iteritems():
+        for n, v in cfg.ListenerRules.items():
             mapname = 'ListenerRules%s' % n  # Ex. ListenerRules1
 
             # parameters

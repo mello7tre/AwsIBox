@@ -232,7 +232,7 @@ class S3_Buckets(object):
     def __init__(self, key):
         global bucket_name
 
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
             name = n  # Ex. AppData
@@ -248,7 +248,7 @@ class S3_Buckets(object):
             PolicyROConditions = []
             PolicyROPrincipal = []
 
-            for m, w in v['AccountsRO'].iteritems():
+            for m, w in v['AccountsRO'].items():
                 accountro_name = resname + 'AccountsRO' + m 
                 # conditions
                 add_obj(get_condition(accountro_name, 'not_equals', 'None'))
@@ -339,7 +339,7 @@ class S3_Buckets(object):
 
             if 'PolicyStatement' in v:
                 FixedStatements = []
-                for fsn, fsv  in v['PolicyStatement'].iteritems():
+                for fsn, fsv  in v['PolicyStatement'].items():
                     FixedStatement = IAMPolicyStatement(fsv)
                     FixedStatement['Principal'] = {
                         'AWS': eval(fsv['Principal'])
@@ -357,7 +357,7 @@ class S3_Buckets(object):
                     Sub('arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${%s}' % identityresname)
                 )
 
-                for ixn, ixv in v['CloudFrontOriginAccessIdentityExtra'].iteritems():
+                for ixn, ixv in v['CloudFrontOriginAccessIdentityExtra'].items():
                     ixname = resname + 'CloudFrontOriginAccessIdentityExtra' + ixn
                     # conditions
                     add_obj(get_condition(ixname, 'not_equals', 'None'))
@@ -429,10 +429,10 @@ class S3_Buckets(object):
 # no more used
 class S3_BucketPolicies(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
             Statements = []
-            for m, w  in v['Statement'].iteritems():
+            for m, w  in v['Statement'].items():
                 Statement = IAMPolicyStatement(w)
                 Statement['Principal'] = {
                     'AWS': eval(w['Principal'])

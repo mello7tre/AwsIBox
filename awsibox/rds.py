@@ -133,7 +133,7 @@ class RDSDBSubnetGroupPublic(rds.DBSubnetGroup):
 
 class RDS_ParameterGroups(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = '%s%s' % (key, n)
             # Resources
             r_PG = RDSDBParameterGroup(resname)

@@ -21,7 +21,7 @@ class EVETarget(eve.Target):
 
 class EVE_EventRules(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n  # Ex. EventsRuleElasticSearchSnapShot
             # parameters
             p_State = Parameter(resname + 'State')
@@ -40,7 +40,7 @@ class EVE_EventRules(object):
 
             # resources
             Targets = []
-            for m, w in v['Targets'].iteritems():
+            for m, w in v['Targets'].items():
                 targetname = resname + 'Targets' + m
                 Target = EVETarget('')
                 Target.setup(name=targetname, key=w)

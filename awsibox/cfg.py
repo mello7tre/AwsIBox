@@ -1,5 +1,6 @@
 import os
 from collections import OrderedDict, Mapping
+from functools import reduce
 
 no_override = False
 
@@ -17,7 +18,7 @@ PATH_EXT = os.path.normpath(PATH_EXT)
 
 MAX_SECURITY_GROUPS = 4
 # SECURITY_GROUPS_DEFAULT equals list of empty values (Ex. for "MAX_SECURITY_GROUPS = 3" we have "SECURITY_GROUPS_DEFAULT = ',,'")
-SECURITY_GROUPS_DEFAULT = reduce(lambda a, i: ',' + str(a), range(MAX_SECURITY_GROUPS - 1), '')
+SECURITY_GROUPS_DEFAULT = reduce(lambda a, i: ',' + str(a), list(range(MAX_SECURITY_GROUPS - 1)), '')
 
 ENV_BASE = ['dev', 'stg', 'prd']
 

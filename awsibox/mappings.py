@@ -30,7 +30,7 @@ def get_mapping_env_region(MP, RP, e, r, p):
     mappings = MP
 
     if isinstance(RP, dict):
-        for i, v in RP.iteritems():
+        for i, v in RP.items():
             if not e and not r:
                 get_mapping_env_region(mappings, v, i, None, None)
             elif not r:
@@ -137,7 +137,7 @@ def get_azones_mapping():
 
 class Mappings(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             if n == 'EnvRegion':
                 mapping = get_envregion_mapping()
             if n == 'EC2':

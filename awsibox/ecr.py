@@ -47,16 +47,16 @@ class ECRRepositoryLifecyclePolicy(ecr.LifecyclePolicy):
         LifecyclePolicyText = {
             'rules': [
                 {
-                    'rulePriority': 1,
-                    'description': 'Images are sorted on pushed_at_time (desc), images greater than specified count are expired.',
-                    'selection': {
-                        'tagStatus': 'any',
-                        'countType': 'imageCountMoreThan',
-                        'countNumber': 9500
-                    },
                     'action': {
                         'type': 'expire'
-                    }
+                    },
+                    'rulePriority': 1,
+                    'selection': {
+                        'countNumber': 9500,
+                        'countType': 'imageCountMoreThan',
+                        'tagStatus': 'any',
+                    },
+                    'description': 'Images are sorted on pushed_at_time (desc), images greater than specified count are expired.'
                 }
             ]
         }
@@ -113,7 +113,7 @@ def ECRRepositoryPolicyStatementAccountPush(name):
 class ECR_Repositories(object):
     def __init__(self, key):
         PolicyStatementAccounts = []
-        for n, v in cfg.EcrAccount.iteritems():
+        for n, v in cfg.EcrAccount.items():
             mapname = 'EcrAccount' + n  + 'Id'  # Ex. EcrAccountPrdId
             # conditions
             add_obj(get_condition(mapname, 'not_equals', 'None'))
@@ -139,7 +139,7 @@ class ECR_Repositories(object):
                 )
 
         # Resources
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             Repo = ECRRepositories(key + n)  # Ex. RepositoryApiLocationHierarchy
             Repo.setup()
             Repo.RepositoryPolicyText['Statement'].extend(PolicyStatementAccounts)

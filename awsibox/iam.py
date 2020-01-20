@@ -115,7 +115,7 @@ class IAMRoleIBox(iam.Role):
         except:
             pass
         else:
-            for n, v in cfg.IAMPolicyInRole.iteritems():
+            for n, v in cfg.IAMPolicyInRole.items():
                 if self.title.endswith(n):
                     self.Policies = [
                         IAMPolicyInRole(n, v)
@@ -186,7 +186,7 @@ def IAMPolicyInRole(name, key):
             'Version': '2012-10-17',
             }
     Statement = []
-    for n, v in key['Statement'].iteritems():
+    for n, v in key['Statement'].items():
         Statement.append(IAMPolicyStatement(v))
     Policy.PolicyDocument['Statement'] = Statement
 
@@ -210,7 +210,7 @@ def IAMPolicyStatement(key):
 
 class IAM_Users(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n  # Ex. IAMUserPincoPalla
 
             # parameters
@@ -230,7 +230,7 @@ class IAM_Users(object):
             ManagedPolicyArns = []
             RoleGroups = []
             if 'RoleGroups' in v:
-                for m, w in v['RoleGroups'].iteritems():
+                for m, w in v['RoleGroups'].items():
                     condname = resname + 'RoleGroups' + m
                     # conditions
                     add_obj(get_condition(condname, 'not_equals', 'None'))
@@ -291,11 +291,11 @@ class IAM_Users(object):
 
 class IAM_UserToGroupAdditions(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n  # Ex. IAMUserToGroupAdditionBase
 
             Users = []
-            for m, w in v['User'].iteritems():
+            for m, w in v['User'].items():
                 condname = '%sUser%s' % (resname, m)
                 # conditions
                 add_obj(get_condition(condname, 'not_equals', 'None'))
@@ -324,7 +324,7 @@ class IAM_UserToGroupAdditions(object):
 
 class IAM_Groups(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n  # Ex. IAMGroupBase
 
             # conditions
@@ -353,10 +353,10 @@ class IAM_Groups(object):
 class IAM_Policies(object):
     def __init__(self, key):
         # Resources
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n  # Ex. IAMPolicyLambdaR53RecordInstanceId
             Statement = []
-            for m, w  in v['Statement'].iteritems():
+            for m, w  in v['Statement'].items():
                 Statement.append(IAMPolicyStatement(w))
 
             if 'Type' in v and v['Type'] == 'Managed':
@@ -380,7 +380,7 @@ class IAM_Policies(object):
 class IAM_Roles(object):
     def __init__(self, key):
         # Resources
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n  # Ex. RoleECSService
             r_Role = IAMRole(resname)
             r_Role.setup(key=v)
@@ -388,7 +388,7 @@ class IAM_Roles(object):
             # Add embedded policies if present 
             if 'Policies' in v:
                 Policies = []
-                for p, w in v['Policies'].iteritems():
+                for p, w in v['Policies'].items():
                     Policies.append(IAMPolicyInRole(p,w))
                 r_Role.Policies = Policies
 

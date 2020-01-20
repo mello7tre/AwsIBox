@@ -74,7 +74,7 @@ class CD_DeploymentGroup(object):
 
 class CD_Applications(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             App = cdd.Application(key + n)
             App.ApplicationName = get_endvalue(key + n)
 

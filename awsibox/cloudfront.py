@@ -284,7 +284,7 @@ def CFCustomErrors():
     except:
         pass
     else:
-        for n, v in ErrorResponses.iteritems():
+        for n, v in ErrorResponses.items():
             name = '%s%s' % (mapname, n)
             CustomErrorResponse = CFCustomErrorResponse(name)
             CustomErrorResponse.setup(key=v)
@@ -313,13 +313,13 @@ class CF_CloudFront(object):
 
         cachebehaviors = []
         sortedcachebehaviors = sorted(
-            cfg.CloudFrontCacheBehaviors.iteritems(),
-            key=lambda (x, y): (
-                (y['Order']*1000) - len(y['PathPattern']) if 'PathPattern' in y else 0
-            ) if 'Order' in y else x
+            iter(cfg.CloudFrontCacheBehaviors.items()),
+            key=lambda x_y: (
+                (x_y[1]['Order']*1000) - len(x_y[1]['PathPattern']) if 'PathPattern' in x_y[1] else 0
+            ) if 'Order' in x_y[1] else x_y[0]
         )
         itercachebehaviors = iter(sortedcachebehaviors)
-        itercachebehaviors.next()
+        next(itercachebehaviors)
         for n, v in itercachebehaviors:
             if not v['PathPattern']:
                 continue
@@ -370,7 +370,7 @@ class CF_CloudFront(object):
         except:
             pass
         else:
-            for n, v in cfg.CloudFrontOrigins.iteritems():
+            for n, v in cfg.CloudFrontOrigins.items():
                 name = 'CloudFrontOrigins%s' % n
                 
                 # parameters

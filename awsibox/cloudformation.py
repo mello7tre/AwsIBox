@@ -11,7 +11,7 @@ class CFM_Parameters(object):
 class CFM_Conditions(object):
     def __init__(self, key):
         do_no_override(True)
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             c_Condition = {n: eval(v)}
 
             add_obj(c_Condition)
@@ -20,7 +20,7 @@ class CFM_Conditions(object):
 
 class CFM_Mappings(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             c_Mapping = {n: v}
 
             cfg.Mappings.update(c_Mapping)

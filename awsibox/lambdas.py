@@ -113,7 +113,7 @@ def LambdaLayers(obj, resname, i):
 class LBD_Lambdas(object):
     def __init__(self, key):
         # Resources
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
 
             try: v['Code']['S3Key']
@@ -220,7 +220,7 @@ class LBD_Lambdas(object):
 class LBD_LayerVersions(object):
     def __init__(self, key):
         # Resources
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
 
             try: v['Content']['S3Key']
@@ -260,7 +260,7 @@ class LBD_LayerVersions(object):
 class LBD_Permissions(object):
     def __init__(self, key):
         # Resources
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
 
             # resources
@@ -276,7 +276,7 @@ class LBD_Permissions(object):
 class LBD_EventSourceMappings(object):
     def __init__(self, key):
         # Resources
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
 
             # resources

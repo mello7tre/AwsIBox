@@ -293,7 +293,7 @@ class R53_RecordSetCCH(object):
 
 class R53_HostedZones(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             mapname = key + n
             resname = v['ResourceName']
             output_zonename = resname.replace('HostedZone', 'HostedZoneName')

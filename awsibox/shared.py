@@ -17,7 +17,7 @@ class SSMParameter(ssm.Parameter):
 
 
 def stack_add_res():
-    for n, v in cfg.Parameters.iteritems():
+    for n, v in cfg.Parameters.items():
         # Automatically create override conditions for parameters
         if not n.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION):
 
@@ -40,19 +40,19 @@ def stack_add_res():
 
     cfg.Parameters.clear()
 
-    for n, v in cfg.Conditions.iteritems():
+    for n, v in cfg.Conditions.items():
         cfg.template.add_condition(n, v)
     cfg.Conditions.clear()
 
-    for n, v in cfg.Mappings.iteritems():
+    for n, v in cfg.Mappings.items():
         cfg.template.add_mapping(n, v)
     cfg.Mappings.clear()
 
-    for n, v in cfg.Resources.iteritems():
+    for n, v in cfg.Resources.items():
         cfg.template.add_resource(v)
     cfg.Resources.clear()
 
-    for n, v in cfg.Outputs.iteritems():
+    for n, v in cfg.Outputs.items():
         cfg.template.add_output(v)
     cfg.Outputs.clear()
 
@@ -86,7 +86,7 @@ def do_no_override(action):
 
 def _get_value(param, fixedvalues, strout, nolist, issub):
     # Its not pythonic, but it's only way to avoid circular import problems
-    from securitygroup import SG_SecurityGroupsTSK
+    from .securitygroup import SG_SecurityGroupsTSK
 
     # set default if not defined
     if not fixedvalues:
@@ -327,7 +327,7 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
         # If rootkey is defined, first iterate over rootkey and execute auto_get_props passing rootkey and rootname, but check if element exist in key too,
         # in that case execute execute auto_get_props passing key and mapname...
         if rootkey:
-            for o, v in rootkey[obj_propname].iteritems():
+            for o, v in rootkey[obj_propname].items():
                 name_o = str(o)
                 rootname_o = rootname + obj_propname + name_o
                 mapname_o = mapname + obj_propname + name_o
@@ -354,7 +354,7 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
         # ...then iterate over key, but check if element exist in rootkey too, in that case skip it (already included in previous rootkey iteration)
         # when calling auto_get_props rootkey and rootname can be setted to None, cause if element has not been skipped mean that it do not exist in rootkey
         # so there is no need to pass it (there cannot be a corrispective node in rootkey)
-        for o, v in key[obj_propname].iteritems():
+        for o, v in key[obj_propname].items():
             name_o = str(o)
             mapname_o = mapname + obj_propname + name_o
             prop_obj = prop_class()
@@ -417,7 +417,7 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None, recurse=False, ro
 def auto_build_obj(obj, key):
     props = vars(obj)['propnames']
     classname = obj.__class__
-    for resname, resvalue in key.iteritems():
+    for resname, resvalue in key.items():
         final_obj = classname(resname)
         auto_get_props(final_obj, resvalue)
 
@@ -440,6 +440,6 @@ def gen_random_string():
     char_set = string.ascii_letters + string.digits
     if not hasattr(gen_random_string, "rng"):
         gen_random_string.rng = random.SystemRandom()  # Create a static variable
-    secret_string = ''.join([gen_random_string.rng.choice(char_set) for _ in xrange(length)])
+    secret_string = ''.join([gen_random_string.rng.choice(char_set) for _ in range(length)])
 
     return secret_string

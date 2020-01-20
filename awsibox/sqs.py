@@ -38,7 +38,7 @@ class SQSQueuePolicy(sqs.QueuePolicy):
 
 class SQS_Queues(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = key + n
             # resources
             r_Queue = sqs.Queue(resname)

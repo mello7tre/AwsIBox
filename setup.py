@@ -24,12 +24,12 @@ setuptools.setup(
         'troposphere',
         'PyYAML>=5,==5.*',
     ],
-    python_requires='~=2.7',
+    python_requires='>=3.7',
     scripts=[
         'scripts/ibox_generate_templates.py',
     ],
     classifiers=[
-        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],

@@ -30,7 +30,7 @@ class EFSMountTarget(efs.MountTarget):
 
 class EFS_FileStorage(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname =  key + n  # Ex. EFSFileSystemWordPress
             recordname = 'RecordSetEFS' + n  # Ex. RecordSetEFSWordPress
             sgservername = 'SecurityGroupEFSServer' + n  # Ex. SecurityGroupEFSServerWordPress

@@ -40,10 +40,10 @@ def build_discover_map(brand, files, stacktypes):
 
     for n in files:
         try:
-            with open(n, 'r') as f:
+            with open(n, 'r', encoding='utf-8') as f:
                 s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
 
-                if any(s.find(pattern + t) != -1 for t in stacktypes):
+                if any(s.find((pattern + t).encode('utf-8')) != -1 for t in stacktypes):
                     base_name = os.path.basename(n)
                     role = os.path.splitext(base_name)[0]
                     roles.append(role)

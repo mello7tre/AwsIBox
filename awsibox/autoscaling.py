@@ -599,12 +599,12 @@ class ASInitConfigApps(cfm.InitConfig):
 class ASInitConfigAppsBuildAmi(ASInitConfigApps):
     def __init__(self, title, **kwargs):
         super(ASInitConfigAppsBuildAmi, self).__init__(title, **kwargs)
-        for n, v in self.sources.iteritems():
+        for n, v in self.sources.items():
             if not isinstance(v, dict):
                 if 'Fn::If' in v.data:
                     self.sources[n] = v.data['Fn::If'][2]
 
-        for n, v in self.commands.iteritems():
+        for n, v in self.commands.items():
             if not isinstance(v, dict):
                 if 'Fn::If' in v.data:
                     self.commands[n] = v.data['Fn::If'][2]
@@ -743,7 +743,7 @@ class AS_ScheduledAction(object):
 
 class AS_ScheduledActionsEC2(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = '%s%s' % (key, n)
             # parameters
             p_DesiredSize = Parameter(resname + 'DesiredSize')
@@ -770,7 +770,7 @@ class AS_ScheduledActionsEC2(object):
 class AS_ScheduledActionsECS(object):
     def __init__(self, key):
         ScheduledActions = []
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = '%s%s' % (key, n)
             # conditions
             c_disable = {resname + 'Disable': Or(
@@ -831,7 +831,7 @@ class AS_ScalingPoliciesTracking(object):
     def __init__(self, key):
         ScalingPolicyTrackings_Out_String = []
         ScalingPolicyTrackings_Out_Map = {}
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
             resname = '%s%s' % (key, n)
@@ -1130,7 +1130,7 @@ class AS_AutoscalingECS(object):
 
 class AS_LifecycleHook(object):
     def __init__(self,key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             resname = '%s%s' % (key, n)
 
             # resources

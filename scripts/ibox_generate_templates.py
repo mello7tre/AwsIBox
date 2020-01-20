@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import sys
 import os
 import json
@@ -59,7 +59,7 @@ if args.action == 'view':
 elif args.action == 'write':
     discover_map = discover.discover(args.Brands, args.EnvRoles, args.StackTypes)
     
-    for brand, roles in discover_map.iteritems():
+    for brand, roles in discover_map.items():
         cfg.brand = brand
     
         for role in roles:
@@ -69,7 +69,7 @@ elif args.action == 'write':
 
             try:
                 template = get_template()
-            except Exception, e:
+            except Exception as e:
                 print('ERROR: %s' % e)
                 exit(1)
 

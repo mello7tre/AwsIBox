@@ -7,7 +7,7 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
 
 class CW_Alarms(object):
     def __init__(self, key):
-        for n, v in getattr(cfg, key).iteritems():
+        for n, v in getattr(cfg, key).items():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
             resname = '%s%s' % (key, n)

@@ -168,7 +168,7 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
 
         if 'MountPoints' in key:
             self.MountPoints = [
-                ECSMountPoint(n, key=k) for n, k in key['MountPoints'].iteritems()
+                ECSMountPoint(n, key=k) for n, k in key['MountPoints'].items()
             ]
 
         if 'Name' in key:
@@ -243,7 +243,7 @@ class ECS_TaskDefinition(object):
         ]
 
         Containers = []
-        for n, v in cfg.ContainerDefinitions.iteritems():
+        for n, v in cfg.ContainerDefinitions.items():
             Environments = []
             MountPoints = []
 
@@ -284,7 +284,7 @@ class ECS_TaskDefinition(object):
             EnvValue_Out_String = []
             EnvValue_Out_Map = {}
             if 'Envs' in v:
-                for m, w in v['Envs'].iteritems():
+                for m, w in v['Envs'].items():
                     envname = '%sEnvs%s' % (name, m)
                     # parameters
                     EnvValue = Parameter(envname + 'Value')
@@ -390,7 +390,7 @@ class ECS_TaskDefinition(object):
 
         if cfg.Volumes:
             Volumes = []
-            for n, v in cfg.Volumes.iteritems():
+            for n, v in cfg.Volumes.items():
                 Volume = ECSVolume(n, key=v)
                 Volumes.append(Volume)
 
