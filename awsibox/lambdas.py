@@ -2,33 +2,35 @@ import troposphere.awslambda as lbd
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, add_obj, import_lambda)
+                     get_subvalue, auto_get_props, get_condition, add_obj,
+                     import_lambda)
 from .iam import IAMRoleLambdaBase
 
 class LambdaPermission(lbd.Permission):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
         self.Action = 'lambda:InvokeFunction'
 
 
 class LambdaPermissionEvent(LambdaPermission):
-    def setup(self, key, source):
-        super(LambdaPermissionEvent, self).setup()
+    def __init__(self, title, key, source, **kwargs):
+        super().__init__(title, **kwargs)
         self.Principal = 'events.amazonaws.com'
         self.FunctionName = eval(key['Arn'])
         self.SourceArn = GetAtt(source, 'Arn')
 
 
 class LambdaPermissionS3(LambdaPermission):
-    def setup(self, key, source):
-        super(LambdaPermissionS3, self).setup()
+    def __init__(self, title, key, source, **kwargs):
+        super().__init__(title, **kwargs)
         self.Principal = 's3.amazonaws.com'
         self.FunctionName = key
         self.SourceArn = Sub('arn:aws:s3:::%s' % getattr(cfg, source))
 
 
 class LambdaPermissionSNS(LambdaPermission):
-    def setup(self, key, **kwargs):
-        super(LambdaPermissionSNS, self).setup(**kwargs)
+    def __init__(self, title, key, **kwargs):
+        super().__init__(title, **kwargs)
         auto_get_props(self, key)
         self.Principal = 'sns.amazonaws.com'
         self.FunctionName = eval(key['Endpoint'])
@@ -36,16 +38,16 @@ class LambdaPermissionSNS(LambdaPermission):
 
 
 class LambdaPermissionApiGateway(LambdaPermission):
-    def setup(self, name, source):
-        super(LambdaPermissionApiGateway, self).setup()
+    def __init__(self, title, name, source, **kwargs):
+        super().__init__(title, **kwargs)
         self.Principal = 'apigateway.amazonaws.com'
         self.FunctionName = name
         self.SourceArn = source
 
 
 class LambdaPermissionLoadBalancing(LambdaPermission):
-    def setup(self, name):
-        super(LambdaPermissionLoadBalancing, self).setup()
+    def __init__(self, title, name, **kwargs):
+        super().__init__(title, **kwargs)
         self.Principal = 'elasticloadbalancing.amazonaws.com'
         self.FunctionName = name
 

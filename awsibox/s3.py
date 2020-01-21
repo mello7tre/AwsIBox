@@ -326,8 +326,9 @@ class S3_Buckets(object):
                     permname = lambda_arn.data['Fn::GettAtt'].replace('Lambda', 'LambdaPermission') + resname
                 else:
                     permname = 'LambdaPermission'
-                r_LambdaPermission = LambdaPermissionS3(permname)
-                r_LambdaPermission.setup(key=lambda_arn, source=resname)
+
+                r_LambdaPermission = LambdaPermissionS3(
+                    permname, key=lambda_arn, source=resname)
 
                 add_obj(r_LambdaPermission)
 

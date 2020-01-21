@@ -58,8 +58,7 @@ class SNS_Subscriptions(object):
                 topicname = resname.split('Lambda')[0].replace(key, 'SNS')
                 permname = 'LambdaPermission' + lambdaname + topicname  # Ex. LambdaPermissionR53RecordInstanceIdSNSASGNotification 
 
-                r_LambdaPermission = LambdaPermissionSNS(permname)
-                r_LambdaPermission.setup(key=v)
+                r_LambdaPermission = LambdaPermissionSNS(permname, key=v)
                 # Propagate condition, if present, to permission
                 if hasattr(r_Subscription, 'Condition'):
                     r_LambdaPermission.Condition = r_Subscription.Condition

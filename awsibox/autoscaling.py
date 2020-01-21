@@ -8,7 +8,7 @@ import troposphere.applicationautoscaling as aas
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, add_obj)
+                     get_subvalue, auto_get_props, get_condition, add_obj)
 from .cfn import *
 from .codedeploy import CD_DeploymentGroup
 from .securitygroup import SG_SecurityGroupsEC2
@@ -25,7 +25,9 @@ except ImportError:
 
 # S - AUTOSCALING #
 class ASAutoScalingGroup(asg.AutoScalingGroup):
-    def setup(self, spot=None):
+    def __init__(self, title, spot=None, **kwargs):
+        super().__init__(title, **kwargs)
+
         if spot:
             CapacityDesiredASGMainIsSpot = get_endvalue('CapacityDesired')
             CapacityDesiredASGMainIsNotSpot = 0
@@ -45,8 +47,12 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
         self.AvailabilityZones = GetAZs()
 
         if cfg.SpotASG:
-            self.DesiredCapacity = If('ASGMainIsSpot', CapacityDesiredASGMainIsSpot, CapacityDesiredASGMainIsNotSpot)
-            self.MinSize = If('ASGMainIsSpot', CapacityMinASGMainIsSpot, CapacityMinASGMainIsNotSpot)
+            self.DesiredCapacity = If('ASGMainIsSpot',
+                                      CapacityDesiredASGMainIsSpot,
+                                      CapacityDesiredASGMainIsNotSpot)
+            self.MinSize = If('ASGMainIsSpot',
+                              CapacityMinASGMainIsSpot,
+                              CapacityMinASGMainIsNotSpot)
         else:
             self.DesiredCapacity = get_endvalue('CapacityDesired')
             self.MinSize = get_endvalue('CapacityMin')
@@ -72,7 +78,9 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
 
 
 class ASLaunchConfiguration(asg.LaunchConfiguration):
-    def setup(self, UserDataApp, spot=None):
+    def __init__(self, title, UserDataApp, spot=None, **kwargs):
+        super().__init__(title, **kwargs)
+
         if spot:
             AutoScalingGroupName='AutoScalingGroupSpot'
             self.Condition = 'SpotASG'
@@ -135,13 +143,16 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
         self.SecurityGroups = [
             GetAtt('SecurityGroupInstancesRules', 'GroupId'),
         ]
-        self.SpotPrice = If('SpotPrice', get_endvalue('SpotPrice'), Ref('AWS::NoValue'))
+        self.SpotPrice = If('SpotPrice',
+                            get_endvalue('SpotPrice'),
+                            Ref('AWS::NoValue'))
         self.UserData = Base64(Join('', [
             '#!/bin/bash\n',
             'PATH=/opt/aws/bin:$PATH\n',
             'export BASH_ENV=/etc/profile.d/ibox_env.sh\n',
             'export ENV=$BASH_ENV\n',
-            'yum -C list installed aws-cfn-bootstrap || yum install -y aws-cfn-bootstrap\n',
+            'yum -C list installed aws-cfn-bootstrap || '
+            'yum install -y aws-cfn-bootstrap\n',
             Sub(''.join(UserDataApp)),
             'cfn-init -v',
             ' --stack ', Ref('AWS::StackName'),
@@ -151,32 +162,46 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             If(
                 'DoNotSignal',
                 Ref('AWS::NoValue'),
-                Sub('cfn-signal -e $? --stack ${AWS::StackName} --role ${RoleInstance} --resource %s --region ${AWS::Region}\n' % AutoScalingGroupName)
+                Sub(
+                    'cfn-signal -e $? --stack ${AWS::StackName} '
+                    '--role ${RoleInstance} '
+                    f'--resource {AutoScalingGroupName} '
+                    '--region ${AWS::Region}\n')
             ),
             'rm /var/lib/cloud/instance/sem/config_scripts_user\n',
         ]))
 
 
 class ASScalingPolicyStep(asg.ScalingPolicy):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         name = self.title  # Ex. ScalingPolicyDown
         self.AdjustmentType = 'ChangeInCapacity'
         self.AutoScalingGroupName = Ref('AutoScalingGroup')
-        self.EstimatedInstanceWarmup = get_endvalue(name + 'EstimatedInstanceWarmup')
+        self.EstimatedInstanceWarmup = get_endvalue(
+            f'{name}EstimatedInstanceWarmup')
         self.PolicyType = 'StepScaling'
         self.StepAdjustments = [
             asg.StepAdjustments(
-                MetricIntervalLowerBound=get_endvalue(name + 'MetricIntervalLowerBound1'),  # Ex. ScalingPolicyDownMetricIntervalLowerBound1
-                MetricIntervalUpperBound=get_endvalue(name + 'MetricIntervalUpperBound1'),
-                ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment1')  # Ex. ScalingPolicyDownScalingAdjustment1
+                MetricIntervalLowerBound=get_endvalue(
+                    f'{name}MetricIntervalLowerBound1'),
+                MetricIntervalUpperBound=get_endvalue(
+                    f'{name}MetricIntervalUpperBound1'),
+                ScalingAdjustment=get_endvalue(
+                    f'{name}ScalingAdjustment1')
             ),
             asg.StepAdjustments(
-                MetricIntervalLowerBound=get_endvalue(name + 'MetricIntervalLowerBound2'),
-                MetricIntervalUpperBound=get_endvalue(name + 'MetricIntervalUpperBound2'),
-                ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment2')
+                MetricIntervalLowerBound=get_endvalue(
+                    f'{name}MetricIntervalLowerBound2'),
+                MetricIntervalUpperBound=get_endvalue(
+                    f'{name}MetricIntervalUpperBound2'),
+                ScalingAdjustment=get_endvalue(
+                    f'{name}ScalingAdjustment2')
             ),
             asg.StepAdjustments(
-                ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment3')
+                ScalingAdjustment=get_endvalue(
+                    f'{name}ScalingAdjustment3')
             )
         ]
 
@@ -187,36 +212,41 @@ class ASScheduledAction(asg.ScheduledAction):
         self.Condition = name
 
         if cfg.SpotASG:
-            self.AutoScalingGroupName = If('ASGMainIsSpot', Ref('AutoScalingGroupSpot'), Ref('AutoScalingGroup'))
+            self.AutoScalingGroupName = If('ASGMainIsSpot',
+                                           Ref('AutoScalingGroupSpot'),
+                                           Ref('AutoScalingGroup'))
         else:
             self.AutoScalingGroupName = Ref('AutoScalingGroup')
 
         self.DesiredCapacity = If(
-            name + 'CapacityDesiredSize',
+            f'{name}CapacityDesiredSize',
             get_endvalue('CapacityDesired'),
-            get_endvalue(name + 'DesiredSize', nocondition=name + 'KeepDesiredSize')
+            get_endvalue(f'{name}DesiredSize', 
+                         nocondition=f'{name}KeepDesiredSize')
         )
         self.MinSize = If(
-            name + 'CapacityMinSize',
+            f'{name}CapacityMinSize',
             get_endvalue('CapacityMin'),
-            get_endvalue(name + 'MinSize', nocondition=name + 'KeepMinSize')
+            get_endvalue(f'{name}MinSize', 
+                         nocondition=f'{name}KeepMinSize')
         )
         self.MaxSize = If(
-            name + 'CapacityMaxSize',
+            f'{name}CapacityMaxSize',
             get_endvalue('CapacityMax'),
-            get_endvalue(name + 'MaxSize', nocondition=name + 'KeepMaxSize')
+            get_endvalue(f'{name}MaxSize',
+                         nocondition=f'{name}KeepMaxSize')
         )
-        self.Recurrence = get_endvalue(name + 'Recurrence')
+        self.Recurrence = get_endvalue(f'{name}Recurrence')
         self.StartTime = If(
-            name + 'StartTimeOverride',
-            Ref(name + 'StartTime'),
+            f'{name}StartTimeOverride',
+            Ref(f'{name}StartTime'),
             Ref('AWS::NoValue')
         )
 
 
 class ASLifecycleHook(asg.LifecycleHook):
     def __init__(self, title, name, key, **kwargs):
-        super(asg.LifecycleHook, self).__init__(title, **kwargs)
+        super().__init__(title, **kwargs)
         auto_get_props(self, key)
         self.HeartbeatTimeout = get_endvalue(title + 'HeartbeatTimeout')
 
@@ -224,17 +254,21 @@ class ASLifecycleHook(asg.LifecycleHook):
 
 
 class ASScalingPolicyStepDown(ASScalingPolicyStep):
-    def setup(self):
-        super(ASScalingPolicyStepDown, self).setup()
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         name = self.title
-        self.StepAdjustments[2].MetricIntervalUpperBound = get_endvalue(name + 'MetricIntervalUpperBound3')
+        self.StepAdjustments[2].MetricIntervalUpperBound = get_endvalue(
+            f'{name}MetricIntervalUpperBound3')
 
 
 class ASScalingPolicyStepUp(ASScalingPolicyStep):
-    def setup(self):
-        super(ASScalingPolicyStepUp, self).setup()
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         name = self.title
-        self.StepAdjustments[2].MetricIntervalLowerBound = get_endvalue(name + 'MetricIntervalLowerBound3')
+        self.StepAdjustments[2].MetricIntervalLowerBound = get_endvalue(
+            f'{name}MetricIntervalLowerBound3')
 
 
 # S - APPLICATION AUTOSCALING #
@@ -802,10 +836,8 @@ class AS_ScheduledActionsECS(object):
 class AS_ScalingPoliciesStepEC2(object):
     def __init__(self, key):
         R_Down = ASScalingPolicyStepDown('ScalingPolicyDown')
-        R_Down.setup()
 
         R_Up = ASScalingPolicyStepUp('ScalingPolicyUp')
-        R_Up.setup()
 
         add_obj([
             R_Down,
@@ -1005,8 +1037,8 @@ class AS_LaunchConfiguration(object):
         SecurityGroups = SG_SecurityGroupsEC2().SecurityGroups
 
         # Resources
-        R_LaunchConfiguration = ASLaunchConfiguration('LaunchConfiguration')
-        R_LaunchConfiguration.setup(UserDataApp=UserDataApp)
+        R_LaunchConfiguration = ASLaunchConfiguration(
+            'LaunchConfiguration', UserDataApp=UserDataApp)
         R_LaunchConfiguration.SecurityGroups.extend(SecurityGroups)
 
         R_InstanceProfile = IAMInstanceProfile('InstanceProfile')
@@ -1034,8 +1066,8 @@ class AS_LaunchConfiguration(object):
             })
         )
 
-        R_LaunchConfigurationSpot = ASLaunchConfiguration('LaunchConfigurationSpot')
-        R_LaunchConfigurationSpot.setup(UserDataApp=UserDataApp, spot=True)
+        R_LaunchConfigurationSpot = ASLaunchConfiguration(
+            'LaunchConfigurationSpot', UserDataApp=UserDataApp, spot=True)
         R_LaunchConfigurationSpot.SecurityGroups = R_LaunchConfiguration.SecurityGroups
         R_LaunchConfigurationSpot.SpotPrice = get_endvalue('SpotPrice')
 
@@ -1068,7 +1100,6 @@ class AS_AutoscalingEC2(object):
         Tags = LaunchConfiguration.Tags
 
         R_ASG = ASAutoScalingGroup('AutoScalingGroup')
-        R_ASG.setup()
         R_ASG.LoadBalancerNames = LoadBalancers
         R_ASG.TargetGroupARNs = TargetGroups
         R_ASG.Tags.extend(Tags)
@@ -1090,8 +1121,7 @@ class AS_AutoscalingEC2(object):
             )
         ])
 
-        R_ASGSpot = ASAutoScalingGroup('AutoScalingGroupSpot')
-        R_ASGSpot.setup(spot=True)
+        R_ASGSpot = ASAutoScalingGroup('AutoScalingGroupSpot', spot=True)
         R_ASGSpot.LoadBalancerNames = LoadBalancers
         R_ASGSpot.TargetGroupARNs = TargetGroups
         R_ASGSpot.Tags.extend(Tags)

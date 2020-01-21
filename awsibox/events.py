@@ -47,9 +47,9 @@ class EVE_EventRules(object):
                 Targets.append(Target)
 
                 if m.startswith('Lambda'):
-                    permname = m.replace('Lambda', 'LambdaPermission') + resname  # Ex. LambdaPermissionElasticSearchSnapShotEventsElasticsearchSnapShot
-                    r_LambdaPermission = LambdaPermissionEvent(permname)
-                    r_LambdaPermission.setup(key=w, source=resname)
+                    permname = m.replace('Lambda', 'LambdaPermission') + resname
+                    r_LambdaPermission = LambdaPermissionEvent(
+                        permname, key=w, source=resname)
 
                     add_obj(r_LambdaPermission)
 

@@ -10,28 +10,42 @@ from .lambdas import LambdaPermissionApiGateway
 class ApiGatewayAccount(agw.Account):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
+
         self.CloudWatchRoleArn = get_expvalue('RoleApiGatewayCloudWatch')
 
 
 class ApiGatewayResource(agw.Resource):
     def __init__(self, title, key, stage, **kwargs):
         super().__init__(title, **kwargs)
+
         mapname = f'ApiGatewayStage{stage}ApiGatewayResource'
         stagekey = cfg.ApiGatewayStage[stage]['ApiGatewayResource']
+
         auto_get_props(self, key)
+
         self.RestApiId = Ref('ApiGatewayRestApi')
-        auto_get_props(self, stagekey, mapname=mapname, recurse=True, rootkey=key, rootname=self.title)
+
+        auto_get_props(self, stagekey, mapname=mapname, recurse=True,
+                       rootkey=key, rootname=self.title)
 
 
 class ApiGatewayMethod(agw.Method):
     def __init__(self, title, key, basename, name, stage, **kwargs):
         super().__init__(title, **kwargs)
-        mapname = f'ApiGatewayStage{stage}ApiGatewayResource{basename}Method{name}'
-        stagekey = cfg.ApiGatewayStage[stage]['ApiGatewayResource'][basename]['Method'][name] 
+
+        mapname = (f'ApiGatewayStage{stage}'
+                   f'ApiGatewayResource{basename}Method{name}')
+
+        stagekey = (cfg.ApiGatewayStage[stage]['ApiGatewayResource']
+                    [basename]['Method'][name])
+
         auto_get_props(self, key, recurse=True)
+
         self.RestApiId = Ref('ApiGatewayRestApi')
         self.ResourceId = Ref(f'ApiGatewayResource{basename}')
-        auto_get_props(self, stagekey, mapname=mapname, recurse=True, rootkey=key, rootname=self.title)
+
+        auto_get_props(self, stagekey, mapname=mapname, recurse=True,
+                       rootkey=key, rootname=self.title)
 
         # If Uri is a lambda self.Integration.Uri will be like:
         # 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaName.Arn}/invocations'
@@ -49,8 +63,11 @@ class ApiGatewayMethod(agw.Method):
 class ApiGatewayStage(agw.Stage):
     def __init__(self, title, name, key, **kwargs):
         super().__init__(title, **kwargs)
+
         self.StageName = name
+
         auto_get_props(self, key, recurse=True)
+
         self.RestApiId = Ref('ApiGatewayRestApi')
         self.DeploymentId = Ref(f'ApiGatewayDeployment{name}')
 
@@ -58,8 +75,10 @@ class ApiGatewayStage(agw.Stage):
 class ApiGatewayDeployment(agw.Deployment):
     def __init__(self, title, name, key, **kwargs):
         super().__init__(title, **kwargs)
+
         lastresource = next(reversed(cfg.ApiGatewayResource))
-        lastmethod = next(reversed(cfg.ApiGatewayResource[lastresource]['Method']))
+        lastmethod = (next(
+            reversed(cfg.ApiGatewayResource[lastresource]['Method'])))
         self.DependsOn = f'ApiGatewayResource{lastresource}Method{lastmethod}'
         self.Description = Ref(f'Deployment{name}Description')
         self.RestApiId = Ref('ApiGatewayRestApi')
@@ -101,7 +120,8 @@ class AGW_UsagePlans(object):
             for m, w in v['ApiStages'].items():
                 # parameters
                 p_Stage = Parameter(f'{resname}ApiStages{m}Stage')
-                p_Stage.Description = f'{m} Stage - empty for default based on env/role'
+                p_Stage.Description = (
+                    f'{m} Stage - empty for default based on env/role')
 
                 add_obj(p_Stage)
 
@@ -129,16 +149,18 @@ class AGW_ApiKeys(object):
             resname = f'{key}{n}'
             # parameters
             p_Enabled = Parameter(f'{resname}Enabled')
-            p_Enabled.Description = f'{resname}Enabled - empty for default based on env/role'
+            p_Enabled.Description = (
+                f'{resname}Enabled - empty for default based on env/role')
 
             p_UsagePlan = Parameter(f'{resname}UsagePlan')
-            p_UsagePlan.Description = f'{resname}UsagePlan - empty for default based on env/role'
+            p_UsagePlan.Description = (
+                f'{resname}UsagePlan - empty for default based on env/role')
 
             add_obj([
                 p_Enabled,
                 p_UsagePlan,
             ])
-            
+
             # resources
             r_ApiKey = agw.ApiKey(resname)
             auto_get_props(r_ApiKey, v, recurse=True)
@@ -153,11 +175,12 @@ class AGW_ApiKeys(object):
                 r_UsagePlanKey.KeyId = Ref(resname)
                 r_UsagePlanKey.KeyType = 'API_KEY'
                 r_UsagePlanKey.UsagePlanId = ImportValue(
-                    get_subvalue('ApiGatewayUsagePlan${1M}', f'{resname}UsagePlan')
+                    get_subvalue(
+                        'ApiGatewayUsagePlan${1M}', f'{resname}UsagePlan')
                 )
 
                 add_obj(r_UsagePlanKey)
-            
+
             # outputs
             o_ApiKey = Output(resname)
             o_ApiKey.Value = Ref(resname)
@@ -217,10 +240,10 @@ class AGW_RestApi(object):
                 ])
 
         for n, v in cfg.Lambda.items():
-            r_LambdaPermission = LambdaPermissionApiGateway(f'LambdaPermission{n}')
-            r_LambdaPermission.setup(
-                name=Ref(f'Lambda{n}'),
-                source=Sub('arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*/*')
+            r_LambdaPermission = LambdaPermissionApiGateway(
+                f'LambdaPermission{n}', name=Ref(f'Lambda{n}'),
+                source=Sub('arn:aws:execute-api:${AWS::Region}:'
+                           '${AWS::AccountId}:${ApiGatewayRestApi}/*/*/*')
             )
 
             add_obj(r_LambdaPermission)

@@ -744,9 +744,10 @@ class LB_TargetGroupsALB(object):
             R_TargetGroup.DependsOn = perm_name + 'External'
             R_TargetGroup.setup(lambda_arn=lambda_arn)
 
-            R_Permission = LambdaPermissionLoadBalancing(perm_name + 'External')
+            R_Permission = LambdaPermissionLoadBalancing(
+                f'{perm_name}External', name=lambda_arn)
+
             R_Permission.Condition = 'LoadBalancerApplicationExternal'
-            R_Permission.setup(name=lambda_arn)
 
             O_TargetGroup = Output('TargetGroupServiceUnavailableExternal')
             O_TargetGroup.Condition = 'LoadBalancerApplicationExternal'
@@ -764,9 +765,10 @@ class LB_TargetGroupsALB(object):
             R_TargetGroup.DependsOn = perm_name + 'Internal'
             R_TargetGroup.setup(lambda_arn=lambda_arn)
             
-            R_Permission = LambdaPermissionLoadBalancing(perm_name + 'Internal')
+            R_Permission = LambdaPermissionLoadBalancing(
+                f'{perm_name}Internal', name=lambda_arn)
+
             R_Permission.Condition = 'LoadBalancerApplicationInternal'
-            R_Permission.setup(name=lambda_arn)
 
             O_TargetGroup = Output('TargetGroupServiceUnavailableInternal')
             O_TargetGroup.Condition = 'LoadBalancerApplicationInternal'
