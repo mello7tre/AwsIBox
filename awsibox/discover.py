@@ -30,7 +30,7 @@ def get_files(brand):
                 pass
             for filename in filenames:
                 if not filename.startswith('.'):
-                    files.append(os.path.join(root,filename))
+                    files.append(os.path.join(root, filename))
 
     return files
 
@@ -43,7 +43,9 @@ def build_discover_map(brand, files, stacktypes):
             with open(n, 'r', encoding='utf-8') as f:
                 s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
 
-                if any(s.find((pattern + t).encode('utf-8')) != -1 for t in stacktypes):
+                if any(
+                        s.find((f'{pattern}{t}').encode('utf-8')) != -1
+                        for t in stacktypes):
                     base_name = os.path.basename(n)
                     role = os.path.splitext(base_name)[0]
                     roles.append(role)
@@ -87,9 +89,11 @@ def discover(brands, envroles, stacktypes):
         if envroles:
             files = []
             for role in envroles:
-                files.append(os.path.join(cfg.PATH_EXT, brand, role + '.yml'))
+                files.append(
+                    os.path.join(cfg.PATH_EXT, brand, role + '.yml'))
                 if brand == 'BASE':
-                    files.append(os.path.join(cfg.PATH_INT, brand, role + '.yml'))
+                    files.append(
+                        os.path.join(cfg.PATH_INT, brand, role + '.yml'))
         else:
             files = get_files(brand)
 

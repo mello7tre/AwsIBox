@@ -2,43 +2,47 @@ import troposphere.elasticache as cch
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, add_obj)
+                     get_subvalue, auto_get_props, get_condition, add_obj)
 from .route53 import R53_RecordSetCCH
 
 
 class CCHCacheCluster(cch.CacheCluster):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
         auto_get_props(self, mapname='')
 
 
 class CCHCacheClusterPublic(CCHCacheCluster):
-    def setup(self):
-        super(CCHCacheClusterPublic, self).setup()
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
         self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPublic')
         self.CacheSecurityGroupNames = [Ref('SecurityGroupCCH')]
 
 
 class CCHCacheClusterPrivate(CCHCacheCluster):
-    def setup(self):
-        super(CCHCacheClusterPrivate, self).setup()
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
         self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPrivate')
         self.VpcSecurityGroupIds = [Ref('SecurityGroupCCH')]
 
 
 class CCHCacheSubnetGroupPrivate(cch.SubnetGroup):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
         self.Description = Sub('${EnvShort}-Private')
-        self.SubnetIds=Split(',', get_expvalue('SubnetsPrivate'))
+        self.SubnetIds = Split(',', get_expvalue('SubnetsPrivate'))
 
 
 class CCHCacheSubnetGroupPublic(cch.SubnetGroup):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
         self.Description = Sub('${EnvShort}-Public')
-        self.SubnetIds=Split(',', get_expvalue('SubnetsPublic'))
+        self.SubnetIds = Split(',', get_expvalue('SubnetsPublic'))
 
 # #################################
 # ### START STACK INFRA CLASSES ###
 # #################################
+
 
 class CCH_Cache(object):
     def __init__(self, key):
@@ -48,7 +52,6 @@ class CCH_Cache(object):
         if cfg.CCHScheme == 'Internal':
             R_Cache = CCHCacheClusterPrivate('CacheCluster')
 
-        R_Cache.setup()
         R_Cache.Condition = 'CacheEnabled'
 
         R53_RecordSetCCH()
@@ -62,10 +65,8 @@ class CCH_SubnetGroups(object):
     def __init__(self, key):
         # Resources
         R_Private = CCHCacheSubnetGroupPrivate('CacheSubnetGroupPrivate')
-        R_Private.setup()
 
         R_Public = CCHCacheSubnetGroupPublic('CacheSubnetGroupPublic')
-        R_Public.setup()
 
         add_obj([
             R_Private,

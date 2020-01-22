@@ -304,16 +304,16 @@ class S3_Buckets(object):
             #r_PolicyReplica = S3BucketPolicyStatementReplica('BucketPolicy' + name)
             #r_PolicyReplica.setup(bucket=resname)
 
-            r_Role = IAMRoleBucketReplica('Role' + resname + 'Replica')
-            r_Role.setup()
+            r_Role = IAMRoleBucketReplica(f'Role{resname}Replica')
 
             BucketPolicyStatement.extend(S3BucketPolicyStatementRO(resname, PolicyROPrincipal))
 
             #r_PolicyRO = S3BucketPolicyRO('BucketPolicy' + name + 'AccountRO')
             #r_PolicyRO.setup(bucket=resname, principal=PolicyROPrincipal)
 
-            r_IAMPolicyReplica = IAMPolicyBucketReplica('IAMPolicyReplicaBucket' + name)
-            r_IAMPolicyReplica.setup(bucket=resname, bucket_name=bucket_name, key=v)
+            r_IAMPolicyReplica = IAMPolicyBucketReplica(
+                f'IAMPolicyReplicaBucket{name}',
+                bucket=resname, bucket_name=bucket_name, key=v)
 
             try:
                 lambda_arn = eval(
@@ -374,15 +374,11 @@ class S3_Buckets(object):
                         S3BucketPolicyStatementCFOriginAccessIdentity(resname, PolicyCloudFrontOriginAccessIdentityPrincipal)
                 )
 
-                r_OriginAccessIdentity = CFOriginAccessIdentity(identityresname)
-                r_OriginAccessIdentity.setup(comment=identityname)
-
-                #r_PolicyOriginAccess = S3BucketPolicyCFOriginAccessIdentity('BucketPolicyCFOriginAccessIdentity' + identityname)
-                #r_PolicyOriginAccess.setup(bucket=resname, identity=identityresname)
+                r_OriginAccessIdentity = CFOriginAccessIdentity(
+                    identityresname, comment=identityname)
 
                 add_obj([
                     r_OriginAccessIdentity,
-                    #r_PolicyOriginAccess,
                 ])
 
                 # outputs

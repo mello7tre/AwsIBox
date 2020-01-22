@@ -2,35 +2,43 @@ import troposphere.events as eve
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, add_obj)
+                     get_subvalue, auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionEvent
 
+
 class EVERule(eve.Rule):
-    def setup(self, key, name):
+    def __init__(self, title, key, name, **kwargs):
+        super().__init__(title, **kwargs)
         auto_get_props(self, key)
-        self.Name = Sub('${AWS::StackName}-${EnvRole}-' + 'Rule' + name)
+        self.Name = Sub('${AWS::StackName}-${EnvRole}-' f'Rule{name}')
 
 
 class EVETarget(eve.Target):
-    def setup(self, name, key):
+    def __init__(self, title, key, name, **kwargs):
+        super().__init__(title, **kwargs)
         auto_get_props(self, key, mapname=name)
 
 # #################################
 # ### START STACK INFRA CLASSES ###
 # #################################
 
+
 class EVE_EventRules(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
-            resname = key + n  # Ex. EventsRuleElasticSearchSnapShot
+            resname = f'{key}{n}'
             # parameters
-            p_State = Parameter(resname + 'State')
-            p_State.Description = 'Events Rule State - empty for default based on env/role'
+            p_State = Parameter(f'{resname}State')
+            p_State.Description = (
+                'Events Rule State - empty for default based on env/role')
             p_State.AllowedValues = ['', 'DISABLED', 'ENABLED']
 
             if 'ScheduleExpression' in v:
-                p_ScheduleExpression = Parameter(resname + 'ScheduleExpression')
-                p_ScheduleExpression.Description = 'Events Rule Schedule - empty for default based on env/role'
+                p_ScheduleExpression = Parameter(
+                    f'{resname}ScheduleExpression')
+                p_ScheduleExpression.Description = (
+                    'Events Rule Schedule - '
+                    'empty for default based on env/role')
 
                 add_obj(p_ScheduleExpression)
 
@@ -41,34 +49,35 @@ class EVE_EventRules(object):
             # resources
             Targets = []
             for m, w in v['Targets'].items():
-                targetname = resname + 'Targets' + m
-                Target = EVETarget('')
-                Target.setup(name=targetname, key=w)
+                targetname = f'{resname}Targets{m}'
+                Target = EVETarget('', name=targetname, key=w)
                 Targets.append(Target)
 
                 if m.startswith('Lambda'):
-                    permname = m.replace('Lambda', 'LambdaPermission') + resname
+                    permname = '%s%s' % (
+                        m.replace('Lambda', 'LambdaPermission'), resname)
                     r_LambdaPermission = LambdaPermissionEvent(
                         permname, key=w, source=resname)
 
                     add_obj(r_LambdaPermission)
 
-            r_Rule = EVERule(resname)
-            r_Rule.setup(key=v, name=n)
+            r_Rule = EVERule(resname, key=v, name=n)
             r_Rule.Targets = Targets
 
             add_obj(r_Rule)
 
             # outputs
-            o_State = Output(resname + 'State')
-            o_State.Value = get_endvalue(resname + 'State')
-   
+            o_State = Output(f'{resname}State')
+            o_State.Value = get_endvalue(f'{resname}State')
+
             if 'ScheduleExpression' in v:
-                o_ScheduleExpression = Output(resname + 'ScheduleExpression')
-                o_ScheduleExpression.Value = get_endvalue(resname + 'ScheduleExpression')
+                o_ScheduleExpression = Output(
+                    f'{resname}ScheduleExpression')
+                o_ScheduleExpression.Value = get_endvalue(
+                    f'{resname}ScheduleExpression')
 
                 add_obj(o_ScheduleExpression)
-    
+
             add_obj([
                 o_State,
             ])

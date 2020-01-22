@@ -1,10 +1,10 @@
 #!/usr/bin/python
 from . import cfg
 from .shared import stack_add_res
-from . import (mappings, lambdas, securitygroup, cloudwatch, loadbalancing, autoscaling, iam,
-    codedeploy, route53, crm, events, cloudfront, sqs, sns,
-    ecs, ecr, s3, waf, vpc, dynamodb, kms, rds, efs, elasticache,
-    servicediscovery, cloudformation, logs, apigateway)
+from . import (mappings, lambdas, securitygroup, cloudwatch, loadbalancing,
+               autoscaling, iam, codedeploy, route53, crm, events, cloudfront,
+               sqs, sns, ecs, ecr, s3, waf, vpc, dynamodb, kms, rds, efs,
+               elasticache, servicediscovery, cloudformation, logs, apigateway)
 
 
 def execute_class(RP_cmm):
@@ -21,7 +21,7 @@ def execute_class(RP_cmm):
                 for n in class_name:
                     getattr(module, n)(key=k)
                 continue
-            stacktype_class = class_name + cfg.stacktype.upper()
+            stacktype_class = f'{class_name}{cfg.stacktype.upper()}'
             if stacktype_class in dir(module):
                 getattr(module, stacktype_class)(key=k)
             elif class_name in dir(module):
@@ -31,12 +31,12 @@ def execute_class(RP_cmm):
 
 
 def generate():
-    classenvrole = cfg.envrole.replace('-', '_')  # Ex client-portal -> client_portal
+    classenvrole = cfg.envrole.replace('-', '_')
     cfg.classenvrole = classenvrole
 
     execute_class(cfg.RP_cmm)
 
-    cfg.template.add_description('%s [%s]' % (cfg.envrole, cfg.stacktype))
+    cfg.template.add_description(f'{cfg.envrole} [{cfg.stacktype}]')
     cfg.template.add_version('2010-09-09')
 
     return cfg.template

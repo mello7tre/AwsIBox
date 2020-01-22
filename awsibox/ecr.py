@@ -2,13 +2,15 @@ import troposphere.ecr as ecr
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, add_obj)
-from .securitygroup import (SecurityGroupEcsService, SecurityGroupRuleEcsService,
-    SG_SecurityGroupsECS)
+                     get_subvalue, auto_get_props, get_condition, add_obj)
+from .securitygroup import (SecurityGroupEcsService,
+                            SecurityGroupRuleEcsService, SG_SecurityGroupsECS)
 
 
 class ECRRepositories(ecr.Repository):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         self.RepositoryName = get_endvalue(self.title)
         self.RepositoryPolicyText = {
             'Version': '2012-10-17',
@@ -41,9 +43,10 @@ class ECRRepositories(ecr.Repository):
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################
 
+
 class ECRRepositoryLifecyclePolicy(ecr.LifecyclePolicy):
     def __init__(self, title, **kwargs):
-        super(ECRRepositoryLifecyclePolicy, self).__init__(title, **kwargs)
+        super().__init__(title, **kwargs)
         LifecyclePolicyText = {
             'rules': [
                 {
@@ -56,7 +59,8 @@ class ECRRepositoryLifecyclePolicy(ecr.LifecyclePolicy):
                         'countType': 'imageCountMoreThan',
                         'tagStatus': 'any',
                     },
-                    'description': 'Images are sorted on pushed_at_time (desc), images greater than specified count are expired.'
+                    'description': 'Images are sorted on pushed_at_time '
+                    '(desc), images greater than specified count are expired.'
                 }
             ]
         }
@@ -65,7 +69,7 @@ class ECRRepositoryLifecyclePolicy(ecr.LifecyclePolicy):
 
 
 def ECRRepositoryPolicyStatementAccountPull(name):
-    policy = {   
+    policy = {
         'Action': [
             'ecr:GetDownloadUrlForLayer',
             'ecr:BatchGetImage',
@@ -87,7 +91,7 @@ def ECRRepositoryPolicyStatementAccountPull(name):
 
 
 def ECRRepositoryPolicyStatementAccountPush(name):
-    policy = {   
+    policy = {
         'Action': [
             'ecr:PutImage',
             'ecr:InitiateLayerUpload',
@@ -114,12 +118,13 @@ class ECR_Repositories(object):
     def __init__(self, key):
         PolicyStatementAccounts = []
         for n, v in cfg.EcrAccount.items():
-            mapname = 'EcrAccount' + n  + 'Id'  # Ex. EcrAccountPrdId
+            mapname = f'EcrAccount{n}Id'  # Ex. EcrAccountPrdId
             # conditions
             add_obj(get_condition(mapname, 'not_equals', 'None'))
 
             if 'Pull' in v['Policy']:
-                PolicyStatementAccount = ECRRepositoryPolicyStatementAccountPull(name=mapname)
+                PolicyStatementAccount = (
+                    ECRRepositoryPolicyStatementAccountPull(name=mapname))
                 PolicyStatementAccounts.append(
                     If(
                         mapname,
@@ -129,7 +134,8 @@ class ECR_Repositories(object):
                 )
 
             if 'Push' in v['Policy']:
-                PolicyStatementAccount = ECRRepositoryPolicyStatementAccountPush(name=mapname)
+                PolicyStatementAccount = (
+                    ECRRepositoryPolicyStatementAccountPush(name=mapname))
                 PolicyStatementAccounts.append(
                     If(
                         mapname,
@@ -140,9 +146,10 @@ class ECR_Repositories(object):
 
         # Resources
         for n, v in getattr(cfg, key).items():
-            Repo = ECRRepositories(key + n)  # Ex. RepositoryApiLocationHierarchy
-            Repo.setup()
-            Repo.RepositoryPolicyText['Statement'].extend(PolicyStatementAccounts)
+            resname = f'{key}{n}'
+            Repo = ECRRepositories(resname)
+            Repo.RepositoryPolicyText['Statement'].extend(
+                PolicyStatementAccounts)
             Repo.LifecyclePolicy = ECRRepositoryLifecyclePolicy('')
 
             add_obj(Repo)

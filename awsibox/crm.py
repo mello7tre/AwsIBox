@@ -2,11 +2,12 @@ import troposphere.certificatemanager as crm
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, add_obj)
+                     get_subvalue, auto_get_props, get_condition, add_obj)
 
 
 class CRMCertificate(crm.Certificate):
-    def setup(self, key):
+    def __init__(self, title, key, **kwargs):
+        super().__init__(title, **kwargs)
         auto_get_props(self, key, recurse=True)
 
 
@@ -20,9 +21,8 @@ class CRM_Certificate(object):
             if 'Enabled' in v and not v['Enabled']:
                 continue
             # resources
-            resname = key + n
-            r_Certificate = CRMCertificate(resname)
-            r_Certificate.setup(key=v)
+            resname = f'{key}{n}'
+            r_Certificate = CRMCertificate(resname, key=v)
             r_Certificate.Tags = Tags(Name=n)
 
             add_obj([

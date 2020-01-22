@@ -82,7 +82,7 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
         super().__init__(title, **kwargs)
 
         if spot:
-            AutoScalingGroupName='AutoScalingGroupSpot'
+            AutoScalingGroupName = 'AutoScalingGroupSpot'
             self.Condition = 'SpotASG'
         else:
             AutoScalingGroupName = 'AutoScalingGroup'
@@ -207,7 +207,9 @@ class ASScalingPolicyStep(asg.ScalingPolicy):
 
 
 class ASScheduledAction(asg.ScheduledAction):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         name = self.title
         self.Condition = name
 
@@ -221,13 +223,13 @@ class ASScheduledAction(asg.ScheduledAction):
         self.DesiredCapacity = If(
             f'{name}CapacityDesiredSize',
             get_endvalue('CapacityDesired'),
-            get_endvalue(f'{name}DesiredSize', 
+            get_endvalue(f'{name}DesiredSize',
                          nocondition=f'{name}KeepDesiredSize')
         )
         self.MinSize = If(
             f'{name}CapacityMinSize',
             get_endvalue('CapacityMin'),
-            get_endvalue(f'{name}MinSize', 
+            get_endvalue(f'{name}MinSize',
                          nocondition=f'{name}KeepMinSize')
         )
         self.MaxSize = If(
@@ -247,6 +249,7 @@ class ASScheduledAction(asg.ScheduledAction):
 class ASLifecycleHook(asg.LifecycleHook):
     def __init__(self, title, name, key, **kwargs):
         super().__init__(title, **kwargs)
+
         auto_get_props(self, key)
         self.HeartbeatTimeout = get_endvalue(title + 'HeartbeatTimeout')
 
@@ -273,81 +276,106 @@ class ASScalingPolicyStepUp(ASScalingPolicyStep):
 
 # S - APPLICATION AUTOSCALING #
 class APPASScalingPolicy(aas.ScalingPolicy):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         name = self.title
         self.PolicyName = self.title
         self.ScalingTargetId = Ref('ScalableTarget')
 
 
 class APPASScalingPolicyStep(APPASScalingPolicy):
-    def setup(self):
-        super(APPASScalingPolicyStep, self).setup()
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         name = self.title
         self.PolicyType = 'StepScaling'
-        self.StepScalingPolicyConfiguration = aas.StepScalingPolicyConfiguration(
-            AdjustmentType='ChangeInCapacity',
-            MetricAggregationType='Average',
-            StepAdjustments=[
-                aas.StepAdjustment(
-                    MetricIntervalLowerBound=get_endvalue(name + 'MetricIntervalLowerBound1'),
-                    MetricIntervalUpperBound=get_endvalue(name + 'MetricIntervalUpperBound1'),
-                    ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment1')
-                    ),
-                aas.StepAdjustment(
-                    MetricIntervalLowerBound=get_endvalue(name + 'MetricIntervalLowerBound2'),
-                    MetricIntervalUpperBound=get_endvalue(name + 'MetricIntervalUpperBound2'),
-                    ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment2')
-                    ),
-                aas.StepAdjustment(
-                    ScalingAdjustment=get_endvalue(name + 'ScalingAdjustment3')
-                )
-            ]
+        self.StepScalingPolicyConfiguration = (
+            aas.StepScalingPolicyConfiguration(
+                AdjustmentType='ChangeInCapacity',
+                MetricAggregationType='Average',
+                StepAdjustments=[
+                    aas.StepAdjustment(
+                        MetricIntervalLowerBound=get_endvalue(
+                            f'{name}MetricIntervalLowerBound1'),
+                        MetricIntervalUpperBound=get_endvalue(
+                            f'{name}MetricIntervalUpperBound1'),
+                        ScalingAdjustment=get_endvalue(
+                            f'{name}ScalingAdjustment1')
+                        ),
+                    aas.StepAdjustment(
+                        MetricIntervalLowerBound=get_endvalue(
+                            f'{name}MetricIntervalLowerBound2'),
+                        MetricIntervalUpperBound=get_endvalue(
+                            f'{name}MetricIntervalUpperBound2'),
+                        ScalingAdjustment=get_endvalue(
+                            f'{name}ScalingAdjustment2')
+                        ),
+                    aas.StepAdjustment(
+                        ScalingAdjustment=get_endvalue(
+                            f'{name}ScalingAdjustment3')
+                    )
+                ]
+            )
         )
 
 
 class APPASScalingPolicyStepDown(APPASScalingPolicyStep):
-    def setup(self):
-        super(APPASScalingPolicyStepDown, self).setup()
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         name = self.title
-        self.StepScalingPolicyConfiguration.StepAdjustments[2].MetricIntervalUpperBound = get_endvalue(name + 'MetricIntervalUpperBound3')
+        step = self.StepScalingPolicyConfiguration.StepAdjustments[2]
+        step.MetricIntervalUpperBound = get_endvalue(
+            f'{name}MetricIntervalUpperBound3')
 
 
 class APPASScalingPolicyStepUp(APPASScalingPolicyStep):
-    def setup(self):
-        super(APPASScalingPolicyStepUp, self).setup()
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         name = self.title
-        self.StepScalingPolicyConfiguration.StepAdjustments[2].MetricIntervalLowerBound = get_endvalue(name + 'MetricIntervalLowerBound3')
+        step = self.StepScalingPolicyConfiguration.StepAdjustments[2]
+        step.MetricIntervalLowerBound = get_endvalue(
+            f'{name}MetricIntervalLowerBound3')
 
 
 class APPASScheduledAction(aas.ScheduledAction):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         name = self.title
         self.ScalableTargetAction = aas.ScalableTargetAction(
             MinCapacity=If(
-                name + 'CapacityMinSize',
+                f'{name}CapacityMinSize',
                 get_endvalue('CapacityMin'),
-                get_endvalue(name + 'MinSize', nocondition=name + 'KeepMinSize')
+                get_endvalue(
+                    f'{name}MinSize', nocondition=f'{name}KeepMinSize')
             ),
             MaxCapacity=If(
-                name + 'CapacityMaxSize',
+                f'{name}CapacityMaxSize',
                 get_endvalue('CapacityMax'),
-                get_endvalue(name + 'MaxSize', nocondition=name + 'KeepMaxSize')
+                get_endvalue(
+                    f'{name}MaxSize', nocondition=f'{name}KeepMaxSize')
             )
         )
-        self.Schedule = get_endvalue(name + 'Recurrence')
+        self.Schedule = get_endvalue(f'{name}Recurrence')
         self.ScheduledActionName = name
         self.StartTime = If(
-            name + 'StartTimeOverride',
-            Ref(name + 'StartTime'),
+            f'{name}StartTimeOverride',
+            Ref(f'{name}StartTime'),
             Ref('AWS::NoValue')
         )
 
 
 class APPASScalableTarget(aas.ScalableTarget):
-    def setup(self):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         self.MaxCapacity = get_endvalue('CapacityMax')
         self.MinCapacity = get_endvalue('CapacityMin')
-        self.ResourceId = get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
+        self.ResourceId = get_subvalue(
+            'service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
         self.RoleARN = get_expvalue('RoleEC2ContainerServiceAutoscale', '')
         self.ScalableDimension = 'ecs:service:DesiredCount'
         self.ServiceNamespace = 'ecs'
@@ -358,16 +386,18 @@ class APPASScalableTarget(aas.ScalableTarget):
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################
 
+
 # S - AUTOSCALING #
 class ASUpdatePolicy(pol.UpdatePolicy):
     def __init__(self, spot=None, **kwargs):
-        super(ASUpdatePolicy, self).__init__(**kwargs)
+        super().__init__(**kwargs)
+
         if spot:
-            WillReplaceCondition = 'WillReplaceSpot' 
-            AutoScalingRollingUpdateCondition = 'RollingUpdateSpot' 
+            WillReplaceCondition = 'WillReplaceSpot'
+            AutoScalingRollingUpdateCondition = 'RollingUpdateSpot'
         else:
-            WillReplaceCondition = 'WillReplace' 
-            AutoScalingRollingUpdateCondition = 'RollingUpdate' 
+            WillReplaceCondition = 'WillReplace'
+            AutoScalingRollingUpdateCondition = 'RollingUpdate'
         self.AutoScalingReplacingUpdate = If(
             WillReplaceCondition,
             pol.AutoScalingReplacingUpdate(
@@ -381,7 +411,8 @@ class ASUpdatePolicy(pol.UpdatePolicy):
                 MaxBatchSize=get_endvalue('RollingUpdateMaxBatchSize'),
                 # MinInstancesInService=get_endvalue('RollingUpdateMinInstancesInService'),
                 MinInstancesInService=get_endvalue('CapacityDesired'),
-                MinSuccessfulInstancesPercent=get_endvalue('RollingUpdateMinSuccessfulInstancesPercent'),
+                MinSuccessfulInstancesPercent=get_endvalue(
+                    'RollingUpdateMinSuccessfulInstancesPercent'),
                 PauseTime=get_endvalue('RollingUpdatePauseTime'),
                 SuspendProcesses=[
                     'HealthCheck',
@@ -393,15 +424,18 @@ class ASUpdatePolicy(pol.UpdatePolicy):
             ),
             Ref('AWS::NoValue')
         )
-        self.AutoScalingScheduledAction=pol.AutoScalingScheduledAction(
+        self.AutoScalingScheduledAction = pol.AutoScalingScheduledAction(
             IgnoreUnmodifiedGroupSizeProperties=True
         )
 
 
 class ASInitConfigSets(cfm.InitConfigSets):
-    def setup(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
         if cfg.Apps:
-            CODEDEPLOY = If('DeploymentGroup', 'CODEDEPLOY', Ref('AWS::NoValue'))
+            CODEDEPLOY = If(
+                'DeploymentGroup', 'CODEDEPLOY', Ref('AWS::NoValue'))
         else:
             CODEDEPLOY = Ref('AWS::NoValue')
 
@@ -466,7 +500,8 @@ class ASInitConfigSetup(cfm.InitConfig):
                 'content': Join('', [
                     '[cfn-auto-reloader-hook]\n',
                     'triggers=post.add, post.update\n',
-                    'path=Resources.LaunchConfiguration.Metadata.CloudFormationInitVersion\n',
+                    'path=Resources.LaunchConfiguration'
+                    '.Metadata.CloudFormationInitVersion\n',
                     'action=/opt/aws/bin/cfn-init -v',
                     ' --stack ', Ref('AWS::StackName'),
                     ' --role ', Ref('RoleInstance'),
@@ -477,7 +512,9 @@ class ASInitConfigSetup(cfm.InitConfig):
             },
             '/usr/local/bin/chamber': {
                 'mode': '000755',
-                'source': Sub('https://%s.s3.${AWS::Region}.amazonaws.com/ibox-tools/chamber' % cfg.BucketAppRepository),
+                'source': Sub(
+                    f'https://{cfg.BucketAppRepository}'
+                    '.s3.${AWS::Region}.amazonaws.com/ibox-tools/chamber'),
                 'owner': 'root',
                 'group': 'root',
             },
@@ -499,17 +536,26 @@ class ASInitConfigSetup(cfm.InitConfig):
             '02_disk_additional': If(
                 'AdditionalStorageMount',
                 {
-                    #'command': Join('', [
-                    #    'file -s ', get_endvalue('AdditionalStorageName'), '1', ' | grep -q "ext[34] filesystem" || ',
-                    #    '{ parted -s ', get_endvalue('AdditionalStorageName'), ' mklabel gpt', ' && ',
-                    #    'parted -s ', get_endvalue('AdditionalStorageName'), ' mkpart primary ext2 1 ',
+                    # 'command': Join('', [
+                    #    'file -s ',
+                    #    get_endvalue('AdditionalStorageName'), '1',
+                    #    ' | grep -q "ext[34] filesystem" || ',
+                    #    '{ parted -s ', get_endvalue('AdditionalStorageName'),
+                    #    ' mklabel gpt', ' && ',
+                    #    'parted -s ', get_endvalue('AdditionalStorageName'),
+                    #    ' mkpart primary ext2 1 ',
                     #    get_endvalue('AdditionalStorageSize'), 'G', ' && ',
-                    #    'mkfs.ext4 ', get_endvalue('AdditionalStorageName'), '1', ' || continue; }\n',
+                    #    'mkfs.ext4 ', get_endvalue('AdditionalStorageName'),
+                    #    '1', ' || continue; }\n',
                     #    'mkdir -p /data', ' && ',
                     #    'mount /dev/xvdx1 /data'
-                    #])
+                    # ])
                     'command': get_subvalue(
-                        'file -s ${1M}1 | grep -q "ext[34] filesystem" || { parted -s ${1M} mklabel gpt && parted -s ${1M} mkpart primary ext2 1 ${2M}G && mkfs.ext4 ${1M}1 || continue; }\nmkdir -p /data && mount ${1M}1 /data',
+                        'file -s ${1M}1 | grep -q "ext[34] filesystem" ||'
+                        ' { parted -s ${1M} mklabel gpt &&'
+                        ' parted -s ${1M} mkpart primary ext2 1 ${2M}G &&'
+                        ' mkfs.ext4 ${1M}1 || continue; }\nmkdir -p /data &&'
+                        ' mount ${1M}1 /data',
                         ['AdditionalStorageName', 'AdditionalStorageSize']
                     )
                 },
@@ -522,7 +568,8 @@ class ASInitConfigSetup(cfm.InitConfig):
                         'for mounts in ', Join(' ', Ref('EfsMounts')), ';do\n',
                         '  mkdir -p "/media/${mounts}"\n',
                         '  mountpoint -q "/media/${mounts}" ||',
-                        '    mount -t nfs4 -o nfsvers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ',
+                        '    mount -t nfs4 -o nfsvers=4,rsize=1048576,'
+                        'wsize=1048576,hard,timeo=600,retrans=2 ',
                         '    efs-${mounts}.', cfg.HostedZoneNamePrivate, ':/ ',
                         '    /media/${mounts}\n',
                         'done'
@@ -549,7 +596,9 @@ class ASInitConfigSetup(cfm.InitConfig):
 
 
 class ASInitConfigCodeDeploy(cfm.InitConfig):
-    def setup(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
         self.files = {
             '/etc/codedeploy-agent/conf/codedeployagent.yml': {
                 'content': Join('', [
@@ -566,7 +615,9 @@ class ASInitConfigCodeDeploy(cfm.InitConfig):
                 ])
             },
             '/tmp/codedeployinstall.sh': {
-                'source': Sub('https://aws-codedeploy-${AWS::Region}.s3.amazonaws.com/latest/install'),
+                'source': Sub(
+                    'https://aws-codedeploy-${AWS::Region}'
+                    '.s3.amazonaws.com/latest/install'),
                 'mode': '000700'
             }
         }
@@ -580,7 +631,9 @@ class ASInitConfigCodeDeploy(cfm.InitConfig):
                 'codedeploy-agent': {
                     'enabled': 'false',
                     'ensureRunning': 'true',
-                    'files': ['/etc/codedeploy-agent/conf/codedeployagent.yml']
+                    'files': [
+                        '/etc/codedeploy-agent/conf/codedeployagent.yml'
+                    ]
                 }
             }
         }
@@ -588,18 +641,21 @@ class ASInitConfigCodeDeploy(cfm.InitConfig):
 
 class ASInitConfigApps(cfm.InitConfig):
     def __init__(self, title, **kwargs):
-        super(ASInitConfigApps, self).__init__(title, **kwargs)
+        super().__init__(title, **kwargs)
+
         name = self.title  # Ex. Apps1
-        reponame = name + 'RepoName'
+        reponame = f'{name}RepoName'
         n = name.replace('Apps', '')
-        envappversion = 'EnvApp%sVersion' % n
+        envappversion = f'EnvApp{n}Version'
 
         self.sources = {
             '/tmp/ibox/': If(
                 'DeployRevision',
                 Ref('AWS::NoValue'),
                 get_subvalue(
-                    'https://%s.s3-${AWS::Region}.amazonaws.com/${1M}/${1M}-${%s}.tar.gz' % (cfg.BucketAppRepository, envappversion),
+                    'https://%s.s3-${AWS::Region}.amazonaws.com/'
+                    '${1M}/${1M}-${%s}.tar.gz' % (
+                        cfg.BucketAppRepository, envappversion),
                     reponame, ''
                 )
             )
@@ -610,7 +666,9 @@ class ASInitConfigApps(cfm.InitConfig):
                 Ref('AWS::NoValue'),
                 {
                     'command': get_subvalue(
-                        'EnvAppVersion=${%s} EnvRepoName=${1M} /tmp/ibox/bin/setup.sh' % envappversion, reponame
+                        'EnvAppVersion=${%s} EnvRepoName=${1M} '
+                        '/tmp/ibox/bin/setup.sh' % envappversion,
+                        reponame
                     )
                 }
             ),
@@ -618,9 +676,12 @@ class ASInitConfigApps(cfm.InitConfig):
                 'DeployRevision',
                 {
                     'command': get_subvalue(
-                        'EnvAppVersion=${%s} EnvRepoName=${1M} /opt/ibox/${1M}/live/bin/setup.sh' % envappversion, reponame
+                        'EnvAppVersion=${%s} EnvRepoName=${1M} '
+                        '/opt/ibox/${1M}/live/bin/setup.sh' % envappversion,
+                        reponame
                     ),
-                    'test': 'test -e /var/lib/cloud/instance/sem/config_ssh_authkey_fingerprints'
+                    'test': 'test -e /var/lib/cloud/instance/sem/'
+                    'config_ssh_authkey_fingerprints'
                 },
                 Ref('AWS::NoValue')
             ),
@@ -632,7 +693,8 @@ class ASInitConfigApps(cfm.InitConfig):
 
 class ASInitConfigAppsBuildAmi(ASInitConfigApps):
     def __init__(self, title, **kwargs):
-        super(ASInitConfigAppsBuildAmi, self).__init__(title, **kwargs)
+        super().__init__(title, **kwargs)
+
         for n, v in self.sources.items():
             if not isinstance(v, dict):
                 if 'Fn::If' in v.data:
@@ -645,14 +707,19 @@ class ASInitConfigAppsBuildAmi(ASInitConfigApps):
 
 
 class ASInitConfigELBClassicExternal(cfm.InitConfig):
-    def setup(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
         self.commands = {
             'ELBClassicExternalHealthCheck': {
                 'command': Join('', [
                     'until [ "$state" = \'"InService"\' ]; do',
-                    '  state=$(aws --region ', Ref('AWS::Region'), ' elb describe-instance-health',
-                    '  --load-balancer-name ', Ref('LoadBalancerClassicExternal'),
-                    '  --instances $(curl -s http://169.254.169.254/latest/meta-data/instance-id)',
+                    '  state=$(aws --region ', Ref('AWS::Region'),
+                    ' elb describe-instance-health',
+                    '  --load-balancer-name ',
+                    Ref('LoadBalancerClassicExternal'),
+                    '  --instances $(curl -s '
+                    'http://169.254.169.254/latest/meta-data/instance-id)',
                     '  --query InstanceStates[0].State);',
                     '  sleep 10;',
                     'done'
@@ -662,14 +729,19 @@ class ASInitConfigELBClassicExternal(cfm.InitConfig):
 
 
 class ASInitConfigELBClassicInternal(cfm.InitConfig):
-    def setup(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
         self.commands = {
             'ELBClassicInternalHealthCheck': {
                 'command': Join('', [
                     'until [ "$state" = \'"InService"\' ]; do',
-                    '  state=$(aws --region ', Ref('AWS::Region'), ' elb describe-instance-health',
-                    '  --load-balancer-name ', Ref('LoadBalancerClassicInternal'),
-                    '  --instances $(curl -s http://169.254.169.254/latest/meta-data/instance-id)',
+                    '  state=$(aws --region ', Ref('AWS::Region'),
+                    ' elb describe-instance-health',
+                    '  --load-balancer-name ',
+                    Ref('LoadBalancerClassicInternal'),
+                    '  --instances $(curl -s '
+                    'http://169.254.169.254/latest/meta-data/instance-id)',
                     '  --query InstanceStates[0].State);',
                     '  sleep 10;',
                     'done'
@@ -679,15 +751,20 @@ class ASInitConfigELBClassicInternal(cfm.InitConfig):
 
 
 class ASInitConfigELBApplicationExternal(cfm.InitConfig):
-    def setup(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
         self.commands = {
             'ELBApplicationExternalHealthCheck': {
                 'command': Join('', [
                     'until [ "$state" = \'"healthy"\' ]; do',
-                    '  state=$(aws --region ', Ref('AWS::Region'), ' elbv2 describe-target-health',
+                    '  state=$(aws --region ', Ref('AWS::Region'),
+                    ' elbv2 describe-target-health',
                     '  --target-group-arn ', Ref('TargetGroupExternal'),
-                    '  --targets Id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)',
-                    '  --query TargetHealthDescriptions[0].TargetHealth.State);',
+                    '  --targets Id=$(curl -s '
+                    'http://169.254.169.254/latest/meta-data/instance-id)',
+                    '  --query '
+                    'TargetHealthDescriptions[0].TargetHealth.State);',
                     '  sleep 10;',
                     'done'
                 ])
@@ -696,15 +773,20 @@ class ASInitConfigELBApplicationExternal(cfm.InitConfig):
 
 
 class ASInitConfigELBApplicationInternal(cfm.InitConfig):
-    def setup(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
         self.commands = {
             'ELBApplicationInternalHealthCheck': {
                 'command': Join('', [
                     'until [ "$state" = \'"healthy"\' ]; do',
-                    '  state=$(aws --region ', Ref('AWS::Region'), ' elbv2 describe-target-health',
+                    '  state=$(aws --region ', Ref('AWS::Region'),
+                    ' elbv2 describe-target-health',
                     '  --target-group-arn ', Ref('TargetGroupInternal'),
-                    '  --targets Id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)',
-                    '  --query TargetHealthDescriptions[0].TargetHealth.State);',
+                    '  --targets Id=$(curl -s '
+                    'http://169.254.169.254/latest/meta-data/instance-id)',
+                    '  --query '
+                    'TargetHealthDescriptions[0].TargetHealth.State);',
                     '  sleep 10;',
                     'done'
                 ])
@@ -713,7 +795,9 @@ class ASInitConfigELBApplicationInternal(cfm.InitConfig):
 
 
 class ASNotificationConfiguration(asg.NotificationConfigurations):
-    def setup(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
         self.NotificationTypes = [
             'autoscaling:EC2_INSTANCE_LAUNCH',
             'autoscaling:EC2_INSTANCE_TERMINATE',
@@ -725,6 +809,7 @@ class ASNotificationConfiguration(asg.NotificationConfigurations):
 # ### END STACK META CLASSES AND METHODS ###
 # ##########################################
 
+
 class AS_ScheduledAction(object):
     def __init__(self, resname, OutKey=[]):
         OutKey.extend([
@@ -733,18 +818,27 @@ class AS_ScheduledAction(object):
             'Recurrence',
             'StartTime',
         ])
+
         # parameters
-        P_MinSize = Parameter(resname + 'MinSize')
-        P_MinSize.Description = resname + 'Min Capacity - k to keep current value - empty for default based on env/role'
+        P_MinSize = Parameter(f'{resname}MinSize')
+        P_MinSize.Description = (
+            f'{resname}Min Capacity - k to keep current value - '
+            'empty for default based on env/role')
 
-        P_MaxSize = Parameter(resname + 'MaxSize')
-        P_MaxSize.Description = resname + 'Max Capacity - k to keep current value - empty for default based on env/role'
+        P_MaxSize = Parameter(f'{resname}MaxSize')
+        P_MaxSize.Description = (
+            f'{resname}Max Capacity - k to keep current value - '
+            'empty for default based on env/role')
 
-        P_Recurrence = Parameter(resname + 'Recurrence')
-        P_Recurrence.Description = resname + 'Recurrence - k to keep current value - empty for default based on env/role'
+        P_Recurrence = Parameter(f'{resname}Recurrence')
+        P_Recurrence.Description = (
+            f'{resname}Recurrence - k to keep current value - '
+            'empty for default based on env/role')
 
-        P_StartTime = Parameter(resname + 'StartTime')
-        P_StartTime.Description = resname + 'StartTime - k to keep current value - empty for default based on env/role'
+        P_StartTime = Parameter(f'{resname}StartTime')
+        P_StartTime.Description = (
+            f'{resname}StartTime - k to keep current value - '
+            'empty for default based on env/role')
 
         add_obj([
             P_MinSize,
@@ -754,12 +848,29 @@ class AS_ScheduledAction(object):
         ])
 
         # conditions
+        C_KeepMinSize = get_condition(
+            f'{resname}KeepMinSize', 'equals', 'k', f'{resname}MinSize')
+
+        C_KeepMaxSize = get_condition(
+            f'{resname}KeepMaxSize', 'equals', 'k', f'{resname}MaxSize')
+
+        C_CapacityMinSize = get_condition(
+            f'{resname}CapacityMinSize', 'equals', 'CapacityMin',
+            f'{resname}MinSize')
+
+        C_CapacityMaxSize = get_condition(
+            f'{resname}CapacityMaxSize', 'equals', 'CapacityMax',
+            f'{resname}MaxSize')
+
+        C_Recurrence = get_condition(
+            resname, 'not_equals', 'None', f'{resname}Recurrence')
+
         add_obj([
-            get_condition(resname + 'KeepMinSize', 'equals', 'k', resname + 'MinSize'),
-            get_condition(resname + 'KeepMaxSize', 'equals', 'k', resname + 'MaxSize'),
-            get_condition(resname + 'CapacityMinSize', 'equals', 'CapacityMin', resname + 'MinSize'),
-            get_condition(resname + 'CapacityMaxSize', 'equals', 'CapacityMax', resname + 'MaxSize'),
-            get_condition(resname, 'not_equals', 'None', resname + 'Recurrence'),
+            C_KeepMinSize,
+            C_KeepMaxSize,
+            C_CapacityMinSize,
+            C_CapacityMaxSize,
+            C_Recurrence,
         ])
 
         # outputs
@@ -767,64 +878,74 @@ class AS_ScheduledAction(object):
         out_Map = {}
         for k in OutKey:
             out_String.append('%s=${%s}' % (k, k))  # Ex. 'MinSize=${MinSize}'
-            out_Map.update({k: get_endvalue(resname + k) if k != 'StartTime' else Ref(resname + k)})
+            out_Map.update({
+                k: get_endvalue(f'{resname}{k}') if k != 'StartTime'
+                else Ref(f'{resname}{k}')})
 
         O_ScheduledAction = Output(resname)
         O_ScheduledAction.Value = Sub(','.join(out_String), **out_Map)
-        
+
         add_obj(O_ScheduledAction)
 
 
 class AS_ScheduledActionsEC2(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
-            resname = '%s%s' % (key, n)
+            resname = f'{key}{n}'
             # parameters
-            p_DesiredSize = Parameter(resname + 'DesiredSize')
-            p_DesiredSize.Description = resname + 'Desired Capacity - k to keep current value - empty for default based on env/role'
-    
+            p_DesiredSize = Parameter(f'{resname}DesiredSize')
+            p_DesiredSize.Description = (
+                f'{resname}Desired Capacity - k to keep current value - '
+                'empty for default based on env/role')
+
             add_obj(p_DesiredSize)
-    
+
             # conditions
+            c_KeepDesiredSize = get_condition(
+                f'{resname}KeepDesiredSize', 'equals', 'k',
+                f'{resname}DesiredSize')
+
+            c_CapacityDesiredSize = get_condition(
+                f'{resname}CapacityDesiredSize', 'equals', 'CapacityDesired',
+                f'{resname}DesiredSize')
+
             add_obj([
-                get_condition(resname + 'KeepDesiredSize', 'equals', 'k', resname + 'DesiredSize'),
-                get_condition(resname + 'CapacityDesiredSize', 'equals', 'CapacityDesired', resname + 'DesiredSize'),
+                c_KeepDesiredSize,
+                c_CapacityDesiredSize,
             ])
-    
+
             # resources
             OutKey = ['DesiredSize']
-   
+
             AS_ScheduledAction(resname, OutKey)
             r_ScheduledAction = ASScheduledAction(resname)
-            r_ScheduledAction.setup()
-    
+
             add_obj(r_ScheduledAction)
-        
+
 
 class AS_ScheduledActionsECS(object):
     def __init__(self, key):
         ScheduledActions = []
         for n, v in getattr(cfg, key).items():
-            resname = '%s%s' % (key, n)
+            resname = f'{key}{n}'
             # conditions
-            c_disable = {resname + 'Disable': Or(
+            c_disable = {f'{resname}Disable': Or(
                 Not(Condition(resname)),
                 And(
-                    Condition(resname + 'KeepMaxSize'),
-                    Condition(resname + 'KeepMinSize'),
+                    Condition(f'{resname}KeepMaxSize'),
+                    Condition(f'{resname}KeepMinSize'),
                 )
             )}
-    
+
             add_obj(c_disable)
 
             # resources
             AS_ScheduledAction(resname, [])
             ScheduledAction = APPASScheduledAction(resname)
-            ScheduledAction.setup()
 
             ScheduledActions.append(
                 If(
-                    resname + 'Disable',
+                    f'{resname}Disable',
                     Ref('AWS::NoValue'),
                     ScheduledAction,
                 )
@@ -848,10 +969,8 @@ class AS_ScalingPoliciesStepEC2(object):
 class AS_ScalingPoliciesStepECS(object):
     def __init__(self, key):
         R_Down = APPASScalingPolicyStepDown('ScalingPolicyDown')
-        R_Down.setup()
 
         R_Up = APPASScalingPolicyStepUp('ScalingPolicyUp')
-        R_Up.setup()
 
         add_obj([
             R_Down,
@@ -866,23 +985,33 @@ class AS_ScalingPoliciesTracking(object):
         for n, v in getattr(cfg, key).items():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
-            resname = '%s%s' % (key, n)
+
+            resname = f'{key}{n}'
+
             # Autoscaling
             if 'TargetTrackingConfiguration' in v:
-                TargetTrackingConfigurationName = 'TargetTrackingConfiguration'
+                TargetTrackingConfigurationName = (
+                    'TargetTrackingConfiguration')
                 p_type = 'autoscaling'
             # Application Autoscaling
             elif 'TargetTrackingScalingPolicyConfiguration' in v:
-                TargetTrackingConfigurationName = 'TargetTrackingScalingPolicyConfiguration'
+                TargetTrackingConfigurationName = (
+                    'TargetTrackingScalingPolicyConfiguration')
                 p_type = 'application_autoscaling'
-            basename = resname + TargetTrackingConfigurationName
+
+            basename = f'{resname}{TargetTrackingConfigurationName}'
 
             # parameters
-            p_Value = Parameter(basename + 'TargetValue')
-            p_Value.Description = 'Tracking %s Value - 0 to disable - empty for default based on env/role' % n
-            
-            p_Statistic = Parameter(basename + 'CustomizedMetricSpecificationStatistic')
-            p_Statistic.Description = 'Tracking %s Statistic - 0 to disable - empty for default based on env/role' % n
+            p_Value = Parameter(f'{basename}TargetValue')
+            p_Value.Description = (
+                f'Tracking {n} Value - 0 to disable - '
+                'empty for default based on env/role')
+
+            p_Statistic = Parameter(
+                f'{basename}CustomizedMetricSpecificationStatistic')
+            p_Statistic.Description = (
+                f'Tracking {n} Statistic - 0 to disable - '
+                'empty for default based on env/role')
 
             add_obj([
                 p_Value,
@@ -890,20 +1019,38 @@ class AS_ScalingPoliciesTracking(object):
             ])
 
             #  conditions
-            add_obj(get_condition(resname, 'not_equals', '0', basename + 'TargetValue'))
+            c_TargetValue = get_condition(
+                resname, 'not_equals', '0', f'{basename}TargetValue')
+
+            add_obj(c_TargetValue)
 
             # outputs
-            if v['Type'] == 'Cpu' or (v['Type'] == 'Custom' and
-                v[TargetTrackingConfigurationName]['CustomizedMetricSpecification']['MetricName'] == 'CPUUtilization'
-            ):
-                ScalingPolicyTrackings_Out_String.append('Cpu${Statistic}:${Cpu}')
+            if v['Type'] == 'Cpu' or (
+                    v['Type'] == 'Custom' and
+                    v[TargetTrackingConfigurationName]
+                    ['CustomizedMetricSpecification']
+                    ['MetricName'] == 'CPUUtilization'):
+                # Use Cpu Metric
+                ScalingPolicyTrackings_Out_String.append(
+                        'Cpu${Statistic}:${Cpu}')
+
+                if v['Type'] == 'Custom':
+                    statistic = get_endvalue(
+                        f'{basename}CustomizedMetricSpecificationStatistic')
+                else:
+                    statistic = ''
+
                 ScalingPolicyTrackings_Out_Map.update({
-                    'Statistic': get_endvalue(basename + 'CustomizedMetricSpecificationStatistic') if v['Type'] == 'Custom'  else '',
-                    'Cpu': get_endvalue(basename + 'TargetValue'),
+                    'Statistic': statistic,
+                    'Cpu': get_endvalue(f'{basename}TargetValue'),
                 })
 
             # resources
-            r_Tracking = asg.ScalingPolicy(resname) if p_type == 'autoscaling' else aas.ScalingPolicy(resname)
+            if p_type == 'autoscaling':
+                r_Tracking = asg.ScalingPolicy(resname)
+            else:
+                r_Tracking = aas.ScalingPolicy(resname)
+
             auto_get_props(r_Tracking, v, recurse=True)
             r_Tracking.Condition = resname
 
@@ -911,7 +1058,9 @@ class AS_ScalingPoliciesTracking(object):
 
         # Outputs
         O_Policy = Output(key)
-        O_Policy.Value = Sub(','.join(ScalingPolicyTrackings_Out_String), **ScalingPolicyTrackings_Out_Map)
+        O_Policy.Value = Sub(
+            ','.join(ScalingPolicyTrackings_Out_String),
+            **ScalingPolicyTrackings_Out_Map)
 
         add_obj([
             O_Policy,
@@ -921,7 +1070,6 @@ class AS_ScalingPoliciesTracking(object):
 class AS_LaunchConfiguration(object):
     def __init__(self):
         InitConfigSets = ASInitConfigSets()
-        InitConfigSets.setup()
 
         CfmInitArgs = {}
         IBoxEnvApp = []
@@ -929,24 +1077,25 @@ class AS_LaunchConfiguration(object):
         UserDataApp = []
 
         for n in cfg.Apps:
-            name = 'Apps%s' % n  # Ex. Apps1
-            envname = 'EnvApp%sVersion' % n  # Ex EnvApp1Version
-            reponame = name + 'RepoName'  # Ex Apps1RepoName
+            name = f'Apps{n}'              # Ex. Apps1
+            envname = f'EnvApp{n}Version'  # Ex EnvApp1Version
+            reponame = f'{name}RepoName'   # Ex Apps1RepoName
 
             UserDataApp.extend(['#${%s}\n' % envname])
 
+            p_EnvAppVersion = Parameter(envname)
+            p_EnvAppVersion.Description = f'Application {n} version'
+            p_EnvAppVersion.AllowedPattern = '^[a-zA-Z0-9-_.]*$'
+
+            p_AppsRepoName = Parameter(reponame)
+            p_AppsRepoName.Description = (
+                f'App {n} Repo Name - empty for default based on env/role')
+            p_AppsRepoName.AllowedPattern = '^[a-zA-Z0-9-_.]*$'
+
             # parameters
             add_obj([
-                Parameter(
-                    envname,
-                    Description='Application %s version' % n,
-                    AllowedPattern='^[a-zA-Z0-9-_.]*$',
-                ),
-                Parameter(
-                    reponame,
-                    Description='App %s Repo Name - empty for default based on env/role' % n,
-                    AllowedPattern='^[a-zA-Z0-9-_.]*$',
-                )
+                p_EnvAppVersion,
+                p_AppsRepoName,
             ])
 
             # conditions
@@ -962,20 +1111,23 @@ class AS_LaunchConfiguration(object):
 
             InitConfigAppsBuilAmi = ASInitConfigAppsBuildAmi(name)
             # AUTOSPOT - Let cfn-init always prepare instances on boot
-            #CfmInitArgs[name + 'BuildAmi'] = InitConfigAppsBuilAmi
+            # CfmInitArgs[name + 'BuildAmi'] = InitConfigAppsBuilAmi
             CfmInitArgs[name] = InitConfigAppsBuilAmi
 
             IBoxEnvApp.extend([
-                'export EnvApp%sVersion=' % n, Ref(envname), "\n",
-                'export EnvRepo%sName=' % n, get_endvalue(reponame), "\n",
+                f'export EnvApp{n}Version=', Ref(envname), "\n",
+                f'export EnvRepo{n}Name=', get_endvalue(reponame), "\n",
             ])
 
             InitConfigSetsApp = If(name, name, Ref('AWS::NoValue'))
-            InitConfigSetsAppBuilAmi = If(name, name + 'BuildAmi', Ref('AWS::NoValue'))
+            InitConfigSetsAppBuilAmi = If(
+                name, f'{name}BuildAmi', Ref('AWS::NoValue'))
             IndexSERVICES = InitConfigSets.data['default'].index('SERVICES')
-            InitConfigSets.data['default'].insert(IndexSERVICES, InitConfigSetsApp)
+            InitConfigSets.data['default'].insert(
+                IndexSERVICES, InitConfigSetsApp)
             # AUTOSPOT - Let cfn-init always prepare instances on boot
-            #InitConfigSets.data['buildamifull'].append(InitConfigSetsAppBuilAmi)
+            # InitConfigSets.data['buildamifull'].append(
+            #    InitConfigSetsAppBuilAmi)
             InitConfigSets.data['buildamifull'].append(InitConfigSetsApp)
 
             Tags.append(asg.Tag(envname, Ref(envname), True))
@@ -983,7 +1135,7 @@ class AS_LaunchConfiguration(object):
             # resources
             # FOR MULTIAPP CODEDEPLOY
             if len(cfg.Apps) > 1:
-                r_DeploymentGroup = CDDeploymentGroup('DeploymentGroup' + name)
+                r_DeploymentGroup = CDDeploymentGroup(f'DeploymentGroup{name}')
                 r_DeploymentGroup.setup(index=n)
 
                 add_obj(r_DeploymentGroup)
@@ -1002,7 +1154,6 @@ class AS_LaunchConfiguration(object):
         InitConfigSetup.setup()
 
         InitConfigCodeDeploy = ASInitConfigCodeDeploy()
-        InitConfigCodeDeploy.setup()
 
         CfmInitArgs['SETUP'] = InitConfigSetup
 
@@ -1010,28 +1161,23 @@ class AS_LaunchConfiguration(object):
             CfmInitArgs['CODEDEPLOY'] = InitConfigCodeDeploy
             CD_DeploymentGroup()
 
-
         # LoadBalancerClassic External
         if cfg.LoadBalancerClassicExternal:
             InitConfigELBExternal = ASInitConfigELBClassicExternal()
-            InitConfigELBExternal.setup()
             CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
 
         # LoadBalancerClassic Internal
         if cfg.LoadBalancerClassicInternal:
             InitConfigELBInternal = ASInitConfigELBClassicInternal()
-            InitConfigELBInternal.setup()
             CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
         # LoadBalancerApplication External
         if cfg.LoadBalancerApplicationExternal:
             InitConfigELBExternal = ASInitConfigELBApplicationExternal()
-            InitConfigELBExternal.setup()
             CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
 
         # LoadBalancerApplication Internal
             InitConfigELBInternal = ASInitConfigELBApplicationInternal()
-            InitConfigELBInternal.setup()
             CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
         SecurityGroups = SG_SecurityGroupsEC2().SecurityGroups
@@ -1042,11 +1188,11 @@ class AS_LaunchConfiguration(object):
         R_LaunchConfiguration.SecurityGroups.extend(SecurityGroups)
 
         R_InstanceProfile = IAMInstanceProfile('InstanceProfile')
-        R_InstanceProfile.setup()
 
         # Import role specific cfn definition
-        if 'cfn_' + cfg.classenvrole in globals():  # Ex cfn_client_portal
-            CfnRole = globals()['cfn_' + cfg.classenvrole]()
+        cfn_envrole = f'cfn_{cfg.classenvrole}'
+        if cfn_envrole in globals():  # Ex cfn_client_portal
+            CfnRole = globals()[cfn_envrole]()
             CfmInitArgs.update(CfnRole)
 
         R_LaunchConfiguration.Metadata = cfm.Metadata(
@@ -1068,13 +1214,14 @@ class AS_LaunchConfiguration(object):
 
         R_LaunchConfigurationSpot = ASLaunchConfiguration(
             'LaunchConfigurationSpot', UserDataApp=UserDataApp, spot=True)
-        R_LaunchConfigurationSpot.SecurityGroups = R_LaunchConfiguration.SecurityGroups
+        R_LaunchConfigurationSpot.SecurityGroups = (
+            R_LaunchConfiguration.SecurityGroups)
         R_LaunchConfigurationSpot.SpotPrice = get_endvalue('SpotPrice')
 
         add_obj([
             R_LaunchConfiguration,
             R_InstanceProfile,
-        ]) 
+        ])
         if cfg.SpotASG:
             add_obj(R_LaunchConfigurationSpot)
 
@@ -1086,15 +1233,15 @@ class AS_AutoscalingEC2(object):
     def __init__(self, key):
         LoadBalancers = []
         for n in cfg.LoadBalancerClassic:
-            LoadBalancers.append(Ref('LoadBalancerClassic' + n))
+            LoadBalancers.append(Ref(f'LoadBalancerClassic{n}'))
 
         TargetGroups = []
         for n in cfg.LoadBalancerApplication:
-            TargetGroups.append(Ref('TargetGroup' + n))
+            TargetGroups.append(Ref(f'TargetGroup{n}'))
 
         # Resources
         AS_ScheduledActionsEC2('ScheduledAction')
-        #AS_ScalingPoliciesEC2()
+        # AS_ScalingPoliciesEC2()
 
         LaunchConfiguration = AS_LaunchConfiguration()
         Tags = LaunchConfiguration.Tags
@@ -1106,17 +1253,21 @@ class AS_AutoscalingEC2(object):
         R_ASG.Tags.extend([
             If(
                 'SpotAuto',
-                asg.Tag(('spot-enabled'), 'true', True),
+                asg.Tag('spot-enabled', 'true', True),
                 Ref('AWS::NoValue')
             ),
             If(
                 'SpotAutoMinOnDemandNumber',
-                asg.Tag(('autospotting_min_on_demand_number'), get_endvalue('SpotAutoMinOnDemandNumber'), True),
+                asg.Tag(
+                    'autospotting_min_on_demand_number',
+                    get_endvalue('SpotAutoMinOnDemandNumber'), True),
                 Ref('AWS::NoValue')
             ),
             If(
                 'SpotAutoAllowedInstances',
-                asg.Tag(('autospotting_allowed_instance_types'), get_endvalue('SpotAutoAllowedInstances'), True),
+                asg.Tag(
+                    'autospotting_allowed_instance_types',
+                    get_endvalue('SpotAutoAllowedInstances'), True),
                 Ref('AWS::NoValue')
             )
         ])
@@ -1126,13 +1277,14 @@ class AS_AutoscalingEC2(object):
         R_ASGSpot.TargetGroupARNs = TargetGroups
         R_ASGSpot.Tags.extend(Tags)
 
-        # Notifications currently are not associeted to "any actions" - now using CW events - this way works with autospotting too
-        try: cfg.NotificationConfiguration
+        # Notifications currently are not associeted to "any actions" -
+        # now using CW events - this way works with autospotting too
+        try:
+            cfg.NotificationConfiguration
         except:
             pass
         else:
             NotificationConfiguration = ASNotificationConfiguration()
-            NotificationConfiguration.setup()
             R_ASG.NotificationConfigurations = [NotificationConfiguration]
             R_ASGSpot.NotificationConfigurations = [NotificationConfiguration]
 
@@ -1150,8 +1302,8 @@ class AS_AutoscalingECS(object):
     def __init__(self, key):
         # Resources
         R_ScalableTarget = APPASScalableTarget('ScalableTarget')
-        R_ScalableTarget.setup()
-        R_ScalableTarget.ScheduledActions = AS_ScheduledActionsECS('ScheduledAction').ScheduledActions
+        R_ScalableTarget.ScheduledActions = (
+            AS_ScheduledActionsECS('ScheduledAction').ScheduledActions)
 
         add_obj([
             R_ScalableTarget
@@ -1159,19 +1311,19 @@ class AS_AutoscalingECS(object):
 
 
 class AS_LifecycleHook(object):
-    def __init__(self,key):
+    def __init__(self, key):
         for n, v in getattr(cfg, key).items():
-            resname = '%s%s' % (key, n)
+            resname = f'{key}{n}'
 
             # resources
             r_Hook = ASLifecycleHook(resname, name=n, key=v)
             r_Hook.AutoScalingGroupName = Ref('AutoScalingGroup')
 
             r_HookSpot = ASLifecycleHook(resname, name=n, key=v)
-            r_HookSpot.title = resname + 'Spot'
+            r_HookSpot.title = f'{resname}Spot'
             r_HookSpot.Condition = 'SpotASG'
             r_HookSpot.AutoScalingGroupName = Ref('AutoScalingGroupSpot')
-                
+
             add_obj([
                 r_Hook,
             ])

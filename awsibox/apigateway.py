@@ -189,6 +189,7 @@ class AGW_ApiKeys(object):
 class AGW_Stages(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
+            resname = f'{key}{n}'
             # parameters
             p_DeploymentDescription = Parameter(f'Deployment{n}Description')
             p_DeploymentDescription.Description = f'Deployment{n} Description'
@@ -199,7 +200,6 @@ class AGW_Stages(object):
             ])
 
             # resources
-            resname = key + n
             r_Stage = ApiGatewayStage(resname, name=n, key=v)
 
             r_Deployment = ApiGatewayDeployment(f'ApiGatewayDeployment{n}',
