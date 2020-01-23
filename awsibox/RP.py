@@ -30,7 +30,8 @@ def construct_mapping(self, node, deep=False):
         self.flatten_mapping(node)
     else:
         raise yaml.constructor.ConstructorError(
-            None, None, 'expected a mapping node, but found %s' % node.id, node.start_mark)
+            None, None, f'expected a mapping node, but found {node.id}',
+            node.start_mark)
 
     mapping = OrderedDict()
     for key_node, value_node in node.value:
@@ -40,7 +41,7 @@ def construct_mapping(self, node, deep=False):
         except TypeError as exc:
             raise yaml.constructor.ConstructorError(
                 'while constructing a mapping', node.start_mark,
-                'found unacceptable key (%s)' % exc, key_node.start_mark)
+                f'found unacceptable key ({exc})', key_node.start_mark)
         value = self.construct_object(value_node, deep=deep)
         mapping[key] = value
     return mapping
@@ -62,39 +63,43 @@ class Loader(yaml.Loader):
         Loader.add_constructor('!import',  Loader.include)
         Loader.add_constructor('!exclude',  Loader.exclude)
 
-
     def exclude(self, node):
         global exclude_list
-        if   isinstance(node, yaml.ScalarNode):
+        if isinstance(node, yaml.ScalarNode):
             exclude_list.append(node)
         elif isinstance(node, yaml.SequenceNode):
             for filename in self.construct_sequence(node):
                 exclude_list.append(filename)
 
-
     def include(self, node):
         if isinstance(node, yaml.ScalarNode) and node not in exclude_list:
-            return self.extractFile(self.construct_scalar(node), self._root_current)
+            return self.extractFile(
+                self.construct_scalar(node), self._root_current)
 
         elif isinstance(node, yaml.SequenceNode):
             result = []
             for filename in self.construct_sequence(node):
                 if filename in exclude_list:
                     continue
-                # if including Ext cfg try to include BASE file from CFG_FILE_INT too
+                # if including Ext cfg
+                # try to include BASE file from CFG_FILE_INT too
                 if CFG_FILE_EXT in self.stream.name:
-                    result.append(self.extractFile(filename, self._root_base))
-                result.append(self.extractFile(filename, self._root_current))
+                    result.append(
+                        self.extractFile(filename, self._root_base))
+                result.append(
+                    self.extractFile(filename, self._root_current))
                 # try to include BASE ext too
-                result.append(self.extractFile(filename, self._root_brand_base))
+                result.append(
+                    self.extractFile(filename, self._root_brand_base))
                 # try to include brand ext too
-                result.append(self.extractFile(filename, self._root_brand_ext))
+                result.append(
+                    self.extractFile(filename, self._root_brand_ext))
                 # result += self.extractFile(filename)
             return result
 
         elif isinstance(node, yaml.MappingNode):
             result = {}
-            for k,v in self.construct_mapping(node).items():
+            for k, v in self.construct_mapping(node).items():
                 if k in exclude_list:
                     continue
                 result[k] = self.extractFile(v, self._root_current)
@@ -131,11 +136,13 @@ def replace_not_allowed_char(s):
 def gen_dict_extract(cfg, envs):
     global enforce_list
     if hasattr(cfg, 'items'):
-        # This method allow to delete items from a dictionary while iterating over it
+        # This method allow to delete items from a dictionary
+        # while iterating over it
         for k in list(cfg):
             v = cfg[k]
             # for final values
-            if isinstance(v, (str, int, list)) and not k.startswith('IBoxLoader'):
+            if (isinstance(v, (str, int, list)) and
+                    not k.startswith('IBoxLoader')):
                 if k in enforce_list:
                     continue
                 elif k.endswith('_IBOXENFORCE'):
@@ -148,19 +155,22 @@ def gen_dict_extract(cfg, envs):
             # for recursively descending in env/region role dict
             if k in envs and isinstance(v, (dict, list)):
                 try:
-                    # after descending in env main key (not the one nested under region) delete key
-                    # this way when envs include both (env and region) i do not process it again
+                    # after descending in env main key
+                    # (not the one nested under region) delete key
+                    # this way when envs include both (env and region)
+                    # i do not process it again
                     if k in list(RP_base.keys()):
                         del cfg[k]
                 except:
                     pass
                 for result in gen_dict_extract(v, envs):
                     yield result
-            # for recursively descending in dict not in RP_base_keys (env/region/envrole/stacktype) 
+            # for recursively descending in dict not in RP_base_keys
+            # (env/region/envrole/stacktype)
             # (final key is the concatenation of traversed dict keys)
             if k not in RP_base_keys and isinstance(v, (dict)):
                 for j, w in v.items():
-                    for result in gen_dict_extract({k + j: w}, envs):
+                    for result in gen_dict_extract({f'{k}{j}': w}, envs):
                         yield result
     if isinstance(cfg, list):
         for n in cfg:
@@ -184,9 +194,11 @@ def my_merge_dict(basedict, workdict):
             is_dict = False
             is_map = False
 
-        # Trick to be able to add an element to a previuosly created/defined list.
-        # I can centralize some general iampolicy in ecs-cluster and attach them to RoleInstance,
-        # adding element to ManagedPolicyArns, preserving the base ones
+        # Trick to be able to add an element
+        # to a previuosly created/defined list.
+        # I can centralize some general iampolicy in ecs-cluster and
+        # attach them to RoleInstance, adding element to ManagedPolicyArns,
+        # preserving the base ones
         try:
             ibox_add_to_list = (workdict[k][0] == 'IBOXADDTOLIST')
         except:
@@ -207,7 +219,7 @@ def my_merge_dict(basedict, workdict):
 
 def get_RP_for_envs(value):
     RP = OrderedDict()
-    
+
     try:
         is_dict = isinstance(value[0], (OrderedDict, dict))
     except:
@@ -220,7 +232,8 @@ def get_RP_for_envs(value):
         for d, v in enumerate(value):
             for i, j in v.items():
                 # CF Mapping allow for index only alfanumeric char,
-                # this way i can specify more "clear" name for index in CloudFormation behaviours
+                # this way i can specify more "clear" name
+                # for index in CloudFormation behaviours
                 key = replace_not_allowed_char(i)
                 # RP[key] already exist as a dict, try merging
                 if key in RP and isinstance(RP[key], dict):
@@ -236,9 +249,10 @@ def get_RP_for_envs(value):
 
 
 def read_yaml(file_type, brand, base_dir):
-    cfg_file = os.path.join(base_dir, brand, file_type + '.yml')
+    cfg_file = os.path.join(base_dir, brand, f'{file_type}.yml')
 
-    yaml.Loader.add_constructor('tag:yaml.org,2002:map', construct_ordereddict)
+    yaml.Loader.add_constructor(
+        'tag:yaml.org,2002:map', construct_ordereddict)
     try:
         with open(cfg_file, 'r') as ymlfile:
             cfg = yaml.load(ymlfile, Loader=Loader)
@@ -338,8 +352,10 @@ def get_RP(cfgs):
                 'role': [env, region],
             }
 
-            cfg_merge_region = merge_cfg(cfgs, cfg_key_region, cfg_merge_env)
-            cfg_merge_env_region = merge_cfg(cfgs, cfg_key_env_region, cfg_merge_region)
+            cfg_merge_region = merge_cfg(
+                cfgs, cfg_key_region, cfg_merge_env)
+            cfg_merge_env_region = merge_cfg(
+                cfgs, cfg_key_env_region, cfg_merge_region)
 
             RP[env][region] = get_RP_for_envs(cfg_merge_env_region)
 
@@ -368,32 +384,36 @@ def get_stack_type(cfgs):
 def set_cfg():
     for n, v in cfg.RP_cmm.items():
         setattr(cfg, n, v)
-    
+
     # set generic attribute based on condition:
-    
+
     # LoadBalancerClassic
-    try: cfg.LoadBalancerClassic
+    try:
+        cfg.LoadBalancerClassic
     except:
         cfg.LoadBalancerClassic = []
-    
+
     # LoadBalancerApplication
-    try: cfg.LoadBalancerApplication
+    try:
+        cfg.LoadBalancerApplication
     except:
         cfg.LoadBalancerApplication = []
-    
+
     # LoadBalancer
     cfg.LoadBalancer = None
     for n in ['LoadBalancerClassic', 'LoadBalancerApplication']:
-        try: getattr(cfg, n)
+        try:
+            getattr(cfg, n)
         except:
             pass
         else:
             cfg.LoadBalancer = True
-    
+
     # LoadBalancerClassicExternal LoadBalancerClassicInternal
     cfg.LoadBalancerClassicExternal = None
     cfg.LoadBalancerClassicInternal = None
-    try: cfg.LoadBalancerClassic
+    try:
+        cfg.LoadBalancerClassic
     except:
         pass
     else:
@@ -401,11 +421,12 @@ def set_cfg():
             cfg.LoadBalancerClassicExternal = True
         if 'Internal' in cfg.LoadBalancerClassic:
             cfg.LoadBalancerClassicInternal = True
-    
+
     # LoadBalancerApplicationExternal LoadBalancerApplicationInternal
     cfg.LoadBalancerApplicationExternal = None
     cfg.LoadBalancerApplicationInternal = None
-    try: cfg.LoadBalancerApplication
+    try:
+        cfg.LoadBalancerApplication
     except:
         pass
     else:
@@ -413,12 +434,13 @@ def set_cfg():
             cfg.LoadBalancerApplicationExternal = True
         if 'Internal' in cfg.LoadBalancerApplication:
             cfg.LoadBalancerApplicationInternal = True
-    
+
     # SpotASG
-    try: cfg.SpotASG
+    try:
+        cfg.SpotASG
     except:
         cfg.SpotASG = None
-    
+
     # RecordSet
     cfg.RecordSetExternal = None
     cfg.RecordSetInternal = None
@@ -426,7 +448,7 @@ def set_cfg():
         cfg.RecordSetExternal = True
     if 'Internal' in cfg.RecordSet:
         cfg.RecordSetInternal = True
-    
+
     cfg.stacktype = stacktype
 
 
@@ -446,19 +468,19 @@ def build_RP():
 
     CFG_FILE_INT = '%s/cfg' % os.path.dirname(os.path.realpath(__file__))
     CFG_FILE_INT = os.path.normpath(CFG_FILE_INT)
-    
+
     CFG_FILE_EXT = '%s/cfg' % os.getcwd()
     CFG_FILE_EXT = os.path.normpath(CFG_FILE_EXT)
-    
+
     envrole = cfg.envrole
     brand = cfg.brand
-    
+
     RP_base = OrderedDict([
         ('cmm', {
             'cmm': {},
         }),
     ])
-    
+
     # dynamically create RP_BASE OrderedDict from ENV_BASE and cfg.regions
     for n in cfg.ENV_BASE:
         RP_base[n] = {}
@@ -466,19 +488,21 @@ def build_RP():
             RP_base[n][m] = {}
 
     cfg.RP_base = RP_base
-    
+
     cfg_role = [
         read_yaml(envrole, 'BASE', CFG_FILE_INT),
         read_yaml(envrole, 'BASE', CFG_FILE_EXT),
         read_yaml(envrole, brand, CFG_FILE_EXT),
     ]
-    
+
     stacktype = get_stack_type(cfg_role)
-    
+
     if not stacktype:
-        logging.error('StackType key not found for Role %s in paths: %s, %s', envrole, CFG_FILE_EXT, CFG_FILE_INT)
+        logging.error(
+            f'StackType key not found for Role {envrole} '
+            f'in paths: {CFG_FILE_EXT}, {CFG_FILE_INT}')
         exit(1)
-    
+
     cfgs = OrderedDict([
         ('common', [
             read_yaml('common', 'BASE', CFG_FILE_INT),
@@ -492,12 +516,13 @@ def build_RP():
         ]),
         ('role', cfg_role),
     ])
-    
+
     RP_base_keys = get_RP_base_keys()
-    
+
     RP = get_RP(cfgs)
-    
-    # print(RP['dev']['eu-west-1']['CloudFrontCacheBehaviors'][2]['QueryStringCacheKeys'])
+
+    # print(RP['dev']['eu-west-1']['CloudFrontCacheBehaviors']
+    #    [2]['QueryStringCacheKeys'])
     if cfg.debug:
         print('##########RP#########START#####')
         # TO DEBUG - NICELY PRINT NESTED ORDEREDDICT
@@ -509,7 +534,6 @@ def build_RP():
         print('##########EXCLUDE#######START#####')
         pprint(exclude_list)
         print('##########EXCLUDE#######END#######')
-
 
     try:
         stacktype = RP['cmm']['cmm']['StackType']

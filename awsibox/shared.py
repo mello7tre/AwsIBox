@@ -206,7 +206,8 @@ def get_subvalue(substring, subvar, stack=False):
     return v
 
 
-def get_condition(cond_name, cond, value2, key=None, OrExtend=[], mapinlist=False):
+def get_condition(cond_name, cond, value2,
+                  key=None, OrExtend=[], mapinlist=False, nomap=None):
     # record current state
     override_state = cfg.no_override
     do_no_override(True)
@@ -251,8 +252,9 @@ def get_condition(cond_name, cond, value2, key=None, OrExtend=[], mapinlist=Fals
         cond_param = Not(eq_param)
         cond_map = Not(eq_map)
 
-    if (key_name in cfg.Parameters and not
-            key_name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
+    if (key_name in cfg.Parameters and
+            not key_name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION) and
+            not nomap):
         key_override = key_name + 'Override'
         condition = Or(
             And(
@@ -266,6 +268,8 @@ def get_condition(cond_name, cond, value2, key=None, OrExtend=[], mapinlist=Fals
         )
         if OrExtend:
             condition.data['Fn::Or'].extend(OrExtend)
+    elif nomap:
+        condition = cond_param
     else:
         condition = cond_map
 

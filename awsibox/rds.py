@@ -2,11 +2,32 @@ import troposphere.rds as rds
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, add_obj)
+                     get_subvalue, auto_get_props, get_condition, add_obj)
 from .route53 import R53_RecordSetRDS
 
 
 class RDSDBInstance(rds.DBInstance):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
+        self.AllocatedStorage = get_endvalue('AllocatedStorage')
+        self.AllowMajorVersionUpgrade = 'True'
+        self.DBInstanceClass = get_endvalue('DBInstanceClass')
+        self.DBName = get_endvalue(
+            'DBName', nocondition='DBInstanceSkipProperties')
+        self.Engine = get_endvalue('Engine')
+        self.EngineVersion = get_endvalue('EngineVersion')
+        self.MasterUsername = get_endvalue(
+            'MasterUsername', nocondition='DBInstanceSkipProperties')
+        self.MasterUserPassword = get_endvalue(
+            'MasterUserPassword', nocondition='DBInstanceSkipProperties')
+        self.MultiAZ = get_endvalue('MultiAZ')
+        self.DBParameterGroupName = Ref('DBParameterGroup1')
+        self.SourceDBInstanceIdentifier = get_endvalue(
+            'SourceDBInstanceIdentifier', condition=True)
+        self.StorageType = get_endvalue('StorageType')
+        self.VPCSecurityGroups = [Ref('SecurityGroupRDS')]
+
     def validate(self):
         if 'DBSnapshotIdentifier' not in self.properties:
             if 'Engine' not in self.properties:
@@ -35,7 +56,7 @@ class RDSDBInstance(rds.DBInstance):
         if ('DBSnapshotIdentifier' not in self.properties and
             'SourceDBInstanceIdentifier' not in self.properties) and \
             ('MasterUsername' not in self.properties or
-            'MasterUserPassword' not in self.properties) and \
+                'MasterUserPassword' not in self.properties) and \
                 ('DBClusterIdentifier' not in self.properties):
             raise ValueError(
                 'Either (MasterUsername and MasterUserPassword) or'
@@ -80,32 +101,18 @@ class RDSDBInstance(rds.DBInstance):
         return True
 
 
-    def setup(self):
-        self.AllocatedStorage = get_endvalue('AllocatedStorage')
-        self.AllowMajorVersionUpgrade = 'True'
-        self.DBInstanceClass = get_endvalue('DBInstanceClass')
-        self.DBName = get_endvalue('DBName', nocondition='DBInstanceSkipProperties')
-        self.Engine = get_endvalue('Engine')
-        self.EngineVersion = get_endvalue('EngineVersion')
-        self.MasterUsername = get_endvalue('MasterUsername', nocondition='DBInstanceSkipProperties')
-        self.MasterUserPassword = get_endvalue('MasterUserPassword', nocondition='DBInstanceSkipProperties')
-        self.MultiAZ = get_endvalue('MultiAZ')
-        self.DBParameterGroupName = Ref('DBParameterGroup1')
-        self.SourceDBInstanceIdentifier = get_endvalue('SourceDBInstanceIdentifier', condition=True)
-        self.StorageType = get_endvalue('StorageType')
-        self.VPCSecurityGroups = [Ref('SecurityGroupRDS')]
-
-
 class RDSDBInstancePublic(RDSDBInstance):
-    def setup(self):
-        super(RDSDBInstancePublic, self).setup()
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         self.DBSubnetGroupName = get_expvalue('DBSubnetGroupPublic')
         self.PubliclyAccessible = 'True'
 
 
 class RDSDBInstancePrivate(RDSDBInstance):
-    def setup(self):
-        super(RDSDBInstancePrivate, self).setup()
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
         self.DBSubnetGroupName = get_expvalue('DBSubnetGroupPrivate')
         self.PubliclyAccessible = 'False'
 
@@ -119,22 +126,23 @@ class RDSDBParameterGroup(rds.DBParameterGroup):
 class RDSDBSubnetGroupPrivate(rds.DBSubnetGroup):
     def setup(self):
         self.DBSubnetGroupDescription = Sub('${EnvShort}-Private')
-        self.SubnetIds=Split(',', get_expvalue('SubnetsPrivate'))
+        self.SubnetIds = Split(',', get_expvalue('SubnetsPrivate'))
 
 
 class RDSDBSubnetGroupPublic(rds.DBSubnetGroup):
     def setup(self):
         self.DBSubnetGroupDescription = Sub('${EnvShort}-Public')
-        self.SubnetIds=Split(',', get_expvalue('SubnetsPublic'))
+        self.SubnetIds = Split(',', get_expvalue('SubnetsPublic'))
 
 # #################################
 # ### START STACK INFRA CLASSES ###
 # #################################
 
+
 class RDS_ParameterGroups(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
-            resname = '%s%s' % (key, n)
+            resname = f'{key}{n}'
             # Resources
             r_PG = RDSDBParameterGroup(resname)
             r_PG.setup()
@@ -150,8 +158,6 @@ class RDS_DB(object):
             R_DB = RDSDBInstancePublic('DBInstance')
         if cfg.RDSScheme == 'Internal':
             R_DB = RDSDBInstancePrivate('DBInstance')
-
-        R_DB.setup()
 
         R53_RecordSetRDS()
 

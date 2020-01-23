@@ -439,7 +439,6 @@ class ECS_Service(object):
     def __init__(self, key):
         # Resources
         R_SG = SecurityGroupEcsService('SecurityGroupEcsService')
-        R_SG.setup()
 
         R_Service = ECSService('Service', scheme='')
 
@@ -447,16 +446,14 @@ class ECS_Service(object):
             R_Service.LoadBalancers.append(
                 ECSLoadBalancer('', scheme='External'))
 
-            SGRule = SecurityGroupRuleEcsService()
-            SGRule.setup(scheme='External')
+            SGRule = SecurityGroupRuleEcsService(scheme='External')
             R_SG.SecurityGroupIngress.append(SGRule)
 
         if cfg.LoadBalancerApplicationInternal:
             R_Service.LoadBalancers.append(
                 ECSLoadBalancer('', scheme='Internal'))
 
-            SGRule = SecurityGroupRuleEcsService()
-            SGRule.setup(scheme='Internal')
+            SGRule = SecurityGroupRuleEcsService(scheme='Internal')
             R_SG.SecurityGroupIngress.append(SGRule)
 
         SecurityGroups = SG_SecurityGroupsECS().SecurityGroups

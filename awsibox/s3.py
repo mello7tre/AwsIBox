@@ -2,19 +2,59 @@ import troposphere.s3 as s3
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-    get_subvalue, auto_get_props, get_condition, add_obj)
-from .iam import IAMRoleBucketReplica, IAMPolicyBucketReplica, IAMPolicyStatement
+                     get_subvalue, auto_get_props, get_condition, add_obj)
+from .iam import (IAMRoleBucketReplica, IAMPolicyBucketReplica,
+                  IAMPolicyStatement)
 from .cloudfront import CFOriginAccessIdentity
 from .lambdas import LambdaPermissionS3
 
+
+class S3ReplicationConfiguration(s3.ReplicationConfiguration):
+    def __init__(self, name, key, **kwargs):
+        super().__init__(**kwargs)
+
+        self.Role = GetAtt(f'Role{name}Replica', 'Arn')
+        self.Rules = [
+            s3.ReplicationConfigurationRules(
+                Destination=s3.ReplicationConfigurationRulesDestination(
+                    Bucket=get_subvalue(
+                        'arn:aws:s3:::${1M}', f'{name}ReplicaDstBucket'
+                    ) if 'ReplicaDstBucket' in key
+                    else get_subvalue(
+                        'arn:aws:s3:::${1M}-%s'
+                        % bucket_name.replace('${AWS::Region}-', '', 1),
+                        f'{name}ReplicaDstRegion',
+                    ),
+                    AccessControlTranslation=If(
+                        f'{name}ReplicaDstOwner',
+                        s3.AccessControlTranslation(
+                            Owner='Destination'
+                        ),
+                        Ref('AWS::NoValue')
+                    ),
+                    Account=If(
+                        f'{name}ReplicaDstOwner',
+                        get_endvalue(f'{name}ReplicaDstOwner'),
+                        Ref('AWS::NoValue')
+                    ),
+                ),
+                Prefix=(get_endvalue(f'{name}ReplicaDstPrefix')
+                        if 'ReplicaDstPrefix' in key else ''),
+                Status='Enabled'
+            )
+        ]
+
+
 class S3Bucket(s3.Bucket):
-    def setup(self, key):
-        name = self.title  # Ex. BucketPortalStatic
+    def __init__(self, title, key, **kwargs):
+        super().__init__(title, **kwargs)
+
+        name = self.title  # Ex. BucketStatic
         auto_get_props(self, key, recurse=True)
         self.Condition = name
         self.BucketName = Sub(bucket_name)
         self.CorsConfiguration = If(
-            name + 'Cors',
+            f'{name}Cors',
             s3.CorsConfiguration(
                 CorsRules=[
                     s3.CorsRules(
@@ -28,49 +68,23 @@ class S3Bucket(s3.Bucket):
             Ref('AWS::NoValue')
         )
         self.ReplicationConfiguration = If(
-            name + 'Replica',
-            s3.ReplicationConfiguration(
-                Role=GetAtt('Role' + name + 'Replica', 'Arn'),
-                Rules=[
-                    s3.ReplicationConfigurationRules(
-                        Destination=s3.ReplicationConfigurationRulesDestination(
-                            Bucket=get_subvalue(
-                                'arn:aws:s3:::${1M}', '%sReplicaDstBucket' % name
-                            ) if 'ReplicaDstBucket' in key else get_subvalue(
-                                'arn:aws:s3:::${1M}-%s' % bucket_name.replace('${AWS::Region}-', '', 1),
-                                '%sReplicaDstRegion' % name,
-                            ),
-                            AccessControlTranslation=If(
-                                name + 'ReplicaDstOwner',
-                                s3.AccessControlTranslation(
-                                    Owner='Destination'
-                                ),
-                                Ref('AWS::NoValue')
-                            ),
-                            Account=If(
-                                name + 'ReplicaDstOwner',
-                                get_endvalue(name + 'ReplicaDstOwner'),
-                                Ref('AWS::NoValue')
-                            ),
-                        ),
-                        Prefix=get_endvalue(name + 'ReplicaDstPrefix') if 'ReplicaDstPrefix' in key else '',
-                        Status='Enabled'
-                    )
-                ]
-            ),
-            Ref('AWS::NoValue')
+            f'{name}Replica',
+            S3ReplicationConfiguration(name=name, key=key),
+            Ref('AWS::NoValue'),
         )
         self.VersioningConfiguration = If(
-            name + 'Versioning',
+            f'{name}Versioning',
             s3.VersioningConfiguration(
-                Status=get_endvalue(name + 'Versioning')
+                Status=get_endvalue(f'{name}Versioning')
             ),
             Ref('AWS::NoValue')
         )
 
 
 class S3BucketPolicy(s3.BucketPolicy):
-    def setup(self, key):
+    def __init__(self, title, key, **kwargs):
+        super().__init__(title, **kwargs)
+
         if 'Condition' in key:
             self.Condition = key['Condition']
         self.PolicyDocument = {
@@ -97,7 +111,7 @@ def S3BucketPolicyStatementBase(bucket):
 def S3BucketPolicyStatementReplica(bucket, key):
     statements = []
     if_statements = []
-    condition = bucket  + 'ReplicaSrcAccount'
+    condition = f'{bucket}ReplicaSrcAccount'
     statements.append({
         'Action': [
             's3:ReplicateObject',
@@ -109,11 +123,13 @@ def S3BucketPolicyStatementReplica(bucket, key):
             get_subvalue(
                 'arn:aws:s3:::%s/${1M}*' % bucket_name,
                 bucket + 'ReplicaSrcPrefix'
-            ) if 'ReplicaSrcPrefix' in key else Sub('arn:aws:s3:::%s/*' % bucket_name),
+            ) if 'ReplicaSrcPrefix' in key else Sub(
+                'arn:aws:s3:::%s/*' % bucket_name),
         ],
         'Principal': {
             'AWS': [
-                get_subvalue('arn:aws:iam::${1M}:root', '%sReplicaSrcAccount' % bucket)
+                get_subvalue(
+                    'arn:aws:iam::${1M}:root', f'{bucket}ReplicaSrcAccount')
             ]
         },
         'Sid': 'AllowReplica'
@@ -179,7 +195,7 @@ def S3BucketPolicyStatementSes(bucket):
 def S3BucketPolicyStatementRO(bucket, principal):
     statements = []
     if_statements = []
-    condition = bucket  + 'PolicyRO'
+    condition = f'{bucket}PolicyRO'
     statements.append({
         'Action': [
             's3:ListBucket',
@@ -233,14 +249,16 @@ class S3_Buckets(object):
         global bucket_name
 
         for n, v in getattr(cfg, key).items():
+            resname = f'{key}{n}'
+            name = n
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
-            name = n  # Ex. AppData
-            resname = key + name  # Ex. BucketAppData
             bucket_name = getattr(cfg, resname)
             # parameters
-            p_ReplicaDstRegion = Parameter(resname + 'ReplicaDstRegion')
-            p_ReplicaDstRegion.Description = 'Region to Replicate Bucket - None to disable - empty for default based on env/role'
+            p_ReplicaDstRegion = Parameter(f'{resname}ReplicaDstRegion')
+            p_ReplicaDstRegion.Description = (
+                'Region to Replicate Bucket - None to disable - '
+                'empty for default based on env/role')
             p_ReplicaDstRegion.AllowedValues = ['', 'None'] + cfg.regions
 
             add_obj(p_ReplicaDstRegion)
@@ -249,7 +267,7 @@ class S3_Buckets(object):
             PolicyROPrincipal = []
 
             for m, w in v['AccountsRO'].items():
-                accountro_name = resname + 'AccountsRO' + m 
+                accountro_name = f'{resname}AccountsRO{m}'
                 # conditions
                 add_obj(get_condition(accountro_name, 'not_equals', 'None'))
 
@@ -262,54 +280,70 @@ class S3_Buckets(object):
 
             # conditions
             if PolicyROConditions:
-                c_PolicyRO = {resname + 'PolicyRO': Or(
+                c_PolicyRO = {f'{resname}PolicyRO': Or(
                     Equals('1', '0'),
                     Equals('1', '0'),
                     *PolicyROConditions
                 )}
             else:
-                c_PolicyRO = {resname + 'PolicyRO': Equals('True', 'False')}
+                c_PolicyRO = {f'{resname}PolicyRO': Equals('True', 'False')}
+
+            c_Create = get_condition(
+                resname, 'not_equals', 'None', f'{resname}Create')
+
+            c_Versioning = get_condition(
+                f'{resname}Versioning', 'not_equals', 'None')
+
+            c_Cors = get_condition(
+                f'{resname}Cors', 'not_equals', 'None')
+
+            c_ReplicaSrcAccount = get_condition(
+                f'{resname}ReplicaSrcAccount', 'not_equals', 'None')
+
+            c_ReplicaDstOwner = get_condition(
+                f'{resname}ReplicaDstOwner', 'not_equals', 'None')
+
+            # c_AccountRO = get_condition(
+            #    f'{resname}AccountRO', 'not_equals', 'None')
+
+            c_Replica = {f'{resname}Replica': And(
+                Condition(resname),
+                get_condition(
+                    '', 'not_equals', 'None', f'{resname}ReplicaDstRegion')
+            )}
 
             add_obj([
                 c_PolicyRO,
-                get_condition(resname, 'not_equals', 'None', resname + 'Create'),
-                get_condition(resname + 'Versioning', 'not_equals', 'None'),
-                get_condition(resname + 'Cors', 'not_equals', 'None'),
-                get_condition(resname + 'ReplicaSrcAccount', 'not_equals', 'None'),
-                get_condition(resname + 'ReplicaDstOwner', 'not_equals', 'None'),
-                #get_condition(resname + 'AccountRO', 'not_equals', 'None'),
-                {resname + 'Replica': And(
-                    Condition(resname),
-                    get_condition('', 'not_equals', 'None', resname + 'ReplicaDstRegion')
-                )},
+                c_Create,
+                c_Versioning,
+                c_Cors,
+                c_ReplicaSrcAccount,
+                c_ReplicaDstOwner,
+                c_Replica,
             ])
- 
+
             # resources
             BucketPolicyStatement = []
 
-            r_Bucket = S3Bucket(resname)
-            r_Bucket.setup(key=v)
+            r_Bucket = S3Bucket(resname, key=v)
 
-            r_Policy = S3BucketPolicy('BucketPolicy%s' % name)
-            r_Policy.setup(key=v)
+            r_Policy = S3BucketPolicy(f'BucketPolicy{name}', key=v)
             r_Policy.Condition = resname
             r_Policy.Bucket = Sub(bucket_name)
             r_Policy.PolicyDocument['Statement'] = BucketPolicyStatement
 
-            # At least one statement must be always present, create a simple one with no conditions
-            BucketPolicyStatement.extend(S3BucketPolicyStatementBase(resname))
+            # At least one statement must be always present,
+            # create a simple one with no conditions
+            BucketPolicyStatement.extend(
+                S3BucketPolicyStatementBase(resname))
 
-            BucketPolicyStatement.extend(S3BucketPolicyStatementReplica(resname, v))
-
-            #r_PolicyReplica = S3BucketPolicyStatementReplica('BucketPolicy' + name)
-            #r_PolicyReplica.setup(bucket=resname)
+            BucketPolicyStatement.extend(
+                S3BucketPolicyStatementReplica(resname, v))
 
             r_Role = IAMRoleBucketReplica(f'Role{resname}Replica')
 
-            BucketPolicyStatement.extend(S3BucketPolicyStatementRO(resname, PolicyROPrincipal))
-
-            #r_PolicyRO = S3BucketPolicyRO('BucketPolicy' + name + 'AccountRO')
-            #r_PolicyRO.setup(bucket=resname, principal=PolicyROPrincipal)
+            BucketPolicyStatement.extend(
+                S3BucketPolicyStatementRO(resname, PolicyROPrincipal))
 
             r_IAMPolicyReplica = IAMPolicyBucketReplica(
                 f'IAMPolicyReplicaBucket{name}',
@@ -317,13 +351,17 @@ class S3_Buckets(object):
 
             try:
                 lambda_arn = eval(
-                    v['NotificationConfiguration']['LambdaConfigurations']['Trigger']['Function']
+                    v['NotificationConfiguration']['LambdaConfigurations']
+                    ['Trigger']['Function']
                 )
             except:
                 pass
             else:
                 if 'Fn::GettAtt' in lambda_arn.data:
-                    permname = lambda_arn.data['Fn::GettAtt'].replace('Lambda', 'LambdaPermission') + resname
+                    permname = '%s%s' % (
+                        lambda_arn.data['Fn::GettAtt'].replace(
+                            'Lambda', 'LambdaPermission'),
+                        resname)
                 else:
                     permname = 'LambdaPermission'
 
@@ -332,15 +370,19 @@ class S3_Buckets(object):
 
                 add_obj(r_LambdaPermission)
 
-                BucketPolicyStatement.extend(S3BucketPolicyStatementSes(resname))
+                BucketPolicyStatement.extend(
+                    S3BucketPolicyStatementSes(resname))
 
             if 'WebsiteConfiguration' in v:
-                r_Bucket.WebsiteConfiguration = s3.WebsiteConfiguration(resname + 'WebsiteConfiguration')
-                auto_get_props(r_Bucket.WebsiteConfiguration, v['WebsiteConfiguration'], recurse=True)
+                r_Bucket.WebsiteConfiguration = s3.WebsiteConfiguration(
+                    f'{resname}WebsiteConfiguration')
+                auto_get_props(
+                    r_Bucket.WebsiteConfiguration, v['WebsiteConfiguration'],
+                    recurse=True)
 
             if 'PolicyStatement' in v:
                 FixedStatements = []
-                for fsn, fsv  in v['PolicyStatement'].items():
+                for fsn, fsv in v['PolicyStatement'].items():
                     FixedStatement = IAMPolicyStatement(fsv)
                     FixedStatement['Principal'] = {
                         'AWS': eval(fsv['Principal'])
@@ -351,27 +393,36 @@ class S3_Buckets(object):
 
             PolicyCloudFrontOriginAccessIdentityPrincipal = []
             if 'CloudFrontOriginAccessIdentity' in v:
-                identityname = v['CloudFrontOriginAccessIdentity']  # Ex. Tile
-                identityresname = 'CloudFrontOriginAccessIdentity' + identityname
-                
+                identityname = v['CloudFrontOriginAccessIdentity']
+                identityresname = (
+                    f'CloudFrontOriginAccessIdentity{identityname}')
+
                 PolicyCloudFrontOriginAccessIdentityPrincipal.append(
-                    Sub('arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${%s}' % identityresname)
+                    Sub('arn:aws:iam::cloudfront:user/'
+                        'CloudFront Origin Access Identity ${%s}'
+                        % identityresname)
                 )
 
-                for ixn, ixv in v['CloudFrontOriginAccessIdentityExtra'].items():
-                    ixname = resname + 'CloudFrontOriginAccessIdentityExtra' + ixn
+                for ixn, ixv in (
+                        v['CloudFrontOriginAccessIdentityExtra'].items()):
+                    ixname = (
+                        f'{resname}CloudFrontOriginAccessIdentityExtra{ixn}')
                     # conditions
                     add_obj(get_condition(ixname, 'not_equals', 'None'))
 
                     PolicyCloudFrontOriginAccessIdentityPrincipal.append(If(
                         ixname,
-                        get_subvalue('arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${1M}', ixname),
+                        get_subvalue(
+                            'arn:aws:iam::cloudfront:user/'
+                            'CloudFront Origin Access Identity ${1M}', ixname),
                         Ref('AWS::NoValue')
                     ))
 
                 # resources
                 BucketPolicyStatement.extend(
-                        S3BucketPolicyStatementCFOriginAccessIdentity(resname, PolicyCloudFrontOriginAccessIdentityPrincipal)
+                    S3BucketPolicyStatementCFOriginAccessIdentity(
+                        resname,
+                        PolicyCloudFrontOriginAccessIdentityPrincipal)
                 )
 
                 r_OriginAccessIdentity = CFOriginAccessIdentity(
@@ -390,8 +441,8 @@ class S3_Buckets(object):
             add_obj([
                 r_Bucket,
                 r_Policy,
-                #r_PolicyReplica,
-                #r_PolicyRO,
+                # r_PolicyReplica,
+                # r_PolicyRO,
                 r_IAMPolicyReplica,
                 r_Role
             ])
@@ -399,13 +450,15 @@ class S3_Buckets(object):
             # outputs
             outvaluebase = Sub(bucket_name)
             if 'OutputValueRegion' in v:
-                condname = resname + 'OutputValueRegion'
+                condname = f'{resname}OutputValueRegion'
                 # conditions
                 add_obj(get_condition(condname, 'not_equals', 'AWSRegion'))
 
                 outvaluebase = If(
                     condname,
-                    Sub('${Region}-%s' % bucket_name.replace('${AWS::Region}-', '', 1), **{'Region': get_endvalue(condname)}),
+                    Sub('${Region}-%s'
+                        % bucket_name.replace('${AWS::Region}-', '', 1),
+                        **{'Region': get_endvalue(condname)}),
                     outvaluebase
                 )
 
@@ -414,7 +467,7 @@ class S3_Buckets(object):
                 resname,
                 Ref(resname),
                 outvaluebase
-            ) 
+            )
             if resname == 'BucketAppRepository':
                 o_Bucket.Export = Export(resname)
 
@@ -427,18 +480,17 @@ class S3_Buckets(object):
 class S3_BucketPolicies(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
-            resname = key + n
+            resname = f'{key}{n}'
             Statements = []
-            for m, w  in v['Statement'].items():
+            for m, w in v['Statement'].items():
                 Statement = IAMPolicyStatement(w)
                 Statement['Principal'] = {
                     'AWS': eval(w['Principal'])
                 }
                 Statements.append(Statement)
 
-            r_Policy = S3BucketPolicy(resname)
-            r_Policy.setup(key=v)
-            r_Policy.Bucket = get_endvalue(resname + 'Bucket')
-            r_Policy.PolicyDocument['Statement'] = Statement            
+            r_Policy = S3BucketPolicy(resname, key=v)
+            r_Policy.Bucket = get_endvalue(f'{resname}Bucket')
+            r_Policy.PolicyDocument['Statement'] = Statement
 
             add_obj(r_Policy)

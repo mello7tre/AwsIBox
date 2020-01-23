@@ -18,7 +18,8 @@ def mappings_create_entry(mappings, keyenv, keyregion, keyname, keyvalue):
     if keyenv != 'cmm' and keyname in mappings['cmm']['cmm']:
         value = mappings['cmm']['cmm'][keyname]
         del mappings['cmm']['cmm'][keyname]
-        # for all real env region that do not already have a key entry i need to create a mapping entry equals to the common one
+        # for all real env region that do not already have a key entry
+        # i need to create a mapping entry equals to the common one
         # for the non already processed one it could be rewritten later.
         for env in cfg.RP_base:
             for region in cfg.RP_base[env]:
@@ -38,7 +39,7 @@ def get_mapping_env_region(MP, RP, e, r, p):
             elif not p:
                 get_mapping_env_region(mappings, v, e, r, i)
             else:
-                get_mapping_env_region(mappings, v, e, r, '%s%s' % (p, i))
+                get_mapping_env_region(mappings, v, e, r, f'{p}{i}')
     else:
         if p in mappings['cmm']['cmm'] and RP == mappings['cmm']['cmm'][p]:
             pass
@@ -52,7 +53,8 @@ def get_envregion_mapping():
     global mappedvalues
     mappedvalues = set()
 
-    mappings = get_mapping_env_region(copy.deepcopy(cfg.RP_base), cfg.RP, None, None, None)
+    mappings = get_mapping_env_region(
+        copy.deepcopy(cfg.RP_base), cfg.RP, None, None, None)
     fixedvalues = mappings['cmm']['cmm']
     cfg.fixedvalues = fixedvalues
     cfg.mappedvalues = mappedvalues
@@ -86,13 +88,22 @@ def get_ec2_mapping():
 
 #   #START##MAP INSTANCE TYPE EPHEMERAL####
     map_eph = {
-        'InstaceEphemeral0': ['m3.medium', 'm3.large', 'm3.xlarge', 'm3.2xlarge', 'c3.large',
-                              'c3.xlarge', 'c3.2xlarge', 'c3.4xlarge', 'g2.2xlarge', 'r3.large', 'r3.xlarge',
-                              'r3.2xlarge', 'r3.4xlarge', 'i2.xlarge', 'i2.2xlarge', 'i2.4xlarge',
-                              'd2.xlarge', 'd2.2xlarge', 'd2.4xlarge'],
-        'InstaceEphemeral1': ['m3.xlarge', 'm3.2xlarge', 'c3.large', 'c3.xlarge', 'c3.2xlarge', 'c3.4xlarge',
-                              'i2.2xlarge', 'i2.4xlarge', 'd2.xlarge', 'd2.2xlarge', 'd2.4xlarge'],
-        'InstaceEphemeral2': ['i2.4xlarge', 'd2.xlarge', 'd2.2xlarge', 'd2.4xlarge']
+        'InstaceEphemeral0': [
+            'm3.medium', 'm3.large', 'm3.xlarge', 'm3.2xlarge', 'c3.large',
+            'c3.xlarge', 'c3.2xlarge', 'c3.4xlarge',
+            'g2.2xlarge', 'r3.large', 'r3.xlarge',
+            'r3.2xlarge', 'r3.4xlarge', 'i2.xlarge', 'i2.2xlarge',
+            'i2.4xlarge', 'd2.xlarge', 'd2.2xlarge', 'd2.4xlarge',
+        ],
+        'InstaceEphemeral1': [
+            'm3.xlarge', 'm3.2xlarge',
+            'c3.large', 'c3.xlarge', 'c3.2xlarge', 'c3.4xlarge',
+            'i2.2xlarge', 'i2.4xlarge', 'd2.xlarge', 'd2.2xlarge',
+            'd2.4xlarge',
+        ],
+        'InstaceEphemeral2': [
+            'i2.4xlarge', 'd2.xlarge', 'd2.2xlarge', 'd2.4xlarge',
+        ]
     }
 
     mappings['InstanceTypes'] = {}
@@ -100,9 +111,12 @@ def get_ec2_mapping():
     for i in cfg.INSTANCE_LIST:
         mappings['InstanceTypes'].update({
             i: {
-                'InstaceEphemeral0': '1' if i in map_eph['InstaceEphemeral0'] else '0',
-                'InstaceEphemeral1': '1' if i in map_eph['InstaceEphemeral1'] else '0',
-                'InstaceEphemeral2': '1' if i in map_eph['InstaceEphemeral2'] else '0',
+                'InstaceEphemeral0': '1' if i in map_eph['InstaceEphemeral0']
+                else '0',
+                'InstaceEphemeral1': '1' if i in map_eph['InstaceEphemeral1']
+                else '0',
+                'InstaceEphemeral2': '1' if i in map_eph['InstaceEphemeral2']
+                else '0',
             }
         })
 #   #END##MAP INSTANCE TYPE EPHEMERAL####
@@ -128,7 +142,7 @@ def get_azones_mapping():
             pass
 
         for n in range(AZ['MAX']):
-            zones['Zone%s' % n] = 'True' if nzones > n else 'False'
+            zones[f'Zone{n}'] = 'True' if nzones > n else 'False'
 
         mappings['AvabilityZones'][r] = zones
 

@@ -69,17 +69,14 @@ class EFS_FileStorage(object):
             # resources
             r_File = EFSFileSystem(resname)
 
-            r_Record = R53RecordSetEFS(recordname)
-            r_Record.setup(n)
+            r_Record = R53RecordSetEFS(recordname, efsname=n)
 
             r_SGServer = SecurityGroup(sgservername)
-            r_SGServer.setup()
             r_SGServer.Condition = resname
             r_SGServer.GroupDescription = (
                 f'Rule to access EFS FileSystem {n}')
 
             r_SGClient = SecurityGroup(sgclientname)
-            r_SGClient.setup()
             r_SGClient.Condition = resname
             r_SGClient.GroupDescription = (
                 f'Enable access to EFS FileSystem {n}')

@@ -6,6 +6,7 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      import_lambda)
 from .iam import IAMRoleLambdaBase
 
+
 class LambdaPermission(lbd.Permission):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -66,10 +67,10 @@ class LambdaFunction(lbd.Function):
                 ZipFile=Join('', import_lambda(import_name))
             )
         auto_get_props(self, key, recurse=True)
-        self.FunctionName = Sub('${AWS::StackName}-${EnvRole}-' + name)
+        self.FunctionName = Sub('${AWS::StackName}-${EnvRole}-%s' % name)
         if 'Handler' not in key:
             self.Handler = 'index.lambda_handler'
-        self.Role = GetAtt('RoleLambda' + name, 'Arn')
+        self.Role = GetAtt(f'RoleLambda{name}', 'Arn')
 
         if all(k in key for k in ['SecurityGroupIds', 'SubnetIds']):
             self.VpcConfig = lbd.VPCConfig('')
@@ -78,20 +79,21 @@ class LambdaFunction(lbd.Function):
         if 'Variables' in key:
             self.Environment = lbd.Environment(
                 Variables={
-                    varname: get_endvalue(self.title + 'Variables' + varname) for varname in key['Variables']
+                    varname: get_endvalue(f'{self.title}Variables{varname}')
+                    for varname in key['Variables']
                 }
             )
 
 
 class LambdaLayerVersionPermission(lbd.LayerVersionPermission):
     def __init__(self, title, **kwargs):
-        super(LambdaLayerVersionPermission, self).__init__(title, **kwargs)
+        super().__init__(title, **kwargs)
         self.Action = 'lambda:GetLayerVersion'
         self.Principal = Ref('AWS::AccountId')
 
 
 def LambdaLayers(obj, resname, i):
-    layername = '%s%s' % (resname, i)
+    layername = f'{resname}{i}'
     # parameters
     p_Layer = Parameter(layername)
     p_Layer.Description = layername
@@ -112,19 +114,22 @@ def LambdaLayers(obj, resname, i):
 
 ##
 
+
 class LBD_Lambdas(object):
     def __init__(self, key):
         # Resources
         for n, v in getattr(cfg, key).items():
-            resname = key + n
+            resname = f'{key}{n}'
 
-            try: v['Code']['S3Key']
-            except: pass
+            try:
+                v['Code']['S3Key']
+            except:
+                pass
             else:
-                s3keyname = resname + 'Code' + 'S3Key'
+                s3keyname = f'{resname}CodeS3Key'
                 # parameters
                 p_S3Key = Parameter(s3keyname)
-                p_S3Key.Description = 'S3Key Name for lambda %s Code' % n
+                p_S3Key.Description = f'S3Key Name for lambda {n} Code'
 
                 add_obj(p_S3Key)
 
@@ -140,7 +145,8 @@ class LBD_Lambdas(object):
 
             if 'Enabled' in v:
                 # conditions
-                add_obj(get_condition(resname, 'not_equals', 'None', resname + 'Enabled'))
+                add_obj(get_condition(
+                    resname, 'not_equals', 'None', f'{resname}Enabled'))
 
                 r_Lambda.Condition = resname
 
@@ -148,39 +154,49 @@ class LBD_Lambdas(object):
                 r_Lambda.Layers = []
                 for i, j in enumerate(v['Layers']):
                     r_Lambda.Layers.append(
-                        LambdaLayers(r_Lambda, '%s%s' % (resname, 'Layers'), i)
+                        LambdaLayers(
+                            r_Lambda, '%s%s' % (resname, 'Layers'), i)
                     )
 
             if 'Version' in v:
-                versionname = resname + 'Version'
+                versionname = f'{resname}Version'
+                versionnameA = f'{versionname}A'
+                versionnameB = f'{versionname}B'
+
                 # parameters
                 p_Version = Parameter(versionname)
-                p_Version.Description = 'LambdaVersion change between A/B to force deploy new version'
+                p_Version.Description = (
+                    'LambdaVersion - change between A/B '
+                    'to force deploy new version')
                 p_Version.AllowedValues = ['', 'A', 'B']
                 p_Version.Default = ''
 
                 add_obj(p_Version)
 
                 # conditons
+                c_VersionA = get_condition(
+                    versionnameA, 'equals', 'A', versionname, nomap=True)
+
+                c_VersionB = get_condition(
+                    versionnameB, 'equals', 'B', versionname, nomap=True)
+
+                c_Version = {versionname: Or(
+                    Condition(versionnameA),
+                    Condition(versionnameB),
+                )}
+
                 add_obj([
-                    {versionname + 'A': Equals(
-                        Ref(resname + 'Version'), 'A'
-                    )},
-                    {versionname + 'B': Equals(
-                        Ref(resname + 'Version'), 'B'
-                    )},
-                    {versionname: Or(
-                        Condition(versionname + 'A'),
-                        Condition(versionname + 'B'),
-                    )},
+                    c_VersionA,
+                    c_VersionB,
+                    c_Version,
                 ])
 
                 # resources
-                r_VersionA = LambdaVersion(versionname + 'A', name=resname )
-                r_VersionA.Condition = versionname + 'A'
-                
-                r_VersionB = LambdaVersion(versionname + 'B', name=resname )
-                r_VersionB.Condition = versionname + 'B'
+                r_VersionA = LambdaVersion(versionnameA, name=resname)
+                r_VersionA.Condition = versionnameA
+
+                r_VersionB = LambdaVersion(versionnameB, name=resname)
+                r_VersionB.Condition = versionnameB
 
                 add_obj([
                     r_VersionA,
@@ -190,12 +206,12 @@ class LBD_Lambdas(object):
                 # outputs
                 o_Version = Output(versionname)
                 o_Version.Value = If(
-                    versionname + 'A',
-                    Ref(versionname + 'A'),
-                    Ref(versionname + 'B')
+                    versionnameA,
+                    Ref(versionnameA),
+                    Ref(versionnameB)
                 )
                 o_Version.Condition = versionname
-                
+
                 add_obj([
                     o_Version,
                 ])
@@ -203,7 +219,7 @@ class LBD_Lambdas(object):
             # Automatically setup a lambda Role with base permissions.
             r_Role = IAMRoleLambdaBase(f'Role{resname}', key=v)
             if hasattr(r_Lambda, 'Condition'):
-            	r_Role.Condition = r_Lambda.Condition
+                r_Role.Condition = r_Lambda.Condition
 
             add_obj([
                 r_Lambda,
@@ -222,15 +238,17 @@ class LBD_LayerVersions(object):
     def __init__(self, key):
         # Resources
         for n, v in getattr(cfg, key).items():
-            resname = key + n
+            resname = f'{key}{n}'
 
-            try: v['Content']['S3Key']
-            except: pass
+            try:
+                v['Content']['S3Key']
+            except:
+                pass
             else:
-                s3keyname = resname + 'Content' + 'S3Key'
+                s3keyname = f'{resname}ContentS3Key'
                 # parameters
                 p_S3Key = Parameter(s3keyname)
-                p_S3Key.Description = 'S3Key Name for lambda %s Content' % n
+                p_S3Key.Description = f'S3Key Name for lambda {n} Content'
 
                 add_obj(p_S3Key)
 
@@ -243,7 +261,8 @@ class LBD_LayerVersions(object):
             # resources
             r_Layer = lbd.LayerVersion(resname)
             auto_get_props(r_Layer, v, recurse=True)
-            r_LayerPermission = LambdaLayerVersionPermission('LambdaLayerPermission' + n)
+            r_LayerPermission = LambdaLayerVersionPermission(
+                f'LambdaLayerPermission{n}')
             r_LayerPermission.LayerVersionArn = Ref(resname)
 
             add_obj([
@@ -262,7 +281,7 @@ class LBD_Permissions(object):
     def __init__(self, key):
         # Resources
         for n, v in getattr(cfg, key).items():
-            resname = key + n
+            resname = f'{key}{n}'
 
             # resources
             r_Permission = LambdaPermission(resname)
@@ -278,7 +297,7 @@ class LBD_EventSourceMappings(object):
     def __init__(self, key):
         # Resources
         for n, v in getattr(cfg, key).items():
-            resname = key + n
+            resname = f'{key}{n}'
 
             # resources
             r_EventSourceMapping = lbd.EventSourceMapping(resname)
