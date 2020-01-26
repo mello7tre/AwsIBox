@@ -631,12 +631,12 @@ class LB_ListenersV2ExternalInternal(object):
             ])
 
             # resources
-            SGIHttpPrivate = SecurityGroupsIngressEcs(condnamehttpprivate,
-                proto='Http', scheme=scheme)
+            SGIHttpPrivate = SecurityGroupsIngressEcs(
+                condnamehttpprivate, proto='Http', scheme=scheme)
             SGIHttpPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
 
-            SGIHttpsPrivate = SecurityGroupsIngressEcs(condnamehttpsprivate,
-                proto='Https', scheme=scheme)
+            SGIHttpsPrivate = SecurityGroupsIngressEcs(
+                condnamehttpsprivate, proto='Https', scheme=scheme)
             SGIHttpsPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
 
             add_obj([
