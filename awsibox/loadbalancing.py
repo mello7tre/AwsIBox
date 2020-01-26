@@ -484,17 +484,16 @@ class LB_ListenerRulesExternalInternal(object):
                 RuleHttpAdd = True
             if scheme == 'External':
                 RuleHttpsAdd = True
-
-        # can be forced or overriden by key http/https/any
-        if Protocol == 'http':
-            RuleHttpAdd = True
-            RuleHttpsAdd = None
-        if Protocol == 'https':
-            RuleHttpAdd = None
-            RuleHttpsAdd = True
-        if Protocol == 'any':
-            RuleHttpAdd = True
-            RuleHttpsAdd = True
+                # on External can be forced or overriden by key http/https/any
+                if Protocol == 'http':
+                    RuleHttpAdd = True
+                    RuleHttpsAdd = None
+                if Protocol == 'https':
+                    RuleHttpAdd = None
+                    RuleHttpsAdd = True
+                if Protocol == 'any':
+                    RuleHttpAdd = True
+                    RuleHttpsAdd = True
 
         if RuleHttpAdd:
             add_obj(R_RuleHttp)
