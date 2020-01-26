@@ -29,9 +29,9 @@ def stack_add_res():
                 default = ''
 
             condition = {
-                n + 'Override': Not(Equals(Select(0, Ref(n)), default))
+                f'{n}Override': Not(Equals(Select(0, Ref(n)), default))
             } if v.Type == 'CommaDelimitedList' else {
-                n + 'Override': Not(Equals(Ref(n), default))
+                f'{n}Override': Not(Equals(Ref(n), default))
             }
 
             add_obj(condition)
@@ -78,12 +78,6 @@ def do_no_override(action):
         cfg.no_override = False
 
 
-# def import_modules(gbl):
-#     for module in cfg.IMPORT_MODULES:
-#         mod = importlib.import_module('.%s' % module, package='awsibox')
-#         gbl.update(mod.__dict__)
-
-
 def _get_value(param, fixedvalues, strout, nolist, issub):
     # Its not pythonic, but it's only way to avoid circular import problems
     from .securitygroup import SG_SecurityGroupsTSK
@@ -92,17 +86,24 @@ def _get_value(param, fixedvalues, strout, nolist, issub):
     if not fixedvalues:
         fixedvalues = cfg.fixedvalues
 
-    # if param in fixedvalues means its value do not changes based on Env/Region so hardcode the value in json, ...
+    # if param in fixedvalues means its value do not changes
+    # based on Env/Region so hardcode the value in json, ...
     if param in fixedvalues:
         value = fixedvalues[param]
-        # check if value start with method and use eval to run code ... in list too
+        # check if value start with method and use eval to run code
         if isinstance(value, list):
-            value = [eval(r) if r.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else r for r in value]
+            value = [
+                eval(r) if r.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
+                else r for r in value
+            ]
         if isinstance(value, str):
-            value = eval(value.replace('\n', '')) if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else value
+            value = (
+                eval(value.replace('\n', ''))
+                if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
+                else value)
     # ... otherway use mapping
     else:
-        value = FindInMap(Ref('EnvShort'), Ref("AWS::Region"), param)
+        value = FindInMap(Ref('EnvShort'), Ref('AWS::Region'), param)
 
     if strout is True and isinstance(value, int):
         value = str(value)
@@ -122,7 +123,7 @@ def _get_overridevalue(param, value, condname=None):
 
     if (cfg.no_override is False and param in cfg.Parameters and not
             param.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
-        override_value = If(param + 'Override', Ref(param), value)
+        override_value = If(f'{param}Override', Ref(param), value)
     else:
         override_value = value
 
@@ -130,14 +131,13 @@ def _get_overridevalue(param, value, condname=None):
 
 
 def get_endvalue(param, ssm=False, condition=False, nocondition=False,
-    nolist=False, inlist=False, split=False, issub=False, strout=False,
-    fixedvalues=None, mapinlist=False,
-):
+                 nolist=False, inlist=False, split=False, issub=False,
+                 strout=False, fixedvalues=None, mapinlist=False):
 
     value = _get_value(param, fixedvalues, strout, nolist, issub)
 
     if mapinlist is not False:
-        value = Select(mapinlist, value) 
+        value = Select(mapinlist, value)
 
     if condition or nocondition:
         if condition is True or nocondition is True:
@@ -192,13 +192,20 @@ def get_subvalue(substring, subvar, stack=False):
         mytype = substring[posindex + 1]
         # M = Mapped, E = Exported
         if myindex.isdigit() and mytype in ['M', 'E']:
-            listitem = subvar[int(myindex) - 1] if isinstance(subvar, list) else subvar
-            stackitem = stack[int(myindex) - 1] if isinstance(stack, list) else stack
+            listitem = (
+                subvar[int(myindex) - 1] if isinstance(subvar, list)
+                else subvar)
+            stackitem = (
+                stack[int(myindex) - 1] if isinstance(stack, list)
+                else stack)
             if mytype == 'M':
                 submap[listitem] = get_endvalue(listitem)
             else:
                 submap[listitem] = get_expvalue(listitem, stackitem)
-            substring = substring.replace('${' + myindex + mytype + '}', '${' + listitem + '}')
+
+            substring = substring.replace(
+                '${%s%s}' % (myindex, mytype), '${%s}' % listitem)
+
         found = substring.find('${', posindex)
 
     v = Sub(substring, **submap)
@@ -215,7 +222,7 @@ def get_condition(cond_name, cond, value2,
     key_name = key if key else cond_name
     if isinstance(key, FindInMap):
         map_name = key.data['Fn::FindInMap'][0]
-        key_name = key.data['Fn::FindInMap'][1] 
+        key_name = key.data['Fn::FindInMap'][1]
         value_name = key.data['Fn::FindInMap'][2]
         if not value_name and cond_name:
             value_name = cond_name
@@ -228,11 +235,14 @@ def get_condition(cond_name, cond, value2,
         split_sep = select_list.data['Fn::Split'][0]
         key_name = select_list.data['Fn::Split'][1]
 
-        value1_param = Select(select_index, Split(split_sep, Ref(key_name)))
-        value1_map = Select(select_index, Split(split_sep, get_endvalue(key_name)))
+        value1_param = Select(
+            select_index, Split(split_sep, Ref(key_name)))
+        value1_map = Select(
+            select_index, Split(split_sep, get_endvalue(key_name)))
     else:
         value1_param = Ref(key_name)
-        # Used new param "mapinlist" when you have a mapped value in a list but multiple values as override parameters
+        # Used new param "mapinlist" when you have a mapped value in a list
+        # but multiple values as override parameters
         if mapinlist:
             value1_map = get_endvalue(mapinlist[0], mapinlist=mapinlist[1])
         else:
@@ -255,7 +265,7 @@ def get_condition(cond_name, cond, value2,
     if (key_name in cfg.Parameters and
             not key_name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION) and
             not nomap):
-        key_override = key_name + 'Override'
+        key_override = f'{key_name}Override'
         condition = Or(
             And(
                 Condition(key_override),
@@ -300,14 +310,18 @@ def import_lambda(name):
             return(file_lines)
 
     except IOError:
-        logging.error('Lambda code %s not found' % name)
+        logging.error(f'Lambda code {name} not found')
         exit(1)
 
 
-def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, rootkey=None, rootname=None):
+def auto_get_props_recurse(obj, key, props, obj_propname, mapname,
+                           propname, rootkey=None, rootname=None):
     prop_class = props[obj_propname][0]
-    if isinstance(prop_class, type) and prop_class.__bases__[0].__name__ == 'AWSProperty':
-        # If object already have that props, object class is the existing already defined object, so extend its property with auto_get_props
+    if (isinstance(prop_class, type) and
+            prop_class.__bases__[0].__name__ == 'AWSProperty'):
+        # If object already have that props, object class is
+        # the existing already defined object,
+        # so extend its property with auto_get_props
         if obj_propname in obj.properties:
             prop_obj = obj.properties[obj_propname]
         else:
@@ -315,26 +329,32 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
         auto_get_props(
             prop_obj,
             key=key[obj_propname],
-            mapname=mapname + obj_propname,
+            mapname=f'{mapname}{obj_propname}',
             recurse=True,
             rootkey=rootkey[obj_propname] if rootkey else None,
-            rootname=rootname + obj_propname if rootname else None,
+            rootname=f'{rootname}{obj_propname}' if rootname else None,
         )
 
         return prop_obj
 
-    elif isinstance(prop_class, list) and isinstance(prop_class[0], type) and prop_class[0].__bases__[0].__name__ == 'AWSProperty':
+    elif (isinstance(prop_class, list) and
+            isinstance(prop_class[0], type) and
+            prop_class[0].__bases__[0].__name__ == 'AWSProperty'):
         # If object props already is a list, keep existing list objects
-        # need to make a change, if object already exist, i must first iterate over old list with rootkey and rootname and then over new one
+        # need to make a change, if object already exist,
+        # i must first iterate over old list with rootkey and
+        # rootname and then over new one
         prop_list = []
         prop_class = props[obj_propname][0][0]
-        # If rootkey is defined, first iterate over rootkey and execute auto_get_props passing rootkey and rootname, but check if element exist in key too,
-        # in that case execute execute auto_get_props passing key and mapname...
+        # If rootkey is defined, first iterate over rootkey and
+        # execute auto_get_props passing rootkey and rootname,
+        # but check if element exist in key too,
+        # in that case execute execute auto_get_props passing key and mapname
         if rootkey:
             for o, v in rootkey[obj_propname].items():
                 name_o = str(o)
-                rootname_o = rootname + obj_propname + name_o
-                mapname_o = mapname + obj_propname + name_o
+                rootname_o = f'{rootname}{obj_propname}{name_o}'
+                mapname_o = f'{mapname}{obj_propname}{name_o}'
                 prop_obj = prop_class()
                 auto_get_props(
                     prop_obj,
@@ -355,12 +375,15 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
                         rootname=rootname_o,
                     )
                 prop_list.append(prop_obj)
-        # ...then iterate over key, but check if element exist in rootkey too, in that case skip it (already included in previous rootkey iteration)
-        # when calling auto_get_props rootkey and rootname can be setted to None, cause if element has not been skipped mean that it do not exist in rootkey
-        # so there is no need to pass it (there cannot be a corrispective node in rootkey)
+        # ...then iterate over key, but check if element exist in rootkey too,
+        # in that case skip it (already included in previous rootkey iteration)
+        # when calling auto_get_props rootkey and rootname can be setted to
+        # None, cause if element has not been skipped mean that
+        # it do not exist in rootkey so there is no need to pass it
+        # (there cannot be a corrispective node in rootkey)
         for o, v in key[obj_propname].items():
             name_o = str(o)
-            mapname_o = mapname + obj_propname + name_o
+            mapname_o = f'{mapname}{obj_propname}{name_o}'
             prop_obj = prop_class()
             if rootkey and o in rootkey[obj_propname]:
                 continue
@@ -376,10 +399,11 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname, propname, roo
 
         return prop_list
 
-    return get_endvalue(mapname + propname)
+    return get_endvalue(f'{mapname}{propname}')
 
 
-def auto_get_props(obj, key=None, del_prefix='', mapname=None, recurse=False, rootkey=None, rootname=None, rootdict=None):
+def auto_get_props(obj, key=None, del_prefix='', mapname=None,
+                   recurse=False, rootkey=None, rootname=None, rootdict=None):
     # set default if not defined
     if not key:
         key = cfg.RP_cmm
@@ -393,20 +417,26 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None, recurse=False, ro
     # build up mapname
     mapname = mapname if mapname is not None else obj.title
     if classname in ['Output', 'Parameter']:
-        mapname = classname + mapname
+        mapname = f'{classname}{mapname}'
 
     # iterate over props or key choosing the one with less objects
     use_key = True if len(props) > len(key) else None
     for propname in key if use_key else props:
-        obj_propname = propname.replace(del_prefix, '') if use_key else del_prefix + propname
+        obj_propname = (propname.replace(del_prefix, '') if use_key
+                        else f'{del_prefix}{propname}')
         if obj_propname in (props if use_key else key):
             if recurse and isinstance(key[obj_propname], dict):
-                value = auto_get_props_recurse(obj, key, obj.props, obj_propname, mapname, propname, rootkey, rootname)
-            # needed for lib/efs.py EFS_FileStorage SGIExtra - where is passed as key a new dictionary to parse for parameters
+                value = auto_get_props_recurse(
+                    obj, key, obj.props, obj_propname,
+                    mapname, propname, rootkey, rootname)
+            # needed for lib/efs.py EFS_FileStorage SGIExtra -
+            # where is passed as key a new dictionary to parse for parameters
             elif rootdict:
-                value = get_endvalue(mapname + propname, fixedvalues=rootdict)
+                value = get_endvalue(
+                    f'{mapname}{propname}', fixedvalues=rootdict)
             else:
-                value = get_endvalue(mapname + propname)
+                value = get_endvalue(
+                    f'{mapname}{propname}')
 
             # Avoid intercepting a Template Condition as a Resource Condition
             if obj_propname == 'Condition' and not isinstance(value, str):
@@ -441,9 +471,11 @@ def change_obj_data(obj, find, value):
 
 def gen_random_string():
     length = 16
-    char_set = string.ascii_letters + string.digits
+    char_set = f'{string.ascii_letters}{string.digits}'
     if not hasattr(gen_random_string, "rng"):
-        gen_random_string.rng = random.SystemRandom()  # Create a static variable
-    secret_string = ''.join([gen_random_string.rng.choice(char_set) for _ in range(length)])
+        # Create a static variable
+        gen_random_string.rng = random.SystemRandom()
+    secret_string = ''.join(
+        [gen_random_string.rng.choice(char_set) for _ in range(length)])
 
     return secret_string
