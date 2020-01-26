@@ -12,7 +12,7 @@ class CW_Alarms(object):
                 continue
             resname = f'{key}{n}'
             # parameters
-            p_EvaluationPeriods = Parameter(resname + 'EvaluationPeriods')
+            p_EvaluationPeriods = Parameter(f'{resname}EvaluationPeriods')
             p_EvaluationPeriods.Description = (
                 'Number of periods for alarm evaluation - 0 to disable - '
                 'empty for default based on env/role')

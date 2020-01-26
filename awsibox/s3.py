@@ -122,7 +122,7 @@ def S3BucketPolicyStatementReplica(bucket, key):
         'Resource': [
             get_subvalue(
                 'arn:aws:s3:::%s/${1M}*' % bucket_name,
-                bucket + 'ReplicaSrcPrefix'
+                f'{bucket}ReplicaSrcPrefix'
             ) if 'ReplicaSrcPrefix' in key else Sub(
                 'arn:aws:s3:::%s/*' % bucket_name),
         ],

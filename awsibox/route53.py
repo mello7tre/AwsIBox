@@ -315,12 +315,12 @@ class R53_HostedZones(object):
             output_zoneidname = resname.replace('HostedZone', 'HostedZoneId')
             # parameters
             if n.startswith('Public'):
-                p_HostedZone = Parameter(mapname + 'Enabled')
+                p_HostedZone = Parameter(f'{mapname}Enabled')
                 p_HostedZone.Description = (
                     f'Create Public {resname} - can be created in only one '
                     'Region - empty for default based on env/role')
 
-                p_HostedZoneId = Parameter(mapname + 'Id')
+                p_HostedZoneId = Parameter(f'{mapname}Id')
                 p_HostedZoneId.Description = (
                     f'Id of Public {resname} - required in all Regions where'
                     ' HostedZonePublicEnv is not created - '

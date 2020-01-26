@@ -225,7 +225,7 @@ class AGW_RestApi(object):
         ])
 
         for n, v in getattr(cfg, key).items():
-            resname = key + n
+            resname = f'{key}{n}'
             agw_stage = cfg.Stage
             r_Resource = ApiGatewayResource(resname, key=v, stage=agw_stage)
 

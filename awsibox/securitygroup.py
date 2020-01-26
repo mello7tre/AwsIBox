@@ -330,7 +330,7 @@ class SG_SecurityGroupIngressesExtraService(object):
 
             Securitygroup_Rules.append(
                 If(
-                    service + 'Public',
+                    f'{service}Public',
                     SGRule,
                     Ref('AWS::NoValue'),
                 )

@@ -251,7 +251,7 @@ class ASLifecycleHook(asg.LifecycleHook):
         super().__init__(title, **kwargs)
 
         auto_get_props(self, key)
-        self.HeartbeatTimeout = get_endvalue(title + 'HeartbeatTimeout')
+        self.HeartbeatTimeout = get_endvalue(f'{title}HeartbeatTimeout')
 
 # E - AUTOSCALING #
 
