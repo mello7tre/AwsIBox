@@ -8,7 +8,8 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
 from .route53 import R53_RecordSetEC2LoadBalancer, R53_RecordSetECSLoadBalancer
 from .securitygroup import (
     SecurityGroupRuleELBPorts, SecurityGroupIngressInstanceELBPorts,
-    SecurityGroupLoadBalancer, SecurityGroupsIngressEcs)
+    SecurityGroupLoadBalancer, SecurityGroupsIngressEcs, SecurityGroup,
+    SecurityGroupRuleHttp, SecurityGroupRuleHttps)
 from .lambdas import LambdaPermissionLoadBalancing
 
 
@@ -733,20 +734,20 @@ class LB_ListenersV2ALB(object):
             R_ListenerHttps.Condition = 'LoadBalancerApplicationExternal'
 
             R_SGExternal = SecurityGroup(
-                'SecurityGroupApplicationExternal')
+                'SecurityGroupLoadBalancerApplicationExternal')
             R_SGExternal.Condition = 'LoadBalancerApplicationExternal'
             R_SGExternal.GroupDescription = Sub(
-                'Access to LoadBalancerApplicationExternal ${AWS:StackName}')
+                'Access to LoadBalancerApplicationExternal ${AWS::StackName}')
             R_SGExternal.SecurityGroupIngress = [
                 SecurityGroupRuleHttp(),
                 SecurityGroupRuleHttps(),
             ]
 
             R_SGInternal = SecurityGroup(
-                'SecurityGroupApplicationInternal')
+                'SecurityGroupLoadBalancerApplicationInternal')
             R_SGInternal.Condition = 'LoadBalancerApplicationInternal'
             R_SGInternal.GroupDescription = Sub(
-                'Access to LoadBalancerApplicationInternal ${AWS:StackName}')
+                'Access to LoadBalancerApplicationInternal ${AWS::StackName}')
             R_SGInternal.SecurityGroupIngress = [
                 SecurityGroupRuleHttp(),
             ]
@@ -771,19 +772,23 @@ class LB_ListenersV2ALB(object):
             O_ListenerHttps.Export = Export(Sub(
                 'ListenerHttpsDefaultExternal-${AWS::StackName}'))
 
-            O_SGExternal = Output('SecurityGroupApplicationExternal')
+            O_SGExternal = Output(
+                'SecurityGroupLoadBalancerApplicationExternal')
             O_SGExternal.Condition = 'LoadBalancerApplicationExternal'
             O_SGExternal.Value = GetAtt(
-                'SecurityGroupApplicationExternal', 'GroupId')
+                'SecurityGroupLoadBalancerApplicationExternal', 'GroupId')
             O_SGExternal.Export = Export(Sub(
-                'SecurityGroupApplicationExternal-${AWS::StackName}'))
+                'SecurityGroupLoadBalancerApplicationExternal-'
+                '${AWS::StackName}'))
 
-            O_SGInternal = Output('SecurityGroupApplicationInternal')
+            O_SGInternal = Output(
+                'SecurityGroupLoadBalancerApplicationInternal')
             O_SGInternal.Condition = 'LoadBalancerApplicationInternal'
             O_SGInternal.Value = GetAtt(
-                'SecurityGroupApplicationInternal', 'GroupId')
+                'SecurityGroupLoadBalancerApplicationInternal', 'GroupId')
             O_SGInternal.Export = Export(Sub(
-                'SecurityGroupApplicationInternal-${AWS::StackName}'))
+                'SecurityGroupLoadBalancerApplicationInternal-'
+                '${AWS::StackName}'))
 
             add_obj([
                 O_ListenerHttp,
@@ -803,10 +808,10 @@ class LB_ListenersV2ALB(object):
             R_ListenerHttp.Condition = 'LoadBalancerApplicationInternal'
 
             R_SGInternal = SecurityGroup(
-                'SecurityGroupApplicationInternal')
+                'SecurityGroupLoadBalancerApplicationInternal')
             R_SGInternal.Condition = 'LoadBalancerApplicationInternal'
             R_SGInternal.GroupDescription = Sub(
-                'Access to LoadBalancerApplicationInternal ${AWS:StackName}')
+                'Access to LoadBalancerApplicationInternal ${AWS::StackName}')
             R_SGInternal.SecurityGroupIngress = [
                 SecurityGroupRuleHttp(),
             ]
@@ -823,12 +828,14 @@ class LB_ListenersV2ALB(object):
             O_ListenerHttp.Export = Export(Sub(
                 'ListenerHttpDefaultInternal-${AWS::StackName}'))
 
-            O_SGInternal = Output('SecurityGroupApplicationInternal')
+            O_SGInternal = Output(
+                'SecurityGroupLoadBalancerApplicationInternal')
             O_SGInternal.Condition = 'LoadBalancerApplicationInternal'
             O_SGInternal.Value = GetAtt(
-                'SecurityGroupApplicationInternal', 'GroupId')
+                'SecurityGroupLoadBalancerApplicationInternal', 'GroupId')
             O_SGInternal.Export = Export(Sub(
-                'SecurityGroupApplicationInternal-${AWS::StackName}'))
+                'SecurityGroupLoadBalancerApplicationInternal-'
+                '${AWS::StackName}'))
 
             add_obj([
                 O_ListenerHttp,
