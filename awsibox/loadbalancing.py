@@ -648,7 +648,7 @@ class LB_ListenersV2ExternalInternal(object):
 
 class LB_ListenersV2ECSExternal(object):
     def __init__(self):
-        if cfg.ListenerLoadBalancerHttpPort != 80:
+        if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
             R_ListenerHttp = ELBV2ListenerHttp(
                 'ListenerHttpExternal', scheme='External')
             R_ListenerHttp.LoadBalancerArn = get_expvalue(
@@ -659,7 +659,7 @@ class LB_ListenersV2ECSExternal(object):
 
             SG_SecurityGroupIngressesECS(scheme='External', proto='Http')
 
-        if cfg.ListenerLoadBalancerHttpsPort != 443:
+        if cfg.ListenerLoadBalancerHttpsPort not in ['None', 443]:
             R_ListenerHttps = ELBV2ListenerHttps(
                 'ListenerHttpsExternal', scheme='External')
             R_ListenerHttps.Condition = 'ListenerLoadBalancerHttpsPort'
@@ -674,7 +674,7 @@ class LB_ListenersV2ECSExternal(object):
 
 class LB_ListenersV2ECSInternal(object):
     def __init__(self):
-        if cfg.ListenerLoadBalancerHttpPort != 80:
+        if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
             R_ListenerHttp = ELBV2ListenerHttp(
                 'ListenerHttpInternal', scheme='Internal')
             R_ListenerHttp.LoadBalancerArn = get_expvalue(
