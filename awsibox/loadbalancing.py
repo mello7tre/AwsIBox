@@ -307,7 +307,9 @@ class ELBV2LoadBalancerExternalALB(ELBV2LoadBalancerExternal):
 
         self.Condition = 'LoadBalancerApplicationExternal'
         self.SecurityGroups = [
-            get_expvalue('SecurityGroupLoadBalancerApplicationExternal')
+            get_expvalue('SecurityGroupLoadBalancerApplicationExternal'),
+            GetAtt(
+                'SecurityGroupLoadBalancerApplicationExternal', 'GroupId'),
         ]
 
 
@@ -317,7 +319,9 @@ class ELBV2LoadBalancerInternalALB(ELBV2LoadBalancerInternal):
 
         self.Condition = 'LoadBalancerApplicationInternal'
         self.SecurityGroups = [
-            get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
+            get_expvalue('SecurityGroupLoadBalancerApplicationInternal'),
+            GetAtt(
+                'SecurityGroupLoadBalancerApplicationInternal', 'GroupId'),
         ]
 
 
@@ -567,6 +571,7 @@ class LB_ListenerRules(object):
             add_obj(o_ListenerRule)
 
 
+# to remove when finished refactoring ALB-ECS
 class LB_ListenersV2ExternalInternal(object):
     def __init__(self, scheme):
         # Conditions
@@ -593,11 +598,15 @@ class LB_ListenersV2ExternalInternal(object):
             f'SecurityGroupIngressPublicLoadBalancerHttp{scheme}',
             proto='Http', scheme=scheme)
         R_SGIHttpPublic.CidrIp = '0.0.0.0/0'
+        R_SGIHttpPublic.GroupId = get_expvalue(
+            f'SecurityGroupLoadBalancerApplication{scheme}')
 
         R_SGIHttpsPublic = SecurityGroupsIngressEcs(
             f'SecurityGroupIngressPublicLoadBalancerHttps{scheme}',
             proto='Https', scheme=scheme)
         R_SGIHttpsPublic.CidrIp = '0.0.0.0/0'
+        R_SGIHttpsPublic.GroupId = get_expvalue(
+            f'SecurityGroupLoadBalancerApplication{scheme}')
 
         add_obj([
             R_SGIHttpPublic,
@@ -635,10 +644,14 @@ class LB_ListenersV2ExternalInternal(object):
             SGIHttpPrivate = SecurityGroupsIngressEcs(
                 condnamehttpprivate, proto='Http', scheme=scheme)
             SGIHttpPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
+            SGIHttpPrivate.GroupId = get_expvalue(
+                f'SecurityGroupLoadBalancerApplication{scheme}')
 
             SGIHttpsPrivate = SecurityGroupsIngressEcs(
                 condnamehttpsprivate, proto='Https', scheme=scheme)
             SGIHttpsPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
+            SGIHttpsPrivate.GroupId = get_expvalue(
+                f'SecurityGroupLoadBalancerApplication{scheme}')
 
             add_obj([
                 SGIHttpPrivate,

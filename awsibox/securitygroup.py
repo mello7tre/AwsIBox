@@ -53,7 +53,8 @@ class SecurityGroupsIngressEcs(SecurityGroupIngress):
         super().__init__(title, **kwargs)
         self.Condition = self.title
         self.GroupId = get_expvalue(
-            f'SecurityGroupLoadBalancerApplication{scheme}')
+            f'SecurityGroupLoadBalancerApplication{scheme}',
+            'LoadBalancerApplicationStack')
         self.FromPort = get_endvalue(
             f'ListenerLoadBalancer{proto}Port')
         self.ToPort = self.FromPort
@@ -421,8 +422,8 @@ class SG_SecurityGroupIngressesECS(object):
             add_obj(c_AllowedIpPrivate)
 
             # resources
-            SGIPrivate = SecurityGroupsIngressEcs(
+            r_SGIPrivate = SecurityGroupsIngressEcs(
                 resname_private, proto=proto, scheme=scheme)
-            SGIPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
+            r_SGIPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
 
-            add_obj(SGIPrivate)
+            add_obj(r_SGIPrivate)
