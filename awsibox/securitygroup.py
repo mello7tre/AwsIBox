@@ -380,3 +380,49 @@ class SG_SecurityGroupIngressesExtraRDS(SG_SecurityGroupIngressesExtraService):
 class SG_SecurityGroupIngressesExtraCCH(SG_SecurityGroupIngressesExtraService):
     def __init__(self, **kwargs):
         super().__init__(service='CCH', **kwargs)
+
+
+class SG_SecurityGroupIngressesECS(object):
+    def __init__(self, scheme, proto):
+        resname_public = (
+            'SecurityGroupIngressLoadBalancerApplicationPublic'
+            f'{proto}{scheme}')
+
+        # Conditions
+        c_Public = {
+            resname_public: And(
+                Condition(f'ListenerLoadBalancer{proto}Port'),
+                Condition('LoadBalancerPublic'),
+            )
+        }
+
+        add_obj(c_Public)
+
+        # Resources
+        R_SGIPublic = SecurityGroupsIngressEcs(
+            resname_public, proto=proto, scheme=scheme)
+        R_SGIPublic.CidrIp = '0.0.0.0/0'
+
+        add_obj(R_SGIPublic)
+
+        for i in cfg.AllowedIp:
+            ipname = f'AllowedIp{i}'  # Ex. AllowedIp1
+            resname_private = (
+                f'SecurityGroupIngressLoadBalancerApplicationPrivate{proto}'
+                f'{scheme}{ipname}')
+
+            # conditions
+            c_AllowedIpPrivate = {resname_private: And(
+                Condition(ipname),
+                Not(Condition('LoadBalancerPublic')),
+                Condition(f'ListenerLoadBalancer{proto}Port')
+            )}
+
+            add_obj(c_AllowedIpPrivate)
+
+            # resources
+            SGIPrivate = SecurityGroupsIngressEcs(
+                resname_private, proto=proto, scheme=scheme)
+            SGIPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
+
+            add_obj(SGIPrivate)
