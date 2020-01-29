@@ -571,94 +571,6 @@ class LB_ListenerRules(object):
             add_obj(o_ListenerRule)
 
 
-# to remove when finished refactoring ALB-ECS
-class LB_ListenersV2ExternalInternal(object):
-    def __init__(self, scheme):
-        # Conditions
-        c_HttpPublic = {
-            f'SecurityGroupIngressPublicLoadBalancerHttp{scheme}': And(
-                Condition('ListenerLoadBalancerHttpPort'),
-                Condition('LoadBalancerPublic'),
-            )
-        }
-
-        c_HttpsPublic = {
-            f'SecurityGroupIngressPublicLoadBalancerHttps{scheme}': And(
-                Condition('ListenerLoadBalancerHttpsPort'),
-                Condition('LoadBalancerPublic'),
-            )
-        }
-        add_obj([
-            c_HttpPublic,
-            c_HttpsPublic,
-        ])
-
-        # Resources
-        R_SGIHttpPublic = SecurityGroupsIngressEcs(
-            f'SecurityGroupIngressPublicLoadBalancerHttp{scheme}',
-            proto='Http', scheme=scheme)
-        R_SGIHttpPublic.CidrIp = '0.0.0.0/0'
-        R_SGIHttpPublic.GroupId = get_expvalue(
-            f'SecurityGroupLoadBalancerApplication{scheme}')
-
-        R_SGIHttpsPublic = SecurityGroupsIngressEcs(
-            f'SecurityGroupIngressPublicLoadBalancerHttps{scheme}',
-            proto='Https', scheme=scheme)
-        R_SGIHttpsPublic.CidrIp = '0.0.0.0/0'
-        R_SGIHttpsPublic.GroupId = get_expvalue(
-            f'SecurityGroupLoadBalancerApplication{scheme}')
-
-        add_obj([
-            R_SGIHttpPublic,
-            R_SGIHttpsPublic,
-        ])
-
-        for i in cfg.AllowedIp:
-            ipname = f'AllowedIp{i}'  # Ex. AllowedIp1
-            condnamehttpprivate = (
-                'SecurityGroupIngressPrivateLoadBalancerHttp'
-                f'{scheme}{ipname}')
-            condnamehttpsprivate = (
-                'SecurityGroupIngressPrivateLoadBalancerHttps'
-                f'{scheme}{ipname}')
-
-            # conditions
-            c_HttpAllowedIpPrivate = {condnamehttpprivate: And(
-                Condition(ipname),
-                Not(Condition('LoadBalancerPublic')),
-                Condition('ListenerLoadBalancerHttpPort')
-            )}
-
-            c_HttpsAllowedIpPrivate = {condnamehttpsprivate: And(
-                Condition(ipname),
-                Not(Condition('LoadBalancerPublic')),
-                Condition('ListenerLoadBalancerHttpsPort')
-            )}
-
-            add_obj([
-                c_HttpAllowedIpPrivate,
-                c_HttpsAllowedIpPrivate,
-            ])
-
-            # resources
-            SGIHttpPrivate = SecurityGroupsIngressEcs(
-                condnamehttpprivate, proto='Http', scheme=scheme)
-            SGIHttpPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
-            SGIHttpPrivate.GroupId = get_expvalue(
-                f'SecurityGroupLoadBalancerApplication{scheme}')
-
-            SGIHttpsPrivate = SecurityGroupsIngressEcs(
-                condnamehttpsprivate, proto='Https', scheme=scheme)
-            SGIHttpsPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
-            SGIHttpsPrivate.GroupId = get_expvalue(
-                f'SecurityGroupLoadBalancerApplication{scheme}')
-
-            add_obj([
-                SGIHttpPrivate,
-                SGIHttpsPrivate,
-            ])
-
-
 class LB_ListenersV2ECSExternal(object):
     def __init__(self):
         if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
@@ -734,11 +646,9 @@ class LB_ListenersV2ECS(LB_Listeners):
         super().__init__()
         # Resources
         if cfg.LoadBalancerApplicationExternal:
-            LB_ListenersV2ExternalInternal(scheme='External')
             LB_ListenersV2ECSExternal()
 
         if cfg.LoadBalancerApplicationInternal:
-            LB_ListenersV2ExternalInternal(scheme='Internal')
             LB_ListenersV2ECSInternal()
 
         LB_TargetGroupsECS()

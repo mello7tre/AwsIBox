@@ -231,6 +231,12 @@ def get_RP_for_envs(value):
     elif is_dict:
         for d, v in enumerate(value):
             for i, j in v.items():
+                # Trick to overwrite a key - needed if it's value is a dict
+                # to avoid that previous dict values are merged.
+                if str(i).endswith('**'):
+                    key = i.replace('**', '')
+                    RP[key] = get_RP_for_envs(j)
+                    continue
                 # CF Mapping allow for index only alfanumeric char,
                 # this way i can specify more "clear" name
                 # for index in CloudFormation behaviours

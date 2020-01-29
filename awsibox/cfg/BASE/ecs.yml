@@ -19,6 +19,7 @@ ecs:
         Value: get_endvalue('DeploymentConfigurationMaximumPercent')
     - DeploymentConfigurationMinimumHealthyPercent:
         Value: get_endvalue('DeploymentConfigurationMinimumHealthyPercent')
+  AllowedIp**: {}
   LaunchType: EC2
   AlarmCPUBase: &cpu
     Dimensions:
