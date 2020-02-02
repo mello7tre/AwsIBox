@@ -17,6 +17,12 @@ ec2:
         Default: 'None'
     - HealthCheckGracePeriod:
         Description: 'How long to wait before ASG check instance health - empty for default based on env/role'
+    - ImageIdLatest:
+        Description: 'Latest Amazon Linux2 ami available from SSM'
+        Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+        AllowedValues:
+          - '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+        Type: 'AWS::SSM::Parameter::Value<String>'
     - SpotPrice:
         Description: 'Maximum Spot Price of ASG - empty for default based on env/role - 0 to disable'
   Condition:
