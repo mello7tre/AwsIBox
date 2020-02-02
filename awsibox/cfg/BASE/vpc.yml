@@ -18,7 +18,7 @@ vpc:
         Value: Ref('RouteTablePrivate')
         Export: Export('RouteTablePrivate')
     - EIPNat:
-        Value: Ref('O_EIPNat')
+        Value: Ref('EIPNat')
   MappingClass:
     - AZones:
   VPC: True
