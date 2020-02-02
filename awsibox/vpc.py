@@ -196,7 +196,7 @@ class VPC_VPC(object):
                 f'SubnetCidrBlockPublic{zone_name}')
             p_SubnetCidrBlockPublic.Description = (
                 f'Ip Class Range for Public Subnet in zone {zone_name}')
-            p_SubnetCidrBlockPublic.Default = f'{vpc_net}.{i + 1}.0/24'
+            p_SubnetCidrBlockPublic.Default = f'{vpc_net}.{i + 200}.0/24'
 
             add_obj([
                 p_SubnetCidrBlockPrivate,
