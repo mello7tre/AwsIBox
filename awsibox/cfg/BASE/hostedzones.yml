@@ -1,6 +1,7 @@
 global:
   HostedZone:
     - PublicEnv:
+        Enabled: None
         Id: None
         ResourceName: HostedZoneEnv
         HostedZoneConfig:

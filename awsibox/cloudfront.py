@@ -425,6 +425,15 @@ class CF_CloudFront(object):
                 p_OriginHTTPSPort.Description = (
                     'Origin - empty for default based on env/role')
 
+                if 'OriginAccessIdentity' in v:
+                    p_OriginAccessIdentity = Parameter(
+                        f'CloudFrontOrigins{n}OriginAccessIdentity')
+                    p_OriginAccessIdentity.Description = (
+                        'OriginAccessIdentity - '
+                        'empty for default based on env/role')
+
+                    add_obj(p_OriginAccessIdentity)
+
                 add_obj([
                     p_Origin,
                     p_OriginHTTPSPort,
