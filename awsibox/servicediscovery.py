@@ -14,36 +14,9 @@ class ServiceDiscoveryPublicDnsNamespace(srvd.PublicDnsNamespace):
 
 class SRVD_ServiceDiscoveryRES(object):
     def __init__(self, key):
-        resname = 'PublicDnsNamespace'
-        mapname = 'ServiceDiscovery'
-        # Parameters
-        P_PublicDnsNamespace = Parameter(f'{mapname}Enabled')
-        P_PublicDnsNamespace.Description = (
-            'Create {mapaname}{resname} - '
-            'can be created in only one Region - '
-            'empty for default based on env/role')
-        
-        P_PublicDnsNamespaceId = Parameter(f'{mapname}Id')
-        P_PublicDnsNamespaceId.Description = (
-            f'Id of {mapname }{resname} - required in all Regions where '
-            f'{resname} is not created - '
-            'empty for default based on env/role')
-
-        add_obj([
-            P_PublicDnsNamespace,
-            P_PublicDnsNamespaceId,
-        ])
-
-        # Conditions
-        C_Enabled = get_condition(
-            resname, 'not_equals', 'None', f'{mapname}Enabled')
-
-        add_obj(C_Enabled)
-
         # Resources
         R_PublicDnsNamespace = ServiceDiscoveryPublicDnsNamespace(
-            resname)
-        R_PublicDnsNamespace.Condition = resname
+            'PublicDnsNamespace')
 
         add_obj([
             R_PublicDnsNamespace,
@@ -51,14 +24,11 @@ class SRVD_ServiceDiscoveryRES(object):
 
         # Outputs
         O_PublicDnsNamespace = Output(
-            f'ServiceDiscovery{resname}Id')
-        O_PublicDnsNamespace.Value = If(
-            resname,
-            Ref(resname),
-            Ref(f'{mapname}Id'),
-        )
+            'ServiceDiscoveryPublicDnsNamespaceId')
+        O_PublicDnsNamespace.Value = Ref(
+            'PublicDnsNamespace')
         O_PublicDnsNamespace.Export = Export(
-            f'ServiceDiscovery{resname}Id')
+            'ServiceDiscoveryPublicDnsNamespaceId')
 
         add_obj([
             O_PublicDnsNamespace,
