@@ -175,7 +175,9 @@ res-base:
     - BaseInstance: 'Enable ICMP Ping [ALL] and SSH on EC2 Instance'
     - LoadBalancerApplicationExternal: 'Assign to LoadBalancerApplicationExternal'
     - LoadBalancerApplicationInternal: 'Assign to LoadBalancerApplicationInternal'
-  ServiceDiscovery: True
+  ServiceDiscovery:
+    Enabled: None
+    Id: None
   SNSSubscription:
     - CloudWatchAlarm:
         TopicArn: Ref('SNSTopicCloudWatchAlarm')

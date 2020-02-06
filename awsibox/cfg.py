@@ -233,7 +233,7 @@ CFG_TO_CLASS = OrderedDict([
     ('WafWebAcl', {
         'module': 'waf', 'class': [
             'WAF_GlobalWebAcls', 'WAF_RegionalWebAcls']}),
-    ('ServiceDiscovery', {
+    ('ServiceDiscoveryId', {
         'module': 'servicediscovery', 'class': 'SRVD_ServiceDiscovery'}),
     ('VPCEndpoint', {
         'module': 'vpc', 'class': 'VPC_Endpoint'}),
