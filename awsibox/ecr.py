@@ -97,6 +97,7 @@ def ECRRepositoryPolicyStatementAccountPush(name):
             'ecr:InitiateLayerUpload',
             'ecr:UploadLayerPart',
             'ecr:CompleteLayerUpload',
+            'ecr:BatchCheckLayerAvailability',
         ],
         'Effect': 'Allow',
         'Principal': {
