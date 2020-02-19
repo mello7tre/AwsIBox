@@ -14,6 +14,9 @@ global:
     - EnvStackVersion:
         Description: 'Stack version, if changed with UpdateMode=Cfn triggers cfn-hup'
         Default: '1'
+  Condition:
+    - BaseRegion:
+        Equals(get_endvalue('BaseRegion'), Ref('AWS::Region'))
   Output:
     - BrandDomain:
         Value: cfg.BrandDomain
@@ -25,6 +28,7 @@ global:
         Value: Ref('EnvStackVersion')
     - StackType:
         Value: cfg.stacktype
+  BaseRegion: eu-west-1
   MappingClass:
     - EnvRegion:
   AllowedIp:

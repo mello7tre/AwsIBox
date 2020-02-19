@@ -243,6 +243,9 @@ CFG_TO_CLASS = OrderedDict([
         'module': 'securitygroup', 'class': 'SG_SecurityGroupIngressesExtra'}),
     ('VPC', {
         'module': 'vpc', 'class': 'VPC_VPC'}),
+    # ReplicateRegions need to be here
+    ('ReplicateRegions', {
+        'module': 'replicator', 'class': 'CLF_CustomResourceReplicator'}),
     # Output need to be last line
     ('Output', {
         'module': 'cloudformation', 'class': 'CFM_Outputs'}),

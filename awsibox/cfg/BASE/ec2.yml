@@ -26,6 +26,8 @@ ec2:
     - SpotPrice:
         Description: 'Maximum Spot Price of ASG - empty for default based on env/role - 0 to disable'
   Condition:
+    - ImageIdLatest:
+        get_condition('', 'equals', 'latest', 'ImageId')
     - RollingUpdate:
         Equals(Ref('UpdateMode'), 'Rolling')
     - WillReplace:

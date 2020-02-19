@@ -27,8 +27,6 @@ ecs-cluster:
   Condition:
     - GPUInstance:
         Equals(Ref('GPUInstance'), 'True')
-    - ImageIdLatest:
-        get_condition('', 'equals', 'latest', 'ImageId')
   Output:
     - Cluster:
         Value: Ref('Cluster')
