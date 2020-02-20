@@ -10,7 +10,8 @@ class CLF_CustomResourceReplicator(object):
         # Parameters
         P_ReplicateRegions = Parameter('ReplicateRegions')
         P_ReplicateRegions.Description = (
-            'Regions where to replicate - empty for default based on env/role')
+            'Regions where to replicate - None to disable - '
+            'empty for default based on env/role')
         P_ReplicateRegions.Type = 'CommaDelimitedList'
 
         add_obj(P_ReplicateRegions)

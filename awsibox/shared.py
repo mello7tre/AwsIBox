@@ -232,13 +232,20 @@ def get_condition(cond_name, cond, value2,
     elif isinstance(key, Select):
         select_index = key.data['Fn::Select'][0]
         select_list = key.data['Fn::Select'][1]
-        split_sep = select_list.data['Fn::Split'][0]
-        key_name = select_list.data['Fn::Split'][1]
+
+        if 'Fn::Split' in select_list.data:
+            split_sep = select_list.data['Fn::Split'][0]
+            key_name = select_list.data['Fn::Split'][1]
+            select_value_param = Split(split_sep, Ref(key_name))
+            select_value_map =  Split(split_sep, get_endvalue(key_name))
+        else:
+            select_value_param = select_list
+            select_value_map = get_endvalue(select_list)
 
         value1_param = Select(
-            select_index, Split(split_sep, Ref(key_name)))
+            select_index, select_value_param)
         value1_map = Select(
-            select_index, Split(split_sep, get_endvalue(key_name)))
+            select_index, select_value_map)
     else:
         value1_param = Ref(key_name)
         # Used new param "mapinlist" when you have a mapped value in a list
