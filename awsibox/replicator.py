@@ -28,7 +28,9 @@ class CLF_CustomResourceReplicator(object):
         for p, v in cfg.Parameters.items():
             if not p.startswith('Env'):
                 value = get_endvalue(p)
-                setattr(R_Replicator, p, value)
+            else:
+                value = Ref(p)
+            setattr(R_Replicator, p, value)
 
         R_Replicator.StackName = Ref('AWS::StackName')
 
