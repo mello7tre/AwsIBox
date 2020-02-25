@@ -32,6 +32,4 @@ class CLF_CustomResourceReplicator(object):
                 value = Ref(p)
             setattr(R_Replicator, p, value)
 
-        R_Replicator.StackName = Ref('AWS::StackName')
-
         add_obj(R_Replicator)
