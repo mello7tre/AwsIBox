@@ -21,6 +21,7 @@ class CLF_CustomResourceReplicator(object):
             'CloudFormationCustomResourceStackReplicator')
 
         if 'LambdaStackReplicator' in cfg.Resources:
+            R_Replicator.DependsOn = 'IAMPolicyLambdaStackReplicator'
             R_Replicator.ServiceToken = GetAtt('LambdaStackReplicator', 'Arn')
         else:
             R_Replicator.ServiceToken = get_expvalue('LambdaStackReplicator')
