@@ -427,6 +427,7 @@ class S3_Buckets(object):
 
                 r_OriginAccessIdentity = CFOriginAccessIdentity(
                     identityresname, comment=identityname)
+                r_OriginAccessIdentity.Condition = resname
 
                 add_obj([
                     r_OriginAccessIdentity,
@@ -435,6 +436,7 @@ class S3_Buckets(object):
                 # outputs
                 o_OriginAccessIdentity = Output(identityresname)
                 o_OriginAccessIdentity.Value = Ref(identityresname)
+                o_OriginAccessIdentity.Condition = resname
 
                 add_obj(o_OriginAccessIdentity)
 
