@@ -68,11 +68,11 @@ class CCH_Cache(object):
     def __init__(self, key):
         # Resources
         if cfg.CCHScheme == 'External':
-            R_Cache = CCHCacheClusterPublic('CacheCluster')
-            R_Group = CCHReplicationGroupPublic('CacheReplicationGroup')
+            R_Cache = CCHCacheClusterPublic('ElastiCacheCacheCluster')
+            R_Group = CCHReplicationGroupPublic('ElastiCacheReplicationGroup')
         if cfg.CCHScheme == 'Internal':
-            R_Cache = CCHCacheClusterPrivate('CacheCluster')
-            R_Group = CCHReplicationGroupPrivate('CacheReplicationGroup')
+            R_Cache = CCHCacheClusterPrivate('ElastiCacheCacheCluster')
+            R_Group = CCHReplicationGroupPrivate('ElastiCacheReplicationGroup')
 
         R_Cache.Condition = 'CacheCluster'
         R_Group.Condition = 'ReplicationGroup'

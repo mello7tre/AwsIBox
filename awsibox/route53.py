@@ -114,12 +114,27 @@ class R53RecordSetCCH(R53RecordSet):
         super().__init__(title, **kwargs)
         self.Condition = 'CacheEnabled'
         self.Type = 'CNAME'
-        if cfg.Engine == 'memcached':
-            self.ResourceRecords = [GetAtt(
-                'CacheCluster', 'ConfigurationEndpoint.Address')]
-        if cfg.Engine == 'redis':
-            self.ResourceRecords = [GetAtt(
-                'CacheCluster', 'RedisEndpoint.Address')]
+        self.ResourceRecords = If(
+                'EngineMemCached',
+                [GetAtt(
+                    'ElastiCacheCacheCluster',
+                    'ConfigurationEndpoint.Address')],
+                If(
+                    'ReplicationGroup',
+                    [GetAtt(
+                        'ElastiCacheReplicationGroup',
+                        'PrimaryEndPoint.Address')],
+                    [GetAtt(
+                        'ElastiCacheCacheCluster',
+                        'RedisEndpoint.Address')],
+                )
+            )
+        # if cfg.Engine == 'memcached':
+        #     self.ResourceRecords = [GetAtt(
+        #         'CacheCluster', 'ConfigurationEndpoint.Address')]
+        # if cfg.Engine == 'redis':
+        #     self.ResourceRecords = [GetAtt(
+        #         'CacheCluster', 'RedisEndpoint.Address')]
         self.TTL = '300'
 
 

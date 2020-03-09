@@ -69,7 +69,11 @@ cch:
     - CCHScheme:
         Value: get_endvalue('CCHScheme')
     - NumCacheNodes:
+        Condition: 'CacheCluster'
         Value: get_endvalue('NumCacheNodes')
+    - NumCacheClusters:
+        Condition: 'ReplicationGroup'
+        Value: get_endvalue('NumCacheClusters')
   AutomaticFailoverEnabled: 'False'
   AZMode: single-az
   AutoMinorVersionUpgrade: True
