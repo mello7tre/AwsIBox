@@ -12,6 +12,26 @@ class CCHCacheCluster(cch.CacheCluster):
         auto_get_props(self, mapname='')
 
 
+class CCHReplicationGroup(cch.ReplicationGroup):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+        auto_get_props(self, mapname='')
+
+
+class CCHReplicationGroupPublic(CCHReplicationGroup):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+        self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPublic')
+        self.CacheSecurityGroupNames = [Ref('SecurityGroupCCH')]
+
+
+class CCHReplicationGroupPrivate(CCHReplicationGroup):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+        self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPrivate')
+        self.SecurityGroupIds = [Ref('SecurityGroupCCH')]
+
+
 class CCHCacheClusterPublic(CCHCacheCluster):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -49,15 +69,19 @@ class CCH_Cache(object):
         # Resources
         if cfg.CCHScheme == 'External':
             R_Cache = CCHCacheClusterPublic('CacheCluster')
+            R_Group = CCHReplicationGroupPublic('CacheReplicationGroup')
         if cfg.CCHScheme == 'Internal':
             R_Cache = CCHCacheClusterPrivate('CacheCluster')
+            R_Group = CCHReplicationGroupPrivate('CacheReplicationGroup')
 
-        R_Cache.Condition = 'CacheEnabled'
+        R_Cache.Condition = 'CacheCluster'
+        R_Group.Condition = 'ReplicationGroup'
 
         R53_RecordSetCCH()
 
         add_obj([
             R_Cache,
+            R_Group,
         ])
 
 

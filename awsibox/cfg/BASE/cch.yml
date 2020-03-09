@@ -4,6 +4,9 @@ IBoxLoader: !include [
 
 cch:
   Parameter:
+    - AutomaticFailoverEnabled:
+        Description: 'Multi-AZ is enabled for this replication group (only for redis and ReplicationGroup) - empty for default based on env/role'
+        AllowedValues: ['', 'True', 'False']
     - CacheNodeType:
         Description: 'Node Type - empty for default based on env/role'
         AllowedValues: [
@@ -16,17 +19,44 @@ cch:
         Description: 'Enable or disable cache creation'
         AllowedValues: [ 'True', 'False']
         Default: 'True'
+    - CCHAccess:
+        Description: 'Access type public or private - empty for default based on env/role'
+        AllowedValues: ['', 'Private', 'Public']
     - Engine:
         Description: 'Engine - empty for default based on env/role'
         AllowedValues: ['', 'memcached', 'redis']
     - EngineVersion:
         Description: 'Engine Version - empty for default based on env/role'
-    - CCHAccess:
-        Description: 'Access type public or private - empty for default based on env/role'
-        AllowedValues: ['', 'Private', 'Public']
+    - NumCacheClusters:
+        Description: 'The number of clusters this replication group initially has - empty for default based on env/role'
+    - NumCacheNodes:
+        Description: 'The number of cache nodes that the cache cluster should have - empty for default based on env/role'
+    - ReplicationGroup:
+        Description: 'Create a ElastiCache Redis Replication Group instead of a Cache Cluster - empty for default based on env/role'
+        AllowedValues: ['', 'True', 'False']
   Condition:
     - CCHPublic: get_condition('', 'equals', 'Public', 'CCHAccess')
+    - CacheCluster:
+        Or(
+          And(
+            Condition('CacheEnabled'),
+            Condition('EngineMemCached'),
+          ),
+          And(
+            Condition('CacheEnabled'),
+            Condition('EngineRedis'),
+            get_condition('', 'not_equals', 'True', 'ReplicationGroup'),
+          )
+        )
     - CacheEnabled: Equals(Ref('CacheEnabled'), 'True')
+    - EngineRedis: get_condition('', 'equals', 'redis', 'Engine')
+    - EngineMemCached: get_condition('', 'equals', 'memcached', 'Engine')
+    - ReplicationGroup:
+        And(
+          Condition('CacheEnabled'),
+          Condition('EngineRedis'),
+          get_condition('', 'equals', 'True', 'ReplicationGroup'),
+        )
   Output:
     - CacheNodeType:
         Value: get_endvalue('CacheNodeType')
@@ -38,7 +68,14 @@ cch:
         Value: get_endvalue('CCHAccess')
     - CCHScheme:
         Value: get_endvalue('CCHScheme')
+    - NumCacheNodes:
+        Value: get_endvalue('NumCacheNodes')
+  AutomaticFailoverEnabled: 'False'
+  AZMode: single-az
   AutoMinorVersionUpgrade: True
   CCHAccess: Public
   CCHScheme: Internal
   NumCacheNodes: 1
+  NumCacheClusters: 1
+  ReplicationGroup: 'False'
+  ReplicationGroupDescription: 'Redis ReplicaGroup'
