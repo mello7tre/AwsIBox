@@ -138,12 +138,67 @@ class R53RecordSetCCH(R53RecordSet):
         self.TTL = '300'
 
 
+class R53RecordSetCCHRO(R53RecordSetCCH):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+        self.Condition = 'ReplicationGroup'
+        self.ResourceRecords = [Sub(
+            '${RECORD0}-ro.'
+            '${RECORD1}.'
+            '${RECORD2}.'
+            '${RECORD3}.'
+            '${RECORD4}.'
+            '${RECORD5}.'
+            '${RECORD6}.'
+            '${RECORD7}', **{
+                'RECORD0': Select(0, Split('.', GetAtt(
+                    'ElastiCacheReplicationGroup',
+                    'PrimaryEndPoint.Address'))),
+                'RECORD1': Select(1, Split('.', GetAtt(
+                    'ElastiCacheReplicationGroup',
+                    'PrimaryEndPoint.Address'))),
+                'RECORD2': Select(2, Split('.', GetAtt(
+                    'ElastiCacheReplicationGroup',
+                    'PrimaryEndPoint.Address'))),
+                'RECORD3': Select(3, Split('.', GetAtt(
+                    'ElastiCacheReplicationGroup',
+                    'PrimaryEndPoint.Address'))),
+                'RECORD4': Select(4, Split('.', GetAtt(
+                    'ElastiCacheReplicationGroup',
+                    'PrimaryEndPoint.Address'))),
+                'RECORD5': Select(5, Split('.', GetAtt(
+                    'ElastiCacheReplicationGroup',
+                    'PrimaryEndPoint.Address'))),
+                'RECORD6': Select(6, Split('.', GetAtt(
+                    'ElastiCacheReplicationGroup',
+                    'PrimaryEndPoint.Address'))),
+                'RECORD7': Select(7, Split('.', GetAtt(
+                    'ElastiCacheReplicationGroup',
+                    'PrimaryEndPoint.Address'))),
+            }
+        )]
+
+
 class R53RecordSetCCHExternal(R53RecordSetCCH, R53RecordSetZoneExternal):
     pass
 
 
 class R53RecordSetCCHInternal(R53RecordSetCCH, R53RecordSetZoneInternal):
     pass
+
+
+class R53RecordSetCCHExternalRO(R53RecordSetCCHRO, R53RecordSetZoneExternal):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+        self.Name = Sub('${AWS::StackName}.${EnvRole}_ro.%s'
+                        % cfg.HostedZoneNameRegionEnv)
+
+
+class R53RecordSetCCHInternalRO(R53RecordSetCCHRO, R53RecordSetZoneInternal):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+        self.Name = Sub('${AWS::StackName}.${EnvRole}_ro.%s'
+                        % cfg.HostedZoneNamePrivate)
 
 
 class R53RecordSetNSServiceDiscovery(R53RecordSet):
@@ -300,25 +355,47 @@ class R53_RecordSetCCH(object):
         # Resources
         if cfg.RecordSetExternal:
             R_External = R53RecordSetCCHExternal('RecordSetExternal')
-            add_obj(R_External)
+            R_ExternalRO = R53RecordSetCCHExternalRO('RecordSetExternalRO')
+            add_obj([
+                R_External,
+                R_ExternalRO,
+            ])
 
             # outputs
             O_External = Output('RecordSetExternal')
             O_External.Value = Ref('RecordSetExternal')
             O_External.Condition = 'CacheEnabled'
 
-            add_obj(O_External)
+            O_ExternalRO = Output('RecordSetExternalRO')
+            O_ExternalRO.Value = Ref('RecordSetExternalRO')
+            O_ExternalRO.Condition = 'ReplicationGroup'
+
+            add_obj([
+                O_External,
+                O_ExternalRO,
+            ])
 
         if cfg.RecordSetInternal:
             R_Internal = R53RecordSetCCHInternal('RecordSetInternal')
-            add_obj(R_Internal)
+            R_InternalRO = R53RecordSetCCHInternalRO('RecordSetInternalRO')
+            add_obj([
+                R_Internal,
+                R_InternalRO,
+            ])
 
             # outputs
             O_Internal = Output('RecordSetInternal')
             O_Internal.Value = Ref('RecordSetInternal')
             O_Internal.Condition = 'CacheEnabled'
 
-            add_obj(O_Internal)
+            O_InternalRO = Output('RecordSetInternalRO')
+            O_InternalRO.Value = Ref('RecordSetInternalRO')
+            O_InternalRO.Condition = 'ReplicationGroup'
+
+            add_obj([
+                O_Internal,
+                O_InternalRO,
+            ])
 
 
 class R53_HostedZones(object):
