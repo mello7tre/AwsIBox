@@ -418,6 +418,13 @@ class S3_Buckets(object):
                         Ref('AWS::NoValue')
                     ))
 
+                # conditions
+                identitycondname = f'{resname}CloudFrontOriginAccessIdentity' 
+                c_identity = get_condition(
+                    identitycondname, 'not_equals', 'None')
+
+                add_obj(c_identity)
+
                 # resources
                 BucketPolicyStatement.extend(
                     S3BucketPolicyStatementCFOriginAccessIdentity(
@@ -427,7 +434,7 @@ class S3_Buckets(object):
 
                 r_OriginAccessIdentity = CFOriginAccessIdentity(
                     identityresname, comment=identityname)
-                r_OriginAccessIdentity.Condition = resname
+                r_OriginAccessIdentity.Condition = identitycondname
 
                 add_obj([
                     r_OriginAccessIdentity,
@@ -436,7 +443,7 @@ class S3_Buckets(object):
                 # outputs
                 o_OriginAccessIdentity = Output(identityresname)
                 o_OriginAccessIdentity.Value = Ref(identityresname)
-                o_OriginAccessIdentity.Condition = resname
+                o_OriginAccessIdentity.Condition = identitycondname
 
                 add_obj(o_OriginAccessIdentity)
 
