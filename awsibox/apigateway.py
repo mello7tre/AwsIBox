@@ -5,7 +5,7 @@ from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionApiGateway
-
+from .iam import IAMPolicyApiGatewayPrivate
 
 class ApiGatewayAccount(agw.Account):
     def __init__(self, title, **kwargs):
@@ -19,7 +19,11 @@ class ApiGatewayResource(agw.Resource):
         super().__init__(title, **kwargs)
 
         mapname = f'ApiGatewayStage{stage}ApiGatewayResource'
-        stagekey = cfg.ApiGatewayStage[stage]['ApiGatewayResource']
+
+        try:
+            stagekey = cfg.ApiGatewayStage[stage]['ApiGatewayResource']
+        except:
+            stagekey = {'Empty': True}
 
         auto_get_props(self, key)
 
@@ -36,8 +40,11 @@ class ApiGatewayMethod(agw.Method):
         mapname = (f'ApiGatewayStage{stage}'
                    f'ApiGatewayResource{basename}Method{name}')
 
-        stagekey = (cfg.ApiGatewayStage[stage]['ApiGatewayResource']
-                    [basename]['Method'][name])
+        try:
+            stagekey = (cfg.ApiGatewayStage[stage]['ApiGatewayResource']
+                        [basename]['Method'][name])
+        except:
+            stagekey = {'Empty': True}
 
         auto_get_props(self, key, recurse=True)
 
@@ -70,6 +77,11 @@ class ApiGatewayStage(agw.Stage):
 
         self.RestApiId = Ref('ApiGatewayRestApi')
         self.DeploymentId = Ref(f'ApiGatewayDeployment{name}')
+        self.DeploymentId = If(
+            f'Deployment{name}A',
+            Ref(f'ApiGatewayDeployment{name}A'),
+            Ref(f'ApiGatewayDeployment{name}B'),
+        )
 
 
 class ApiGatewayDeployment(agw.Deployment):
@@ -190,25 +202,58 @@ class AGW_Stages(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
             resname = f'{key}{n}'
+            depname = f'Deployment{n}'
             # parameters
-            p_DeploymentDescription = Parameter(f'Deployment{n}Description')
-            p_DeploymentDescription.Description = f'Deployment{n} Description'
+            p_DeploymentDescription = Parameter(f'{depname}Description')
+            p_DeploymentDescription.Description = f'{depname} Description'
             p_DeploymentDescription.Default = n
+
+            p_Deployment = Parameter(depname)
+            p_Deployment.Description = (
+                f'{depname} - change between A/B '
+                'to trigger new deploy')
+            p_Deployment.AllowedValues = ['A', 'B']
+            p_Deployment.Default = 'A'
 
             add_obj([
                 p_DeploymentDescription,
+                p_Deployment,
+            ])
+
+            # conditons
+            c_DeploymentA = get_condition(
+                f'{depname}A', 'equals', 'A', depname, nomap=True)
+
+            c_DeploymentB = get_condition(
+                f'{depname}B', 'equals', 'B', depname, nomap=True)
+
+            add_obj([
+                c_DeploymentA,
+                c_DeploymentB,
             ])
 
             # resources
             r_Stage = ApiGatewayStage(resname, name=n, key=v)
 
-            r_Deployment = ApiGatewayDeployment(f'ApiGatewayDeployment{n}',
+            r_DeploymentA = ApiGatewayDeployment(f'ApiGatewayDeployment{n}A',
                                                 name=n, key=v)
+            r_DeploymentA.Condition = f'{depname}A'
+
+            r_DeploymentB = ApiGatewayDeployment(f'ApiGatewayDeployment{n}B',
+                                                name=n, key=v)
+            r_DeploymentB.Condition = f'{depname}B'
 
             add_obj([
                 r_Stage,
-                r_Deployment,
+                r_DeploymentA,
+                r_DeploymentB,
             ])
+
+            # output
+            o_Deployment = Output(depname)
+            o_Deployment.Value = Ref(depname)
+
+            add_obj(o_Deployment)
 
 
 class AGW_RestApi(object):
@@ -219,6 +264,12 @@ class AGW_RestApi(object):
         R_RestApi.EndpointConfiguration = agw.EndpointConfiguration(
             Types=get_endvalue('EndpointConfiguration')
         )
+        R_RestApi.Policy = IAMPolicyApiGatewayPrivate()
+        try:
+            condition = cfg.PolicyCondition
+            R_RestApi.Policy['Statement'][0]['Condition'] = condition
+        except:
+            pass
 
         add_obj([
             R_RestApi,

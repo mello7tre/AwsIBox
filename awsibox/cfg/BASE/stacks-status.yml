@@ -1,0 +1,70 @@
+IBoxLoader : !exclude [
+  cloudfront-ios.yml,
+  certificate.yml,
+]
+
+stacks-status:
+  StackType: agw
+  StackName: sss
+  Description: 'Stacks Status'
+  Name: 'StacksStatus'
+  Stage: v1
+  CloudFront: SkipClass
+  BinaryMediaTypes: ['*/*']
+  ApiGatewayResource:
+    - 01Root:
+        ParentId: GetAtt('ApiGatewayRestApi', 'RootResourceId')
+        PathPart: '{proxy+}'
+        Method:
+          - 01ANY:
+              ApiKeyRequired: False
+              AuthorizationType: None
+              HttpMethod: ANY
+              Integration:
+                ContentHandling: CONVERT_TO_TEXT
+                IntegrationHttpMethod: POST
+                IntegrationResponses:
+                  - 200:
+                      ResponseTemplates:
+                        dict([
+                          ('text/html', '{}'),
+                        ])
+                      StatusCode: '200'
+                Uri: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaStacksStatus.Arn}/invocations'
+                PassthroughBehavior: WHEN_NO_MATCH
+                TimeoutInMillis: 29000
+                Type: AWS_PROXY
+              RequestParameters:
+                dict([
+                  ('method.request.path.proxy', True),
+                ])
+  ApiGatewayStage:
+    - v1:
+        CacheClusterEnabled: False
+        MethodSettings:
+          - 1:
+              CachingEnabled: False
+              DataTraceEnabled: False
+              HttpMethod: '*'
+              MetricsEnabled: True
+              ResourcePath: '/~1*'
+              ThrottlingBurstLimit: 5000
+              ThrottlingRateLimit: 10000
+        TracingEnabled: False
+  IAMPolicy:
+    - LambdaStacksStatus:
+        Roles:
+          - Ref('RoleLambdaStacksStatusv1')
+        Statement:
+          - 1:
+              Action: 'cloudformation:DescribeStack*'
+              Resource: '*'
+  Lambda:
+    - StacksStatusv1:
+        Code:
+          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Key: 'ibox-tools/stacks-status/stacks-status-01.zip'
+        Description: 'Stacks Status'
+        MemorySize: 128
+        Runtime: python3.7
+        Timeout: 60
