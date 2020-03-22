@@ -211,6 +211,17 @@ class R53RecordSetNSServiceDiscovery(R53RecordSet):
         self.TTL = '300'
 
 
+class R53RecordApiGatewayDomainName(R53RecordSetZoneExternal):
+    def __init__(self, title, name, domain_name, zoneid_name, **kwargs):
+        super().__init__(title, **kwargs)
+        self.AliasTarget = r53.AliasTarget(
+            DNSName=GetAtt(name, domain_name),
+            HostedZoneId=GetAtt(name, zoneid_name)
+        )
+        self.Name = Ref(name)
+        self.Type = 'A'
+
+
 # #################################
 # ### START STACK INFRA CLASSES ###
 # #################################

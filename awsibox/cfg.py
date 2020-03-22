@@ -159,6 +159,8 @@ CFG_TO_CLASS = OrderedDict([
         'module': 'apigateway', 'class': 'AGW_DomainName'}),
     ('ApiGatewayResource', {
         'module': 'apigateway', 'class': 'AGW_RestApi'}),
+    ('ApiGatewayBasePathMapping', {
+        'module': 'apigateway', 'class': 'AGW_BasePathMapping'}),
     ('ApiGatewayStage', {
         'module': 'apigateway', 'class': 'AGW_Stages'}),
     ('ApiGatewayUsagePlan', {

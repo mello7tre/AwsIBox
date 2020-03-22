@@ -6,6 +6,7 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionApiGateway
 from .iam import IAMPolicyApiGatewayPrivate
+from .route53 import R53RecordApiGatewayDomainName
 
 class ApiGatewayAccount(agw.Account):
     def __init__(self, title, **kwargs):
@@ -109,10 +110,24 @@ class AGW_Account(object):
 class AGW_DomainName(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
+            if 'Enabled' in v and not v['Enabled']:
+                continue
+
+            if 'REGIONAL' in v['EndpointConfiguration']['Types']:
+                MappedDomainName = 'RegionalDomainName'
+                HostedZoneId = 'RegionalHostedZoneId'
+            else:
+                MappedDomainName = 'DistributionDomainName'
+                HostedZoneId = 'DistributionHostedZoneId'
+
             resname = f'{key}{n}'
             # resources
             r_Domain = agw.DomainName(resname)
             auto_get_props(r_Domain, v, recurse=True)
+
+            r_r53 = R53RecordApiGatewayDomainName(
+                f'RecordSet{resname}', resname, MappedDomainName,
+                HostedZoneId)
 
             # outputs
             o_Domain = Output(resname)
@@ -121,8 +136,21 @@ class AGW_DomainName(object):
 
             add_obj([
                 r_Domain,
+                r_r53,
                 o_Domain,
             ])
+
+
+class AGW_BasePathMapping(object):
+    def __init__(self, key):
+        for n, v in getattr(cfg, key).items():
+            resname = f'{key}{n}'
+
+            # resources
+            r_Path = agw.BasePathMapping(resname)
+            auto_get_props(r_Path, v, recurse=True)
+
+            add_obj(r_Path)
 
 
 class AGW_UsagePlans(object):
