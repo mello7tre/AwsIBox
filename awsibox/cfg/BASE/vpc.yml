@@ -17,8 +17,6 @@ vpc:
     - RouteTablePrivate:
         Value: Ref('RouteTablePrivate')
         Export: Export('RouteTablePrivate')
-    - EIPNat:
-        Value: Ref('EIPNat')
   MappingClass:
     - AZones:
   NatGateway: True
