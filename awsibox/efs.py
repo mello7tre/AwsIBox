@@ -69,7 +69,10 @@ class EFS_FileStorage(object):
             # resources
             r_File = EFSFileSystem(resname)
 
-            r_Record = R53RecordSetEFS(recordname, efsname=n)
+            if v['R53'] != 'None':
+                r_Record = R53RecordSetEFS(recordname, efsname=n)
+
+                add_obj(r_Record)
 
             r_SGServer = SecurityGroup(sgservername)
             r_SGServer.Condition = resname
@@ -96,7 +99,6 @@ class EFS_FileStorage(object):
 
             add_obj([
                 r_File,
-                r_Record,
                 r_SGServer,
                 r_SGClient,
                 r_SGI,

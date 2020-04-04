@@ -170,7 +170,7 @@ class VPC_VPC(object):
             R_RouteNatGateway = EC2RouteNatGateway('RouteNatGateway')
 
             # outputs
-            O_EIPNat = Output(EIPNat)
+            O_EIPNat = Output('EIPNat')
             O_EIPNat.Value = Ref('EIPNat')
 
             add_obj([

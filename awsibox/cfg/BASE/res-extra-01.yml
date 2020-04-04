@@ -20,8 +20,9 @@ res-extra-01:
   DBSubnetGroup: True
   EFSFileSystem:
     - EcsCluster:
-      Enabled: None
-      Name: EcsCluster
+        Enabled: None
+        R53: None
+        Name: EcsCluster
   IAMPolicy:
     - AssumeRoleAWSCloudFormationStackSetExecutionRole:
         Type: Managed
