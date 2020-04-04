@@ -21,6 +21,7 @@ vpc:
         Value: Ref('EIPNat')
   MappingClass:
     - AZones:
+  NatGateway: True
   VPC: True
   CidrBlock: Ref('VPCCidrBlock')
   EnableDnsSupport: True

@@ -160,11 +160,17 @@ class VPC_VPC(object):
         R_EIPNat = ec2.EIP('EIPNat')
         R_EIPNat.Domain = 'vpc'
 
-        R_NatGateway = ec2.NatGateway('NatGateway')
-        R_NatGateway.AllocationId = GetAtt('EIPNat', 'AllocationId')
-        R_NatGateway.SubnetId = Ref('SubnetPublicA')
+        if cfg.NatGateway != 'None':
+            R_NatGateway = ec2.NatGateway('NatGateway')
+            R_NatGateway.AllocationId = GetAtt('EIPNat', 'AllocationId')
+            R_NatGateway.SubnetId = Ref('SubnetPublicA')
+            
+            R_RouteNatGateway = EC2RouteNatGateway('RouteNatGateway')
 
-        R_RouteNatGateway = EC2RouteNatGateway('RouteNatGateway')
+            add_obj([
+                R_NatGateway,
+                R_RouteNatGateway,
+            ])
 
         R_RouteInternetGateway = EC2RouteInternetGateway(
             'RouteInternetGateway')
@@ -176,8 +182,6 @@ class VPC_VPC(object):
             R_InternetGateway,
             R_VPCGatewayAttachment,
             R_EIPNat,
-            R_NatGateway,
-            R_RouteNatGateway,
             R_RouteInternetGateway,
         ])
 
