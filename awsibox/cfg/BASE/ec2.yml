@@ -106,12 +106,15 @@ ec2:
                   Value: Ref('AutoScalingGroup')
   ScheduledAction:
     - Down:
-        DesiredSize: 'k'
-        MaxSize: 'k'
+        DesiredSize: CapacityDesired
+        MaxSize: CapacityMax
+        MinSize: CapacityMin
+        Recurrence: '00 19 * * *'
     - Up:
         DesiredSize: CapacityDesired
         MaxSize: CapacityMax
         MinSize: CapacityMin
+        Recurrence: '30 08 * * mon-fri'
   SpotPrice: 0
   Volume:
     Size: 8
@@ -127,10 +130,6 @@ dev: &cfg_dev
         EvaluationPeriods: 0
     - TargetEC2Internal5XX:
         EvaluationPeriods: 0
-  ScheduledAction:
-    - Down:
-        DesiredSize: 0
-        MinSize: 0
 
 stg: *cfg_dev 
 

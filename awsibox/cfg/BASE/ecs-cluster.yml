@@ -77,8 +77,8 @@ ecs-cluster:
           TargetValue: 60
   ScheduledAction:
     - Rotate:
-        DesiredSize: 3
-        MaxSize: 3
+        DesiredSize: CapacityDesired
+        MaxSize: CapacityMax
         MinSize: CapacityMin
         Recurrence: '45 5 * * *'
   VolumeSize: 100
@@ -90,20 +90,9 @@ dev: &cfg_dev
         HeartbeatTimeout: 900
   ImageId: latest
   InstanceType: t3.large
-  ScheduledAction:
-    - Rotate:
-        DesiredSize: 0
-        MaxSize: 0
-        MinSize: 0
 
 stg: *cfg_dev
 
 prd:
   InstanceType: c5.xlarge
-  ScheduledAction:
-    - Down:
-        MinSize: 2
-        Recurrence: '0 22 * * *'
-    - Up:
-        Recurrence: '00 6 * * *'
   VolumeSize: 50
