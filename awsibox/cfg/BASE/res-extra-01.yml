@@ -23,6 +23,8 @@ res-extra-01:
         Enabled: None
         R53: None
         Name: EcsCluster
+        Encrypted: False
+        PerformanceMode: generalPurpose
   IAMPolicy:
     - AssumeRoleAWSCloudFormationStackSetExecutionRole:
         Type: Managed

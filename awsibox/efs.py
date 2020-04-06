@@ -8,11 +8,13 @@ from .securitygroup import SecurityGroup, SecurityGroupIngress
 
 
 class EFSFileSystem(efs.FileSystem):
-    def __init__(self, title, **kwargs):
+    def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
         self.Condition = self.title
+        # by defualt do not encrypt and lower cost performaceMode
         self.Encrypted = False
         self.PerformanceMode = 'generalPurpose'
+        auto_get_props(self, key, recurse=True)
 
 
 class EFSMountTarget(efs.MountTarget):
@@ -67,7 +69,7 @@ class EFS_FileStorage(object):
                 resname, 'not_equals', 'None', f'{resname}Enabled'))
 
             # resources
-            r_File = EFSFileSystem(resname)
+            r_File = EFSFileSystem(resname, key=v)
 
             if v['R53'] != 'None':
                 r_Record = R53RecordSetEFS(recordname, efsname=n)
