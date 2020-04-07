@@ -137,7 +137,7 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
         super().__init__(title, **kwargs)
 
         name = self.title  # Ex. ContainerDefinitions1
-        auto_get_props(self, key)
+        auto_get_props(self, key, recurse=True)
 
         self.Essential = True
 
