@@ -86,7 +86,8 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             self.Condition = 'SpotASG'
         else:
             AutoScalingGroupName = 'AutoScalingGroup'
-        self.AssociatePublicIpAddress = False
+        self.AssociatePublicIpAddress = get_endvalue(
+            'AssociatePublicIpAddress')
         self.BlockDeviceMappings = [
             asg.BlockDeviceMapping(
                 DeviceName='/dev/xvda',
