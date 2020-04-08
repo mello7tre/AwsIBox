@@ -89,3 +89,4 @@ global:
     - APPCustom:
         <<: *apptrackingcustom
         PolicyName: ScalingPolicyTrackingsAPPCustom
+  VPCZoneIdentifier: SubnetsPrivate

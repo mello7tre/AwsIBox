@@ -74,7 +74,11 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
             asg.Tag(('EnvStackName'), Ref('AWS::StackName'), True),
         ]
         self.TerminationPolicies = ['OldestInstance']
-        self.VPCZoneIdentifier = Split(',', get_expvalue('SubnetsPrivate'))
+
+        if cfg.VPCZoneIdentifier == 'SubnetsPublic':
+            self.VPCZoneIdentifier = Split(',', get_expvalue('SubnetsPublic'))
+        else:
+            self.VPCZoneIdentifier = Split(',', get_expvalue('SubnetsPrivate'))
 
 
 class ASLaunchConfiguration(asg.LaunchConfiguration):
