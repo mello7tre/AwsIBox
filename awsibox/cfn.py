@@ -171,6 +171,7 @@ def cfn_ecs_cluster():
             }}
             dataIf = init_args['SERVICES'].services.data['Fn::If']
             dataIf[1]['sysvinit'].update(postfixService)
+            dataIf[2] = {'sysvinit': postfixService}
     except:
         pass
 
