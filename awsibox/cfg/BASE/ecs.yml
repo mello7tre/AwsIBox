@@ -62,9 +62,11 @@ ecs:
     - Down:
         MaxSize: k
         MinSize: k
+        Recurrence: 'cron(00 22 * * ? *)'
     - Up:
         MaxSize: k
         MinSize: k
+        Recurrence: 'cron(00 06 * * ? *)'
   SchedulingStrategy: REPLICA
   Service: True
 
