@@ -27,6 +27,22 @@ res-event-01:
           - LambdaR53RecordInstanceId:
               Arn: GetAtt('LambdaR53RecordInstanceId', 'Arn')
               Id: 'TargetFunction-02'
+    - ECSServiceAction:
+        Description: 'ECS Service Action Lambda Trigger'
+        State: 'ENABLED'
+        EventPattern: >
+            eval('{
+              "source": [
+                "aws.ecs"
+              ],
+              "detail-type": [
+                "ECS Service Action"
+              ]
+            }')
+        Targets:
+          - LambdaECSServiceAction:
+              Arn: GetAtt('LambdaECSServiceAction', 'Arn')
+              Id: TargetFunction-01
   Lambda:
     - ServiceDiscovery:
         Export: True
@@ -48,6 +64,11 @@ res-event-01:
           - HostedZoneName: get_endvalue('HostedZoneNamePrivate')
           - HostedZoneId: get_expvalue('HostedZoneIdPrivate')
           - Topic: get_expvalue('SNSTopicASGNotificationR53')
+    - ECSServiceAction:
+        Description: 'ECSServiceAction'
+        MemorySize: 128
+        Runtime: python3.7
+        Timeout: 30
   IAMPolicy:
     - LambdaServiceDiscovery:
         Roles:
