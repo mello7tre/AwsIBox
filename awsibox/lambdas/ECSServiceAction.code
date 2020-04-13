@@ -1,0 +1,79 @@
+# vim: ft=python
+import boto3
+import os
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+REASONS = [
+    'RESOURCE:MEMORY',
+    'RESOURCE:CPU'
+]
+
+
+def getAsg():
+    global asg
+
+    ecs = boto3.client('ecs')
+    asg = boto3.client('autoscaling')
+    response = ecs.describe_container_instances(
+        containerInstances=[container])
+
+    if response['containerInstances']:
+        ec2InstanceId = response['containerInstances'][0]['ec2InstanceId']
+
+        response = asg.describe_auto_scaling_instances(
+            InstanceIds=[ec2InstanceId])
+
+        if response['AutoScalingInstances']:
+            return response['AutoScalingInstances'][0]['AutoScalingGroupName']
+
+
+def getAlarm():
+    global cws
+    cws = boto3.client('cloudwatch')
+
+    asgName = getAsg()
+    if not asgName:
+        return
+
+    response = describe_policies(
+        AutoScalingGroupName=asgName, PolicyTypes='TargetTrackingScaling')
+
+    if response['ScalingPolicies']:
+        for a in response['ScalingPolicies'][0]['Alarms']:
+            if f'{asgName}-AlarmHigh-' in a['AlarmName']:
+                return a['AlarmName']
+
+
+def raiseAlarm(reason):
+    alarm = getAlarm()
+    if not alarm:
+        return
+    stateReasonData = buildStateReasonData(alarm)
+    if alarm:
+        result = cws.set_alarm_state(
+            AlarmName=alarm, StateValue='ALARM',
+            StateReason=f'SERVICE_TASK_PLACEMENT_FAILURE-{reason}',
+            StateReasonData=stateReasonData,
+        )
+
+
+def lambda_handler(event, context):
+    global container
+
+    detail = event['detail']
+
+    try:
+        eventType = detail['eventType']
+        reason = detail['reason']
+    except:
+        return
+
+    if eventType == 'ERROR' and any(reason in e for e REASONS):
+        logger.info(event)
+        for container in detail['containerInstanceArns']:
+            raiseAlarm(reason)
+
+    return
