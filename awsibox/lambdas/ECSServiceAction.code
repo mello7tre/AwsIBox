@@ -2,6 +2,7 @@
 import boto3
 import os
 import logging
+import json
 from datetime import datetime, timedelta, tzinfo
 
 logger = logging.getLogger()
@@ -55,7 +56,7 @@ def buildStateReasonData(alarmName):
         unit = alarm['Unit']
         period = alarm['Period']
         statistic = alarm['Statistic']
-        threshold = alarm ['Threshold']
+        threshold = alarm['Threshold']
         evaluationPeriods = alarm['EvaluationPeriods']
         stateReasonData = {
             'version': '1.0',
@@ -71,7 +72,7 @@ def buildStateReasonData(alarmName):
             'threshold': threshold,
         }
 
-        return stateReasonData
+        return json.dumps(stateReasonData)
 
 
 def raiseAlarm(reason):
@@ -80,13 +81,11 @@ def raiseAlarm(reason):
         return
     stateReasonData = buildStateReasonData(alarm)
     logger.info(stateReasonData)
-    return
-    if alarm:
-        result = cws.set_alarm_state(
-            AlarmName=alarm, StateValue='ALARM',
-            StateReason=f'SERVICE_TASK_PLACEMENT_FAILURE-{reason}',
-            StateReasonData=stateReasonData,
-        )
+    result = cws.set_alarm_state(
+        AlarmName=alarm, StateValue='ALARM',
+        StateReason=f'SERVICE_TASK_PLACEMENT_FAILURE-{reason}',
+        StateReasonData=stateReasonData,
+    )
 
 
 def lambda_handler(event, context):
