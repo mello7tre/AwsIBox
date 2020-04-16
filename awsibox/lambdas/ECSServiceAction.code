@@ -32,7 +32,8 @@ def getAsg():
             return response['AutoScalingInstances'][0]['AutoScalingGroupName']
 
 
-def getAlarm():
+def getAlarms():
+    alarms = {}
     asgName = getAsg()
     if not asgName:
         return
@@ -43,7 +44,11 @@ def getAlarm():
     if response['ScalingPolicies']:
         for a in response['ScalingPolicies'][0]['Alarms']:
             if f'{asgName}-AlarmHigh-' in a['AlarmName']:
-                return a['AlarmName']
+                alarms['ALARM'] = a['AlarmName']
+            elif f'{asgName}-AlarmLow-' in a['AlarmName']:
+                alarms['OK'] = a['AlarmName']
+
+    return alarms
 
 
 def buildStateReasonData(alarmName):
@@ -76,16 +81,17 @@ def buildStateReasonData(alarmName):
 
 
 def raiseAlarm(reason):
-    alarm = getAlarm()
-    if not alarm:
+    alarms = getAlarms()
+    if not alarms:
         return
-    stateReasonData = buildStateReasonData(alarm)
-    logger.info(stateReasonData)
-    result = cws.set_alarm_state(
-        AlarmName=alarm, StateValue='ALARM',
-        StateReason=f'SERVICE_TASK_PLACEMENT_FAILURE-{reason}',
-        StateReasonData=stateReasonData,
-    )
+    for alarmState, alarm in alarms.items():
+        stateReasonData = buildStateReasonData(alarm)
+        logger.info(stateReasonData)
+        result = cws.set_alarm_state(
+            AlarmName=alarm, StateValue=alarmState,
+            StateReason=f'SERVICE_TASK_PLACEMENT_FAILURE-{reason}',
+            StateReasonData=stateReasonData,
+        )
 
 
 def lambda_handler(event, context):

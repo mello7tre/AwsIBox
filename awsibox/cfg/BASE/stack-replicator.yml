@@ -1,0 +1,35 @@
+stack-replicator:
+  StackType: res
+  StackName: rpl
+  Parameter:
+    - Mytest:
+        Description: 'ssm test to change'
+  Output:
+    - Mytest:
+        Value: Ref('Mytest')
+  Mytest: gatto
+  ReplicateRegions:
+    - 'eu-west-1'
+    - 'eu-central-1'
+  IAMPolicy:
+    - LambdaStackReplicator:
+        Condition: 'LambdaStackReplicator'
+        Roles:
+          - Ref('RoleLambdaStackReplicator')
+        Statement:
+          - 1:
+              Action:
+                - '*'
+              Resource: '*'
+  Lambda:
+    - StackReplicator:
+        Enabled: True
+        Export: True
+        Code:
+          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Key: 'ibox-tools/stack-replicator/stack_replicator.zip'
+        Description: 'Replicate Stacks'
+        MemorySize: 128
+        Runtime: python3.7
+        Timeout: 300
+        Variables: []
