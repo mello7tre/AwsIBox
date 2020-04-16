@@ -2,6 +2,7 @@
 import boto3
 import os
 import logging
+from datetime import datetime, timedelta, tzinfo
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -18,7 +19,7 @@ def getAsg():
     ecs = boto3.client('ecs')
     asg = boto3.client('autoscaling')
     response = ecs.describe_container_instances(
-        containerInstances=[container])
+        cluster=cluster, containerInstances=[container])
 
     if response['containerInstances']:
         ec2InstanceId = response['containerInstances'][0]['ec2InstanceId']
@@ -31,15 +32,12 @@ def getAsg():
 
 
 def getAlarm():
-    global cws
-    cws = boto3.client('cloudwatch')
-
     asgName = getAsg()
     if not asgName:
         return
 
-    response = describe_policies(
-        AutoScalingGroupName=asgName, PolicyTypes='TargetTrackingScaling')
+    response = asg.describe_policies(
+        AutoScalingGroupName=asgName, PolicyTypes=['TargetTrackingScaling'])
 
     if response['ScalingPolicies']:
         for a in response['ScalingPolicies'][0]['Alarms']:
@@ -47,11 +45,42 @@ def getAlarm():
                 return a['AlarmName']
 
 
+def buildStateReasonData(alarmName):
+    global cws
+    cws = boto3.client('cloudwatch')
+
+    response = cws.describe_alarms(AlarmNames=[alarmName])
+    if response['MetricAlarms']:
+        alarm = response['MetricAlarms'][0]
+        unit = alarm['Unit']
+        period = alarm['Period']
+        statistic = alarm['Statistic']
+        threshold = alarm ['Threshold']
+        evaluationPeriods = alarm['EvaluationPeriods']
+        stateReasonData = {
+            'version': '1.0',
+            'queryDate': datetime.utcnow().strftime('%Y-%m-%dT%X.000+0000'),
+            'startDate': (datetime.utcnow() - timedelta(
+                seconds=period*evaluationPeriods)).strftime(
+                    '%Y-%m-%dT%X.000+0000'),
+            'unit': unit,
+            'statistic': statistic,
+            'period': period,
+            'recentDatapoints': [
+                threshold + 1 for n in range(evaluationPeriods)],
+            'threshold': threshold,
+        }
+
+        return stateReasonData
+
+
 def raiseAlarm(reason):
     alarm = getAlarm()
     if not alarm:
         return
     stateReasonData = buildStateReasonData(alarm)
+    logger.info(stateReasonData)
+    return
     if alarm:
         result = cws.set_alarm_state(
             AlarmName=alarm, StateValue='ALARM',
@@ -62,6 +91,7 @@ def raiseAlarm(reason):
 
 def lambda_handler(event, context):
     global container
+    global cluster
 
     detail = event['detail']
 
@@ -71,9 +101,11 @@ def lambda_handler(event, context):
     except:
         return
 
-    if eventType == 'ERROR' and any(reason in e for e REASONS):
+    if eventType == 'ERROR' and any(reason in e for e in REASONS):
         logger.info(event)
-        for container in detail['containerInstanceArns']:
+        cluster = detail['clusterArn']
+        for c in detail['containerInstanceArns']:
+            container = c
             raiseAlarm(reason)
 
     return
