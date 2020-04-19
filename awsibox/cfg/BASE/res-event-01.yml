@@ -28,7 +28,7 @@ res-event-01:
               Arn: GetAtt('LambdaR53RecordInstanceId', 'Arn')
               Id: 'TargetFunction-02'
     - ECSServiceAction:
-        Condition: ECSServiceAction
+        Condition: LambdaECSServiceAction
         Description: 'ECS Service Action Lambda Trigger'
         State: 'ENABLED'
         EventPattern: >
@@ -68,6 +68,9 @@ res-event-01:
     - ECSServiceAction:
         Enabled: None
         Description: 'ECSServiceAction'
+        Code:
+          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Key: ibox-tools/ecs-service-action/master-444dd76.zip
         MemorySize: 128
         Runtime: python3.7
         Timeout: 30
@@ -104,7 +107,7 @@ res-event-01:
                 - 'route53:ListResourceRecordSets'
               Resource: 'arn:aws:route53:::*'
     - LambdaECSServiceAction:
-        Condition: ECSServiceAction
+        Condition: LambdaECSServiceAction
         Roles:
           - Ref('RoleLambdaECSServiceAction')
         Statement:
@@ -112,4 +115,12 @@ res-event-01:
               Action:
                 - 'ecs:DescribeContainerInstances'
                 - 'cloudwatch:SetAlarmState'
+                - 'cloudwatch:DisableAlarmActions'
+                - 'cloudwatch:EnableAlarmActions'
+                - 'events:PutRule'
+                - 'events:DeleteRule'
+                - 'events:PutTargets'
+                - 'events:RemoveTargets'
+                - 'lambda:AddPermission'
+                - 'lambda:RemovePermission'
               Resource: '*'
