@@ -58,6 +58,8 @@ class EVE_EventRules(object):
                         m.replace('Lambda', 'LambdaPermission'), resname)
                     r_LambdaPermission = LambdaPermissionEvent(
                         permname, key=w, source=resname)
+                    if 'Condition' in v:
+                        r_LambdaPermission.Condition = v['Condition']
 
                     add_obj(r_LambdaPermission)
 

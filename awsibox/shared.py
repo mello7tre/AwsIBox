@@ -317,7 +317,7 @@ def import_lambda(name):
             return(file_lines)
 
     except IOError:
-        logging.error(f'Lambda code {name} not found')
+        logging.warning(f'Lambda code {name} not found')
         exit(1)
 
 

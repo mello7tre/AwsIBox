@@ -63,9 +63,14 @@ class LambdaFunction(lbd.Function):
     def setup(self, key, name):
         import_name = key['ImportName'] if 'ImportName' in key else name
         if 'Code' not in key:
-            self.Code = lbd.Code(
-                ZipFile=Join('', import_lambda(import_name))
-            )
+            self.Code = lbd.Code()
+            try:
+                self.Code.ZipFile = Join('', import_lambda(import_name))
+            except:
+                self.Code.ZipFile = (
+                    'print("Use Code parameter in yaml '
+                    f'or create file lib/lambas/{import_name}.code '
+                    'with lambda code to execute.")')
         auto_get_props(self, key, recurse=True)
         self.FunctionName = Sub('${AWS::StackName}-${EnvRole}-%s' % name)
         if 'Handler' not in key:

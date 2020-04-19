@@ -28,6 +28,7 @@ res-event-01:
               Arn: GetAtt('LambdaR53RecordInstanceId', 'Arn')
               Id: 'TargetFunction-02'
     - ECSServiceAction:
+        Condition: ECSServiceAction
         Description: 'ECS Service Action Lambda Trigger'
         State: 'ENABLED'
         EventPattern: >
@@ -65,6 +66,7 @@ res-event-01:
           - HostedZoneId: get_expvalue('HostedZoneIdPrivate')
           - Topic: get_expvalue('SNSTopicASGNotificationR53')
     - ECSServiceAction:
+        Enabled: None
         Description: 'ECSServiceAction'
         MemorySize: 128
         Runtime: python3.7
@@ -102,6 +104,7 @@ res-event-01:
                 - 'route53:ListResourceRecordSets'
               Resource: 'arn:aws:route53:::*'
     - LambdaECSServiceAction:
+        Condition: ECSServiceAction
         Roles:
           - Ref('RoleLambdaECSServiceAction')
         Statement:
