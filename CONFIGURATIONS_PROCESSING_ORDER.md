@@ -1,4 +1,5 @@
 ## Summary
+
 Templates are built starting from a yaml file named as the EnvRole of the Cloudformation Stack that will be created.\
 The EnvRole should be a short name with only alphanumeric characters and dash `[a-Z,-]`, it's name should describe the Main Role of the AWS Resources created by the Stack.
 
