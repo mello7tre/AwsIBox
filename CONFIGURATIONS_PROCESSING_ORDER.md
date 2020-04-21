@@ -49,5 +49,5 @@ This process create the main configuration parsed by awsibox to build the templa
 The following section describe how is automatically created the CloudFormation Mapping to take in account values specific for Env/Region.
 
 ### Processing Order for Env/Region
-The generated CloudFormation template can be deployed in all enabled Regions and Envs [Ex. dev, stg, prd].\ 
+The generated CloudFormation template can be deployed in all enabled Regions and Envs [Ex. dev, stg, prd].\
 This is achieved by using the template's Mapping section.
