@@ -1,5 +1,5 @@
 ## Summary
-Templates are built starting from a yaml file named as the EnvRole of the Cloudformation Stack that will be created. 
+Templates are built starting from a yaml file named as the EnvRole of the Cloudformation Stack that will be created.\
 The EnvRole should be a short name with only alphanumeric characters and dash `[a-Z,-]`, it's name should describe the Main Role of the AWS Resources created by the Stack.
 
 Every EnvRole yaml file must have the root key named as the EnvRole (Ex. ecs-cluster) and a child key `StackType` having as value the StackType of the Role (Ex. ec2).
@@ -41,11 +41,11 @@ Every time a new template is generated files are processed in the following orde
 - {EnvRole}.yml - BaseExt
 - {EnvRole}.yml - BrandExt
 
-A key/property defined in a file can be overriden by the following ones.  
-At least one EnvRole file must be present.  
+A key/property defined in a file can be overriden by the following ones.\
+At least one EnvRole file must be present.\
 If a file do not exists an empty dictionary is returned.
 
-This process create the main configuration parsed by awsibox to build the template.  
+This process create the main configuration parsed by awsibox to build the template.\ 
 The following section describe how is automatically created the CloudFormation Mapping to take in account values specific for Env/Region.
 
 ### Processing Order for Env/Region
