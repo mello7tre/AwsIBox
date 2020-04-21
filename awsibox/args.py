@@ -34,12 +34,13 @@ def get_args():
     # write parser
     parser_write = subparsers.add_parser(
         'write', parents=[parent_parser],
-        help=('Generate template'
+        help=('Generate template '
               'and write to "template/${brand}/$envrole" file'))
 
     parser_write.add_argument(
         '-b', '--Brands',
-        help='Limit generation to specified Brands', nargs='+')
+        help='Limit generation to EnvRoles defined in the specified Brands',
+        nargs='+')
 
     roletype_group_write = parser_write.add_mutually_exclusive_group(
         required=False)
@@ -48,7 +49,7 @@ def get_args():
         help='Limit generation to specified EnvRoles', nargs='+')
     roletype_group_write.add_argument(
         '-t', '--StackTypes',
-        help='Limit generation to specified StackTypes',
+        help='Limit generation to EnvRoles of the specified StackTypes',
         nargs='+', default=[''])
 
     args = parser.parse_args()
