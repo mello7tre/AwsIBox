@@ -61,17 +61,17 @@ A key/property defined in a file can be overriden by the following ones.\
 At least one EnvRole file must be present.\
 If a file do not exists an empty dictionary is returned.
 
-Every yaml file il read and then processed by some rules.\
+Every yaml file is read and then processed by some rules.\
 For keys as child of block Mappings the following ones are used:
 - if the value of the yaml key is a string, int or list, the key is returned as is
 - if the value of the yaml key is a dictionary other rules are considered:
   - if the name of the key is different from current {EnvRole}, {StackType} and any Env and Regions enabled, every dictionary sub-keys are parsed and returned named as: key + subkey.
   - if the name of the key is `global` dictionary is traversed/processed for common, {StackType} and {EnvRole} types
-  - if the name of the key is `{EnvRole} dictionary is traversed/processed only for {EnvRole} types.
-  - if the name of the key is `{StackType} dictionary is traversed/processed only for {StackType} types.
+  - if the name of the key is `{EnvRole}` dictionary is traversed/processed only for {EnvRole} types.
+  - if the name of the key is `{StackType}` dictionary is traversed/processed only for {StackType} types.
   - in all other cases dictionary is simply ignored and not traversed.
 
-This process create the main configuration parsed by awsibox using [troposphere](https://github.com/cloudtools/troposphere) to build the template.\ 
+This process create the main configuration parsed by awsibox using [troposphere](https://github.com/cloudtools/troposphere) to build the template.\
 The following section describe how is automatically created the CloudFormation Mapping to take in account values specific for Env/Region.
 
 ## Processing Order for Env/Region
@@ -97,7 +97,7 @@ DEFAULT_REGIONS = [
 we will process only block Mappings subkeys: 'dev', 'stg', 'prd', 'eu-west-1', 'us-east-1', 'eu-central-1'
 
 The Env/Region part of the yaml configuration is reserved ONLY to create the template Mapping section and usually to override values already defined before in the `main` part.\
-It's not `used` to build the template resources.
+It's not `directly used` to build the template resources.
 
 The processing is the following:
 If the value of a key differ from the one in the main configuration an sub-entry is created in the following mapping:
@@ -124,6 +124,8 @@ dev:
         Cpu: 256
 
 eu-west-1:
+  ContainerDefinitions: 192
+
   dev:
     ContainerDefinitions:
       - 1:
@@ -150,7 +152,7 @@ considering the above `ENV_BASE` and `DEFAULT_REGIONS` the Mapping will be:
   },
   'stg': {
     'eu-west-1': {
-      'ContainerDefinitions1Cpu': '128',
+      'ContainerDefinitions1Cpu': '192',
     },
     'us-east-1': {
       'ContainerDefinitions1Cpu': '128',
@@ -172,3 +174,38 @@ considering the above `ENV_BASE` and `DEFAULT_REGIONS` the Mapping will be:
   }
 }
 ```
+
+#### Real Processing Order for Env/Region
+The real processing order for the Env/Region section of yaml files is more complex.
+Consider the order described in ` Processing Order for Generic Configuration`, the whole process is executed in order for:
+1. Env
+2. Region
+3. Region/Env
+
+A property defined in `Region/Env` have always precedence over one defined in `Region` and so on, no matter in which files it resides.\
+So the full order would be:
+1. Env
+- common.yml - BaseInt
+- common.yml - BaseExt
+- {StackType}.yml - BaseInt
+- {StackType}.yml - BaseExt
+- {StackType}.yml - BrandExt
+- {EnvRole}.yml - BaseInt
+- {EnvRole}.yml - BaseExt
+- {EnvRole}.yml - BrandExt
+2. Region
+- common.yml - BaseInt
+- common.yml - BaseExt
+- {StackType}.yml - BaseInt
+- {StackType}.yml - BaseExt
+- {StackType}.yml - BrandExt
+- {EnvRole}.yml - BaseInt
+- {EnvRole}.yml - BaseExt
+3. Region/Env
+- common.yml - BaseInt
+- common.yml - BaseExt
+- {StackType}.yml - BaseInt
+- {StackType}.yml - BaseExt
+- {StackType}.yml - BrandExt
+- {EnvRole}.yml - BaseInt
+- {EnvRole}.yml - BaseExt
