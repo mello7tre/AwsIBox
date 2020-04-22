@@ -116,7 +116,8 @@ def gen_dict_extract(cfg, envs):
             # for empty dict in common.yml
             if isinstance(v, dict) and len(v) == 0:
                 yield {k: v}
-            # for recursively descending in env/region role dict
+            # for recursively descending in env/region role dict.
+            # List is needed for IBoxLoader include list.
             if k in envs and isinstance(v, (dict, list)):
                 try:
                     # after descending in env main key
@@ -132,7 +133,7 @@ def gen_dict_extract(cfg, envs):
             # for recursively descending in dict not in RP_base_keys
             # (env/region/envrole/stacktype)
             # (final key is the concatenation of traversed dict keys)
-            if k not in RP_base_keys and isinstance(v, (dict)):
+            if k not in RP_base_keys and isinstance(v, dict):
                 for j, w in v.items():
                     for result in gen_dict_extract({f'{k}{j}': w}, envs):
                         yield result
@@ -493,7 +494,6 @@ def build_RP():
     #    [2]['QueryStringCacheKeys'])
     if cfg.debug:
         print('##########RP#########START#####')
-        # TO DEBUG - NICELY PRINT NESTED ORDEREDDICT
         pprint(RP)
         print('##########RP#########END#######')
         print('##########ENFORCED######START#####')

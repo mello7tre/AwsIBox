@@ -31,7 +31,22 @@ Contains the files under path `cfg/BASE/` in the working directory where is exec
 ##### Brand External
 Contains the files under path `cfg/{Brand}/` in the working directory where is executed `ibox_generate_templates.py`.
 
-### Processing Order for Generic Configuration
+### Types of file
+There are four types of file for yaml configurations:
+- EnvRole files - named as {EnvRole}.yml
+- StackType files - named as {StackType}.yml
+- common files - named as common.yml
+- included files - named as you like but limited to only alphanumeric characters and dash. 
+
+they have different yaml root key:
+- EnvRole - root key is the {EnvRole}
+- StackType - root key is the {StackType}
+- common - root key is the value `global`
+- included - root key is the value `global`
+
+for all apart `common` there can be root keys for Env/Region too.
+
+## Processing Order for Generic Configuration
 Every time a new template is generated files are processed in the following order:
 - common.yml - BaseInt
 - common.yml - BaseExt
@@ -46,18 +61,114 @@ A key/property defined in a file can be overriden by the following ones.\
 At least one EnvRole file must be present.\
 If a file do not exists an empty dictionary is returned.
 
-While reading the yaml file only some specific `keys` are processed:
-- global - traversed for common.yml, {StackType}.yml and {EnvRole}.yml
-- {StackType} - traversed only for {StackType}.yml
-- {EnvRole} - traversed only for {EnvRole}.yml
+Every yaml file il read and then processed by some rules.\
+For keys as child of block Mappings the following ones are used:
+- if the value of the yaml key is a string, int or list, the key is returned as is
+- if the value of the yaml key is a dictionary other rules are considered:
+  - if the name of the key is different from current {EnvRole}, {StackType} and any Env and Regions enabled, every dictionary sub-keys are parsed and returned named as: key + subkey.
+  - if the name of the key is `global` dictionary is traversed/processed for common, {StackType} and {EnvRole} types
+  - if the name of the key is `{EnvRole} dictionary is traversed/processed only for {EnvRole} types.
+  - if the name of the key is `{StackType} dictionary is traversed/processed only for {StackType} types.
+  - in all other cases dictionary is simply ignored and not traversed.
 
-
-
-This process create the main configuration parsed by awsibox to build the template.\ 
+This process create the main configuration parsed by awsibox using [troposphere](https://github.com/cloudtools/troposphere) to build the template.\ 
 The following section describe how is automatically created the CloudFormation Mapping to take in account values specific for Env/Region.
 
-### Processing Order for Env/Region
+## Processing Order for Env/Region
 The generated CloudFormation template can be deployed in all enabled Regions and Envs [Ex. dev, stg, prd].\
 This is achieved by using the template's Mapping section.
 
+After having created the main configuration, yaml files are re-processed but only the following root sub-keys are considered/processed:
+- Env
+- Region
 
+For example if we have (look in awsibox/cfg.py):
+```
+ENV_BASE = ['dev', 'stg', 'prd']
+``` 
+and
+```
+DEFAULT_REGIONS = [                                                             
+    'eu-west-1',                                                                
+    'us-east-1',                                                                
+    'eu-central-1',                                                             
+]    
+```
+we will process only block Mappings subkeys: 'dev', 'stg', 'prd', 'eu-west-1', 'us-east-1', 'eu-central-1'
+
+The Env/Region part of the yaml configuration is reserved ONLY to create the template Mapping section and usually to override values already defined before in the `main` part.\
+It's not `used` to build the template resources.
+
+The processing is the following:
+If the value of a key differ from the one in the main configuration an sub-entry is created in the following mapping:
+```
+{
+  Env: {
+    Region: {}
+  }
+}
+```
+the name of the key is created by concatenating all traversed keys.
+
+To better undestand how works we consider the following sample yaml file:
+
+```
+global:
+  ContainerDefinitions:
+    - 1:
+        Cpu: 128
+
+dev:
+  ContainerDefinitions:
+    - 1:
+        Cpu: 256
+
+eu-west-1:
+  dev:
+    ContainerDefinitions:
+      - 1:
+          Cpu: 64
+  prd:
+    ContainerDefinitions:
+      - 1:
+          Cpu: 512
+```
+
+considering the above `ENV_BASE` and `DEFAULT_REGIONS` the Mapping will be:
+```
+{
+  'dev': {
+    'eu-west-1': {
+      'ContainerDefinitions1Cpu': '64'
+    },
+    'us-east-1': {
+      'ContainerDefinitions1Cpu': '256'
+    },
+    'eu-central-1': {
+      'ContainerDefinitions1Cpu': '128'
+    },
+  },
+  'stg': {
+    'eu-west-1': {
+      'ContainerDefinitions1Cpu': '128',
+    },
+    'us-east-1': {
+      'ContainerDefinitions1Cpu': '128',
+    },
+    'eu-central-1': {
+      'ContainerDefinitions1Cpu': '128',
+    },
+  },
+  'prd': {
+    'eu-west-1': {
+      'ContainerDefinitions1Cpu': '512',
+    },
+    'us-east-1': {
+      'ContainerDefinitions1Cpu': '128',
+    },
+    'eu-central-1': {
+      'ContainerDefinitions1Cpu': '128',
+    },
+  }
+}
+```
