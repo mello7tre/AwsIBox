@@ -185,14 +185,14 @@ Consider the order described in ` Processing Order for Generic Configuration`, t
 A property defined in `Region/Env` have always precedence over one defined in `Region` and so on, no matter in which files it resides.\
 So the full order would be:
 1. Env
-- common.yml - BaseInt
-- common.yml - BaseExt
-- {StackType}.yml - BaseInt
-- {StackType}.yml - BaseExt
-- {StackType}.yml - BrandExt
-- {EnvRole}.yml - BaseInt
-- {EnvRole}.yml - BaseExt
-- {EnvRole}.yml - BrandExt
+  - common.yml - BaseInt
+  - common.yml - BaseExt
+  - {StackType}.yml - BaseInt
+  - {StackType}.yml - BaseExt
+  - {StackType}.yml - BrandExt
+  - {EnvRole}.yml - BaseInt
+  - {EnvRole}.yml - BaseExt
+  - {EnvRole}.yml - BrandExt
 2. Region
 - common.yml - BaseInt
 - common.yml - BaseExt
