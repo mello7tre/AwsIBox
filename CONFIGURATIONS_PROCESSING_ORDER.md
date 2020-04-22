@@ -46,7 +46,7 @@ they have different yaml root key:
 
 for all apart `common` there can be root keys for Env/Region too.
 
-## Processing Order for Generic Configuration
+## Processing Order for Configuration used to build template resources
 Every time a new template is generated files are processed in the following order:
 - common.yml - BaseInt
 - common.yml - BaseExt
@@ -74,7 +74,7 @@ For keys as child of block Mappings the following ones are used:
 This process create the main configuration parsed by awsibox using [troposphere](https://github.com/cloudtools/troposphere) to build the template.\
 The following section describe how is automatically created the CloudFormation Mapping to take in account values specific for Env/Region.
 
-## Processing Order for Env/Region
+## Processing Order for Env/Region Configuration used to build template Mapping
 The generated CloudFormation template can be deployed in all enabled Regions and Envs [Ex. dev, stg, prd].\
 This is achieved by using the template's Mapping section.
 
@@ -177,7 +177,7 @@ considering the above `ENV_BASE` and `DEFAULT_REGIONS` the Mapping will be:
 
 #### Real Processing Order for Env/Region
 The real processing order for the Env/Region section of yaml files is more complex.
-Consider the order described in ` Processing Order for Generic Configuration`, the whole process is executed in order for:
+Consider the order described in `Processing Order for Configuration used to build template resources`, the whole process is executed in order for:
 1. Env
 2. Region
 3. Region/Env
