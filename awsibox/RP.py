@@ -5,46 +5,10 @@ import os
 import copy
 import json
 import logging
-from collections import OrderedDict
 from collections.abc import Mapping
 from pprint import pprint, pformat
 
 from . import cfg
-
-
-def show_odict(odict):
-    print(json.dumps(odict, indent=4))
-
-
-# We also need to load mappings in order
-# Based on https://gist.github.com/844388
-def construct_ordereddict(loader, node):
-    data = OrderedDict()
-    yield data
-    value = construct_mapping(loader, node)
-    data.update(value)
-
-
-def construct_mapping(self, node, deep=False):
-    if isinstance(node, yaml.MappingNode):
-        self.flatten_mapping(node)
-    else:
-        raise yaml.constructor.ConstructorError(
-            None, None, f'expected a mapping node, but found {node.id}',
-            node.start_mark)
-
-    mapping = OrderedDict()
-    for key_node, value_node in node.value:
-        key = self.construct_object(key_node, deep=deep)
-        try:
-            hash(key)
-        except TypeError as exc:
-            raise yaml.constructor.ConstructorError(
-                'while constructing a mapping', node.start_mark,
-                f'found unacceptable key ({exc})', key_node.start_mark)
-        value = self.construct_object(value_node, deep=deep)
-        mapping[key] = value
-    return mapping
 
 
 class Loader(yaml.Loader):
@@ -218,10 +182,10 @@ def my_merge_dict(basedict, workdict):
 
 
 def get_RP_for_envs(value):
-    RP = OrderedDict()
+    RP = {}
 
     try:
-        is_dict = isinstance(value[0], (OrderedDict, dict))
+        is_dict = isinstance(value[0], dict)
     except:
         is_dict = False
 
@@ -257,8 +221,6 @@ def get_RP_for_envs(value):
 def read_yaml(file_type, brand, base_dir):
     cfg_file = os.path.join(base_dir, brand, f'{file_type}.yml')
 
-    yaml.Loader.add_constructor(
-        'tag:yaml.org,2002:map', construct_ordereddict)
     try:
         with open(cfg_file, 'r') as ymlfile:
             cfg = yaml.load(ymlfile, Loader=Loader)
@@ -269,19 +231,19 @@ def read_yaml(file_type, brand, base_dir):
 
 
 def parse_cfg(cfg, envs=[]):
-    odict = OrderedDict([])
+    parsed_cfg = {}
 
     for value in gen_dict_extract(cfg, envs):
         for k, v in value.items():
             try:
                 if isinstance(v[0], dict):
-                    odict[k] = odict[k] + v
+                    parsed_cfg[k] = parsed_cfg[k] + v
                 else:
                     raise
             except:
-                odict[k] = v
+                parsed_cfg[k] = v
 
-    return odict
+    return parsed_cfg
 
 
 def merge_cfg(cfgs, cfg_key, list_base=None):
@@ -481,13 +443,13 @@ def build_RP():
     envrole = cfg.envrole
     brand = cfg.brand
 
-    RP_base = OrderedDict([
-        ('cmm', {
-            'cmm': {},
-        }),
-    ])
+    RP_base = {
+        'cmm': {
+            'cmm': {}
+        }
+    }
 
-    # dynamically create RP_BASE OrderedDict from ENV_BASE and cfg.regions
+    # dynamically populate RP_base Dict from ENV_BASE and cfg.regions
     for n in cfg.ENV_BASE:
         RP_base[n] = {}
         for m in cfg.regions:
@@ -509,19 +471,19 @@ def build_RP():
             f'in paths: {CFG_FILE_EXT}, {CFG_FILE_INT}')
         exit(1)
 
-    cfgs = OrderedDict([
-        ('common', [
+    cfgs = {
+        'common': [
             read_yaml('common', 'BASE', CFG_FILE_INT),
             read_yaml('common', 'BASE', CFG_FILE_EXT),
             read_yaml('common', brand, CFG_FILE_EXT),
-        ]),
-        ('type', [
+        ],
+        'type': [
             read_yaml(stacktype, 'BASE', CFG_FILE_INT),
             read_yaml(stacktype, 'BASE', CFG_FILE_EXT),
             read_yaml(stacktype, brand, CFG_FILE_EXT),
-        ]),
-        ('role', cfg_role),
-    ])
+        ],
+        'role': cfg_role,
+    }
 
     RP_base_keys = get_RP_base_keys()
 
@@ -532,7 +494,7 @@ def build_RP():
     if cfg.debug:
         print('##########RP#########START#####')
         # TO DEBUG - NICELY PRINT NESTED ORDEREDDICT
-        show_odict(RP)
+        pprint(RP)
         print('##########RP#########END#######')
         print('##########ENFORCED######START#####')
         pprint(enforce_list)

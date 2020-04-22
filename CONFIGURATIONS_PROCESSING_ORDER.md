@@ -46,9 +46,18 @@ A key/property defined in a file can be overriden by the following ones.\
 At least one EnvRole file must be present.\
 If a file do not exists an empty dictionary is returned.
 
+While reading the yaml file only some specific `keys` are processed:
+- global - traversed for common.yml, {StackType}.yml and {EnvRole}.yml
+- {StackType} - traversed only for {StackType}.yml
+- {EnvRole} - traversed only for {EnvRole}.yml
+
+
+
 This process create the main configuration parsed by awsibox to build the template.\ 
 The following section describe how is automatically created the CloudFormation Mapping to take in account values specific for Env/Region.
 
 ### Processing Order for Env/Region
 The generated CloudFormation template can be deployed in all enabled Regions and Envs [Ex. dev, stg, prd].\
 This is achieved by using the template's Mapping section.
+
+

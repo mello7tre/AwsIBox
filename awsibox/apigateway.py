@@ -89,9 +89,9 @@ class ApiGatewayDeployment(agw.Deployment):
     def __init__(self, title, name, key, **kwargs):
         super().__init__(title, **kwargs)
 
-        lastresource = next(reversed(cfg.ApiGatewayResource))
+        lastresource = next(reversed(list(cfg.ApiGatewayResource)))
         lastmethod = (next(
-            reversed(cfg.ApiGatewayResource[lastresource]['Method'])))
+            reversed(list(cfg.ApiGatewayResource[lastresource]['Method']))))
         self.DependsOn = f'ApiGatewayResource{lastresource}Method{lastmethod}'
         self.Description = Ref(f'Deployment{name}Description')
         self.RestApiId = Ref('ApiGatewayRestApi')

@@ -1,7 +1,6 @@
 import sys
 import os
 import copy
-from collections import OrderedDict, Mapping
 from pprint import pprint, pformat
 
 from . import cfg
