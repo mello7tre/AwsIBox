@@ -1,4 +1,3 @@
-from collections import OrderedDict, Mapping
 import troposphere.apigateway as agw
 
 from .common import *

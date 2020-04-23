@@ -1,14 +1,13 @@
 import os
-from collections import OrderedDict, Mapping
 from functools import reduce
 
 no_override = False
 
-Parameters = OrderedDict()
-Conditions = OrderedDict()
-Mappings = OrderedDict()
-Resources = OrderedDict()
-Outputs = OrderedDict()
+Parameters = {}
+Conditions = {}
+Mappings = {}
+Resources = {}
+Outputs = {}
 
 PATH_INT = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'cfg')
 PATH_INT = os.path.normpath(PATH_INT)
@@ -78,17 +77,17 @@ BASE_CFGS = {
     'Bucket': {
         'Enabled': 'None',
         'Create': 'None',
-        'AccountsRO': OrderedDict([
-            ('dev', 'None'),
-            ('stg', 'None'),
-            ('prd', 'None'),
-        ]),
+        'AccountsRO': {
+            'dev': 'None',
+            'stg': 'None',
+            'prd': 'None',
+        },
         'Cors': 'None',
-        'CloudFrontOriginAccessIdentityExtra': OrderedDict([
-            ('Dev', 'None'),
-            ('Stg', 'None'),
-            ('Prd', 'None'),
-        ]),
+        'CloudFrontOriginAccessIdentityExtra': {
+            'Dev': 'None',
+            'Stg': 'None',
+            'Prd': 'None',
+        },
         'ReplicaDstRegion': 'None',
         'ReplicaDstOwner': 'None',
         'ReplicaSrcAccount': 'None',
@@ -124,131 +123,131 @@ INSTANCE_LIST = [
     'r5a.12xlarge', 'r5a.16xlarge', 'r5a.24xlarge',
 ]
 
-CFG_TO_CLASS = OrderedDict([
-    ('MappingClass', {
-        'module': 'mappings', 'class': 'Mappings'}),
-    ('Parameter', {
-        'module': 'cloudformation', 'class': 'CFM_Parameters'}),
-    ('Condition', {
-        'module': 'cloudformation', 'class': 'CFM_Conditions'}),
-    ('Mapping', {
-        'module': 'cloudformation', 'class': 'CFM_Mappings'}),
-    ('CapacityDesired', {
-        'module': 'autoscaling', 'class': 'AS_Autoscaling'}),
-    ('ScalingPolicyUpScalingAdjustment1', {
-        'module': 'autoscaling', 'class': 'AS_ScalingPoliciesStep'}),
-    ('ScalingPolicyTrackings', {
-        'module': 'autoscaling', 'class': 'AS_ScalingPoliciesTracking'}),
-    ('Bucket', {
-        'module': 's3', 'class': 'S3_Buckets'}),
-    ('BucketPolicy', {
-        'module': 's3', 'class': 'S3_BucketPolicies'}),
-    ('Certificate', {
-        'module': 'crm', 'class': 'CRM_Certificate'}),
-    ('CodeDeployApp', {
-        'module': 'codedeploy', 'class': 'CD_Applications'}),
-    ('Repository', {
-        'module': 'ecr', 'class': 'ECR_Repositories'}),
-    ('Cluster', {
-        'module': 'ecs', 'class': 'ECS_Cluster'}),
-    ('Service', {
-        'module': 'ecs', 'class': 'ECS_Service'}),
-    ('ApiGatewayAccount', {
-        'module': 'apigateway', 'class': 'AGW_Account'}),
-    ('ApiGatewayDomainName', {
-        'module': 'apigateway', 'class': 'AGW_DomainName'}),
-    ('ApiGatewayResource', {
-        'module': 'apigateway', 'class': 'AGW_RestApi'}),
-    ('ApiGatewayBasePathMapping', {
-        'module': 'apigateway', 'class': 'AGW_BasePathMapping'}),
-    ('ApiGatewayStage', {
-        'module': 'apigateway', 'class': 'AGW_Stages'}),
-    ('ApiGatewayUsagePlan', {
-        'module': 'apigateway', 'class': 'AGW_UsagePlans'}),
-    ('ApiGatewayApiKey', {
-        'module': 'apigateway', 'class': 'AGW_ApiKeys'}),
-    ('LogGroupName', {
-        'module': 'logs', 'class': 'LGS_LogGroup'}),
-    ('ContainerDefinitions', {
-        'module': 'ecs', 'class': 'ECS_TaskDefinition'}),
-    ('EFSFileSystem', {
-        'module': 'efs', 'class': 'EFS_FileStorage'}),
-    ('CacheSubnetGroup', {
-        'module': 'elasticache', 'class': 'CCH_SubnetGroups'}),
-    ('CacheNodeType', {
-        'module': 'elasticache', 'class': 'CCH_Cache'}),
-    ('EventsRule', {
-        'module': 'events', 'class': 'EVE_EventRules'}),
-    ('Role', {
-        'module': 'iam', 'class': 'IAM_Roles'}),
-    ('IAMPolicy', {
-        'module': 'iam', 'class': 'IAM_Policies'}),
-    ('IAMUser', {
-        'module': 'iam', 'class': 'IAM_Users'}),
-    ('IAMGroup', {
-        'module': 'iam', 'class': 'IAM_Groups'}),
-    ('IAMUserToGroupAddition', {
-        'module': 'iam', 'class': 'IAM_UserToGroupAdditions'}),
-    ('KMSKey', {
-        'module': 'kms', 'class': 'KMS_Keys'}),
-    ('Lambda', {
-        'module': 'lambdas', 'class': 'LBD_Lambdas'}),
-    ('LambdaLayerVersion', {
-        'module': 'lambdas', 'class': 'LBD_LayerVersions'}),
-    ('LambdaPermission', {
-        'module': 'lambdas', 'class': 'LBD_Permissions'}),
-    ('LambdaEventSourceMapping', {
-        'module': 'lambdas', 'class': 'LBD_EventSourceMappings'}),
-    ('LoadBalancerApplication', {
-        'module': 'loadbalancing', 'class': 'LB_ElasticLoadBalancing'}),
-    ('LoadBalancerClassic', {
-        'module': 'loadbalancing', 'class': 'LB_ElasticLoadBalancing'}),
-    ('Alarm', {
-        'module': 'cloudwatch', 'class': 'CW_Alarms'}),
-    ('CloudFront', {
-        'module': 'cloudfront', 'class': 'CF_CloudFront'}),
-    ('SNSSubscription', {
-        'module': 'sns', 'class': 'SNS_Subscriptions'}),
-    ('SNSTopic', {
-        'module': 'sns', 'class': 'SNS_Topics'}),
-    ('SQSQueue', {
-        'module': 'sqs', 'class': 'SQS_Queues'}),
-    ('ASGLifecycleHook', {
-        'module': 'autoscaling', 'class': 'AS_LifecycleHook'}),
-    ('DBInstanceClass', {
-        'module': 'rds', 'class': 'RDS_DB'}),
-    ('DBParameterGroup', {
-        'module': 'rds', 'class': 'RDS_ParameterGroups'}),
-    ('DBSubnetGroup', {
-        'module': 'rds', 'class': 'RDS_SubnetGroups'}),
-    ('HostedZone', {
-        'module': 'route53', 'class': 'R53_HostedZones'}),
-    ('WafByteMatchSet', {
-        'module': 'waf', 'class': [
-            'WAF_GlobalByteMatchSets', 'WAF_RegionalByteMatchSets']}),
-    ('WafIPSet', {
-        'module': 'waf', 'class': [
-            'WAF_GlobalIPSets', 'WAF_RegionalIPSets']}),
-    ('WafRule', {
-        'module': 'waf', 'class': [
-            'WAF_GlobalRules', 'WAF_RegionalRules']}),
-    ('WafWebAcl', {
-        'module': 'waf', 'class': [
-            'WAF_GlobalWebAcls', 'WAF_RegionalWebAcls']}),
-    ('ServiceDiscovery', {
-        'module': 'servicediscovery', 'class': 'SRVD_ServiceDiscovery'}),
-    ('VPCEndpoint', {
-        'module': 'vpc', 'class': 'VPC_Endpoint'}),
-    ('SecurityGroupBase', {
-        'module': 'securitygroup', 'class': 'SG_SecurityGroup'}),
-    ('SecurityGroupIngress', {
-        'module': 'securitygroup', 'class': 'SG_SecurityGroupIngressesExtra'}),
-    ('VPC', {
-        'module': 'vpc', 'class': 'VPC_VPC'}),
-    # ReplicateRegions need to be here
-    ('ReplicateRegions', {
-        'module': 'replicator', 'class': 'CLF_CustomResourceReplicator'}),
+CFG_TO_CLASS = {
+    'MappingClass': {'module': 'mappings',
+                     'class': 'Mappings'},
+    'Parameter': {'module': 'cloudformation',
+                  'class': 'CFM_Parameters'},
+    'Condition': {'module': 'cloudformation',
+                  'class': 'CFM_Conditions'},
+    'Mapping': {'module': 'cloudformation',
+                'class': 'CFM_Mappings'},
+    'CapacityDesired': {'module': 'autoscaling',
+                        'class': 'AS_Autoscaling'},
+    'ScalingPolicyUpScalingAdjustment1': {'module': 'autoscaling',
+                                          'class': 'AS_ScalingPoliciesStep'},
+    'ScalingPolicyTrackings': {'module': 'autoscaling',
+                               'class': 'AS_ScalingPoliciesTracking'},
+    'Bucket': {'module': 's3',
+               'class': 'S3_Buckets'},
+    'BucketPolicy': {'module': 's3',
+                     'class': 'S3_BucketPolicies'},
+    'Certificate': {'module': 'crm',
+                    'class': 'CRM_Certificate'},
+    'CodeDeployApp': {'module': 'codedeploy',
+                      'class': 'CD_Applications'},
+    'Repository': {'module': 'ecr',
+                   'class': 'ECR_Repositories'},
+    'Cluster': {'module': 'ecs',
+                'class': 'ECS_Cluster'},
+    'Service': {'module': 'ecs',
+                'class': 'ECS_Service'},
+    'ApiGatewayAccount': {'module': 'apigateway',
+                          'class': 'AGW_Account'},
+    'ApiGatewayDomainName': {'module': 'apigateway',
+                             'class': 'AGW_DomainName'},
+    'ApiGatewayResource': {'module': 'apigateway',
+                           'class': 'AGW_RestApi'},
+    'ApiGatewayBasePathMapping': {'module': 'apigateway',
+                                  'class': 'AGW_BasePathMapping'},
+    'ApiGatewayStage': {'module': 'apigateway',
+                        'class': 'AGW_Stages'},
+    'ApiGatewayUsagePlan': {'module': 'apigateway',
+                            'class': 'AGW_UsagePlans'},
+    'ApiGatewayApiKey': {'module': 'apigateway',
+                         'class': 'AGW_ApiKeys'},
+    'LogGroupName': {'module': 'logs',
+                     'class': 'LGS_LogGroup'},
+    'ContainerDefinitions': {'module': 'ecs',
+                             'class': 'ECS_TaskDefinition'},
+    'EFSFileSystem': {'module': 'efs',
+                      'class': 'EFS_FileStorage'},
+    'CacheSubnetGroup': {'module': 'elasticache',
+                         'class': 'CCH_SubnetGroups'},
+    'CacheNodeType': {'module': 'elasticache',
+                      'class': 'CCH_Cache'},
+    'EventsRule': {'module': 'events',
+                   'class': 'EVE_EventRules'},
+    'Role': {'module': 'iam',
+             'class': 'IAM_Roles'},
+    'IAMPolicy': {'module': 'iam',
+                  'class': 'IAM_Policies'},
+    'IAMUser': {'module': 'iam',
+                'class': 'IAM_Users'},
+    'IAMGroup': {'module': 'iam',
+                 'class': 'IAM_Groups'},
+    'IAMUserToGroupAddition': {'module': 'iam',
+                               'class': 'IAM_UserToGroupAdditions'},
+    'KMSKey': {'module': 'kms',
+               'class': 'KMS_Keys'},
+    'Lambda': {'module': 'lambdas',
+               'class': 'LBD_Lambdas'},
+    'LambdaLayerVersion': {'module': 'lambdas',
+                           'class': 'LBD_LayerVersions'},
+    'LambdaPermission': {'module': 'lambdas',
+                         'class': 'LBD_Permissions'},
+    'LambdaEventSourceMapping': {'module': 'lambdas',
+                                 'class': 'LBD_EventSourceMappings'},
+    'LoadBalancerApplication': {'module': 'loadbalancing',
+                                'class': 'LB_ElasticLoadBalancing'},
+    'LoadBalancerClassic': {'module': 'loadbalancing',
+                            'class': 'LB_ElasticLoadBalancing'},
+    'Alarm': {'module': 'cloudwatch',
+              'class': 'CW_Alarms'},
+    'CloudFront': {'module': 'cloudfront',
+                   'class': 'CF_CloudFront'},
+    'SNSSubscription': {'module': 'sns',
+                        'class': 'SNS_Subscriptions'},
+    'SNSTopic': {'module': 'sns',
+                 'class': 'SNS_Topics'},
+    'SQSQueue': {'module': 'sqs',
+                 'class': 'SQS_Queues'},
+    'ASGLifecycleHook': {'module': 'autoscaling',
+                         'class': 'AS_LifecycleHook'},
+    'DBInstanceClass': {'module': 'rds',
+                        'class': 'RDS_DB'},
+    'DBParameterGroup': {'module': 'rds',
+                         'class': 'RDS_ParameterGroups'},
+    'DBSubnetGroup': {'module': 'rds',
+                      'class': 'RDS_SubnetGroups'},
+    'HostedZone': {'module': 'route53',
+                   'class': 'R53_HostedZones'},
+    'WafByteMatchSet': {'module': 'waf',
+                        'class': ['WAF_GlobalByteMatchSets',
+                                  'WAF_RegionalByteMatchSets']},
+    'WafIPSet': {'module': 'waf',
+                 'class': ['WAF_GlobalIPSets',
+                           'WAF_RegionalIPSets']},
+    'WafRule': {'module': 'waf',
+                'class': ['WAF_GlobalRules',
+                          'WAF_RegionalRules']},
+    'WafWebAcl': {'module': 'waf',
+                  'class': ['WAF_GlobalWebAcls',
+                            'WAF_RegionalWebAcls']},
+    'ServiceDiscovery': {'module': 'servicediscovery',
+                         'class': 'SRVD_ServiceDiscovery'},
+    'VPCEndpoint': {'module': 'vpc',
+                    'class': 'VPC_Endpoint'},
+    'SecurityGroupBase': {'module': 'securitygroup',
+                          'class': 'SG_SecurityGroup'},
+    'SecurityGroupIngress': {'module': 'securitygroup',
+                             'class': 'SG_SecurityGroupIngressesExtra'},
+    'VPC': {'module': 'vpc',
+            'class': 'VPC_VPC'},
+    # ReplicateRegions need to stay here
+    'ReplicateRegions': {'module': 'replicator',
+                         'class': 'CLF_CustomResourceReplicator'},
     # Output need to be last line
-    ('Output', {
-        'module': 'cloudformation', 'class': 'CFM_Outputs'}),
-])
+    'Output': {'module': 'cloudformation',
+               'class': 'CFM_Outputs'},
+}
