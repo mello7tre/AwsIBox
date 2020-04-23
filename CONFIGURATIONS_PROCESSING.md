@@ -63,10 +63,11 @@ Every time a new template is generated yaml files are read processed in the foll
 
 At least one EnvRole file must be present.\
 Even if it's processed as last, is the first to be read as it is the starting point of the whole process and its' needed to know the relative {StackType}.
+
 If a file do not exists an empty dictionary is returned.
 
 #### Use of include in yaml files
-To be able to use block of configurations in multiple yaml files, yaml Loader has been extended to support `!include` as additional constructor.
+To be able to use the same block of configurations in multiple yaml files, yaml Loader has been extended to support `!include` as additional constructor.
 
 The syntax is the following:
 ```
@@ -76,7 +77,7 @@ IBoxLoader: !include [
  included_yaml_file_three.yml,
 ]
 ```
-For every yaml file in the list, we proceed this order:
+For every yaml file in the list, we proceed in this order:
 - if source file, the one with the !include key, is in Ext dirs (Base, Brand) - we try to read the included file from BaseInt too
 - we try to read the included file from the same dir of the source file
 - we try to read the included file from BaseExt
@@ -117,6 +118,39 @@ For keys as child of block Mappings/dictionary the following ones are used:
   - if the name of the key is `{EnvRole}` dictionary is traversed/processed only for {EnvRole} types.
   - if the name of the key is `{StackType}` dictionary is traversed/processed only for {StackType} types.
   - in all other cases dictionary is simply ignored and not traversed.
+
+Consider the following yaml sample for {StackType}.yml:
+```
+ec2:
+  AdditionalStorage:
+    Size: 0
+    Type: gp2
+  Parameter:
+    - UpdateMode:
+        Description: 'How to update Instances'
+	AllowedValue: ['None', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
+	Default: 'None'
+AnyOtherKey:
+  IgnoredValues: 0
+```
+
+after processing we will have the following dictionary:
+```
+{
+  AdditionalStorageSize: 0,
+  AdditionalStorageType: gp2,
+  Parameter: [
+    'UpdateMode': {
+      'Description': 'How to update Instances',
+      'AllowedValue': ['None', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn'],
+      'Default': 'None',
+    }
+  ]
+}
+```
+- AdditionalStorage subkeys names have been concatenated
+- Parameter list have been returned as is 
+- AnyOtherKey have been ignored (not even traversed/processed) 
 
 #### Dictionary merging
 As a result of the previous processes the same key name can be read from multiple `sources`.\
