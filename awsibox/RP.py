@@ -18,7 +18,7 @@ class Loader(yaml.Loader):
         # This way for include BASE relative on BASE dir
         self._root_base = os.path.join(CFG_FILE_INT, 'BASE')
         # This way for include relative on BASE EXT dir
-        self._root_brand_base = os.path.join(CFG_FILE_EXT, 'BASE')
+        self._root_base_ext = os.path.join(CFG_FILE_EXT, 'BASE')
         # This way for include relative on brand EXT dir
         self._root_brand_ext = os.path.join(CFG_FILE_EXT, brand)
         self.stream = stream
@@ -54,7 +54,7 @@ class Loader(yaml.Loader):
                     self.extractFile(filename, self._root_current))
                 # try to include BASE ext too
                 result.append(
-                    self.extractFile(filename, self._root_brand_base))
+                    self.extractFile(filename, self._root_base_ext))
                 # try to include brand ext too
                 result.append(
                     self.extractFile(filename, self._root_brand_ext))

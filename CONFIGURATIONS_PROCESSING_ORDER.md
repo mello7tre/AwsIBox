@@ -47,22 +47,69 @@ they have different yaml root key:
 for all apart `common` there can be root keys for Env/Region too.
 
 ## Processing Order for Configuration used to build template resources
-Every time a new template is generated files are processed in the following order:
-- common.yml - BaseInt
-- common.yml - BaseExt
-- {StackType}.yml - BaseInt
-- {StackType}.yml - BaseExt
-- {StackType}.yml - BrandExt
-- {EnvRole}.yml - BaseInt
-- {EnvRole}.yml - BaseExt
-- {EnvRole}.yml - BrandExt
+Every time a new template is generated yaml files are read processed in the following order:
+- common
+  - common.yml - BaseInt
+  - common.yml - BaseExt
+  - common.yml - BrandExt
+- {StackType}
+  - {StackType}.yml - BaseInt
+  - {StackType}.yml - BaseExt
+  - {StackType}.yml - BrandExt
+- {EnvRole}
+  - {EnvRole}.yml - BaseInt
+  - {EnvRole}.yml - BaseExt
+  - {EnvRole}.yml - BrandExt
 
-A key/property defined in a file can be overriden by the following ones.\
 At least one EnvRole file must be present.\
+Even if it's processed as last, is the first to be read as it is the starting point of the whole process and its' needed to know the relative {StackType}.
 If a file do not exists an empty dictionary is returned.
 
-Every yaml file is read and then processed by some rules.\
-For keys as child of block Mappings the following ones are used:
+#### Use of include in yaml files
+To be able to use block of configurations in multiple yaml files, yaml Loader has been extended to support `!include` as additional constructor.
+
+The syntax is the following:
+```
+IBoxLoader: !include [
+ included_yaml_file_one.yml,
+ included_yaml_file_two.yml,
+ included_yaml_file_three.yml,
+]
+```
+For every yaml file in the list, we proceed this order:
+- if source file, the one with the !include key, is in Ext dirs (Base, Brand) - we try to read the included file from BaseInt too
+- we try to read the included file from the same dir of the source file
+- we try to read the included file from BaseExt
+- we try to read the included file from BrandExt
+
+every file read is added to the inclusion list.\
+So we can, potentially, rewrite the previous syntax as:
+```
+IBoxLoader: !include [
+ included_yaml_file_one.yml,
+   included_yaml_file_one.yml - BaseInt,
+   included_yaml_file_one.yml - SameDir,
+   included_yaml_file_one.yml - BaseExt,
+   included_yaml_file_one.yml - BrandExt,
+ included_yaml_file_two.yml,
+   included_yaml_file_two.yml - BaseInt,
+   included_yaml_file_two.yml - SameDir,
+   included_yaml_file_two.yml - BaseExt,
+   included_yaml_file_two.yml - BrandExt,
+ included_yaml_file_three.yml,
+   included_yaml_file_three.yml - BaseInt,
+   included_yaml_file_three.yml - SameDir,
+   included_yaml_file_three.yml - BaseExt,
+   included_yaml_file_three.yml - BrandExt,
+]
+```
+At the end of the whole yaml read and inclusion process we will have a dictionary key called IBoxLoader and as value a list where each element will be a dictionary representing the read file.
+
+This list represent the order in which included files are processed, so that the last ones have priority over the previous.
+
+### Rules used for processing the resulted dictionaries
+The python dictionaries produced are read and then processed by some rules.\
+For keys as child of block Mappings/dictionary the following ones are used:
 - if the value of the yaml key is a string, int or list, the key is returned as is
 - if the value of the yaml key is a dictionary other rules are considered:
   - if the name of the key is different from current {EnvRole}, {StackType} and any Env and Regions enabled, every dictionary sub-keys are parsed and returned named as: key + subkey.
@@ -71,7 +118,14 @@ For keys as child of block Mappings the following ones are used:
   - if the name of the key is `{StackType}` dictionary is traversed/processed only for {StackType} types.
   - in all other cases dictionary is simply ignored and not traversed.
 
-This process create the main configuration parsed by awsibox using [troposphere](https://github.com/cloudtools/troposphere) to build the template.\
+#### Dictionary merging
+As a result of the previous processes the same key name can be read from multiple `sources`.\
+The rules are:
+- if the key value is a dictionary, we try to recursive merge them
+- in all other cases the last value overwrite the previous ones
+
+#### Main configuration
+All the described process create the main configuration parsed by awsibox using [troposphere](https://github.com/cloudtools/troposphere) to build the template.\
 The following section describe how is automatically created the CloudFormation Mapping to take in account values specific for Env/Region.
 
 ## Processing Order for Env/Region Configuration used to build template Mapping
@@ -211,3 +265,4 @@ So the full order would be:
   - {EnvRole}.yml - BaseInt
   - {EnvRole}.yml - BaseExt
   - {EnvRole}.yml - BrandExt
+
