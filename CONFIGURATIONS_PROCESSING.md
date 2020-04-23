@@ -47,7 +47,7 @@ they have different yaml root key:
 for all apart `common` there can be root keys for Env/Region too.
 
 ## Processing Order and Rules for Configuration used to build template resources
-Every time a new template is generated yaml files are read processed in the following order:
+Every time a new template is generated yaml files are read and processed in the following order:
 - common
   - common.yml - BaseInt
   - common.yml - BaseExt
@@ -119,7 +119,7 @@ For keys as child of block Mappings/dictionary the following ones are used:
   - if the name of the key is `{StackType}` dictionary is traversed/processed only for {StackType} types.
   - in all other cases dictionary is simply ignored and not traversed.
 
-Consider the following yaml sample for {StackType}.yml:
+Consider the following yaml sample for ec2.yml (a {StackType} type):
 ```
 ec2:
   AdditionalStorage:
@@ -182,13 +182,13 @@ DEFAULT_REGIONS = [
     'eu-central-1',                                                             
 ]    
 ```
-we will process only block Mappings subkeys: 'dev', 'stg', 'prd', 'eu-west-1', 'us-east-1', 'eu-central-1'
+we will process only block Mappings subkeys: `'dev', 'stg', 'prd', 'eu-west-1', 'us-east-1', 'eu-central-1'`.
 
 The Env/Region part of the yaml configuration is reserved ONLY to create the template Mapping section and usually to override values already defined before in the `main` part.\
 It's not `directly used` to build the template resources.
 
 The processing is the following:
-If the value of a key differ from the one in the main configuration an sub-entry is created in the following mapping:
+If the value of a key differ from the one in the main configuration a sub-entry is created in the following mapping:
 ```
 {
   Env: {
