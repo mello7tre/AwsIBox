@@ -15,7 +15,7 @@ Current StackTypes are:
 - ecs - Elastic Container Service
 - rds - RDS
 - res - Generic AWS Resources
-- tsk - Scheduled Task (CloudWatch Events + ECS Tasks)
+- tsk - Scheduled Task (CloudWatch Events + ECS Task)
  
 Configurations yaml files are read from multiple locations.
 - Base Internal (BaseInt)
@@ -235,7 +235,7 @@ considering the above `ENV_BASE` and `DEFAULT_REGIONS` the Mapping will be:
       'ContainerDefinitions1Cpu': '256'
     },
     'eu-central-1': {
-      'ContainerDefinitions1Cpu': '128'
+      'ContainerDefinitions1Cpu': '256'
     },
   },
   'stg': {
