@@ -57,7 +57,12 @@ stacks-status:
           - Ref('RoleLambdaStacksStatusv1')
         Statement:
           - 1:
-              Action: 'cloudformation:DescribeStack*'
+              Action:
+                - 'cloudformation:DescribeStack*'
+                - 'ecs:ListClusters'
+                - 'ecs:ListServices'
+                - 'ecs:DescribeServices'
+                - 'application-autoscaling:DescribeScalableTargets'
               Resource: '*'
   Lambda:
     - StacksStatusv1:
