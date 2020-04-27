@@ -46,6 +46,8 @@ global:
     - Memory:
         Value: get_endvalue('Memory')
         Condition: LaunchTypeFarGate
+    - NetworkMode:
+        Value: get_endvalue('NetworkMode')
     - LaunchType:
         Value: get_endvalue('LaunchType')
     - LogDriver:
