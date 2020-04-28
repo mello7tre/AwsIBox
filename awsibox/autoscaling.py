@@ -1201,6 +1201,13 @@ class AS_LaunchConfiguration(object):
             CfmInitArgs.update(CfnRole)
 
         R_LaunchConfiguration.Metadata = cfm.Metadata(
+            {
+                'CloudFormationInitVersion': If(
+                    'CloudFormationInit',
+                    Ref('EnvStackVersion'),
+                    Ref('AWS::NoValue'),
+                )
+            },
             cfm.Init(
                 InitConfigSets,
                 **CfmInitArgs
