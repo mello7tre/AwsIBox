@@ -1,0 +1,44 @@
+global:
+  IAMPolicy:
+    - UpdateStack:
+        Roles:
+          - Ref('RoleTask')
+        Statement:
+          - 1:
+              Action:
+                - 's3:Get*'
+                - 's3:List*'
+                - 's3:Put*'
+                - 'iam:PassRole'
+                - 'iam:ListServerCertificates'
+                - 'iam:GetRole'
+                - 'iam:PutRolePolicy'
+                - 'elasticloadbalancing:*'
+                - 'ec2:*'
+                - 'ecs:*'
+                - 'ecr:*'
+                - 'sqs:*'
+                - 'sns:*'
+                - 'cloudwatch:*'
+                - 'autoscaling:*'
+                - 'route53:*'
+                - 'codedeploy:*'
+                - 'acm:*'
+                - 'cloudformation:DescribeStack*'
+                - 'cloudformation:GetTemplate*'
+                - 'cloudformation:ListExports'
+                - 'cloudformation:UpdateStack'
+                - 'cloudformation:ValidateTemplate'
+                - 'cloudfront:GetDistribution*'
+                - 'cloudfront:ListDistributions'
+                - 'cloudfront:ListCloudFrontOriginAccessIdentities'
+                - 'lambda:*'
+                - 'events:*'
+                - 'waf:GetWebACL'
+                - 'waf:ListWebACLs'
+              Resource: '*'
+          - 2:
+              Action: 'ssm:GetParameter*'
+              Resource:
+                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
+                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
