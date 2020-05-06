@@ -1,6 +1,10 @@
-IBoxLoader : !exclude [
+IBoxLoader: !exclude [
   cloudfront-ios.yml,
   certificate.yml,
+]
+
+IBoxLoaderAfter: !include [
+  iampolicy-update_stack.yml,
 ]
 
 stacks-status:
@@ -64,6 +68,13 @@ stacks-status:
                 - 'ecs:DescribeServices'
                 - 'application-autoscaling:DescribeScalableTargets'
               Resource: '*'
+    - UpdateStack:
+        Roles:
+          - Ref('RoleLambdaStacksStatusv1')
+        Statement:
+          - 3:
+              Action: 'ssm:GetParameter*'
+              Resource: 'arn:aws:ssm:*:*:parameter/buildkite/*'
   Lambda:
     - StacksStatusv1:
         Code:
