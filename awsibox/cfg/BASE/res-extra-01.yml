@@ -50,3 +50,6 @@ res-extra-01:
         RoleName: 'AWSCloudFormationStackSetAdministrationRole'
   SecurityGroupBase:
     - RDS: 'Assign to RDS Client'
+  SNSTopic:
+    - CloudFormationNotification:
+        Export: True
