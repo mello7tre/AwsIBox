@@ -1,0 +1,44 @@
+# vim: ft=python
+import boto3
+import os
+
+env = os.environ['Env']
+envRole = os.environ['EnvRole']
+
+
+def set(config):
+    for n, v in config.items():
+        globals()[n] = v[env]
+
+    set_ssm()
+    
+
+def set_ssm():
+    client = boto3.client('ssm')
+    response = client.describe_parameters(
+        ParameterFilters=[
+            {
+                'Key': 'Name',
+                'Values': [f'/{envRole}/'],
+                'Option': 'Contains',
+            },
+        ],
+    )
+    
+    pList = []
+    for n in response['Parameters']:
+        pList.append(n['Name'])
+        
+    response = client.get_parameters(
+        Names=pList,
+        WithDecryption=True,
+    )
+        
+    for p in response['Parameters']:
+        name = p['Name'].split('/')[2]
+        name = name.replace('-', '_').upper()
+        value = p['Value']
+        try:
+            globals()[name] = value
+        except:
+            pass

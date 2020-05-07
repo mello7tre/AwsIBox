@@ -1,11 +1,9 @@
-IBoxLoader: !exclude [
-  cloudfront-ios.yml,
-  loadbalancing-ecs.yml,
-]
-
-IBoxLoaderAfter: !include [
-  iampolicy-update_stack.yml,
-]
+IBoxLoader:
+  - !exclude
+    - cloudfront-ios.yml
+    - loadbalancing-ecs.yml
+  - !include
+    - iampolicy-update_stack.yml
 
 buildkite:
   StackType: ecs

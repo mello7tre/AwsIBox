@@ -26,6 +26,7 @@ global:
                 - 'acm:*'
                 - 'cloudformation:DescribeStack*'
                 - 'cloudformation:GetTemplate*'
+                - 'cloudformation:ListStackResources'
                 - 'cloudformation:ListExports'
                 - 'cloudformation:UpdateStack'
                 - 'cloudformation:ValidateTemplate'

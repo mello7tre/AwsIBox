@@ -1,11 +1,9 @@
-IBoxLoader: !exclude [
-  cloudfront-ios.yml,
-  certificate.yml,
-]
-
-IBoxLoaderAfter: !include [
-  iampolicy-update_stack.yml,
-]
+IBoxLoader:
+  - !exclude
+    - cloudfront-ios.yml
+    - certificate.yml
+  - !include
+    - iampolicy-update_stack.yml
 
 stacks-status:
   StackType: agw
@@ -75,6 +73,14 @@ stacks-status:
           - 3:
               Action: 'ssm:GetParameter*'
               Resource: 'arn:aws:ssm:*:*:parameter/buildkite/*'
+          - 4:
+              Action:
+                - 'ssm:DescribeParameters'
+                - 'kms:ListAliases'
+              Resource: '*'
+          - 5:
+              Action: 'kms:Decrypt'
+              Resource: get_expvalue('KeyParameterStore')
   Lambda:
     - StacksStatusv1:
         Code:
