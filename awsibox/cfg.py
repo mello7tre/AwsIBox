@@ -82,6 +82,11 @@ BASE_CFGS = {
             'stg': 'None',
             'prd': 'None',
         },
+        'AccountsRW': {
+            'dev': 'None',
+            'stg': 'None',
+            'prd': 'None',
+        },
         'Cors': 'None',
         'CloudFrontOriginAccessIdentityExtra': {
             'Dev': 'None',

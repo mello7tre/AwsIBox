@@ -239,6 +239,33 @@ def S3BucketPolicyStatementRO(bucket, principal):
     return if_statements
 
 
+def S3BucketPolicyStatementRW(bucket, principal):
+    policy = S3BucketPolicyStatementRO(bucket, principal)
+    policy_write = {
+        'Action': [
+            's3:Put*',
+        ],
+        'Effect': 'Allow',
+        'Resource': [
+            Sub('arn:aws:s3:::%s/*' % bucket_name)
+        ],
+        'Principal': {
+            'AWS': principal
+        },
+        'Sid': 'AllowPut'
+    }
+
+    policy.append(
+        If(
+            f'{bucket}PolicyRW',
+            policy_write,
+            Ref('AWS::NoValue'),
+        )
+    )
+
+    return policy
+
+
 # #################################
 # ### START STACK INFRA CLASSES ###
 # #################################
@@ -288,6 +315,32 @@ class S3_Buckets(object):
             else:
                 c_PolicyRO = {f'{resname}PolicyRO': Equals('True', 'False')}
 
+            PolicyRWConditions = []
+            PolicyRWPrincipal = []
+
+            for m, w in v['AccountsRW'].items():
+                accountrw_name = f'{resname}AccountsRW{m}'
+                # conditions
+                add_obj(get_condition(accountrw_name, 'not_equals', 'None'))
+
+                PolicyRWConditions.append(Condition(accountrw_name))
+                PolicyRWPrincipal.append(If(
+                    accountrw_name,
+                    get_subvalue('arn:aws:iam::${1M}:root', accountrw_name),
+                    Ref('AWS::NoValue')
+                ))
+
+            # conditions
+            if PolicyRWConditions:
+                c_PolicyRW = {f'{resname}PolicyRW': Or(
+                    Equals('1', '0'),
+                    Equals('1', '0'),
+                    *PolicyRWConditions
+                )}
+            else:
+                c_PolicyRW = {f'{resname}PolicyRW': Equals('True', 'False')}
+
+
             c_Create = get_condition(
                 resname, 'not_equals', 'None', f'{resname}Create')
 
@@ -314,6 +367,7 @@ class S3_Buckets(object):
 
             add_obj([
                 c_PolicyRO,
+                c_PolicyRW,
                 c_Create,
                 c_Versioning,
                 c_Cors,
@@ -344,6 +398,9 @@ class S3_Buckets(object):
 
             BucketPolicyStatement.extend(
                 S3BucketPolicyStatementRO(resname, PolicyROPrincipal))
+
+            BucketPolicyStatement.extend(
+                S3BucketPolicyStatementRW(resname, PolicyRWPrincipal))
 
             r_IAMPolicyReplica = IAMPolicyBucketReplica(
                 f'IAMPolicyReplicaBucket{name}',
