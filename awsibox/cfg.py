@@ -77,12 +77,12 @@ BASE_CFGS = {
     'Bucket': {
         'Enabled': 'None',
         'Create': 'None',
-        'AccountsRO': {
+        'AccountsRead': {
             'dev': 'None',
             'stg': 'None',
             'prd': 'None',
         },
-        'AccountsRW': {
+        'AccountsWrite': {
             'dev': 'None',
             'stg': 'None',
             'prd': 'None',

@@ -192,10 +192,10 @@ def S3BucketPolicyStatementSes(bucket):
     return statements
 
 
-def S3BucketPolicyStatementRO(bucket, principal):
+def S3BucketPolicyStatementRead(bucket, principal):
     statements = []
     if_statements = []
-    condition = f'{bucket}PolicyRO'
+    condition = f'{bucket}PolicyRead'
     statements.append({
         'Action': [
             's3:ListBucket',
@@ -239,9 +239,11 @@ def S3BucketPolicyStatementRO(bucket, principal):
     return if_statements
 
 
-def S3BucketPolicyStatementRW(bucket, principal):
-    policy = S3BucketPolicyStatementRO(bucket, principal)
-    policy_write = {
+def S3BucketPolicyStatementWrite(bucket, principal):
+    statements = []
+    if_statements = []
+    condition = f'{bucket}PolicyWrite'
+    statements.append({
         'Action': [
             's3:Put*',
         ],
@@ -253,17 +255,18 @@ def S3BucketPolicyStatementRW(bucket, principal):
             'AWS': principal
         },
         'Sid': 'AllowPut'
-    }
+    })
 
-    policy.append(
-        If(
-            f'{bucket}PolicyRW',
-            policy_write,
-            Ref('AWS::NoValue'),
+    for s in statements:
+        if_statements.append(
+            If(
+                condition,
+                s,
+                Ref('AWS::NoValue')
+            )
         )
-    )
 
-    return policy
+    return if_statements
 
 
 # #################################
@@ -290,55 +293,55 @@ class S3_Buckets(object):
 
             add_obj(p_ReplicaDstRegion)
 
-            PolicyROConditions = []
-            PolicyROPrincipal = []
+            PolicyReadConditions = []
+            PolicyReadPrincipal = []
 
-            for m, w in v['AccountsRO'].items():
-                accountro_name = f'{resname}AccountsRO{m}'
+            for m, w in v['AccountsRead'].items():
+                accountread_name = f'{resname}AccountsRead{m}'
                 # conditions
-                add_obj(get_condition(accountro_name, 'not_equals', 'None'))
+                add_obj(get_condition(accountread_name, 'not_equals', 'None'))
 
-                PolicyROConditions.append(Condition(accountro_name))
-                PolicyROPrincipal.append(If(
-                    accountro_name,
-                    get_subvalue('arn:aws:iam::${1M}:root', accountro_name),
+                PolicyReadConditions.append(Condition(accountread_name))
+                PolicyReadPrincipal.append(If(
+                    accountread_name,
+                    get_subvalue('arn:aws:iam::${1M}:root', accountread_name),
                     Ref('AWS::NoValue')
                 ))
 
             # conditions
-            if PolicyROConditions:
-                c_PolicyRO = {f'{resname}PolicyRO': Or(
+            if PolicyReadConditions:
+                c_PolicyRead = {f'{resname}PolicyRead': Or(
                     Equals('1', '0'),
                     Equals('1', '0'),
-                    *PolicyROConditions
+                    *PolicyReadConditions
                 )}
             else:
-                c_PolicyRO = {f'{resname}PolicyRO': Equals('True', 'False')}
+                c_PolicyRead = {f'{resname}PolicyRead': Equals('True', 'False')}
 
-            PolicyRWConditions = []
-            PolicyRWPrincipal = []
+            PolicyWriteConditions = []
+            PolicyWritePrincipal = []
 
-            for m, w in v['AccountsRW'].items():
-                accountrw_name = f'{resname}AccountsRW{m}'
+            for m, w in v['AccountsWrite'].items():
+                accountwrite_name = f'{resname}AccountsWrite{m}'
                 # conditions
-                add_obj(get_condition(accountrw_name, 'not_equals', 'None'))
+                add_obj(get_condition(accountwrite_name, 'not_equals', 'None'))
 
-                PolicyRWConditions.append(Condition(accountrw_name))
-                PolicyRWPrincipal.append(If(
-                    accountrw_name,
-                    get_subvalue('arn:aws:iam::${1M}:root', accountrw_name),
+                PolicyWriteConditions.append(Condition(accountwrite_name))
+                PolicyWritePrincipal.append(If(
+                    accountwrite_name,
+                    get_subvalue('arn:aws:iam::${1M}:root', accountwrite_name),
                     Ref('AWS::NoValue')
                 ))
 
             # conditions
-            if PolicyRWConditions:
-                c_PolicyRW = {f'{resname}PolicyRW': Or(
+            if PolicyWriteConditions:
+                c_PolicyWrite = {f'{resname}PolicyWrite': Or(
                     Equals('1', '0'),
                     Equals('1', '0'),
-                    *PolicyRWConditions
+                    *PolicyWriteConditions
                 )}
             else:
-                c_PolicyRW = {f'{resname}PolicyRW': Equals('True', 'False')}
+                c_PolicyWrite = {f'{resname}PolicyWrite': Equals('True', 'False')}
 
 
             c_Create = get_condition(
@@ -366,8 +369,8 @@ class S3_Buckets(object):
             )}
 
             add_obj([
-                c_PolicyRO,
-                c_PolicyRW,
+                c_PolicyRead,
+                c_PolicyWrite,
                 c_Create,
                 c_Versioning,
                 c_Cors,
@@ -397,10 +400,10 @@ class S3_Buckets(object):
             r_Role = IAMRoleBucketReplica(f'Role{resname}Replica')
 
             BucketPolicyStatement.extend(
-                S3BucketPolicyStatementRO(resname, PolicyROPrincipal))
+                S3BucketPolicyStatementRead(resname, PolicyReadPrincipal))
 
             BucketPolicyStatement.extend(
-                S3BucketPolicyStatementRW(resname, PolicyRWPrincipal))
+                S3BucketPolicyStatementWrite(resname, PolicyWritePrincipal))
 
             r_IAMPolicyReplica = IAMPolicyBucketReplica(
                 f'IAMPolicyReplicaBucket{name}',
