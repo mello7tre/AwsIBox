@@ -47,7 +47,7 @@ global:
         Value: get_endvalue('Memory')
         Condition: LaunchTypeFarGate
     - NetworkMode:
-        Value: cfg.Resources['TaskDefinition'].NetworkMode
+        Value: get_resvalue('TaskDefinition', 'NetworkMode')
     - LaunchType:
         Value: get_endvalue('LaunchType')
     - LogDriver:

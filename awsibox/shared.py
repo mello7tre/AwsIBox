@@ -213,6 +213,12 @@ def get_subvalue(substring, subvar, stack=False):
     return v
 
 
+def get_resvalue(resname, propname):
+    res = cfg.Resources[resname]
+
+    return getattr(res, propname) 
+
+
 def get_condition(cond_name, cond, value2,
                   key=None, OrExtend=[], mapinlist=False, nomap=None):
     # record current state

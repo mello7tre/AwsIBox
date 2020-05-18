@@ -61,6 +61,7 @@ EVAL_FUNCTIONS_IN_CFG = (
     'Ref(',
     'get_subvalue(',
     'get_endvalue(',
+    'get_resvalue(',
     'get_condition(',
     'GetAtt(',
     'Split(',
