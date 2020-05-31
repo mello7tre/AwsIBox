@@ -67,6 +67,7 @@ global:
         Roles:
           - Ref('RoleTask')
   Image: None
+  NetworkMode: bridge
   RepoName: None
   Role:
     - Task:

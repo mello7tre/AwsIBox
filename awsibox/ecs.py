@@ -92,8 +92,7 @@ class ECSTaskDefinition(ecs.TaskDefinition):
         self.NetworkMode = If(
             'NetworkModeAwsVpc',
             'awsvpc',
-            (get_endvalue('NetworkMode') if cfg.NetworkMode == 'host'
-                else Ref('AWS::NoValue'))
+            get_endvalue('NetworkMode'),
         )
 
         self.RequiresCompatibilities = If(

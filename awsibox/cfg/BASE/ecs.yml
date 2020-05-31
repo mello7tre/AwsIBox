@@ -44,7 +44,6 @@ ecs:
     - 1:
         HostHeader: '*${EnvRole}.*'
   LoadBalancerApplicationStack: alb-a
-  NetworkMode: bridge
   ScalingPolicyTrackings:
     - APPCpu:
         Enabled: True
