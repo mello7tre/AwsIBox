@@ -1,26 +1,35 @@
-'use strict';
+# vim: ft=python
 
-const cachecontrol =
+CACHE_CONTROL = (
 STRING_EVAL_FUNCTIONS_IN_CFG
 get_endvalue('LambdaAtEdgeAddHeadersCacheControl')
 STRING_EVAL_FUNCTIONS_IN_CFG
-;
+)
 
-const headerCacheControl = [{key: 'cache-control', value: 'max-age=' + cachecontrol}];
-const headerXRobotsTag = [{ key: 'x-robots-tag', value: 'noindex, follow' }];
+HEADER_CACHE_CONTROL = [{
+    'key': 'cache-control',
+    'value': f'max-age={CACHE_CONTROL}'
+}]
 
-exports.lambda_handler = (event, context, callback) => {
-    const response = event.Records[0].cf.response;
-    const request = event.Records[0].cf.request;
-    const headers = response.headers;
+HEADER_XROBOTS_TAG = [{
+    'key': 'x-robots-tag',
+    'value': 'noindex, follow',
+}]
 
-    if ( response.status.startsWith('2') ) {
-      if ( request.uri.startsWith('/sitemap/') ) {
-        headers['x-robots-tag'] = headerXRobotsTag;
-      } else {
-        headers['cache-control'] = headerCacheControl;
-      }
-    }
 
-    callback(null, response);
-};
+def lambda_handler(event, context):
+    response = event['Records'][0]['cf']['response']
+    request = event['Records'][0]['cf']['request']
+
+    headers = response['headers']
+
+    if response['status'].startswith('2'):
+        if request['uri'].startswith('/sitemap/'):
+            headers['x-robots-tag'] = HEADER_XROBOTS_TAG
+        else:
+            headers['cache-control'] = HEADER_CACHE_CONTROL
+
+    if response['status'] == '403':
+        response['status'] = '404'
+
+    return response
