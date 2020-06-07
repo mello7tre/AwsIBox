@@ -127,6 +127,8 @@ INSTANCE_LIST = [
     'm5a.12xlarge', 'm5a.16xlarge', 'm5a.24xlarge',
     'r5a.large', 'r5a.xlarge', 'r5a.2xlarge', 'r5a.4xlarge', 'r5a.8xlarge',
     'r5a.12xlarge', 'r5a.16xlarge', 'r5a.24xlarge',
+    'c5a.large', 'c5a.xlarge', 'c5a.2xlarge', 'c5a.4xlarge', 'c5a.8xlarge',
+    'c5a.12xlarge', 'c5a.16xlarge', 'c5a.24xlarge',
 ]
 
 CFG_TO_CLASS = {
