@@ -17,7 +17,7 @@ def output_template(template, brand=None, role=None):
         output = template.to_json(indent=None)
         extension = '.json'
     elif args.Output == 'yaml':
-        output = template.to_yaml()
+        output = template.to_yaml(long_form=True)
         extension = '.yaml'
 
     if args.action == 'view':
