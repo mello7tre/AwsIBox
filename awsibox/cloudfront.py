@@ -148,22 +148,26 @@ class CFDistributionConfig(clf.DistributionConfig):
             Ref('AWS::NoValue')
         )
         self.PriceClass = 'PriceClass_100'
-        self.ViewerCertificate = clf.ViewerCertificate(
-            AcmCertificateArn=If(
-                'CloudFrontAcmCertificate',
-                get_endvalue('GlobalCertificateArn'),
-                Ref('AWS::NoValue')
-            ),
-            CloudFrontDefaultCertificate=If(
-                'CloudFrontAcmCertificate',
-                Ref('AWS::NoValue'),
-                'True'
-            ),
-            SslSupportMethod=If(
-                'CloudFrontAcmCertificate',
-                'sni-only',
-                Ref('AWS::NoValue')
-            )
+        self.ViewerCertificate = clf.ViewerCertificate()
+        self.ViewerCertificate.AcmCertificateArn = If(
+            'CloudFrontAcmCertificate',
+            get_endvalue('GlobalCertificateArn'),
+            Ref('AWS::NoValue')
+        )
+        self.ViewerCertificate.CloudFrontDefaultCertificate = If(
+            'CloudFrontAcmCertificate',
+            Ref('AWS::NoValue'),
+            'True'
+        )
+        self.ViewerCertificate.SslSupportMethod = If(
+            'CloudFrontAcmCertificate',
+            'sni-only',
+            Ref('AWS::NoValue')
+        )
+        self.ViewerCertificate.MinimumProtocolVersion = If(
+            'CloudFrontAcmCertificate',
+            get_endvalue('CloudFrontMinimumProtocolVersion'),
+            Ref('AWS::NoValue')
         )
         self.WebACLId = get_endvalue('CloudFrontWebACLId', condition=True)
 

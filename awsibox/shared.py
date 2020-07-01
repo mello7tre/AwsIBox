@@ -216,7 +216,14 @@ def get_subvalue(substring, subvar, stack=False):
 def get_resvalue(resname, propname):
     res = cfg.Resources[resname]
 
-    return getattr(res, propname) 
+    loc = propname.find('.')
+    while loc > 0:
+        prop = propname[0:loc]
+        res = getattr(res, prop)
+        propname = propname[loc + 1:]
+        loc = propname.find('.')
+
+    return getattr(res, propname)
 
 
 def get_condition(cond_name, cond, value2,
@@ -243,7 +250,7 @@ def get_condition(cond_name, cond, value2,
             split_sep = select_list.data['Fn::Split'][0]
             key_name = select_list.data['Fn::Split'][1]
             select_value_param = Split(split_sep, Ref(key_name))
-            select_value_map =  Split(split_sep, get_endvalue(key_name))
+            select_value_map = Split(split_sep, get_endvalue(key_name))
         else:
             select_value_param = select_list
             select_value_map = get_endvalue(select_list)
