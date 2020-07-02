@@ -135,6 +135,7 @@ class ELBV2ListenerHttps(ELBV2Listener):
         )]
         self.Port = get_endvalue('ListenerLoadBalancerHttpsPort')
         self.Protocol = 'HTTPS'
+        self.SslPolicy = get_endvalue('ListenerLoadBalancerSslPolicy')
 
 
 class ELBV2TargetGroup(elbv2.TargetGroup):

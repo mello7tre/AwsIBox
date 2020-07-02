@@ -34,6 +34,7 @@ global:
   HealthyThresholdCount: 2
   ListenerLoadBalancerHttpPort: 80
   ListenerLoadBalancerHttpsPort: 443
+  ListenerLoadBalancerSslPolicy: ELBSecurityPolicy-2016-08
   LoadBalancerAccess: Public
   LoadBalancerLog: None
   LoadBalancerHttp2: True
