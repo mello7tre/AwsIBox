@@ -41,4 +41,5 @@ global:
   LoadBalancerSslCertificate: True
   TargetGroupDeregistrationDelay: '30'
   TargetGroupCookieSticky: None
+  TargetGroupProtocol: HTTP
   UnhealthyThresholdCount: 3

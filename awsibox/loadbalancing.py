@@ -175,6 +175,7 @@ class ELBV2TargetGroup(elbv2.TargetGroup):
                 Ref('AWS::NoValue')
             )
         ]
+        self.Protocol = get_endvalue('TargetGroupProtocol')
         self.VpcId = get_expvalue('VpcId')
 
 
@@ -183,7 +184,6 @@ class ELBV2TargetGroupEC2(ELBV2TargetGroup):
         super().__init__(title, **kwargs)
 
         self.Port = get_endvalue('Listeners1InstancePort')
-        self.Protocol = get_endvalue('Listeners1Protocol')
 
 
 class ELBV2TargetGroupALB(elbv2.TargetGroup):
@@ -203,7 +203,6 @@ class ELBV2TargetGroupECS(ELBV2TargetGroup):
         super().__init__(title, **kwargs)
 
         self.Port = get_endvalue('ContainerDefinitions1ContainerPort')
-        self.Protocol = get_endvalue('ContainerDefinitions1Protocol')
         self.TargetType = If(
             'NetworkModeAwsVpc',
             'ip',
