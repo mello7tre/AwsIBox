@@ -87,7 +87,7 @@ class CFM_CustomResourceLightHouse(object):
         # Resources
         R_LightHouse = cfm.CustomResource(resname)
         R_LightHouse.Condition = resname
-        R_LightHouse..DependsOn = 'Service'
+        R_LightHouse.DependsOn = 'Service'
         R_LightHouse.ServiceToken = get_expvalue('LambdaCCRLightHouse')
         R_LightHouse.EnvRole = Ref('EnvRole')
         R_LightHouse.EnvApp1Version = Ref('EnvApp1Version')

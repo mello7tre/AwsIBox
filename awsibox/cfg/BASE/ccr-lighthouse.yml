@@ -1,0 +1,32 @@
+ccr-lighthouse:
+  StackType: res
+  StackName: lth
+  Parameter:
+    - EnvApp1Version:
+        Description: EnvApp1Version used by Lambda
+  Output:
+    - EnvApp1Version:
+        Value: Ref('EnvApp1Version')
+  IAMPolicy:
+    - LambdaCCRLightHouse:
+        Condition: 'LambdaCCRLightHouse'
+        Roles:
+          - Ref('RoleLambdaCCRLightHouse')
+        Statement:
+          - 1:
+              Action:
+                - 'ecs:RunTask'
+                - 'ecs:StartTask'
+              Resource: Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/lth-t-*')
+  Lambda:
+    - CCRLightHouse:
+        Enabled: True
+        Export: True
+        Code:
+          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Key: Sub('ibox-tools/ccr-lighthouse/ccr-lighthouse-${EnvApp1Version}.zip')
+        Description: 'Custom Resource for executing lighthouse-task'
+        MemorySize: 128
+        Runtime: python3.7
+        Timeout: 300
+        Variables: []

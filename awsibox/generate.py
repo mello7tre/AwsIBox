@@ -4,8 +4,7 @@ from .shared import stack_add_res
 from . import (mappings, lambdas, securitygroup, cloudwatch, loadbalancing,
                autoscaling, iam, codedeploy, route53, crm, events, cloudfront,
                sqs, sns, ecs, ecr, s3, waf, vpc, dynamodb, kms, rds, efs,
-               elasticache, servicediscovery, cloudformation, logs, apigateway,
-               replicator)
+               elasticache, servicediscovery, cloudformation, logs, apigateway)
 
 
 def execute_class(RP_cmm):

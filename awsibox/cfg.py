@@ -252,10 +252,10 @@ CFG_TO_CLASS = {
                              'class': 'SG_SecurityGroupIngressesExtra'},
     'VPC': {'module': 'vpc',
             'class': 'VPC_VPC'},
-    'CRLightHouse': {'module': 'cloudformation',
+    'CCRLightHouse': {'module': 'cloudformation',
                      'class': 'CFM_CustomResourceLightHouse'},
     # ReplicateRegions need to stay here
-    'CRReplicateRegions': {'module': 'cloudformation',
+    'CCRReplicateRegions': {'module': 'cloudformation',
                            'class': 'CFM_CustomResourceReplicator'},
     # Output need to be last line
     'Output': {'module': 'cloudformation',
