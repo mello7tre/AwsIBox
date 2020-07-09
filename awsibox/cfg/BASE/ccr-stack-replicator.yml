@@ -1,4 +1,4 @@
-stack-replicator:
+ccr-stack-replicator:
   StackType: res
   StackName: rpl
   Parameter:
@@ -8,21 +8,21 @@ stack-replicator:
     - Mytest:
         Value: Ref('Mytest')
   Mytest: gatto
-  ReplicateRegions:
+  CCRReplicateRegions:
     - 'eu-west-1'
     - 'eu-central-1'
   IAMPolicy:
-    - LambdaStackReplicator:
-        Condition: 'LambdaStackReplicator'
+    - LambdaCCRStackReplicator:
+        Condition: 'LambdaCCRStackReplicator'
         Roles:
-          - Ref('RoleLambdaStackReplicator')
+          - Ref('RoleLambdaCCRStackReplicator')
         Statement:
           - 1:
               Action:
                 - '*'
               Resource: '*'
   Lambda:
-    - StackReplicator:
+    - CCRStackReplicator:
         Enabled: True
         Export: True
         Code:
