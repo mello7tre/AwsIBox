@@ -4,6 +4,8 @@ ccr-lighthouse:
   Parameter:
     - EnvApp1Version:
         Description: EnvApp1Version used by Lambda
+    - LightHouseTaskStackName:
+        Description: LightHouseTask StackName
   Output:
     - EnvApp1Version:
         Value: Ref('EnvApp1Version')
@@ -18,6 +20,10 @@ ccr-lighthouse:
                 - 'ecs:RunTask'
                 - 'ecs:StartTask'
               Resource: Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/lth-t-*')
+          - 2:
+              Action:
+                - 'events:ListTargetsByRule'
+              Resource: '*'
   Lambda:
     - CCRLightHouse:
         Enabled: True
@@ -29,4 +35,5 @@ ccr-lighthouse:
         MemorySize: 128
         Runtime: python3.7
         Timeout: 300
-        Variables: []
+        Variables:
+          - LightHouseTaskStackName: Ref('LightHouseTaskStackName')
