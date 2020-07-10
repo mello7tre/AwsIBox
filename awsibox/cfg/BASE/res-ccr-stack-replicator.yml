@@ -1,6 +1,6 @@
-ccr-stack-replicator:
+res-ccr-stack-replicator:
   StackType: res
-  StackName: rpl
+  StackName: r-ccr-rpl
   Parameter:
     - Mytest:
         Description: 'ssm test to change'

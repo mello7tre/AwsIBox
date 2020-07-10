@@ -1,6 +1,6 @@
-ccr-lighthouse:
+res-ccr-lighthouse:
   StackType: res
-  StackName: lth
+  StackName: r-ccr-lth
   Parameter:
     - EnvApp1Version:
         Description: EnvApp1Version used by Lambda
@@ -21,6 +21,12 @@ ccr-lighthouse:
                 - 'ecs:StartTask'
               Resource: Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/lth-t-*')
           - 2:
+              Action:
+                - 'iam:PassRole'
+              Resource:
+                - Sub('arn:aws:iam::${AWS::AccountId}:role/lth-t-*')
+                - get_expvalue('RoleECSTaskExecution')
+          - 3:
               Action:
                 - 'events:ListTargetsByRule'
               Resource: '*'
