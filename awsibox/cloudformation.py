@@ -91,5 +91,6 @@ class CFM_CustomResourceLightHouse(object):
         R_LightHouse.ServiceToken = get_expvalue('LambdaCCRLightHouse')
         R_LightHouse.EnvRole = Ref('EnvRole')
         R_LightHouse.EnvApp1Version = Ref('EnvApp1Version')
+        R_LightHouse.RepoName = get_endvalue('RepoName')
 
         add_obj(R_LightHouse)
