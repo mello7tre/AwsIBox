@@ -29,6 +29,7 @@ global:
                 - 'cloudformation:ListStackResources'
                 - 'cloudformation:ListExports'
                 - 'cloudformation:UpdateStack'
+                - 'cloudformation:CancelUpdateStack'
                 - 'cloudformation:ValidateTemplate'
                 - 'cloudfront:GetDistribution*'
                 - 'cloudfront:ListDistributions'
