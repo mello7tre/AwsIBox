@@ -121,13 +121,11 @@ res-iam-policy-01:
     - MetricRead:
         Export: True
         Type: Managed
-        Description: 'Read CloudWatch Metrics and DashBoard'
+        Description: 'Read CloudWatch Metrics'
         Statement:
           - 1:
               Action:
-                - 'cloudwatch:GetDashboard'
                 - 'cloudwatch:GetMetricData'
-                - 'cloudwatch:ListDashboards'
                 - 'cloudwatch:GetMetricStatistics'
                 - 'cloudwatch:ListMetrics'
               Resource: '*'
