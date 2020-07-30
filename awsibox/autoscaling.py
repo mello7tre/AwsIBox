@@ -444,6 +444,9 @@ class ASInitConfigSets(cfm.InitConfigSets):
         else:
             CODEDEPLOY = Ref('AWS::NoValue')
 
+        CWAGENT = If(
+            'CloudWatchAgent', 'CWAGENT', Ref('AWS::NoValue'))
+
         if cfg.LoadBalancerClassic or cfg.LoadBalancerApplication:
             ELBWAITER = 'ELBWAITER'
         else:
@@ -456,6 +459,7 @@ class ASInitConfigSets(cfm.InitConfigSets):
                 'SETUP',
                 CODEDEPLOY,
                 'SERVICES',
+                CWAGENT,
                 ELBWAITER,
             ],
             'buildami': [
@@ -638,6 +642,63 @@ class ASInitConfigCodeDeploy(cfm.InitConfig):
                     'ensureRunning': 'true',
                     'files': [
                         '/etc/codedeploy-agent/conf/codedeployagent.yml'
+                    ]
+                }
+            }
+        }
+
+
+class ASInitConfigCloudWatchAgent(cfm.InitConfig):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+
+        self.packages = {
+            'rpm': {
+                'amazon-cloudwatch-agent': (
+                    'https://s3.amazonaws.com'
+                    '/amazoncloudwatch-agent/amazon_linux/amd64/latest/'
+                    'amazon-cloudwatch-agent.rpm'
+                )
+            }
+        }
+        self.files = {
+            '/opt/aws/amazon-cloudwatch-agent/etc/'
+            'amazon-cloudwatch-agent.json': {
+                'content': Join('', [
+                    '{\n',
+                    '  "metrics": {\n',
+                    '    "append_dimensions": {\n',
+                    '      "AutoScalingGroupName": '
+                    '"${aws:AutoScalingGroupName}",\n',
+                    '      "InstanceId": "${!aws:InstanceId}"\n',
+                    '    },\n',
+                    '    "metrics_collected": {\n',
+                    '      "mem": {\n',
+                    '        "measurement": [\n',
+                    '          "mem_used_percent"\n',
+                    '        ]\n',
+                    '      },\n',
+                    '      "disk": {\n',
+                    '        "resources": [\n',
+                    '          "/"\n',
+                    '        ],\n',
+                    '        "measurement": [\n',
+                    '          "disk_used_percent"\n',
+                    '        ]\n',
+                    '      }\n',
+                    '    }\n',
+                    '  }\n',
+                    '}\n',
+                ]),
+            },
+        }
+        self.services = {
+            'sysvinit': {
+                'amazon-cloudwatch-agent': {
+                    'ensureRunning': 'true',
+                    'files': [
+                        '/opt/aws/amazon-cloudwatch-agent/etc/'
+                        'amazon-cloudwatch-agent.json'
                     ]
                 }
             }
@@ -1161,6 +1222,7 @@ class AS_LaunchConfiguration(object):
         InitConfigCodeDeploy = ASInitConfigCodeDeploy()
 
         CfmInitArgs['SETUP'] = InitConfigSetup
+        CfmInitArgs['CWAGENT'] = ASInitConfigCloudWatchAgent('')
 
         if cfg.Apps:
             CfmInitArgs['CODEDEPLOY'] = InitConfigCodeDeploy
@@ -1293,7 +1355,7 @@ class AS_AutoscalingEC2(object):
         # now using CW events - this way works with autospotting too
         try:
             cfg.NotificationConfiguration
-        except:
+        except Exception as e:
             pass
         else:
             NotificationConfiguration = ASNotificationConfiguration()

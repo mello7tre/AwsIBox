@@ -1,0 +1,14 @@
+global:
+  Parameter:
+    - CloudWatchAgent:
+        Description: 'CloudWatch Agent Install - empty for default based on env/role'
+        AllowedValues: ['', 'True', 'None']
+  Condition:
+    - CloudWatchAgent:
+        get_condition('', 'not_equals', 'None', 'CloudWatchAgent')
+  CloudWatchAgent: None
+  Role:
+    - Instance:
+        ManagedPolicyArns:
+          - IBOXADDTOLIST
+          - If('CloudWatchAgent', 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy', Ref('AWS::NoValue')
