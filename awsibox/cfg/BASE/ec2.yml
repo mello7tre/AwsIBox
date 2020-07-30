@@ -7,7 +7,6 @@ IBoxLoader: !include [
   parameterstore.yml,
   imageid-ec2.yml,
   launchconfiguration.yml,
-  cloudwatch-agent.yml
 ]
 
 ec2:
@@ -138,4 +137,5 @@ stg: *cfg_dev
 IBoxLoaderAfter: !include [
   spot-auto.yml,
   #  spot-asg.yml,
+  cloudwatch-agent.yml,
 ]
