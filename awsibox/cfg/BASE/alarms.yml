@@ -99,6 +99,20 @@ global:
             Stat: Average
             Period: 60
 
+  AlarmDiskUsed: &diskused
+    Enabled: None
+    ActionsEnabled: True
+    EvaluationPeriods: 3
+    MetricName: 'root_disk_used_percent'
+    Statistic: 'Maximum'
+    Period: 60
+    Namespace: 'CWAgent'
+    Unit: Percent
+    Dimensions:
+      - RootDisk:
+          Name: AutoScalingGroupName
+          Value: Ref('AutoScalingGroup')
+
   Alarm:
     - CPUHigh:
         <<: *cpu
@@ -178,3 +192,7 @@ global:
             Id: e1
             Label: OnDemandInExcess
         Threshold: -1
+    - DiskUsed:
+        <<: *diskused
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: '80'
