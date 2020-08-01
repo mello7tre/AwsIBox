@@ -81,15 +81,16 @@ class LambdaFunction(lbd.Function):
             self.VpcConfig = lbd.VPCConfig('')
             auto_get_props(self.VpcConfig, key, mapname=self.title)
 
-        # Variables - always set Env
-        self.Environment = lbd.Environment(
-            Variables={'Env': Ref('EnvShort')}
-        )
-        if 'Variables' in key:
-            self.Environment.Variables.update({
-                varname: get_endvalue(f'{self.title}Variables{varname}')
-                for varname in key['Variables']
-            })
+        # Variables - skip if atEdge - always set Env
+        if 'AtEdge' not in key:
+            self.Environment = lbd.Environment(
+                Variables={'Env': Ref('EnvShort')}
+            )
+            if 'Variables' in key:
+                self.Environment.Variables.update({
+                    varname: get_endvalue(f'{self.title}Variables{varname}')
+                    for varname in key['Variables']
+                })
 
 
 class LambdaLayerVersionPermission(lbd.LayerVersionPermission):
