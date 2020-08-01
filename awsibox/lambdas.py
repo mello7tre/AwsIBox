@@ -82,7 +82,9 @@ class LambdaFunction(lbd.Function):
             auto_get_props(self.VpcConfig, key, mapname=self.title)
 
         # Variables - skip if atEdge - always set Env
-        if 'AtEdge' not in key:
+        try:
+            key['AtEdge']
+        except Exception as e:
             self.Environment = lbd.Environment(
                 Variables={'Env': Ref('EnvShort')}
             )
