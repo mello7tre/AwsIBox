@@ -27,10 +27,10 @@ res-event-01:
           - LambdaR53RecordInstanceId:
               Arn: GetAtt('LambdaR53RecordInstanceId', 'Arn')
               Id: 'TargetFunction-02'
-    - ECSServiceAction:
-        Condition: LambdaECSServiceAction
-        Description: 'ECS Service Action Lambda Trigger'
-        State: 'ENABLED'
+    - ECSEventServiceAction:
+        Condition: LambdaECSEvents
+        Description: 'ECSEvents Lambda Trigger'
+        State: 'DISABLED'
         EventPattern: >
             eval('{
               "source": [
@@ -41,8 +41,25 @@ res-event-01:
               ]
             }')
         Targets:
-          - LambdaECSServiceAction:
-              Arn: GetAtt('LambdaECSServiceAction', 'Arn')
+          - LambdaECSEvents:
+              Arn: GetAtt('LambdaECSEvents', 'Arn')
+              Id: TargetFunction-01
+    - ECSEventTaskStateChange:
+        Condition: LambdaECSEvents
+        Description: 'ECSEvents Lambda Trigger'
+        State: 'DISABLED'
+        EventPattern: >
+            eval('{
+              "source": [
+                "aws.ecs"
+              ],
+              "detail-type": [
+                "ECS Task State Change"
+              ]
+            }')
+        Targets:
+          - LambdaECSEvents:
+              Arn: GetAtt('LambdaECSEvents', 'Arn')
               Id: TargetFunction-01
   Lambda:
     - ServiceDiscovery:
@@ -65,12 +82,12 @@ res-event-01:
           - HostedZoneName: get_endvalue('HostedZoneNamePrivate')
           - HostedZoneId: get_expvalue('HostedZoneIdPrivate')
           - Topic: get_expvalue('SNSTopicASGNotificationR53')
-    - ECSServiceAction:
+    - ECSEvents:
         Enabled: None
-        Description: 'ECSServiceAction'
+        Description: 'ECSEvents'
         Code:
           S3Bucket: Sub(cfg.BucketAppRepository)
-          S3Key: ibox-tools/ecs-service-action/master-444dd76.zip
+          S3Key: ibox-tools/ecs-events/master-444dd76.zip
         MemorySize: 128
         Runtime: python3.7
         Timeout: 30
@@ -106,10 +123,10 @@ res-event-01:
                 - 'route53:ChangeResourceRecordSets'
                 - 'route53:ListResourceRecordSets'
               Resource: 'arn:aws:route53:::*'
-    - LambdaECSServiceAction:
-        Condition: LambdaECSServiceAction
+    - LambdaECSEvents:
+        Condition: LambdaECSEvents
         Roles:
-          - Ref('RoleLambdaECSServiceAction')
+          - Ref('RoleLambdaECSEvents')
         Statement:
           - 1:
               Action:
@@ -124,3 +141,6 @@ res-event-01:
                 - 'lambda:AddPermission'
                 - 'lambda:RemovePermission'
               Resource: '*'
+          - 2:
+              Action: 'sns:Publish'
+              Resource: get_expvalue('SNSTopicCloudWatchAlarm')
