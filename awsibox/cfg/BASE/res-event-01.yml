@@ -38,7 +38,19 @@ res-event-01:
               ],
               "detail-type": [
                 "ECS Service Action"
-              ]
+              ],
+              "detail": {
+                "eventType": [
+                  "ERROR"
+                ],
+                "eventName": [
+                  "SERVICE_TASK_PLACEMENT_FAILURE"
+                ],
+                "reason": [
+                  "RESOURCE:MEMORY",
+                  "RESOURCE:CPU"
+                ]
+              }
             }')
         Targets:
           - LambdaECSEvents:
@@ -55,7 +67,18 @@ res-event-01:
               ],
               "detail-type": [
                 "ECS Task State Change"
-              ]
+              ],
+              "detail": {
+                "lastStatus": [
+                  "STOPPED"
+                ],
+                "desiredStatus": [
+                  "STOPPED"
+                ],
+                "stopCode": [
+                  "EssentialContainerExited"
+                ]
+              }
             }')
         Targets:
           - LambdaECSEvents:
