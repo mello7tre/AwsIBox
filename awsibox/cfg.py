@@ -206,6 +206,8 @@ CFG_TO_CLASS = {
                          'class': 'LBD_Permissions'},
     'LambdaEventSourceMapping': {'module': 'lambdas',
                                  'class': 'LBD_EventSourceMappings'},
+    'LambdaEventInvokeConfig': {'module': 'lambdas',
+                                 'class': 'LBD_EventInvokeConfig'},
     'LoadBalancerApplication': {'module': 'loadbalancing',
                                 'class': 'LB_ElasticLoadBalancing'},
     'LoadBalancerClassic': {'module': 'loadbalancing',

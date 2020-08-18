@@ -18,7 +18,7 @@ def get_args():
                                nargs='+', default=cfg.DEFAULT_REGIONS)
     parent_parser.add_argument('-o', '--Output', help='Output Format',
                                choices=['json', 'cjson', 'yaml'],
-                               default='json')
+                               default='yaml')
 
     # view parser
     parser_view = subparsers.add_parser(

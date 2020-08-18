@@ -319,3 +319,18 @@ class LBD_EventSourceMappings(object):
             add_obj([
                 r_EventSourceMapping,
             ])
+
+
+class LBD_EventInvokeConfig(object):
+    def __init__(self, key):
+        # Resources
+        for n, v in getattr(cfg, key).items():
+            resname = f'{key}{n}'
+
+            # resources
+            r_EventInvokeConfig = lbd.EventInvokeConfig(resname)
+            auto_get_props(r_EventInvokeConfig, v, recurse=True)
+
+            add_obj([
+                r_EventInvokeConfig,
+            ])
