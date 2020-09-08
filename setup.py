@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="awsibox",
-    version="0.1.0",
+    version="0.2.0",
     author="Mello",
     author_email="mello+python@ankot.org",
     description="AWS Infrastructure in a Box",
