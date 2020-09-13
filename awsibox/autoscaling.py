@@ -519,14 +519,14 @@ class ASInitConfigSetup(cfm.InitConfig):
                     'runas=root\n'
                 ])
             },
-            '/usr/local/bin/chamber': {
-                'mode': '000755',
-                'source': Sub(
-                    f'https://{cfg.BucketAppRepository}'
-                    '.s3.${AWS::Region}.amazonaws.com/ibox-tools/chamber'),
-                'owner': 'root',
-                'group': 'root',
-            },
+            # '/usr/local/bin/chamber': {
+            #     'mode': '000755',
+            #     'source': Sub(
+            #         f'https://{cfg.BucketAppRepository}'
+            #         '.s3.${AWS::Region}.amazonaws.com/ibox-tools/chamber'),
+            #     'owner': 'root',
+            #     'group': 'root',
+            # },
         }
         self.commands = {
             '01_disk': {
