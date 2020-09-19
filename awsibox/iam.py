@@ -129,7 +129,7 @@ class IAMRoleIBox(iam.Role):
         # to a role created from code (Ex. LambdaRoles)
         try:
             cfg.IAMPolicyInRole
-        except:
+        except Exception:
             pass
         else:
             for n, v in cfg.IAMPolicyInRole.items():
@@ -294,7 +294,7 @@ class IAM_Users(object):
 
                     try:
                         policy_arns = cfg.IAMGroup[m]['ManagedPolicyArns']
-                    except:
+                    except Exception:
                         pass
                     else:
                         for p in policy_arns:

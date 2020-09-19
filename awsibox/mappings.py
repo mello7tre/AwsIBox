@@ -132,12 +132,12 @@ def get_azones_mapping():
         zones = {}
         try:
             nzones = AZ[r]
-        except:
+        except Exception:
             nzones = AZ['default']
 
         try:
             nzones = cfg.RP['dev'][r]['AZones']
-        except:
+        except Exception:
             pass
 
         for n in range(AZ['MAX']):

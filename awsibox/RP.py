@@ -126,7 +126,7 @@ def gen_dict_extract(cfg, envs):
                     # i do not process it again
                     if k in list(RP_base.keys()):
                         del cfg[k]
-                except:
+                except Exception:
                     pass
                 for result in gen_dict_extract(v, envs):
                     yield result
@@ -155,7 +155,7 @@ def my_merge_dict(basedict, workdict):
         try:
             is_dict = isinstance(workdict[k], dict)
             is_map = isinstance(basedict[k], Mapping)
-        except:
+        except Exception:
             is_dict = False
             is_map = False
 
@@ -166,7 +166,7 @@ def my_merge_dict(basedict, workdict):
         # preserving the base ones
         try:
             ibox_add_to_list = (workdict[k][0] == 'IBOXADDTOLIST')
-        except:
+        except Exception:
             ibox_add_to_list = False
 
         if is_dict and is_map:
@@ -187,7 +187,7 @@ def get_RP_for_envs(value):
 
     try:
         is_dict = isinstance(value[0], dict)
-    except:
+    except Exception:
         is_dict = False
 
     if hasattr(value, 'items'):
@@ -241,7 +241,7 @@ def parse_cfg(cfg, envs=[]):
                     parsed_cfg[k] = parsed_cfg[k] + v
                 else:
                     raise
-            except:
+            except Exception:
                 parsed_cfg[k] = v
 
     return parsed_cfg
@@ -359,13 +359,13 @@ def set_cfg():
     # LoadBalancerClassic
     try:
         cfg.LoadBalancerClassic
-    except:
+    except Exception:
         cfg.LoadBalancerClassic = []
 
     # LoadBalancerApplication
     try:
         cfg.LoadBalancerApplication
-    except:
+    except Exception:
         cfg.LoadBalancerApplication = []
 
     # LoadBalancer
@@ -373,7 +373,7 @@ def set_cfg():
     for n in ['LoadBalancerClassic', 'LoadBalancerApplication']:
         try:
             getattr(cfg, n)
-        except:
+        except Exception:
             pass
         else:
             cfg.LoadBalancer = True
@@ -383,7 +383,7 @@ def set_cfg():
     cfg.LoadBalancerClassicInternal = None
     try:
         cfg.LoadBalancerClassic
-    except:
+    except Exception:
         pass
     else:
         if 'External' in cfg.LoadBalancerClassic:
@@ -396,7 +396,7 @@ def set_cfg():
     cfg.LoadBalancerApplicationInternal = None
     try:
         cfg.LoadBalancerApplication
-    except:
+    except Exception:
         pass
     else:
         if 'External' in cfg.LoadBalancerApplication:
@@ -407,7 +407,7 @@ def set_cfg():
     # SpotASG
     try:
         cfg.SpotASG
-    except:
+    except Exception:
         cfg.SpotASG = None
 
     # RecordSet

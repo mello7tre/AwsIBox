@@ -56,7 +56,7 @@ def get_args():
 
     try:
         cfg.debug = args.Debug
-    except:
+    except Exception:
         cfg.debug = None
     cfg.regions = args.Regions
 

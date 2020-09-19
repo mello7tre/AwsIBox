@@ -207,7 +207,7 @@ CFG_TO_CLASS = {
     'LambdaEventSourceMapping': {'module': 'lambdas',
                                  'class': 'LBD_EventSourceMappings'},
     'LambdaEventInvokeConfig': {'module': 'lambdas',
-                                 'class': 'LBD_EventInvokeConfig'},
+                                'class': 'LBD_EventInvokeConfig'},
     'LoadBalancerApplication': {'module': 'loadbalancing',
                                 'class': 'LB_ElasticLoadBalancing'},
     'LoadBalancerClassic': {'module': 'loadbalancing',
@@ -255,10 +255,10 @@ CFG_TO_CLASS = {
     'VPC': {'module': 'vpc',
             'class': 'VPC_VPC'},
     'CCRLightHouse': {'module': 'cloudformation',
-                     'class': 'CFM_CustomResourceLightHouse'},
+                      'class': 'CFM_CustomResourceLightHouse'},
     # ReplicateRegions need to stay here
     'CCRReplicateRegions': {'module': 'cloudformation',
-                           'class': 'CFM_CustomResourceReplicator'},
+                            'class': 'CFM_CustomResourceReplicator'},
     # Output need to be last line
     'Output': {'module': 'cloudformation',
                'class': 'CFM_Outputs'},

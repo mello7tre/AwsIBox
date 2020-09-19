@@ -316,7 +316,8 @@ class S3_Buckets(object):
                     *PolicyReadConditions
                 )}
             else:
-                c_PolicyRead = {f'{resname}PolicyRead': Equals('True', 'False')}
+                c_PolicyRead = {
+                    f'{resname}PolicyRead': Equals('True', 'False')}
 
             PolicyWriteConditions = []
             PolicyWritePrincipal = []
@@ -341,8 +342,8 @@ class S3_Buckets(object):
                     *PolicyWriteConditions
                 )}
             else:
-                c_PolicyWrite = {f'{resname}PolicyWrite': Equals('True', 'False')}
-
+                c_PolicyWrite = {
+                    f'{resname}PolicyWrite': Equals('True', 'False')}
 
             c_Create = get_condition(
                 resname, 'not_equals', 'None', f'{resname}Create')
@@ -414,7 +415,7 @@ class S3_Buckets(object):
                     v['NotificationConfiguration']['LambdaConfigurations']
                     ['Trigger']['Function']
                 )
-            except:
+            except Exception:
                 pass
             else:
                 if 'Fn::GettAtt' in lambda_arn.data:
@@ -479,7 +480,7 @@ class S3_Buckets(object):
                     ))
 
                 # conditions
-                identitycondname = f'{resname}CloudFrontOriginAccessIdentity' 
+                identitycondname = f'{resname}CloudFrontOriginAccessIdentity'
                 c_identity = get_condition(
                     identitycondname, 'not_equals', 'None')
 

@@ -26,7 +26,7 @@ def get_files(brand):
         for root, directories, filenames in os.walk(n, topdown=True):
             try:
                 directories.remove('UNUSED')
-            except:
+            except Exception:
                 pass
             for filename in filenames:
                 if not filename.startswith('.'):
@@ -64,7 +64,7 @@ def add_to_map(brand, roles):
 
     try:
         discover_map[brand].extend(roles)
-    except:
+    except Exception:
         discover_map[brand] = roles
 
 

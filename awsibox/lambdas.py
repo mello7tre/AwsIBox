@@ -66,7 +66,7 @@ class LambdaFunction(lbd.Function):
             self.Code = lbd.Code()
             try:
                 self.Code.ZipFile = Join('', import_lambda(import_name))
-            except:
+            except Exception:
                 self.Code.ZipFile = (
                     'print("Use Code parameter in yaml '
                     f'or create file lib/lambas/{import_name}.code '
@@ -136,7 +136,7 @@ class LBD_Lambdas(object):
 
             try:
                 v['Code']['S3Key']
-            except:
+            except Exception:
                 pass
             else:
                 s3keyname = f'{resname}CodeS3Key'
@@ -255,7 +255,7 @@ class LBD_LayerVersions(object):
 
             try:
                 v['Content']['S3Key']
-            except:
+            except Exception:
                 pass
             else:
                 s3keyname = f'{resname}ContentS3Key'

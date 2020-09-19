@@ -122,7 +122,7 @@ class SG_SecurityGroupsExtra(object):
         # set and empty SecurityGroups list and output (not added)
         try:
             cfg.SecurityGroups
-        except:
+        except Exception:
             self.SecurityGroups = []
             self.O_SecurityGroups = Output('')
             return
@@ -133,7 +133,7 @@ class SG_SecurityGroupsExtra(object):
             'SecurityGroups List Extra - '
             f'{SECURITY_GROUPS_DEFAULT} for default based on env/role')
         P_SecurityGroups.AllowedPattern = (
-            '^(\w*,\w*){%s}$' % (MAX_SECURITY_GROUPS - 1))
+            r'^(\w*,\w*){%s}$' % (MAX_SECURITY_GROUPS - 1))
         P_SecurityGroups.Default = SECURITY_GROUPS_DEFAULT
 
         add_obj([

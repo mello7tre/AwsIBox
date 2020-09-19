@@ -7,6 +7,7 @@ from .lambdas import LambdaPermissionApiGateway
 from .iam import IAMPolicyApiGatewayPrivate
 from .route53 import R53RecordApiGatewayDomainName
 
+
 class ApiGatewayAccount(agw.Account):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -22,7 +23,7 @@ class ApiGatewayResource(agw.Resource):
 
         try:
             stagekey = cfg.ApiGatewayStage[stage]['ApiGatewayResource']
-        except:
+        except Exception:
             stagekey = {'Empty': True}
 
         auto_get_props(self, key)
@@ -43,7 +44,7 @@ class ApiGatewayMethod(agw.Method):
         try:
             stagekey = (cfg.ApiGatewayStage[stage]['ApiGatewayResource']
                         [basename]['Method'][name])
-        except:
+        except Exception:
             stagekey = {'Empty': True}
 
         auto_get_props(self, key, recurse=True)
@@ -263,11 +264,11 @@ class AGW_Stages(object):
             r_Stage = ApiGatewayStage(resname, name=n, key=v)
 
             r_DeploymentA = ApiGatewayDeployment(f'ApiGatewayDeployment{n}A',
-                                                name=n, key=v)
+                                                 name=n, key=v)
             r_DeploymentA.Condition = f'{depname}A'
 
             r_DeploymentB = ApiGatewayDeployment(f'ApiGatewayDeployment{n}B',
-                                                name=n, key=v)
+                                                 name=n, key=v)
             r_DeploymentB.Condition = f'{depname}B'
 
             add_obj([
@@ -295,7 +296,7 @@ class AGW_RestApi(object):
         try:
             condition = cfg.PolicyCondition
             R_RestApi.Policy['Statement'][0]['Condition'] = condition
-        except:
+        except Exception:
             pass
 
         add_obj([

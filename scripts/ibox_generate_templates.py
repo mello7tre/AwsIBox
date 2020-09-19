@@ -26,15 +26,15 @@ def output_template(template, brand=None, role=None):
         file_path = os.path.join(os.getcwd(), 'templates', brand)
         try:
             os.makedirs(file_path)
-        except:
+        except Exception:
             pass
-        file_name = os.path.join(file_path, role + extension) 
+        file_name = os.path.join(file_path, role + extension)
         with open(file_name, 'w') as f:
             f.write(output + '\n')
 
 
 def get_template():
-    # save base cfg 
+    # save base cfg
     cfg_base = cfg.__dict__.copy()
 
     cfg.template = Template()
@@ -53,15 +53,16 @@ if args.action == 'view':
     cfg.brand = args.Brand
 
     template = get_template()
-    
+
     output_template(template)
 
 elif args.action == 'write':
-    discover_map = discover.discover(args.Brands, args.EnvRoles, args.StackTypes)
-    
+    discover_map = discover.discover(
+        args.Brands, args.EnvRoles, args.StackTypes)
+
     for brand, roles in discover_map.items():
         cfg.brand = brand
-    
+
         for role in roles:
             cfg.envrole = role
 

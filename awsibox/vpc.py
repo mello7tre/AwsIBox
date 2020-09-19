@@ -157,7 +157,6 @@ class VPC_VPC(object):
         R_VPCGatewayAttachment.InternetGatewayId = Ref('InternetGateway')
         R_VPCGatewayAttachment.VpcId = Ref('VPC')
 
-
         if cfg.NatGateway != 'None':
             # resources
             R_EIPNat = ec2.EIP('EIPNat')
@@ -166,7 +165,7 @@ class VPC_VPC(object):
             R_NatGateway = ec2.NatGateway('NatGateway')
             R_NatGateway.AllocationId = GetAtt('EIPNat', 'AllocationId')
             R_NatGateway.SubnetId = Ref('SubnetPublicA')
-            
+
             R_RouteNatGateway = EC2RouteNatGateway('RouteNatGateway')
 
             # outputs

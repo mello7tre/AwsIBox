@@ -254,7 +254,7 @@ class CFOriginEC2ECS(clf.Origin):
 
         try:
             custom_headers = cfg.CloudFrontOriginCustomHeaders
-        except:
+        except Exception:
             pass
         else:
             for n in custom_headers:
@@ -325,7 +325,7 @@ def CFCustomErrors():
 
     try:
         ErrorResponses = getattr(cfg, mapname)
-    except:
+    except Exception:
         pass
     else:
         for n, v in ErrorResponses.items():
@@ -414,7 +414,7 @@ class CF_CloudFront(object):
         Origins = []
         try:
             cfg.CloudFrontOrigins
-        except:
+        except Exception:
             pass
         else:
             for n, v in cfg.CloudFrontOrigins.items():
@@ -492,7 +492,7 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
 
         try:
             cfg.CloudFrontCustomErrorResponses
-        except:
+        except Exception:
             pass
         else:
             (self.CloudFrontDistribution.

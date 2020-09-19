@@ -1079,7 +1079,7 @@ class LB_ElasticLoadBalancingALB(object):
         # Create TargetGroups pointing to LambdaServiceUnavailable
         try:
             cfg.ServiceUnavailable
-        except:
+        except Exception:
             pass
         else:
             LB_TargetGroupsALB()
