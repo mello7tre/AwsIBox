@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from . import cfg
 from .shared import stack_add_res
 from . import (mappings, lambdas, securitygroup, cloudwatch, loadbalancing,
