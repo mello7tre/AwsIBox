@@ -1,5 +1,5 @@
 # AwsIBox
-AwsIBox
+AwsIBox - *AWS* *I*nfrastructure in a *Box*
 
 Work in progres...
 
