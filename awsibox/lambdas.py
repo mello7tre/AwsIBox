@@ -187,18 +187,21 @@ class LBD_Lambdas(object):
                 add_obj(p_Version)
 
                 # conditons
-                c_VersionA = get_condition(
-                    versionnameA, 'equals', 'A', versionname, nomap=True)
-
-                c_VersionB = get_condition(
-                    versionnameB, 'equals', 'B', versionname, nomap=True)
-
-                c_Version = {versionname: And(
+                c_VersionA = {versionnameA: And(
                     Condition(resname),
-                    Or(
-                        Condition(versionnameA),
-                        Condition(versionnameB),
-                    )
+                    get_condition(
+                        '', 'equals', 'A', versionname, nomap=True),
+                )}
+
+                c_VersionB = {versionnameB: And(
+                    Condition(resname),
+                    get_condition(
+                        '', 'equals', 'B', versionname, nomap=True),
+                )}
+
+                c_Version = {versionname: Or(
+                    Condition(versionnameA),
+                    Condition(versionnameB),
                 )}
 
                 add_obj([
