@@ -2,14 +2,12 @@ IBoxLoader:
   - !exclude
     - cloudfront-ios.yml
     - certificate.yml
-  - !include
-    - iampolicy-update_stack.yml
 
-stacks-status:
+infra-info:
   StackType: agw
-  StackName: sss
-  Description: 'Stacks Status'
-  Name: 'StacksStatus'
+  StackName: iif
+  Description: 'Infrastracture Informations'
+  Name: 'InfraInfo'
   Stage: v1
   CloudFront: SkipClass
   BinaryMediaTypes: ['*/*']
@@ -32,7 +30,7 @@ stacks-status:
                           ('text/html', '{}'),
                         ])
                       StatusCode: '200'
-                Uri: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaStacksStatus.Arn}/invocations'
+                Uri: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaInfraInfo.Arn}/invocations'
                 PassthroughBehavior: WHEN_NO_MATCH
                 TimeoutInMillis: 29000
                 Type: AWS_PROXY
@@ -54,9 +52,9 @@ stacks-status:
               ThrottlingRateLimit: 10000
         TracingEnabled: False
   IAMPolicy:
-    - LambdaStacksStatus:
+    - LambdaInfraInfo:
         Roles:
-          - Ref('RoleLambdaStacksStatusv1')
+          - Ref('RoleLambdaInfraInfov1')
         Statement:
           - 1:
               Action:
@@ -66,27 +64,12 @@ stacks-status:
                 - 'ecs:DescribeServices'
                 - 'application-autoscaling:DescribeScalableTargets'
               Resource: '*'
-    - UpdateStack:
-        Roles:
-          - Ref('RoleLambdaStacksStatusv1')
-        Statement:
-          - 3:
-              Action: 'ssm:GetParameter*'
-              Resource: 'arn:aws:ssm:*:*:parameter/buildkite/*'
-          - 4:
-              Action:
-                - 'ssm:DescribeParameters'
-                - 'kms:ListAliases'
-              Resource: '*'
-          - 5:
-              Action: 'kms:Decrypt'
-              Resource: get_expvalue('KeyParameterStore')
   Lambda:
-    - StacksStatusv1:
+    - InfraInfov1:
         Code:
           S3Bucket: Sub(cfg.BucketAppRepository)
-          S3Key: 'ibox-tools/stacks-status/stacks-status-01.zip'
-        Description: 'Stacks Status'
+          S3Key: 'ibox-tools/infra-info/infra-info-01.zip'
+        Description: 'Infrastracture Informations'
         MemorySize: 128
         Runtime: python3.7
         Timeout: 60
