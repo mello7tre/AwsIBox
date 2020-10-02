@@ -1,5 +1,6 @@
 IBoxLoader: !include [
   certificate.yml,
+  cloudfront-policy.yml,
 ]
 
 res-extra-01:

@@ -1,0 +1,36 @@
+global:
+  CloudFrontCachePolicy:
+    - Cache0:
+        CachePolicyConfig:
+          Comment: 'Do not cache at all TTL 0'
+          DefaultTTL: 0
+          MaxTTL: 31536000
+          MinTTL: 0
+    - Cache86400ALL:
+        CachePolicyConfig:
+          Comment: 'Cache TTL 86400 ALL'
+          DefaultTTL: 86400
+          MaxTTL: 31536000
+          MinTTL: 0
+          ParametersInCacheKeyAndForwardedToOrigin:
+            CookiesConfig:
+              CookieBehavior: none
+            EnableAcceptEncodingGzip: True
+            HeadersConfig:
+              HeaderBehavior: none
+            QueryStringsConfig:
+              QueryStringBehavior: none
+    - Cache31536000ALL:
+        CachePolicyConfig:
+          Comment: 'Cache TTL 31536000 ALL'
+          DefaultTTL: 31536000
+          MaxTTL: 31536000
+          MinTTL: 0
+          ParametersInCacheKeyAndForwardedToOrigin:
+            CookiesConfig:
+              CookieBehavior: none
+            EnableAcceptEncodingGzip: True
+            HeadersConfig:
+              HeaderBehavior: none
+            QueryStringsConfig:
+              QueryStringBehavior: none

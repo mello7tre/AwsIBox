@@ -64,7 +64,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
         # If not defined default to 'Host'
         if 'Headers' in key:
             self.ForwardedValues.Headers = get_endvalue(f'{name}Headers')
-        else:
+        elif 'OriginRequestPolicyId' not in key:
             self.ForwardedValues.Headers = ['Host']
 
         if 'QueryStringCacheKeys' in key:
@@ -541,3 +541,35 @@ class CF_CloudFrontCLF(CF_CloudFront):
 
         (self.CloudFrontDistribution.
             DistributionConfig.CustomErrorResponses) = CFCustomErrors()
+
+
+class CF_CachePolicy(object):
+    def __init__(self, key):
+        # Resources
+        for n, v in getattr(cfg, key).items():
+            resname = f'{key}{n}'
+
+            # resources
+            r_CachePolicy = clf.CachePolicy(resname)
+            auto_get_props(r_CachePolicy, v, recurse=True)
+            r_CachePolicy.CachePolicyConfig.Name = n
+
+            add_obj([
+                r_CachePolicy
+            ])
+
+
+class CF_OriginRequestPolicy(object):
+    def __init__(self, key):
+        # Resources
+        for n, v in getattr(cfg, key).items():
+            resname = f'{key}{n}'
+
+            # resources
+            r_OriginRequestPolicy = clf.OriginRequestPolicy(resname)
+            auto_get_props(r_OriginRequestPolicy, v, recurse=True)
+            r_CachePolicy.OriginRequestPolicyConfig.Name = n
+
+            add_obj([
+                r_OriginRequestPolicy
+            ])
