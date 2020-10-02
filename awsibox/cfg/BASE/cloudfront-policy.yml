@@ -1,14 +1,23 @@
 global:
   CloudFrontCachePolicy:
-    - Cache0:
+    - Cache0All:
         CachePolicyConfig:
-          Comment: 'Do not cache at all TTL 0'
+          Comment: 'Cache TTL 0 All'
           DefaultTTL: 0
-          MaxTTL: 31536000
+          MaxTTL: 1
           MinTTL: 0
-    - Cache86400ALL:
+          ParametersInCacheKeyAndForwardedToOrigin:
+            CookiesConfig:
+              CookieBehavior: all
+            EnableAcceptEncodingGzip: True
+            EnableAcceptEncodingBrotli: True
+            HeadersConfig:
+              HeaderBehavior: none
+            QueryStringsConfig:
+              QueryStringBehavior: all
+    - Cache86400None:
         CachePolicyConfig:
-          Comment: 'Cache TTL 86400 ALL'
+          Comment: 'Cache TTL 86400 None'
           DefaultTTL: 86400
           MaxTTL: 31536000
           MinTTL: 0
@@ -16,13 +25,14 @@ global:
             CookiesConfig:
               CookieBehavior: none
             EnableAcceptEncodingGzip: True
+            EnableAcceptEncodingBrotli: True
             HeadersConfig:
               HeaderBehavior: none
             QueryStringsConfig:
               QueryStringBehavior: none
-    - Cache31536000ALL:
+    - Cache31536000None:
         CachePolicyConfig:
-          Comment: 'Cache TTL 31536000 ALL'
+          Comment: 'Cache TTL 31536000 None'
           DefaultTTL: 31536000
           MaxTTL: 31536000
           MinTTL: 0
@@ -30,7 +40,45 @@ global:
             CookiesConfig:
               CookieBehavior: none
             EnableAcceptEncodingGzip: True
+            EnableAcceptEncodingBrotli: True
             HeadersConfig:
               HeaderBehavior: none
             QueryStringsConfig:
               QueryStringBehavior: none
+    - Cache86400QueryString:
+        CachePolicyConfig:
+          Comment: 'Cache TTL 86400 QueryString'
+          DefaultTTL: 86400
+          MaxTTL: 31536000
+          MinTTL: 0
+          ParametersInCacheKeyAndForwardedToOrigin:
+            CookiesConfig:
+              CookieBehavior: none
+            EnableAcceptEncodingGzip: True
+            EnableAcceptEncodingBrotli: True
+            HeadersConfig:
+              HeaderBehavior: none
+            QueryStringsConfig:
+              QueryStringBehavior: all
+  CloudFrontOriginRequestPolicy:
+    - ForwardAll:
+        OriginRequestPolicyConfig:
+          Comment: 'Forward All'
+          CookiesConfig:
+            CookieBehavior: all
+          HeadersConfig:
+            HeaderBehavior: allViewer
+          QueryStringsConfig:
+            QueryStringBehavior: all
+    - ForwardAllBaseHeaders:
+        OriginRequestPolicyConfig:
+          Comment: 'Forward All Cookie and Query String plus Base Headers'
+          CookiesConfig:
+            CookieBehavior: all
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+              - CloudFront-Forwarded-Proto
+              - Origin
+          QueryStringsConfig:
+            QueryStringBehavior: all
