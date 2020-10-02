@@ -45,6 +45,23 @@ global:
               HeaderBehavior: none
             QueryStringsConfig:
               QueryStringBehavior: none
+    - Cache31536000HeaderOrigin:
+        CachePolicyConfig:
+          Comment: 'Cache TTL 31536000 Header Origin'
+          DefaultTTL: 31536000
+          MaxTTL: 31536000
+          MinTTL: 0
+          ParametersInCacheKeyAndForwardedToOrigin:
+            CookiesConfig:
+              CookieBehavior: none
+            EnableAcceptEncodingGzip: True
+            EnableAcceptEncodingBrotli: True
+            HeadersConfig:
+              HeaderBehavior: whitelist
+              Headers:
+                - Origin
+            QueryStringsConfig:
+              QueryStringBehavior: none
     - Cache86400QueryString:
         CachePolicyConfig:
           Comment: 'Cache TTL 86400 QueryString'
@@ -70,15 +87,36 @@ global:
             HeaderBehavior: allViewer
           QueryStringsConfig:
             QueryStringBehavior: all
-    - ForwardAllBaseHeaders:
+    - ForwardAllCookiesQueryStringsHeaderUserAgent:
         OriginRequestPolicyConfig:
-          Comment: 'Forward All Cookie and Query String plus Base Headers'
+          Comment: 'Forward All Cookies, QueryStrings and User-Agent Header'
           CookiesConfig:
             CookieBehavior: all
           HeadersConfig:
             HeaderBehavior: whitelist
             Headers:
+              - User-Agent
+          QueryStringsConfig:
+            QueryStringBehavior: all
+    - ForwardAllQueryStringsHeaderUserAgent:
+        OriginRequestPolicyConfig:
+          Comment: 'Forward All QueryStrings and User-Agent Header'
+          CookiesConfig:
+            CookieBehavior: none
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+              - User-Agent
+          QueryStringsConfig:
+            QueryStringBehavior: all
+    - ForwardAllHeaderProto:
+        OriginRequestPolicyConfig:
+          Comment: 'Forward All Cookie, Query String and All Headers + CloudFront-Forwarded-Proto'
+          CookiesConfig:
+            CookieBehavior: all
+          HeadersConfig:
+            HeaderBehavior: allViewerAndWhitelistCloudFront
+            Headers:
               - CloudFront-Forwarded-Proto
-              - Origin
           QueryStringsConfig:
             QueryStringBehavior: all
