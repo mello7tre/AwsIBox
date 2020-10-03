@@ -37,10 +37,10 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
 
         # Use CachePolicyId/OriginRequestPolicyId or legacy mode
         if 'CachePolicyId' in key:
-            self.CachePolicyId = get_endvalue('CachePolicyId')
+            self.CachePolicyId = get_endvalue(f'{name}CachePolicyId')
             if 'OriginRequestPolicyId' in key:
                 self.OriginRequestPolicyId = get_endvalue(
-                    'OriginRequestPolicyId')
+                    f'{name}OriginRequestPolicyId')
         else:
             if 'DefaultTTL' in key:
                 self.DefaultTTL = get_endvalue(f'{name}DefaultTTL')
