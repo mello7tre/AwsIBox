@@ -77,6 +77,24 @@ global:
               HeaderBehavior: none
             QueryStringsConfig:
               QueryStringBehavior: all
+    - Cache86400QueryStringHeadersCustom:
+        CachePolicyConfig:
+          Comment: 'Cache TTL 86400 QueryString and Custom Headers'
+          DefaultTTL: 86400
+          MaxTTL: 31536000
+          MinTTL: 0
+          ParametersInCacheKeyAndForwardedToOrigin:
+            CookiesConfig:
+              CookieBehavior: none
+            EnableAcceptEncodingGzip: True
+            EnableAcceptEncodingBrotli: True
+            HeadersConfig:
+              HeaderBehavior: whitelist
+              Headers:
+                - Origin
+                - Authorization
+            QueryStringsConfig:
+              QueryStringBehavior: all
   CloudFrontOriginRequestPolicy:
     - ForwardAll:
         OriginRequestPolicyConfig:
@@ -87,36 +105,31 @@ global:
             HeaderBehavior: allViewer
           QueryStringsConfig:
             QueryStringBehavior: all
-    - ForwardAllCookiesQueryStringsHeaderUserAgent:
+    - ForwardAllCookiesQueryStringsHeadersCustom:
         OriginRequestPolicyConfig:
-          Comment: 'Forward All Cookies, QueryStrings and User-Agent Header'
+          Comment: 'Forward All Cookies, QueryStrings and Custom Headers'
           CookiesConfig:
             CookieBehavior: all
           HeadersConfig:
             HeaderBehavior: whitelist
             Headers:
               - User-Agent
+              - Referer
+              - CloudFront-Is-Mobile-Viewer
+              - CloudFront-Viewer-City
           QueryStringsConfig:
             QueryStringBehavior: all
-    - ForwardAllQueryStringsHeaderUserAgent:
+    - ForwardAllQueryStringsHeadersCustom:
         OriginRequestPolicyConfig:
-          Comment: 'Forward All QueryStrings and User-Agent Header'
+          Comment: 'Forward All QueryStrings and Custom Headers'
           CookiesConfig:
             CookieBehavior: none
           HeadersConfig:
             HeaderBehavior: whitelist
             Headers:
               - User-Agent
-          QueryStringsConfig:
-            QueryStringBehavior: all
-    - ForwardAllHeaderProto:
-        OriginRequestPolicyConfig:
-          Comment: 'Forward All Cookie, Query String and All Headers + CloudFront-Forwarded-Proto'
-          CookiesConfig:
-            CookieBehavior: all
-          HeadersConfig:
-            HeaderBehavior: allViewerAndWhitelistCloudFront
-            Headers:
-              - CloudFront-Forwarded-Proto
+              - Referer
+              - CloudFront-Is-Mobile-Viewer
+              - CloudFront-Viewer-City
           QueryStringsConfig:
             QueryStringBehavior: all

@@ -64,7 +64,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
         # If not defined default to 'Host'
         if 'Headers' in key:
             self.ForwardedValues.Headers = get_endvalue(f'{name}Headers')
-        elif 'OriginRequestPolicyId' not in key:
+        else:
             self.ForwardedValues.Headers = ['Host']
 
         if 'QueryStringCacheKeys' in key:
