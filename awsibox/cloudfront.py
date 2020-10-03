@@ -35,47 +35,60 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
         else:
             self.Compress = True
 
-        if 'DefaultTTL' in key:
-            self.DefaultTTL = get_endvalue(f'{name}DefaultTTL')
-
-        self.ForwardedValues = clf.ForwardedValues()
-        # If not defined default to True
-        if 'QueryString' in key:
-            self.ForwardedValues.QueryString = get_endvalue(
-                f'{name}QueryString')
+        # Use CachePolicyId/OriginRequestPolicyId or legacy mode
+        if 'CachePolicyId' in key:
+            self.CachePolicyId = get_endvalue('CachePolicyId')
+            if 'OriginRequestPolicyId' in key:
+                self.OriginRequestPolicyId = get_endvalue(
+                    'OriginRequestPolicyId')
         else:
-            self.ForwardedValues.QueryString = True
-
-        if 'CookiesForward' in key:
-            self.ForwardedValues.Cookies = clf.Cookies(
-                Forward=get_endvalue(f'{name}CookiesForward')
-            )
-            if 'CookiesWhitelistedNames' in key:
-                self.ForwardedValues.Cookies.WhitelistedNames = (
-                    get_endvalue(
-                        f'{name}CookiesWhitelistedNames', condition=True))
+            if 'DefaultTTL' in key:
+                self.DefaultTTL = get_endvalue(f'{name}DefaultTTL')
+    
+            if 'MaxTTL' in key:
+                self.MaxTTL = get_endvalue(f'{name}MaxTTL')
+    
+            if 'MinTTL' in key:
+                self.MinTTL = get_endvalue(f'{name}MinTTL')
+    
+            self.ForwardedValues = clf.ForwardedValues()
+            # If not defined default to True
+            if 'QueryString' in key:
+                self.ForwardedValues.QueryString = get_endvalue(
+                    f'{name}QueryString')
+            else:
+                self.ForwardedValues.QueryString = True
+    
+            if 'CookiesForward' in key:
+                self.ForwardedValues.Cookies = clf.Cookies(
+                    Forward=get_endvalue(f'{name}CookiesForward')
+                )
+                if 'CookiesWhitelistedNames' in key:
+                    self.ForwardedValues.Cookies.WhitelistedNames = (
+                        get_endvalue(
+                            f'{name}CookiesWhitelistedNames', condition=True))
+                    # conditions
+                    c_CookiesForward = get_condition(
+                        f'{name}CookiesWhitelistedNames', 'equals',
+                        'whitelist', f'{name}CookiesForward')
+    
+                    add_obj(c_CookiesForward)
+    
+            # If not defined default to 'Host'
+            if 'Headers' in key:
+                self.ForwardedValues.Headers = get_endvalue(f'{name}Headers')
+            else:
+                self.ForwardedValues.Headers = ['Host']
+    
+            if 'QueryStringCacheKeys' in key:
+                self.ForwardedValues.QueryStringCacheKeys = get_endvalue(
+                    f'{name}QueryStringCacheKeys', condition=True)
                 # conditions
-                c_CookiesForward = get_condition(
-                    f'{name}CookiesWhitelistedNames', 'equals', 'whitelist',
-                    f'{name}CookiesForward')
-
-                add_obj(c_CookiesForward)
-
-        # If not defined default to 'Host'
-        if 'Headers' in key:
-            self.ForwardedValues.Headers = get_endvalue(f'{name}Headers')
-        else:
-            self.ForwardedValues.Headers = ['Host']
-
-        if 'QueryStringCacheKeys' in key:
-            self.ForwardedValues.QueryStringCacheKeys = get_endvalue(
-                f'{name}QueryStringCacheKeys', condition=True)
-            # conditions
-            c_QueryString = get_condition(
-                f'{name}QueryStringCacheKeys', 'equals', True,
-                f'{name}QueryString')
-
-            add_obj(c_QueryString)
+                c_QueryString = get_condition(
+                    f'{name}QueryStringCacheKeys', 'equals', True,
+                    f'{name}QueryString')
+    
+                add_obj(c_QueryString)
 
         if 'TargetOriginId' in key:
             self.TargetOriginId = get_endvalue(f'{name}TargetOriginId')
@@ -87,12 +100,6 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
                     '${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s'
                     % cfg.HostedZoneNameEnv)
             )
-
-        if 'MaxTTL' in key:
-            self.MaxTTL = get_endvalue(f'{name}MaxTTL')
-
-        if 'MinTTL' in key:
-            self.MinTTL = get_endvalue(f'{name}MinTTL')
 
         if 'LambdaFunctionARN' in key:
             condname = f'{name}LambdaFunctionARN'
