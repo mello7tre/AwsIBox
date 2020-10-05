@@ -45,9 +45,9 @@ global:
               HeaderBehavior: none
             QueryStringsConfig:
               QueryStringBehavior: none
-    - Cache31536000HeaderOrigin:
+    - Cache31536000HeadersOrigin:
         CachePolicyConfig:
-          Comment: 'Cache TTL 31536000 Header Origin'
+          Comment: 'Cache TTL 31536000 Headers Origin'
           DefaultTTL: 31536000
           MaxTTL: 31536000
           MinTTL: 0
@@ -62,9 +62,9 @@ global:
                 - Origin
             QueryStringsConfig:
               QueryStringBehavior: none
-    - Cache86400QueryString:
+    - Cache86400QueryStrings:
         CachePolicyConfig:
-          Comment: 'Cache TTL 86400 QueryString'
+          Comment: 'Cache TTL 86400 QueryStrings'
           DefaultTTL: 86400
           MaxTTL: 31536000
           MinTTL: 0
@@ -77,9 +77,9 @@ global:
               HeaderBehavior: none
             QueryStringsConfig:
               QueryStringBehavior: all
-    - Cache86400QueryStringHeadersCustom:
+    - Cache86400QueryStringsHeadersCustom:
         CachePolicyConfig:
-          Comment: 'Cache TTL 86400 QueryString and Custom Headers'
+          Comment: 'Cache TTL 86400 QueryStrings and Custom Headers'
           DefaultTTL: 86400
           MaxTTL: 31536000
           MinTTL: 0
@@ -133,3 +133,17 @@ global:
               - CloudFront-Viewer-City
           QueryStringsConfig:
             QueryStringBehavior: all
+    - ForwardHeadersCustom:
+        OriginRequestPolicyConfig:
+          Comment: 'Forward Custom Headers'
+          CookiesConfig:
+            CookieBehavior: none
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+              - User-Agent
+              - Referer
+              - CloudFront-Is-Mobile-Viewer
+              - CloudFront-Viewer-City
+          QueryStringsConfig:
+            QueryStringBehavior: none
