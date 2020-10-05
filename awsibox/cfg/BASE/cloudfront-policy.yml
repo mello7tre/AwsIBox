@@ -1,6 +1,6 @@
 global:
   CloudFrontCachePolicy:
-    - Cache0All:
+    - Cache0AllHeadersNone:
         CachePolicyConfig:
           Comment: 'Cache TTL 0 All'
           DefaultTTL: 0

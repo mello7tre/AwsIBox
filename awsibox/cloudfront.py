@@ -74,11 +74,11 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
     
                     add_obj(c_CookiesForward)
     
-            # If not defined default to 'Host'
+            # If not defined default to empty list []
             if 'Headers' in key:
                 self.ForwardedValues.Headers = get_endvalue(f'{name}Headers')
             else:
-                self.ForwardedValues.Headers = ['Host']
+                self.ForwardedValues.Headers = []
     
             if 'QueryStringCacheKeys' in key:
                 self.ForwardedValues.QueryStringCacheKeys = get_endvalue(
