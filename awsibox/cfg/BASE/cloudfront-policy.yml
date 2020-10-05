@@ -2,7 +2,7 @@ global:
   CloudFrontCachePolicy:
     - 0AllHeadersNone:
         CachePolicyConfig:
-          Comment: 'Cache TTL 0 All'
+          Comment: 'Default TTL 0 All Cookies and QueryStrings No Headers'
           DefaultTTL: 0
           MaxTTL: 1
           MinTTL: 0
@@ -17,7 +17,7 @@ global:
               QueryStringBehavior: all
     - 86400None:
         CachePolicyConfig:
-          Comment: 'Cache TTL 86400 None'
+          Comment: 'Default TTL 86400 None'
           DefaultTTL: 86400
           MaxTTL: 31536000
           MinTTL: 0
@@ -32,7 +32,7 @@ global:
               QueryStringBehavior: none
     - 31536000None:
         CachePolicyConfig:
-          Comment: 'Cache TTL 31536000 None'
+          Comment: 'Default TTL 31536000 None'
           DefaultTTL: 31536000
           MaxTTL: 31536000
           MinTTL: 0
@@ -47,7 +47,7 @@ global:
               QueryStringBehavior: none
     - 31536000HeaderOrigin:
         CachePolicyConfig:
-          Comment: 'Cache TTL 31536000 Header Origin'
+          Comment: 'Default TTL 31536000 Header Origin'
           DefaultTTL: 31536000
           MaxTTL: 31536000
           MinTTL: 0
@@ -64,7 +64,7 @@ global:
               QueryStringBehavior: none
     - 86400QueryStrings:
         CachePolicyConfig:
-          Comment: 'Cache TTL 86400 QueryStrings'
+          Comment: 'Default TTL 86400 QueryStrings'
           DefaultTTL: 86400
           MaxTTL: 31536000
           MinTTL: 0
@@ -79,7 +79,7 @@ global:
               QueryStringBehavior: all
     - 86400QueryStringsHeadersCustom:
         CachePolicyConfig:
-          Comment: 'Cache TTL 86400 QueryStrings and Custom Headers'
+          Comment: 'Default TTL 86400 QueryStrings and Custom Headers'
           DefaultTTL: 86400
           MaxTTL: 31536000
           MinTTL: 0
