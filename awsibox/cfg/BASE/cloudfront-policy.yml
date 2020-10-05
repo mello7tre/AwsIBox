@@ -45,9 +45,9 @@ global:
               HeaderBehavior: none
             QueryStringsConfig:
               QueryStringBehavior: none
-    - Cache31536000HeadersOrigin:
+    - Cache31536000HeaderOrigin:
         CachePolicyConfig:
-          Comment: 'Cache TTL 31536000 Headers Origin'
+          Comment: 'Cache TTL 31536000 Header Origin'
           DefaultTTL: 31536000
           MaxTTL: 31536000
           MinTTL: 0
