@@ -28,7 +28,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
 
         # Use CachePolicyId/OriginRequestPolicyId or legacy mode
         if 'CachePolicyId' in key:
-            for k in ['DefaultTTL', 'MaxTTL', 'MinTTL', 'ForwardedValues']:
+            for k in ['ForwardedValues']:
                 try:
                     delattr(self, k)
                 except Exception:
