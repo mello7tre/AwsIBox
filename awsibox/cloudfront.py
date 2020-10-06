@@ -30,7 +30,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
         if 'CachePolicyId' in key:
             for k in ['ForwardedValues']:
                 try:
-                    delattr(self, k)
+                    del self.properties[k]
                 except Exception:
                     pass
 
