@@ -28,7 +28,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
 
         # Use CachePolicyId/OriginRequestPolicyId or legacy mode
         if 'CachePolicyId' in key:
-            for k in ['ForwardedValues']:
+            for k in ['DefaultTTL', 'MaxTTL', 'MinTTL', 'ForwardedValues']:
                 try:
                     del self.properties[k]
                 except Exception:
