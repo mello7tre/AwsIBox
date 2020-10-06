@@ -20,20 +20,6 @@ global:
         Value: get_resvalue('CloudFrontDistribution', 'DistributionConfig.ViewerCertificate.MinimumProtocolVersion')
   CloudFront: None
   CloudFrontAcmCertificate: True
-  CloudFrontCacheBehaviors:
-    - 0:
-        AllowedMethods: ['HEAD', 'GET']
-        CachedMethods: ['HEAD', 'GET']
-        Compress: True
-        CookiesForward: none
-        CookiesWhitelistedNames: ''
-        DefaultTTL: 0
-        Headers: []
-        MaxTTL: 31536000
-        MinTTL: 0
-        QueryString: True
-        QueryStringCacheKeys: []
-        ViewerProtocolPolicy: allow-all
   CloudFrontHttpVersion: 'http2'
   CloudFrontLogging: None
   CloudFrontMinimumProtocolVersion: TLSv1

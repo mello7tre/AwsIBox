@@ -23,72 +23,16 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
         super().__init__(title, **kwargs)
 
         name = self.title
-        if 'AllowedMethods' in key:
-            self.AllowedMethods = get_endvalue(f'{name}AllowedMethods')
-
-        if 'CachedMethods' in key:
-            self.CachedMethods = get_endvalue(f'{name}CachedMethods')
-
-        # If not defined default to True
-        if 'Compress' in key:
-            self.Compress = get_endvalue(f'{name}Compress')
-        else:
-            self.Compress = True
+        # Look for default values in awsibox/cfg.py [BASE_CFGS]
+        auto_get_props(self, key, recurse=True)
 
         # Use CachePolicyId/OriginRequestPolicyId or legacy mode
         if 'CachePolicyId' in key:
-            self.CachePolicyId = get_endvalue(f'{name}CachePolicyId')
-            if 'OriginRequestPolicyId' in key:
-                self.OriginRequestPolicyId = get_endvalue(
-                    f'{name}OriginRequestPolicyId')
-        else:
-            if 'DefaultTTL' in key:
-                self.DefaultTTL = get_endvalue(f'{name}DefaultTTL')
-    
-            if 'MaxTTL' in key:
-                self.MaxTTL = get_endvalue(f'{name}MaxTTL')
-    
-            if 'MinTTL' in key:
-                self.MinTTL = get_endvalue(f'{name}MinTTL')
-    
-            self.ForwardedValues = clf.ForwardedValues()
-            # If not defined default to True
-            if 'QueryString' in key:
-                self.ForwardedValues.QueryString = get_endvalue(
-                    f'{name}QueryString')
-            else:
-                self.ForwardedValues.QueryString = True
-    
-            if 'CookiesForward' in key:
-                self.ForwardedValues.Cookies = clf.Cookies(
-                    Forward=get_endvalue(f'{name}CookiesForward')
-                )
-                if 'CookiesWhitelistedNames' in key:
-                    self.ForwardedValues.Cookies.WhitelistedNames = (
-                        get_endvalue(
-                            f'{name}CookiesWhitelistedNames', condition=True))
-                    # conditions
-                    c_CookiesForward = get_condition(
-                        f'{name}CookiesWhitelistedNames', 'equals',
-                        'whitelist', f'{name}CookiesForward')
-    
-                    add_obj(c_CookiesForward)
-    
-            # If not defined default to empty list []
-            if 'Headers' in key:
-                self.ForwardedValues.Headers = get_endvalue(f'{name}Headers')
-            else:
-                self.ForwardedValues.Headers = []
-    
-            if 'QueryStringCacheKeys' in key:
-                self.ForwardedValues.QueryStringCacheKeys = get_endvalue(
-                    f'{name}QueryStringCacheKeys', condition=True)
-                # conditions
-                c_QueryString = get_condition(
-                    f'{name}QueryStringCacheKeys', 'equals', True,
-                    f'{name}QueryString')
-    
-                add_obj(c_QueryString)
+            for k in ['DefaultTTL', 'MaxTTL', 'MinTTL', 'ForwardedValues']:
+                try:
+                    delattr(self, k)
+                except Exception:
+                    pass
 
         if 'TargetOriginId' in key:
             self.TargetOriginId = get_endvalue(f'{name}TargetOriginId')
@@ -121,12 +65,6 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
                     Ref('AWS::NoValue')
                 )
             ]
-
-        if 'ViewerProtocolPolicy' in key:
-            self.ViewerProtocolPolicy = get_endvalue(
-                f'{name}ViewerProtocolPolicy')
-        else:
-            self.ViewerProtocolPolicy = 'redirect-to-https'
 
 
 class CFCacheBehavior(clf.CacheBehavior, CFDefaultCacheBehavior):

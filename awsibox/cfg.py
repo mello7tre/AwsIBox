@@ -98,6 +98,14 @@ BASE_CFGS = {
         'ReplicaDstOwner': 'None',
         'ReplicaSrcAccount': 'None',
         'Versioning': 'None',
+    },
+    'CloudFrontCacheBehaviors': {
+        'Compress': True,
+        'ForwardedValues': {
+            'QueryString': True,
+            'Headers': []
+        },
+        'ViewerProtocolPolicy': 'redirect-to-https'
     }
 }
 
