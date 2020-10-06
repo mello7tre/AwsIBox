@@ -4,8 +4,8 @@ global:
         Order: 599
         PathPattern:  '/error-pages/*'
         DefaultTTL: 31536000
-        QueryString: False
-        Headers: []
+        ForwardedValues:
+          QueryString: False
         TargetOriginId: portal-static
   CloudFrontOrigins:
     - PortalStatic:

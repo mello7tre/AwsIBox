@@ -20,6 +20,8 @@ global:
         Value: get_resvalue('CloudFrontDistribution', 'DistributionConfig.ViewerCertificate.MinimumProtocolVersion')
   CloudFront: None
   CloudFrontAcmCertificate: True
+  CloudFrontCacheBehaviors:
+    - 0: {}
   CloudFrontHttpVersion: 'http2'
   CloudFrontLogging: None
   CloudFrontMinimumProtocolVersion: TLSv1

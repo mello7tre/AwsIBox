@@ -15,7 +15,3 @@ clf:
     - 7: None
     - 8: None
     - 9: None
-  CloudFrontCacheBehaviors:
-    - 0:
-        Headers: ['Host']
-        ViewerProtocolPolicy: redirect-to-https
