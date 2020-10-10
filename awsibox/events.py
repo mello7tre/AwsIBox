@@ -16,7 +16,7 @@ class EVERule(eve.Rule):
 class EVETarget(eve.Target):
     def __init__(self, title, key, name, **kwargs):
         super().__init__(title, **kwargs)
-        auto_get_props(self, key, mapname=name)
+        auto_get_props(self, key, mapname=name, recurse=True)
 
 # #################################
 # ### START STACK INFRA CLASSES ###
