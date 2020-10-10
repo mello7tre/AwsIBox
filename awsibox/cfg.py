@@ -72,6 +72,7 @@ EVAL_FUNCTIONS_IN_CFG = (
     'eval(',
     'Tags(',
     'str(',
+    'SG_SecurityGroups',
 )
 
 BASE_CFGS = {
