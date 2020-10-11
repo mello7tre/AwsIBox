@@ -48,6 +48,7 @@ class EVE_EventRules(object):
 
             # resources
             Targets = []
+            need_ecsEventsRole = None
             for m, w in v['Targets'].items():
                 targetname = f'{resname}Targets{m}'
                 Target = EVETarget('', name=targetname, key=w)
@@ -62,9 +63,17 @@ class EVE_EventRules(object):
                         r_LambdaPermission.Condition = v['Condition']
 
                     add_obj(r_LambdaPermission)
+                if m.startswith('ECSCluster'):
+                    Target.RoleArn = GetAtt('RoleTask', 'Arn')
+                    need_ecsEventsRole = True
 
             r_Rule = EVERule(resname, key=v, name=n)
             r_Rule.Targets = Targets
+
+            # if target is Ecs Task add RoleArn
+            if need_ecsEventsRole:
+                r_Rule.RoleArn = Sub(
+                    'arn:aws:iam::${AWS::AccountId}:role/ecsEventsRole')
 
             add_obj(r_Rule)
 
