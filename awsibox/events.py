@@ -11,10 +11,8 @@ class EVEEcsParameters(eve.EcsParameters):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.LaunchType = get_endvalue('LaunchType')
-        self.NetworkConfiguration = eve.NetworkConfiguration(
-            AwsVpcConfiguration=eve.AwsVpcConfiguration(
-                SecurityGroups=SG_SecurityGroupsECS().SecurityGroups,
-                Subnets=Split(',', get_expvalue('SubnetsPrivate'))))
+        self.NetworkConfiguration = cfg.Resources[
+            'Service'].NetworkConfiguration
         self.TaskDefinitionArn = Ref('TaskDefinition')
 
 
