@@ -223,7 +223,8 @@ def ECSNetworkConfiguration(service=True):
             ] if service else [],
             Subnets=Split(',', get_expvalue('SubnetsPrivate')))
     NetworkConfiguration.AwsvpcConfiguration.SecurityGroups.extend(
-        SG_SecurityGroupsECS().SecurityGroups)
+        SG_SecurityGroupsECS().SecurityGroups if service else
+        SG_SecurityGroupsTSK().SecurityGroups)
 
     value = If('NetworkModeAwsVpc',
                NetworkConfiguration,
