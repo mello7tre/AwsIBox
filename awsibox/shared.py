@@ -80,7 +80,7 @@ def do_no_override(action):
 
 def _get_value(param, fixedvalues, strout, nolist, issub):
     # Its not pythonic, but it's only way to avoid circular import problems
-    from .securitygroup import SG_SecurityGroupsTSK, SG_SecurityGroupsECS
+    from .securitygroup import SG_SecurityGroupsTSK
 
     # set default if not defined
     if not fixedvalues:

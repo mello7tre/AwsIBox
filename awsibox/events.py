@@ -4,14 +4,14 @@ from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionEvent
+from .ecs import ECSNetworkConfiguration
 
 
 class EVEEcsParameters(eve.EcsParameters):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.LaunchType = get_endvalue('LaunchType')
-        self.NetworkConfiguration = cfg.Resources[
-            'Service'].NetworkConfiguration
+        self.NetworkConfiguration = ECSNetworkConfiguration(service=None)
         self.TaskDefinitionArn = Ref('TaskDefinition')
 
 

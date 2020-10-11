@@ -215,12 +215,21 @@ class ECSVolume(ecs.Volume):
         )
 
 
-class ECSAwsvpcConfiguration(ecs.AwsvpcConfiguration):
-    def setup(self):
-        self.SecurityGroups = [
-            GetAtt('SecurityGroupEcsService', 'GroupId'),
-        ]
-        self.Subnets = Split(',', get_expvalue('SubnetsPrivate'))
+def ECSNetworkConfiguration(service=True):
+    NetworkConfiguration = ecs.NetworkConfiguration('')
+    NetworkConfiguration.AwsvpcConfiguration = ecs.AwsvpcConfiguration(
+            SecurityGroups=[
+                GetAtt('SecurityGroupEcsService', 'GroupId')
+            ] if service else [],
+            Subnets=Split(',', get_expvalue('SubnetsPrivate')))
+    NetworkConfiguration.AwsvpcConfiguration.SecurityGroups.extend(
+        SG_SecurityGroupsECS().SecurityGroups)
+
+    value = If('NetworkModeAwsVpc',
+               NetworkConfiguration,
+               Ref('AWS::NoValue'))
+
+    return value
 
 
 # ##########################################
@@ -456,18 +465,7 @@ class ECS_Service(object):
             SGRule = SecurityGroupRuleEcsService(scheme='Internal')
             R_SG.SecurityGroupIngress.append(SGRule)
 
-        SecurityGroups = SG_SecurityGroupsECS().SecurityGroups
-        NetworkConfiguration = ecs.NetworkConfiguration()
-        NetworkConfiguration.AwsvpcConfiguration = ECSAwsvpcConfiguration()
-        NetworkConfiguration.AwsvpcConfiguration.setup()
-        NetworkConfiguration.AwsvpcConfiguration.SecurityGroups.extend(
-            SecurityGroups)
-
-        R_Service.NetworkConfiguration = If(
-            'NetworkModeAwsVpc',
-            NetworkConfiguration,
-            Ref('AWS::NoValue')
-        )
+        R_Service.NetworkConfiguration = ECSNetworkConfiguration()
 
         add_obj([
             R_Service,
