@@ -503,7 +503,7 @@ class CF_CachePolicy(object):
             o_CachePolicy = Output(resname)
             o_CachePolicy.Value = Ref(resname)
             o_CachePolicy.Export = Export(resname)
-            
+
             add_obj([
                 r_CachePolicy,
                 o_CachePolicy,
@@ -520,7 +520,7 @@ class CF_OriginRequestPolicy(object):
             r_OriginRequestPolicy = clf.OriginRequestPolicy(resname)
             auto_get_props(r_OriginRequestPolicy, v, recurse=True)
             r_OriginRequestPolicy.OriginRequestPolicyConfig.Name = n
-            
+
             # outputs
             o_OriginRequestPolicy = Output(resname)
             o_OriginRequestPolicy.Value = Ref(resname)

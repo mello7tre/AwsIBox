@@ -4,19 +4,19 @@ from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionEvent
+from .securitygroup import SG_SecurityGroupsECS
 
 
-class EVERule(eve.Rule):
-    def __init__(self, title, key, name, **kwargs):
+class EVEEcsParameters(eve.EcsParameters):
+    def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-        auto_get_props(self, key)
-        self.Name = Sub('${AWS::StackName}-${EnvRole}-' f'Rule{name}')
+        self.LaunchType = get_endvalue('LaunchType')
+        self.NetworkConfiguration = eve.NetworkConfiguration(
+            AwsVpcConfiguration=eve.AwsVpcConfiguration(
+                SecurityGroups=SG_SecurityGroupsECS().SecurityGroups,
+                Subnets=Split(',', get_expvalue('SubnetsPrivate'))))
+        self.TaskDefinitionArn = Ref('TaskDefinition')
 
-
-class EVETarget(eve.Target):
-    def __init__(self, title, key, name, **kwargs):
-        super().__init__(title, **kwargs)
-        auto_get_props(self, key, mapname=name, recurse=True)
 
 # #################################
 # ### START STACK INFRA CLASSES ###
@@ -51,8 +51,7 @@ class EVE_EventRules(object):
             need_ecsEventsRole = None
             for m, w in v['Targets'].items():
                 targetname = f'{resname}Targets{m}'
-                Target = EVETarget('', name=targetname, key=w)
-                Targets.append(Target)
+                Target = eve.Target('')
 
                 if m.startswith('Lambda'):
                     permname = '%s%s' % (
@@ -64,10 +63,27 @@ class EVE_EventRules(object):
 
                     add_obj(r_LambdaPermission)
                 if m.startswith('ECSCluster'):
-                    Target.RoleArn = GetAtt('RoleTask', 'Arn')
+                    props = {
+                        'Arn': get_subvalue(
+                            'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:'
+                            'cluster/${1E}', 'Cluster', stack='ClusterStack'),
+                        'EcsParameters': EVEEcsParameters(''),
+                        'RoleArn': GetAtt('RoleTask', 'Arn'),
+                        'Id': f'Target{m}',
+                    }
                     need_ecsEventsRole = True
 
-            r_Rule = EVERule(resname, key=v, name=n)
+                    # add common "fixed" props
+                    auto_get_props(Target, props, rootdict=props,
+                                   mapname='', del_prefix=targetname)
+
+                # add props found in yaml cfg
+                auto_get_props(Target, w, mapname=targetname, recurse=True)
+                Targets.append(Target)
+
+            r_Rule = eve.Rule(resname)
+            auto_get_props(r_Rule, v)
+            r_Rule.Name = Sub('${AWS::StackName}-${EnvRole}-' f'Rule{n}')
             r_Rule.Targets = Targets
 
             # if target is Ecs Task add RoleArn
