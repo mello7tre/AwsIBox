@@ -4,7 +4,8 @@ from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .securitygroup import (SecurityGroupEcsService,
-                            SecurityGroupRuleEcsService, SG_SecurityGroupsECS)
+                            SecurityGroupRuleEcsService, SG_SecurityGroupsECS,
+                            SG_SecurityGroupsTSK)
 
 
 class ECSService(ecs.Service):
@@ -215,22 +216,30 @@ class ECSVolume(ecs.Volume):
         )
 
 
+class ECSAwsvpcConfigurationECS(ecs.AwsvpcConfiguration):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+        self.SecurityGroups = [GetAtt('SecurityGroupEcsService', 'GroupId')]
+        self.Subnets = Split(',', get_expvalue('SubnetsPrivate'))
+        self.SecurityGroups.extend(SG_SecurityGroupsECS().SecurityGroups)
+
+
+class ECSAwsvpcConfigurationTSK(ecs.AwsvpcConfiguration):
+    def __init__(self, title, **kwargs):
+        super().__init__(title, **kwargs)
+        self.SecurityGroups = []
+        self.Subnets = Split(',', get_expvalue('SubnetsPrivate'))
+        self.SecurityGroups.extend(SG_SecurityGroupsTSK().SecurityGroups)
+
+
 def ECSNetworkConfiguration(service=True):
-    NetworkConfiguration = ecs.NetworkConfiguration('')
-    NetworkConfiguration.AwsvpcConfiguration = ecs.AwsvpcConfiguration(
-            SecurityGroups=[
-                GetAtt('SecurityGroupEcsService', 'GroupId')
-            ] if service else [],
-            Subnets=Split(',', get_expvalue('SubnetsPrivate')))
-    NetworkConfiguration.AwsvpcConfiguration.SecurityGroups.extend(
-        SG_SecurityGroupsECS().SecurityGroups if service else
-        SG_SecurityGroupsTSK().SecurityGroups)
+    NetworkConfiguration = ecs.NetworkConfiguration(
+        AwsvpcConfiguration=ECSAwsvpcConfigurationECS('') if service
+        else ECSAwsvpcConfigurationTSK(''))
 
-    value = If('NetworkModeAwsVpc',
-               NetworkConfiguration,
-               Ref('AWS::NoValue'))
-
-    return value
+    return If('NetworkModeAwsVpc',
+              NetworkConfiguration,
+              Ref('AWS::NoValue'))
 
 
 # ##########################################
