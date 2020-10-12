@@ -9,6 +9,34 @@ from .cloudfront import CFOriginAccessIdentity
 from .lambdas import LambdaPermissionS3
 
 
+class S3ReplicationConfigurationRules(s3.ReplicationConfigurationRules):
+    def __init__(self, name, key, **kwargs):
+        super().__init__(**kwargs)
+        self.Destination = s3.ReplicationConfigurationRulesDestination(
+            Bucket=get_subvalue(
+                'arn:aws:s3:::${1M}', f'{name}ReplicaDstBucket'
+            ) if 'ReplicaDstBucket' in key
+            else get_subvalue(
+                'arn:aws:s3:::${1M}-%s'
+                % bucket_name.replace('${AWS::Region}-', '', 1),
+                f'{name}ReplicaDstRegion',
+            ),
+            AccessControlTranslation=If(
+                f'{name}ReplicaDstOwner',
+                s3.AccessControlTranslation(
+                    Owner='Destination'
+                ),
+                Ref('AWS::NoValue')
+            ),
+            Account=If(
+                f'{name}ReplicaDstOwner',
+                get_endvalue(f'{name}ReplicaDstOwner'),
+                Ref('AWS::NoValue')
+            ),
+        )
+        self.Status = 'Enabled'
+
+
 class S3ReplicationConfiguration(s3.ReplicationConfiguration):
     def __init__(self, name, key, **kwargs):
         super().__init__(**kwargs)
@@ -67,9 +95,28 @@ class S3Bucket(s3.Bucket):
             ),
             Ref('AWS::NoValue')
         )
+
+        ReplicationConfiguration = s3.ReplicationConfiguration('')
+        ReplicationConfiguration.Role = GetAtt(f'Role{name}Replica', 'Arn')
+        ReplicationConfiguration.Rules = []
+
+        try:
+            replica_dst_prefix = key['ReplicaDstPrefix']
+        except Exception:
+            ReplicationRule = S3ReplicationConfigurationRules(
+                name=name, key=key)
+            ReplicationRule.Prefix = ''
+            ReplicationConfiguration.Rules.append(ReplicationRule)
+        else:
+            for n, _ in enumerate(replica_dst_prefix):
+                ReplicationRule = S3ReplicationConfigurationRules(
+                    name=name, key=key)
+                ReplicationRule.Prefix = replica_dst_prefix[n]
+                ReplicationConfiguration.Rules.append(ReplicationRule)
+
         self.ReplicationConfiguration = If(
             f'{name}Replica',
-            S3ReplicationConfiguration(name=name, key=key),
+            ReplicationConfiguration,
             Ref('AWS::NoValue'),
         )
         self.VersioningConfiguration = If(
@@ -120,12 +167,10 @@ def S3BucketPolicyStatementReplica(bucket, key):
             ],
         'Effect': 'Allow',
         'Resource': [
-            get_subvalue(
-                'arn:aws:s3:::%s/${1M}*' % bucket_name,
-                f'{bucket}ReplicaSrcPrefix'
-            ) if 'ReplicaSrcPrefix' in key else Sub(
-                'arn:aws:s3:::%s/*' % bucket_name),
-        ],
+            'arn:aws:s3:::%s/%s*' % (bucket_name, key['ReplicaSrcPrefix'][n])
+            for n, _ in enumerate(key['ReplicaSrcPrefix'])
+        ] if 'ReplicaSrcPrefix' in key else [
+            Sub('arn:aws:s3:::%s/*' % bucket_name)],
         'Principal': {
             'AWS': [
                 get_subvalue(
