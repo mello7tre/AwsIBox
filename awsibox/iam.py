@@ -57,7 +57,7 @@ class IAMManagedPolicy(iam.ManagedPolicy):
 
 
 class IAMPolicyBucketReplica(iam.PolicyType):
-    def __init__(self, title, bucket, bucket_name, key, **kwargs):
+    def __init__(self, title, bucket, bucket_name, mapname, key, **kwargs):
         super().__init__(title, **kwargs)
 
         name = self.title  # Ex. IAMPolicyReplicaBucketElasticSearch
@@ -96,14 +96,12 @@ class IAMPolicyBucketReplica(iam.PolicyType):
                     ],
                     'Effect': 'Allow',
                     'Resource': [
-                        get_subvalue(
-                            'arn:aws:s3:::${1M}/*',
-                            f'{bucket}ReplicaDstBucket'
-                        ) if 'ReplicaDstBucket' in key else get_subvalue(
-                            'arn:aws:s3:::${1M}-%s/*' %
-                            bucket_name.replace('${AWS::Region}-', '', 1),
-                            f'{bucket}ReplicaDstRegion',
-                        )
+                        If(
+                            f'{mapname}{n}Bucket',
+                            get_subvalue(
+                                'arn:aws:s3:::${1M}/*', f'{mapname}{n}Bucket'),
+                            Ref('AWS::NoValue')
+                        ) for n in key
                     ]
                 }
             ]

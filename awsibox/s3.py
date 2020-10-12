@@ -334,13 +334,26 @@ class S3_Buckets(object):
                 p_replicabucket.Description = ('Replica Destination Bucket '
                                                '- empty for default based on '
                                                'Env/Roles/Region')
-                add_obj(p_replicabucket)
+                p_replicaregion = Parameter(
+                    f'{replica_name}DestinationRegion')
+                p_replicaregion.Description = ('Replica Destination Region '
+                                               '- empty for default based on '
+                                               'Env/Roles/Region')
+                p_replicaregion.AllowedValues = ['', 'None'] + cfg.regions
+
+                add_obj([
+                    p_replicabucket,
+                    p_replicaregion,
+                ])
 
                 # condition
-                add_obj(
+                add_obj([
                     get_condition(f'{replica_name}DestinationBucket',
-                        'not_equals', 'None'))
-                
+                                  'not_equals', 'None'),
+                    get_condition(f'{replica_name}DestinationRegion',
+                                  'not_equals', 'None'),
+                ])
+
                 rule = s3.ReplicationConfigurationRules()
                 auto_get_props(rule, w, mapname=replica_name, recurse=True)
 
@@ -352,8 +365,8 @@ class S3_Buckets(object):
                 ))
 
             if Replica_Rules:
-                ReplicationConfiguration = s3.ReplicationConfiguration('',
-                    Role=GetAtt(f'Role{name}Replica', 'Arn'),
+                ReplicationConfiguration = s3.ReplicationConfiguration(
+                    '', Role=GetAtt(f'Role{name}Replica', 'Arn'),
                     Rules=Replica_Rules)
                 r_Bucket.ReplicationConfiguration = If(
                     f'{resname}Replica',
@@ -364,6 +377,21 @@ class S3_Buckets(object):
             r_Policy.Condition = resname
             r_Policy.Bucket = Sub(bucket_name)
             r_Policy.PolicyDocument['Statement'] = BucketPolicyStatement
+
+            PolicyStatementReplicaResources = []
+            for m, w in v['PolicyStatementReplica']['Resource'].items():
+                polstatname = f'{resname}PolicyStatementReplicaResource{m}'
+                # conditions
+                add_obj(
+                    get_condition(
+                        f'{polstatname}Prefix', 'not_equals', 'None'))
+
+                PolicyStatementReplicaResources.append(If(
+                    f'{polstatname}Prefix',
+                    get_subvalue('arn:aws:s3:::%s/${1M}*' % bucket_name,
+                        f'{polstatname}Prefix'),
+                    Ref('AWS::NoValue')
+                ))
 
             # At least one statement must be always present,
             # create a simple one with no conditions
@@ -383,7 +411,10 @@ class S3_Buckets(object):
 
             r_IAMPolicyReplica = IAMPolicyBucketReplica(
                 f'IAMPolicyReplicaBucket{name}',
-                bucket=resname, bucket_name=bucket_name, key=v)
+                bucket=resname,
+                bucket_name=bucket_name,
+                mapname=f'{resname}ReplicationConfigurationRules',
+                key=v['Replication']['ConfigurationRules'])
 
             try:
                 lambda_arn = eval(
@@ -486,8 +517,6 @@ class S3_Buckets(object):
             add_obj([
                 r_Bucket,
                 r_Policy,
-                # r_PolicyReplica,
-                # r_PolicyRO,
                 r_IAMPolicyReplica,
                 r_Role
             ])

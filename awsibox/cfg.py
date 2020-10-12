@@ -95,9 +95,10 @@ BASE_CFGS = {
             'Stg': 'None',
             'Prd': 'None',
         },
-        'ReplicaDstRegion': 'None',
-        'ReplicaDstOwner': 'None',
-        'ReplicaSrcAccount': 'None',
+        'Replication': {
+            'Enabled': 'None',
+            'ConfigurationRules': []
+        },
         'Versioning': 'None',
     },
     'CloudFrontCacheBehaviors': {
