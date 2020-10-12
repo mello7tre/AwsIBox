@@ -68,7 +68,7 @@ def S3BucketPolicyStatementBase(bucket):
     return statements
 
 
-def S3BucketPolicyStatementReplica(bucket, key):
+def S3BucketPolicyStatementReplica(bucket, resource):
     statements = []
     if_statements = []
     condition = f'{bucket}ReplicaSrcAccount'
@@ -79,15 +79,10 @@ def S3BucketPolicyStatementReplica(bucket, key):
             's3:ObjectOwnerOverrideToBucketOwner',
             ],
         'Effect': 'Allow',
-        'Resource': [
-            'arn:aws:s3:::%s/%s*' % (bucket_name, key['ReplicaSrcPrefix'][n])
-            for n, _ in enumerate(key['ReplicaSrcPrefix'])
-        ] if 'ReplicaSrcPrefix' in key else [
-            Sub('arn:aws:s3:::%s/*' % bucket_name)],
+        'Resource': resource,
         'Principal': {
             'AWS': [
-                get_subvalue(
-                    'arn:aws:iam::${1M}:root', f'{bucket}ReplicaSrcAccount')
+                get_endvalue(f'{bucket}PolicyStatementReplicaPrincipal')
             ]
         },
         'Sid': 'AllowReplica'
@@ -399,7 +394,8 @@ class S3_Buckets(object):
                 S3BucketPolicyStatementBase(resname))
 
             BucketPolicyStatement.extend(
-                S3BucketPolicyStatementReplica(resname, v))
+                S3BucketPolicyStatementReplica(
+                    resname, PolicyStatementReplicaResources))
 
             r_Role = IAMRoleBucketReplica(f'Role{resname}Replica')
 
