@@ -458,6 +458,19 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                 value = get_endvalue(
                     f'{mapname}{propname}')
 
+            # if key value == 'AWS::NoValue' automatically add condition and
+            # wrap value in AWS If Condition
+            if key[obj_propname] == 'AWS::NoValue':
+                add_obj(
+                    get_condition(
+                        f'{mapname}{propname}', 'not_equals', 'None')
+                )
+                value = If(
+                    f'{mapname}{propname}',
+                    value,
+                    Ref('AWS::NoValue')
+                )
+
             # Avoid intercepting a Template Condition as a Resource Condition
             if obj_propname == 'Condition' and not isinstance(value, str):
                 continue
