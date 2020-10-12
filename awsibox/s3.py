@@ -37,42 +37,6 @@ class S3ReplicationConfigurationRules(s3.ReplicationConfigurationRules):
         self.Status = 'Enabled'
 
 
-class S3ReplicationConfiguration(s3.ReplicationConfiguration):
-    def __init__(self, name, key, **kwargs):
-        super().__init__(**kwargs)
-
-        self.Role = GetAtt(f'Role{name}Replica', 'Arn')
-        self.Rules = [
-            s3.ReplicationConfigurationRules(
-                Destination=s3.ReplicationConfigurationRulesDestination(
-                    Bucket=get_subvalue(
-                        'arn:aws:s3:::${1M}', f'{name}ReplicaDstBucket'
-                    ) if 'ReplicaDstBucket' in key
-                    else get_subvalue(
-                        'arn:aws:s3:::${1M}-%s'
-                        % bucket_name.replace('${AWS::Region}-', '', 1),
-                        f'{name}ReplicaDstRegion',
-                    ),
-                    AccessControlTranslation=If(
-                        f'{name}ReplicaDstOwner',
-                        s3.AccessControlTranslation(
-                            Owner='Destination'
-                        ),
-                        Ref('AWS::NoValue')
-                    ),
-                    Account=If(
-                        f'{name}ReplicaDstOwner',
-                        get_endvalue(f'{name}ReplicaDstOwner'),
-                        Ref('AWS::NoValue')
-                    ),
-                ),
-                Prefix=(get_endvalue(f'{name}ReplicaDstPrefix')
-                        if 'ReplicaDstPrefix' in key else ''),
-                Status='Enabled'
-            )
-        ]
-
-
 class S3Bucket(s3.Bucket):
     def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
@@ -101,7 +65,7 @@ class S3Bucket(s3.Bucket):
         ReplicationConfiguration.Rules = []
 
         try:
-            replica_dst_prefix = key['ReplicaDstPrefix']
+            replica_dst_prefix = key['ReplicaPrefix']
         except Exception:
             ReplicationRule = S3ReplicationConfigurationRules(
                 name=name, key=key)
@@ -167,9 +131,9 @@ def S3BucketPolicyStatementReplica(bucket, key):
             ],
         'Effect': 'Allow',
         'Resource': [
-            'arn:aws:s3:::%s/%s*' % (bucket_name, key['ReplicaSrcPrefix'][n])
-            for n, _ in enumerate(key['ReplicaSrcPrefix'])
-        ] if 'ReplicaSrcPrefix' in key else [
+            'arn:aws:s3:::%s/%s*' % (bucket_name, key['ReplicaPrefix'][n])
+            for n, _ in enumerate(key['ReplicaPrefix'])
+        ] if 'ReplicaPrefix' in key else [
             Sub('arn:aws:s3:::%s/*' % bucket_name)],
         'Principal': {
             'AWS': [
