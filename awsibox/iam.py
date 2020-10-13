@@ -97,9 +97,10 @@ class IAMPolicyBucketReplica(iam.PolicyType):
                     'Effect': 'Allow',
                     'Resource': [
                         If(
-                            f'{mapname}{n}Bucket',
+                            f'{mapname}{n}DestinationBucket',
                             get_subvalue(
-                                'arn:aws:s3:::${1M}/*', f'{mapname}{n}Bucket'),
+                                '${1M}/*',
+                                f'{mapname}{n}DestinationBucket'),
                             Ref('AWS::NoValue')
                         ) for n in key
                     ]

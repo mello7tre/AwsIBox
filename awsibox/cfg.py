@@ -95,6 +95,10 @@ BASE_CFGS = {
             'Stg': 'None',
             'Prd': 'None',
         },
+        'PolicyStatementReplica': {
+            'Resource': [],
+            'Principal': 'None',
+        },
         'Replication': {
             'Enabled': 'None',
             'ConfigurationRules': []

@@ -71,7 +71,7 @@ def S3BucketPolicyStatementBase(bucket):
 def S3BucketPolicyStatementReplica(bucket, resource):
     statements = []
     if_statements = []
-    condition = f'{bucket}ReplicaSrcAccount'
+    condition = f'{bucket}PolicyStatementReplicaPrincipal'
     statements.append({
         'Action': [
             's3:ReplicateObject',
@@ -304,6 +304,9 @@ class S3_Buckets(object):
                 get_condition(
                     '', 'not_equals', 'None', f'{resname}ReplicationEnabled')
             )}
+            c_ReplicaPolicyStatement = get_condition(
+                f'{resname}PolicyStatementReplicaPrincipal',
+                'not_equals', 'None')
 
             add_obj([
                 c_PolicyRead,
@@ -312,6 +315,7 @@ class S3_Buckets(object):
                 c_Versioning,
                 c_Cors,
                 c_Replica,
+                c_ReplicaPolicyStatement,
             ])
 
             # resources
@@ -329,26 +333,14 @@ class S3_Buckets(object):
                 p_replicabucket.Description = ('Replica Destination Bucket '
                                                '- empty for default based on '
                                                'Env/Roles/Region')
-                p_replicaregion = Parameter(
-                    f'{replica_name}DestinationRegion')
-                p_replicaregion.Description = ('Replica Destination Region '
-                                               '- empty for default based on '
-                                               'Env/Roles/Region')
-                p_replicaregion.AllowedValues = ['', 'None'] + cfg.regions
+                add_obj(p_replicabucket)
 
-                add_obj([
-                    p_replicabucket,
-                    p_replicaregion,
-                ])
-
-                # condition
+                # conditions
                 add_obj([
                     get_condition(f'{replica_name}DestinationBucket',
-                                  'not_equals', 'None'),
-                    get_condition(f'{replica_name}DestinationRegion',
-                                  'not_equals', 'None'),
-                ])
+                                  'not_equals', 'None')])
 
+                # resources
                 rule = s3.ReplicationConfigurationRules()
                 auto_get_props(rule, w, mapname=replica_name, recurse=True)
 
@@ -361,17 +353,12 @@ class S3_Buckets(object):
 
             if Replica_Rules:
                 ReplicationConfiguration = s3.ReplicationConfiguration(
-                    '', Role=GetAtt(f'Role{name}Replica', 'Arn'),
+                    '', Role=GetAtt(f'Role{resname}Replica', 'Arn'),
                     Rules=Replica_Rules)
                 r_Bucket.ReplicationConfiguration = If(
                     f'{resname}Replica',
                     ReplicationConfiguration,
                     Ref('AWS::NoValue'))
-
-            r_Policy = S3BucketPolicy(f'BucketPolicy{name}', key=v)
-            r_Policy.Condition = resname
-            r_Policy.Bucket = Sub(bucket_name)
-            r_Policy.PolicyDocument['Statement'] = BucketPolicyStatement
 
             PolicyStatementReplicaResources = []
             for m, w in v['PolicyStatementReplica']['Resource'].items():
@@ -384,9 +371,14 @@ class S3_Buckets(object):
                 PolicyStatementReplicaResources.append(If(
                     f'{polstatname}Prefix',
                     get_subvalue('arn:aws:s3:::%s/${1M}*' % bucket_name,
-                        f'{polstatname}Prefix'),
+                                 f'{polstatname}Prefix'),
                     Ref('AWS::NoValue')
                 ))
+
+            r_Policy = S3BucketPolicy(f'BucketPolicy{name}', key=v)
+            r_Policy.Condition = resname
+            r_Policy.Bucket = Sub(bucket_name)
+            r_Policy.PolicyDocument['Statement'] = BucketPolicyStatement
 
             # At least one statement must be always present,
             # create a simple one with no conditions
