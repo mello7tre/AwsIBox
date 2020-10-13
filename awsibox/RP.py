@@ -149,6 +149,7 @@ def my_merge_dict(basedict, workdict):
     if len(basedict) > 0:
         sumdict = dict(list(basedict.items()) + list(workdict.items()))
     else:
+        basedict.update(workdict)
         return dict(list(workdict.items()))
 
     for k in sumdict.keys():
