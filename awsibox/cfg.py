@@ -96,12 +96,12 @@ BASE_CFGS = {
             'Prd': 'None',
         },
         'PolicyStatementReplica': {
-            'Resource': [],
+            'Resource': {},
             'Principal': 'None',
         },
         'Replication': {
             'Enabled': 'None',
-            'ConfigurationRules': []
+            'ConfigurationRules': {},
         },
         'Versioning': 'None',
     },
