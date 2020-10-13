@@ -82,7 +82,9 @@ def S3BucketPolicyStatementReplica(bucket, resource):
         'Resource': resource,
         'Principal': {
             'AWS': [
-                get_endvalue(f'{bucket}PolicyStatementReplicaPrincipal')
+                get_subvalue(
+                    'arn:aws:iam::${1M}:root',
+                    f'{bucket}PolicyStatementReplicaPrincipal')
             ]
         },
         'Sid': 'AllowReplica'
