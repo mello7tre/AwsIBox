@@ -85,8 +85,7 @@ class EVE_EventRules(object):
 
             # if target is Ecs Task add RoleArn
             if need_ecsEventsRole:
-                r_Rule.RoleArn = Sub(
-                    'arn:aws:iam::${AWS::AccountId}:role/ecsEventsRole')
+                r_Rule.RoleArn = get_expvalue('RoleECSEvents')
 
             add_obj(r_Rule)
 
