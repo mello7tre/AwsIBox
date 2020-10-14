@@ -157,6 +157,11 @@ res-base:
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
         Principal: ecs-tasks.amazonaws.com
+    - ECSEvents:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceEventsRole'
+        Principal: events.amazonaws.com
     - ApiGatewayCloudWatch:
         Export: True
         ManagedPolicyArns:
@@ -171,6 +176,19 @@ res-base:
                 - 1:
                     Action: 'sns:Publish'
                     Resource: Ref('SNSTopicECSDrainInstance')
+    - AWSCloudFormationStackSetExecutionRole:
+        Condition: 'RegionAWSCloudFormationStackSetRoles'
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/AdministratorAccess'
+        Principal: GetAtt('RoleAWSCloudFormationStackSetAdministrationRole', 'Arn')
+        PrincipalType: AWS
+        RoleName: 'AWSCloudFormationStackSetExecutionRole'
+    - AWSCloudFormationStackSetAdministrationRole:
+        Condition: 'RegionAWSCloudFormationStackSetRoles'
+        ManagedPolicyArns:
+          - Ref('IAMPolicyAssumeRoleAWSCloudFormationStackSetExecutionRole')
+        Principal: cloudformation.amazonaws.com
+        RoleName: 'AWSCloudFormationStackSetAdministrationRole'
   SecurityGroupBase:
     - BaseInstance: 'Enable ICMP Ping [ALL] and SSH on EC2 Instance'
     - LoadBalancerApplicationExternal: 'Assign to LoadBalancerApplicationExternal'
