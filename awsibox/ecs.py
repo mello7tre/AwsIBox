@@ -4,8 +4,7 @@ from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .securitygroup import (SecurityGroupEcsService,
-                            SecurityGroupRuleEcsService, SG_SecurityGroupsECS,
-                            SG_SecurityGroupsTSK)
+                            SecurityGroupRuleEcsService, SG_SecurityGroupsECS)
 
 
 class ECSService(ecs.Service):
@@ -216,30 +215,15 @@ class ECSVolume(ecs.Volume):
         )
 
 
-class ECSAwsvpcConfigurationECS(ecs.AwsvpcConfiguration):
+class ECSNetworkConfiguration(ecs.NetworkConfiguration):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-        self.SecurityGroups = [GetAtt('SecurityGroupEcsService', 'GroupId')]
-        self.Subnets = Split(',', get_expvalue('SubnetsPrivate'))
-        self.SecurityGroups.extend(SG_SecurityGroupsECS().SecurityGroups)
-
-
-class ECSAwsvpcConfigurationTSK(ecs.AwsvpcConfiguration):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.SecurityGroups = []
-        self.Subnets = Split(',', get_expvalue('SubnetsPrivate'))
-        self.SecurityGroups.extend(SG_SecurityGroupsTSK().SecurityGroups)
-
-
-def ECSNetworkConfiguration(service=True):
-    NetworkConfiguration = ecs.NetworkConfiguration(
-        AwsvpcConfiguration=ECSAwsvpcConfigurationECS('') if service
-        else ECSAwsvpcConfigurationTSK(''))
-
-    return If('NetworkModeAwsVpc',
-              NetworkConfiguration,
-              Ref('AWS::NoValue'))
+        self.AwsvpcConfiguration = ecs.AwsvpcConfiguration(
+            SecurityGroups=[
+                GetAtt('SecurityGroupEcsService', 'GroupId')
+                ] + SG_SecurityGroupsECS().SecurityGroups,
+            Subnets=Split(',', get_expvalue('SubnetsPrivate'))
+        )
 
 
 # ##########################################
@@ -475,7 +459,10 @@ class ECS_Service(object):
             SGRule = SecurityGroupRuleEcsService(scheme='Internal')
             R_SG.SecurityGroupIngress.append(SGRule)
 
-        R_Service.NetworkConfiguration = ECSNetworkConfiguration()
+        R_Service.NetworkConfiguration = If(
+            'NetworkModeAwsVpc',
+            ECSNetworkConfiguration(''),
+            Ref('AWS::NoValue'))
 
         add_obj([
             R_Service,
