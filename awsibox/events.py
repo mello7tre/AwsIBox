@@ -65,7 +65,7 @@ class EVE_EventRules(object):
                             'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:'
                             'cluster/${1E}', 'Cluster', stack='ClusterStack'),
                         'EcsParameters': EVEEcsParameters(''),
-                        'RoleArn': GetAtt('RoleTask', 'Arn'),
+                        'RoleArn': get_expvalue('RoleECSEvents'),
                         'Id': f'Target{m}',
                     }
                     need_ecsEventsRole = True
@@ -82,10 +82,6 @@ class EVE_EventRules(object):
             auto_get_props(r_Rule, v)
             r_Rule.Name = Sub('${AWS::StackName}-${EnvRole}-' f'Rule{n}')
             r_Rule.Targets = Targets
-
-            # if target is Ecs Task add RoleArn
-            if need_ecsEventsRole:
-                r_Rule.RoleArn = get_expvalue('RoleECSEvents')
 
             add_obj(r_Rule)
 
