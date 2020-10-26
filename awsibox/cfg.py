@@ -143,6 +143,8 @@ INSTANCE_LIST = [
     'r5a.12xlarge', 'r5a.16xlarge', 'r5a.24xlarge',
     'c5a.large', 'c5a.xlarge', 'c5a.2xlarge', 'c5a.4xlarge', 'c5a.8xlarge',
     'c5a.12xlarge', 'c5a.16xlarge', 'c5a.24xlarge',
+    't3a.nano', 't3a.micro', 't3a.small', 't3a.medium', 't3a.large',
+    't3a.xlarge', 't3a.2xlarge',
     't4g.nano', 't4g.micro', 't4g.small', 't4g.medium', 't4g.large',
     't4g.xlarge', 't4g.2xlarge',
 ]
