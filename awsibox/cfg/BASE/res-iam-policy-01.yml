@@ -98,6 +98,15 @@ res-iam-policy-01:
                 - 'logs:FilterLogEvents'
                 - 'logs:Get*'
               Resource: '*'
+    - LogFilter:
+        Export: True
+        Type: Managed
+        Description: 'Filter CloudWatch Logs'
+        Statement:
+          - 1:
+              Action:
+                - 'logs:PutMetricFilter'
+              Resource: '*'
     - LogGroupsDescribe:
         Export: True
         Type: Managed
