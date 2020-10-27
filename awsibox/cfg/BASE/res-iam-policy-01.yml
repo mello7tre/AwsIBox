@@ -131,6 +131,15 @@ res-iam-policy-01:
                 - 'cloudwatch:GetMetricStatistics'
                 - 'cloudwatch:GetDashboard'
               Resource: '*'
+    - MetricWrite:
+        Export: True
+        Type: Managed
+        Description: 'Write CloudWatch Custom Metrics'
+        Statement:
+          - 1:
+              Action:
+                - 'cloudwatch:PutMetricData'
+              Resource: '*'
     - BackEndDeveloper:
         Export: True
         Type: Managed
