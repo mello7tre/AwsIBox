@@ -53,7 +53,7 @@ global:
         Condition: 'EfsMounts'
         Value: Join(',', Ref('EfsMounts'))
     - ImageId:
-        Value: cfg.Resources['LaunchConfiguration'].ImageId
+        Value: cfg.Resources['LaunchTemplate'].LaunchTemplateData.ImageId
     - InstanceType:
         Value: get_endvalue('InstanceType')
     - KeyName:

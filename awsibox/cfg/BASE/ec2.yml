@@ -6,7 +6,7 @@ IBoxLoader: !include [
   cloudfront-ios.yml,
   parameterstore.yml,
   imageid-ec2.yml,
-  launchconfiguration.yml,
+  launchtemplate.yml,
 ]
 
 ec2:

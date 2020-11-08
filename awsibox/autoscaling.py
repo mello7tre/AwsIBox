@@ -2,6 +2,7 @@ import os
 import sys
 
 import troposphere.autoscaling as asg
+import troposphere.ec2 as ec2
 import troposphere.cloudformation as cfm
 import troposphere.policies as pol
 import troposphere.applicationautoscaling as aas
@@ -25,37 +26,14 @@ except ImportError:
 
 # S - AUTOSCALING #
 class ASAutoScalingGroup(asg.AutoScalingGroup):
-    def __init__(self, title, spot=None, **kwargs):
+    def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-
-        if spot:
-            CapacityDesiredASGMainIsSpot = get_endvalue('CapacityDesired')
-            CapacityDesiredASGMainIsNotSpot = 0
-            CapacityMinASGMainIsSpot = get_endvalue('CapacityMin')
-            CapacityMinASGMainIsNotSpot = 0
-            self.Condition = 'SpotASG'
-            self.LaunchConfigurationName = Ref('LaunchConfigurationSpot')
-            self.UpdatePolicy = ASUpdatePolicy(spot=True)
-        else:
-            CapacityDesiredASGMainIsSpot = 0
-            CapacityDesiredASGMainIsNotSpot = get_endvalue('CapacityDesired')
-            CapacityMinASGMainIsSpot = 0
-            CapacityMinASGMainIsNotSpot = get_endvalue('CapacityMin')
-            self.LaunchConfigurationName = Ref('LaunchConfiguration')
-            self.UpdatePolicy = ASUpdatePolicy()
-
         self.AvailabilityZones = GetAZs()
-
-        if cfg.SpotASG:
-            self.DesiredCapacity = If('ASGMainIsSpot',
-                                      CapacityDesiredASGMainIsSpot,
-                                      CapacityDesiredASGMainIsNotSpot)
-            self.MinSize = If('ASGMainIsSpot',
-                              CapacityMinASGMainIsSpot,
-                              CapacityMinASGMainIsNotSpot)
-        else:
-            self.DesiredCapacity = get_endvalue('CapacityDesired')
-            self.MinSize = get_endvalue('CapacityMin')
+        self.DesiredCapacity = get_endvalue('CapacityDesired')
+        self.LaunchTemplate = asg.LaunchTemplateSpecification(
+            LaunchTemplateId=Ref('LaunchTemplate'),
+            Version=GetAtt('LaunchTemplate', 'LatestVersionNumber'))
+        self.MinSize = get_endvalue('CapacityMin')
 
         self.CreationPolicy = pol.CreationPolicy(
             ResourceSignal=pol.ResourceSignal(
@@ -80,31 +58,25 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
         else:
             self.VPCZoneIdentifier = Split(',', get_expvalue('SubnetsPrivate'))
 
+        self.UpdatePolicy = ASUpdatePolicy()
 
-class ASLaunchConfiguration(asg.LaunchConfiguration):
-    def __init__(self, title, UserDataApp, spot=None, **kwargs):
-        super().__init__(title, **kwargs)
 
-        if spot:
-            AutoScalingGroupName = 'AutoScalingGroupSpot'
-            self.Condition = 'SpotASG'
-        else:
-            AutoScalingGroupName = 'AutoScalingGroup'
-        self.AssociatePublicIpAddress = get_endvalue(
-            'AssociatePublicIpAddress')
+class ASLaunchTemplateData(ec2.LaunchTemplateData):
+    def __init__(self, UserDataApp, **kwargs):
+        super().__init__(**kwargs)
         self.BlockDeviceMappings = [
-            asg.BlockDeviceMapping(
+            ec2.LaunchTemplateBlockDeviceMapping(
                 DeviceName='/dev/xvda',
-                Ebs=asg.EBSBlockDevice(
+                Ebs=ec2.EBSBlockDevice(
                     VolumeSize=get_endvalue('VolumeSize'),
                     VolumeType=get_endvalue('VolumeType'),
                 )
             ),
             If(
                 'AdditionalStorage',
-                asg.BlockDeviceMapping(
+                ec2.LaunchTemplateBlockDeviceMapping(
                     DeviceName=get_endvalue('AdditionalStorageName'),
-                    Ebs=asg.EBSBlockDevice(
+                    Ebs=ec2.EBSBlockDevice(
                         VolumeSize=get_endvalue('AdditionalStorageSize'),
                         VolumeType=get_endvalue('AdditionalStorageType'),
                     )
@@ -113,7 +85,7 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             ),
             If(
                 'InstaceEphemeral0',
-                asg.BlockDeviceMapping(
+                ec2.LaunchTemplateBlockDeviceMapping(
                     DeviceName='/dev/xvdb',
                     VirtualName='ephemeral0'
                 ),
@@ -121,7 +93,7 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             ),
             If(
                 'InstaceEphemeral1',
-                asg.BlockDeviceMapping(
+                ec2.LaunchTemplateBlockDeviceMapping(
                     DeviceName='/dev/xvdc',
                     VirtualName='ephemeral1'
                 ),
@@ -129,28 +101,53 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             ),
             If(
                 'InstaceEphemeral2',
-                asg.BlockDeviceMapping(
+                ec2.LaunchTemplateBlockDeviceMapping(
                     DeviceName='/dev/xvdd',
                     VirtualName='ephemeral2'
                 ),
                 Ref('AWS::NoValue')
             ),
         ]
-        self.IamInstanceProfile = Ref('InstanceProfile')
+        self.IamInstanceProfile = ec2.IamInstanceProfile(
+            Arn=GetAtt('InstanceProfile', 'Arn'))
         self.ImageId = If(
             'ImageIdLatest',
             Ref('ImageIdLatest'),
             get_endvalue('ImageId'),
         ) if 'ImageIdLatest' in cfg.Parameter else get_endvalue('ImageId')
-        self.InstanceMonitoring = get_endvalue('InstanceMonitoring')
+        self.InstanceMarketOptions = If(
+            'SpotPrice',
+            ec2.InstanceMarketOptions(
+                MarketType='spot',
+                SpotOptions=ec2.SpotOptions(
+                    MaxPrice=get_endvalue('SpotPrice'))),
+            Ref('AWS::NoValue'))
         self.InstanceType = get_endvalue('InstanceType')
         self.KeyName = get_endvalue('KeyName')
-        self.SecurityGroups = [
-            GetAtt('SecurityGroupInstancesRules', 'GroupId'),
+        self.Monitoring = ec2.Monitoring(Enabled=get_endvalue(
+            'InstanceMonitoring'))
+        self.NetworkInterfaces = [
+            ec2.NetworkInterfaces(
+                AssociatePublicIpAddress=get_endvalue(
+                    'AssociatePublicIpAddress'),
+                Groups=[
+                    GetAtt('SecurityGroupInstancesRules', 'GroupId')
+                ],
+                DeviceIndex=0)]
+        self.TagSpecifications = [
+            ec2.TagSpecifications(
+                ResourceType='instance',
+                Tags=[
+                    ec2.Tag(('Name'), Ref('EnvRole')),
+                    ec2.Tag(('EnvStackName'), Ref('AWS::StackName')),
+                ]),
+            ec2.TagSpecifications(
+                ResourceType='volume',
+                Tags=[
+                    ec2.Tag(('Name'), Ref('EnvRole')),
+                    ec2.Tag(('EnvStackName'), Ref('AWS::StackName')),
+                ]),
         ]
-        self.SpotPrice = If('SpotPrice',
-                            get_endvalue('SpotPrice'),
-                            Ref('AWS::NoValue'))
         self.UserData = Base64(Join('', [
             '#!/bin/bash\n',
             'PATH=/opt/aws/bin:$PATH\n',
@@ -162,7 +159,7 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
             'cfn-init -v',
             ' --stack ', Ref('AWS::StackName'),
             ' --role ', Ref('RoleInstance'),
-            ' --resource LaunchConfiguration',
+            ' --resource LaunchTemplate',
             ' --region ', Ref('AWS::Region'), '\n',
             If(
                 'DoNotSignal',
@@ -170,7 +167,7 @@ class ASLaunchConfiguration(asg.LaunchConfiguration):
                 Sub(
                     'cfn-signal -e $? --stack ${AWS::StackName} '
                     '--role ${RoleInstance} '
-                    f'--resource {AutoScalingGroupName} '
+                    f'--resource AutoScalingGroup '
                     '--region ${AWS::Region}\n')
             ),
             'rm /var/lib/cloud/instance/sem/config_scripts_user\n',
@@ -214,16 +211,10 @@ class ASScalingPolicyStep(asg.ScalingPolicy):
 class ASScheduledAction(asg.ScheduledAction):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-
         name = self.title
-        self.Condition = name
 
-        if cfg.SpotASG:
-            self.AutoScalingGroupName = If('ASGMainIsSpot',
-                                           Ref('AutoScalingGroupSpot'),
-                                           Ref('AutoScalingGroup'))
-        else:
-            self.AutoScalingGroupName = Ref('AutoScalingGroup')
+        self.Condition = name
+        self.AutoScalingGroupName = Ref('AutoScalingGroup')
 
         self.DesiredCapacity = If(
             f'{name}CapacityDesiredSize',
@@ -394,24 +385,17 @@ class APPASScalableTarget(aas.ScalableTarget):
 
 # S - AUTOSCALING #
 class ASUpdatePolicy(pol.UpdatePolicy):
-    def __init__(self, spot=None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        if spot:
-            WillReplaceCondition = 'WillReplaceSpot'
-            AutoScalingRollingUpdateCondition = 'RollingUpdateSpot'
-        else:
-            WillReplaceCondition = 'WillReplace'
-            AutoScalingRollingUpdateCondition = 'RollingUpdate'
         self.AutoScalingReplacingUpdate = If(
-            WillReplaceCondition,
+            'WillReplace',
             pol.AutoScalingReplacingUpdate(
                 WillReplace=True
             ),
             Ref('AWS::NoValue')
         )
         self.AutoScalingRollingUpdate = If(
-            AutoScalingRollingUpdateCondition,
+            'RollingUpdate',
             pol.AutoScalingRollingUpdate(
                 MaxBatchSize=get_endvalue('RollingUpdateMaxBatchSize'),
                 # MinInstancesInService=get_endvalue('RollingUpdateMinInstancesInService'),
@@ -509,12 +493,12 @@ class ASInitConfigSetup(cfm.InitConfig):
                 'content': Join('', [
                     '[cfn-auto-reloader-hook]\n',
                     'triggers=post.add, post.update\n',
-                    'path=Resources.LaunchConfiguration'
+                    'path=Resources.LaunchTemplate'
                     '.Metadata.CloudFormationInitVersion\n',
                     'action=/opt/aws/bin/cfn-init -v',
                     ' --stack ', Ref('AWS::StackName'),
                     ' --role ', Ref('RoleInstance'),
-                    ' --resource LaunchConfiguration',
+                    ' --resource LaunchTemplate',
                     ' --region ', Ref('AWS::Region'), '\n',
                     'runas=root\n'
                 ])
@@ -1140,7 +1124,7 @@ class AS_ScalingPoliciesTracking(object):
         ])
 
 
-class AS_LaunchConfiguration(object):
+class AS_LaunchTemplate(object):
     def __init__(self):
         InitConfigSets = ASInitConfigSets()
 
@@ -1257,9 +1241,11 @@ class AS_LaunchConfiguration(object):
         SecurityGroups = SG_SecurityGroupsEC2().SecurityGroups
 
         # Resources
-        R_LaunchConfiguration = ASLaunchConfiguration(
-            'LaunchConfiguration', UserDataApp=UserDataApp)
-        R_LaunchConfiguration.SecurityGroups.extend(SecurityGroups)
+        R_LaunchTemplate = ec2.LaunchTemplate(
+            'LaunchTemplate',
+            LaunchTemplateData=ASLaunchTemplateData(UserDataApp=UserDataApp))
+        R_LaunchTemplate.LaunchTemplateData.NetworkInterfaces[0].Groups.extend(
+            SecurityGroups)
 
         R_InstanceProfile = IAMInstanceProfile('InstanceProfile')
 
@@ -1269,7 +1255,7 @@ class AS_LaunchConfiguration(object):
             CfnRole = globals()[cfn_envrole]()
             CfmInitArgs.update(CfnRole)
 
-        R_LaunchConfiguration.Metadata = cfm.Metadata(
+        R_LaunchTemplate.Metadata = cfm.Metadata(
             {
                 'CloudFormationInitVersion': If(
                     'CloudFormationInit',
@@ -1293,20 +1279,11 @@ class AS_LaunchConfiguration(object):
             })
         )
 
-        R_LaunchConfigurationSpot = ASLaunchConfiguration(
-            'LaunchConfigurationSpot', UserDataApp=UserDataApp, spot=True)
-        R_LaunchConfigurationSpot.SecurityGroups = (
-            R_LaunchConfiguration.SecurityGroups)
-        R_LaunchConfigurationSpot.SpotPrice = get_endvalue('SpotPrice')
-
         add_obj([
-            R_LaunchConfiguration,
+            R_LaunchTemplate,
             R_InstanceProfile,
         ])
-        if cfg.SpotASG:
-            add_obj(R_LaunchConfigurationSpot)
 
-        self.LaunchConfiguration = R_LaunchConfiguration
         self.Tags = Tags
 
 
@@ -1324,8 +1301,8 @@ class AS_AutoscalingEC2(object):
         AS_ScheduledActionsEC2('ScheduledAction')
         # AS_ScalingPoliciesEC2()
 
-        LaunchConfiguration = AS_LaunchConfiguration()
-        Tags = LaunchConfiguration.Tags
+        LaunchTemplate = AS_LaunchTemplate()
+        Tags = LaunchTemplate.Tags
 
         R_ASG = ASAutoScalingGroup('AutoScalingGroup')
         R_ASG.LoadBalancerNames = LoadBalancers
@@ -1353,11 +1330,6 @@ class AS_AutoscalingEC2(object):
             )
         ])
 
-        R_ASGSpot = ASAutoScalingGroup('AutoScalingGroupSpot', spot=True)
-        R_ASGSpot.LoadBalancerNames = LoadBalancers
-        R_ASGSpot.TargetGroupARNs = TargetGroups
-        R_ASGSpot.Tags.extend(Tags)
-
         # Notifications currently are not associeted to "any actions" -
         # now using CW events - this way works with autospotting too
         try:
@@ -1367,16 +1339,10 @@ class AS_AutoscalingEC2(object):
         else:
             NotificationConfiguration = ASNotificationConfiguration()
             R_ASG.NotificationConfigurations = [NotificationConfiguration]
-            R_ASGSpot.NotificationConfigurations = [NotificationConfiguration]
 
         add_obj([
             R_ASG,
         ])
-
-        if cfg.SpotASG:
-            add_obj(R_ASGSpot)
-
-        self.LaunchConfiguration = LaunchConfiguration
 
 
 class AS_AutoscalingECS(object):
@@ -1400,14 +1366,6 @@ class AS_LifecycleHook(object):
             r_Hook = ASLifecycleHook(resname, name=n, key=v)
             r_Hook.AutoScalingGroupName = Ref('AutoScalingGroup')
 
-            r_HookSpot = ASLifecycleHook(resname, name=n, key=v)
-            r_HookSpot.title = f'{resname}Spot'
-            r_HookSpot.Condition = 'SpotASG'
-            r_HookSpot.AutoScalingGroupName = Ref('AutoScalingGroupSpot')
-
             add_obj([
                 r_Hook,
             ])
-
-            if cfg.SpotASG:
-                add_obj(r_HookSpot)
