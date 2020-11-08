@@ -13,6 +13,7 @@ global:
                 - 'iam:ListServerCertificates'
                 - 'iam:GetRole'
                 - 'iam:PutRolePolicy'
+                - 'iam:GetInstanceProfile'
                 - 'elasticloadbalancing:*'
                 - 'ec2:*'
                 - 'ecs:*'
