@@ -410,7 +410,8 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname,
             except Exception:
                 prop_list.append(prop_obj)
             else:
-                prop_list.append(If(if_wrapper[0], prop_obj, if_wrapper[1]))
+                prop_list.append(
+                    If(if_wrapper[0], prop_obj, eval(if_wrapper[1])))
 
         return prop_list
 
@@ -476,8 +477,12 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                     if_list = key_value.split()
                     value = If(
                         if_list[1],
-                        value if obj_propname == if_list[2] else if_list[2],
-                        value if obj_propname == if_list[3] else if_list[3],
+                        value if obj_propname == if_list[2] else (
+                            eval(if_list[2]) if if_list[2].startswith(
+                                'EVAL_FUNCTIONS_IN_CFG') else if_list[2]),
+                        value if obj_propname == if_list[3] else (
+                            eval(if_list[3]) if if_list[3].startswith(
+                                'EVAL_FUNCTIONS_IN_CFG') else if_list[3]),
                     )
                 # trick to wrapper recursed value in If Condition
                 try:
@@ -485,7 +490,7 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                 except Exception:
                     pass
                 else:
-                    value = If(if_wrapper[0], value, if_wrapper[1])
+                    value = If(if_wrapper[0], value, eval(if_wrapper[1]))
 
             # Avoid intercepting a Template Condition as a Resource Condition
             if obj_propname == 'Condition' and not isinstance(value, str):

@@ -57,8 +57,8 @@ global:
     - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice:
         get_condition('', 'not_equals', '0', 'LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice')
   Output:
-    - AdditionalStorageSize:
-        Value: get_endvalue('AdditionalStorageSize')
+    - LaunchTemplateDataAdditionalStorageEbsVolumeSize:
+        Value: get_endvalue('LaunchTemplateDataAdditionalStorageEbsVolumeSize')
     - DoNotSignal:
         Value: Ref('DoNotSignal')
     - EfsMounts:
@@ -67,11 +67,11 @@ global:
     - LaunchTemplateDataImageId:
         Value: cfg.Resources['LaunchTemplate'].LaunchTemplateData.ImageId
     - LaunchTemplateDataInstanceType:
-        Value: get_endvalue('InstanceType')
+        Value: get_endvalue('LaunchTemplateDataInstanceType')
     - LaunchTemplateDataKeyName:
-        Value: get_endvalue('KeyName')
-    - VolumeSize:
-        Value: get_endvalue('VolumeSize')
+        Value: get_endvalue('LaunchTemplateDataKeyName')
+    - LaunchTemplateDataAdditionalStorageEbsVolumeSize:
+        Value: get_endvalue('LaunchTemplateDataAdditionalStorageEbsVolumeSize')
   LaunchTemplate:
     - Data:
         BlockDeviceMappings:
@@ -131,10 +131,14 @@ global:
           - instance:
               ResourceType: instance
               Tags:
-                Name: Ref('EnvRole')
-                EnvStackName: Ref('AWS::StackName')
+                Name:
+                  Ref: 'EnvRole'
+                EnvStackName:
+                  Ref: 'AWS::StackName'
           - volume:
               ResourceType: volume
               Tags:
-                Name: Ref('EnvRole')
-                EnvStackName: Ref('AWS::StackName')
+                Name:
+                  Ref: 'EnvRole'
+                EnvStackName:
+                  Ref: 'AWS::StackName'
