@@ -17,26 +17,14 @@ ec2:
         Default: 'None'
     - HealthCheckGracePeriod:
         Description: 'How long to wait before ASG check instance health - empty for default based on env/role'
-    - ImageIdLatest:
-        Description: 'Latest Amazon Linux2 ami available from SSM'
-        Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-        AllowedValues:
-          - '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-        Type: 'AWS::SSM::Parameter::Value<String>'
-    - SpotPrice:
-        Description: 'Maximum Spot Price of ASG - empty for default based on env/role - 0 to disable'
   Condition:
-    - ImageIdLatest:
-        get_condition('', 'equals', 'latest', 'ImageId')
     - RollingUpdate:
         Equals(Ref('UpdateMode'), 'Rolling')
     - WillReplace:
         Equals(Ref('UpdateMode'), 'Replace')
-    - SpotPrice:
-        get_condition('', 'not_equals', '0', 'SpotPrice')
     - Spot:
         And(
-          Condition('SpotPrice'),
+          Condition('LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice'),
           Equals('1', '1'),
         )
   Output:
@@ -44,11 +32,6 @@ ec2:
         Value: Ref('UpdateMode')
   MappingClass:
     - EC2:
-  AdditionalStorage:
-    Mount: True
-    Name: /dev/xvdx
-    Size: 0
-    Type: gp2
   AlarmCPUBase: &cpu
     Dimensions:
       - Autoscaling:
@@ -67,8 +50,6 @@ ec2:
   DeploymentGroup: False
   HealthCheckType: ELB
   HealthCheckGracePeriod: 600
-  InstanceMonitoring: False
-  InstanceType: t3.micro
   LoadBalancer:
     CookieSticky: None
     IdleTimeout: 60
@@ -115,10 +96,6 @@ ec2:
         MaxSize: CapacityMax
         MinSize: CapacityMin
         Recurrence: '30 08 * * mon-fri'
-  SpotPrice: 0
-  Volume:
-    Size: 8
-    Type: gp2
 
 dev: &cfg_dev
   Alarm:
@@ -136,6 +113,5 @@ stg: *cfg_dev
 
 IBoxLoaderAfter: !include [
   spot-auto.yml,
-  #  spot-asg.yml,
   cloudwatch-agent.yml,
 ]

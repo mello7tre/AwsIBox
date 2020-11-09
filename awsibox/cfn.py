@@ -72,44 +72,6 @@ def cfn_ecs_cluster():
                     'nvidia-docker2': If(
                         'GPUInstance', [], Ref('AWS::NoValue')),
                 }
-            },
-            files={
-                '/etc/profile.d/ibox_env_ext.sh': If(
-                    'SpotASG',
-                    {
-                        'content': Join('', [
-                            '#setup ibox extra environment variables\n',
-                            'SNSTopicASGSpot=', Ref('SNSTopicASGSpot'), '\n',
-                        ])
-                    },
-                    Ref('AWS::NoValue')
-                ) if cfg.SpotASG else Ref('AWS::NoValue'),
-                '/etc/systemd/system/spot-instance-drainer.service': If(
-                    'SpotPrice',
-                    {
-                        'content': Join('\n', [
-                            '[Unit]',
-                            'Description=Spot Instance Drainer',
-                            '[Service]',
-                            'Type=simple',
-                            'EnvironmentFile=-/etc/profile.d/ibox_env_ext.sh',
-                            'ExecStart=/usr/local/bin/spot-instance-drainer',
-                            'ExecStop=/usr/bin/killall spot-instance-drainer',
-                            'Restart=on-failure',
-                            '[Install]',
-                            'WantedBy=multi-user.target',
-                        ]),
-                    },
-                    Ref('AWS::NoValue')
-                ),
-                '/usr/local/bin/spot-instance-drainer': If('SpotPrice', {
-                    'source': Sub(
-                        'https://%s.s3-${AWS::Region}.amazonaws.com'
-                        '/ibox-tools/spot-instance-drainer'
-                        % cfg.BucketAppRepository
-                    ),
-                    'mode': 755
-                }, Ref('AWS::NoValue')),
             }
         ),
         'SERVICES': cfm.InitConfig(
@@ -146,18 +108,7 @@ def cfn_ecs_cluster():
                 '02-restart-docker': If('GPUInstance', {
                     'command': 'pkill -SIGHUP dockerd'
                 }, Ref('AWS::NoValue')),
-                '03-reload-systemd': If('SpotPrice', {
-                    'command': 'systemctl daemon-reload'
-                }, Ref('AWS::NoValue')),
-            },
-            services=If('SpotPrice', {
-                'sysvinit': {
-                    'spot-instance-drainer': {
-                        'enabled': 'false',
-                        'ensureRunning': 'true'
-                    }
-                }
-            }, Ref('AWS::NoValue'))
+            }
         )
     })
 

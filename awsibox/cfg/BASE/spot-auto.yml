@@ -11,7 +11,7 @@ global:
     - Spot:
         Or(
           Condition('SpotAuto'),
-          Condition('SpotPrice'),
+          Condition('LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice'),
         )
     - SpotAuto:
         get_condition('', 'not_equals', 'None', 'SpotAuto')

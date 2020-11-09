@@ -64,90 +64,8 @@ class ASAutoScalingGroup(asg.AutoScalingGroup):
 class ASLaunchTemplateData(ec2.LaunchTemplateData):
     def __init__(self, UserDataApp, **kwargs):
         super().__init__(**kwargs)
-        self.BlockDeviceMappings = [
-            ec2.LaunchTemplateBlockDeviceMapping(
-                DeviceName='/dev/xvda',
-                Ebs=ec2.EBSBlockDevice(
-                    VolumeSize=get_endvalue('VolumeSize'),
-                    VolumeType=get_endvalue('VolumeType'),
-                )
-            ),
-            If(
-                'AdditionalStorage',
-                ec2.LaunchTemplateBlockDeviceMapping(
-                    DeviceName=get_endvalue('AdditionalStorageName'),
-                    Ebs=ec2.EBSBlockDevice(
-                        VolumeSize=get_endvalue('AdditionalStorageSize'),
-                        VolumeType=get_endvalue('AdditionalStorageType'),
-                    )
-                ),
-                Ref('AWS::NoValue')
-            ),
-            If(
-                'InstaceEphemeral0',
-                ec2.LaunchTemplateBlockDeviceMapping(
-                    DeviceName='/dev/xvdb',
-                    VirtualName='ephemeral0'
-                ),
-                Ref('AWS::NoValue')
-            ),
-            If(
-                'InstaceEphemeral1',
-                ec2.LaunchTemplateBlockDeviceMapping(
-                    DeviceName='/dev/xvdc',
-                    VirtualName='ephemeral1'
-                ),
-                Ref('AWS::NoValue')
-            ),
-            If(
-                'InstaceEphemeral2',
-                ec2.LaunchTemplateBlockDeviceMapping(
-                    DeviceName='/dev/xvdd',
-                    VirtualName='ephemeral2'
-                ),
-                Ref('AWS::NoValue')
-            ),
-        ]
-        self.IamInstanceProfile = ec2.IamInstanceProfile(
-            Arn=GetAtt('InstanceProfile', 'Arn'))
-        self.ImageId = If(
-            'ImageIdLatest',
-            Ref('ImageIdLatest'),
-            get_endvalue('ImageId'),
-        ) if 'ImageIdLatest' in cfg.Parameter else get_endvalue('ImageId')
-        self.InstanceMarketOptions = If(
-            'SpotPrice',
-            ec2.InstanceMarketOptions(
-                MarketType='spot',
-                SpotOptions=ec2.SpotOptions(
-                    MaxPrice=get_endvalue('SpotPrice'))),
-            Ref('AWS::NoValue'))
-        self.InstanceType = get_endvalue('InstanceType')
-        self.KeyName = get_endvalue('KeyName')
-        self.Monitoring = ec2.Monitoring(Enabled=get_endvalue(
-            'InstanceMonitoring'))
-        self.NetworkInterfaces = [
-            ec2.NetworkInterfaces(
-                AssociatePublicIpAddress=get_endvalue(
-                    'AssociatePublicIpAddress'),
-                Groups=[
-                    GetAtt('SecurityGroupInstancesRules', 'GroupId')
-                ],
-                DeviceIndex=0)]
-        self.TagSpecifications = [
-            ec2.TagSpecifications(
-                ResourceType='instance',
-                Tags=[
-                    ec2.Tag(('Name'), Ref('EnvRole')),
-                    ec2.Tag(('EnvStackName'), Ref('AWS::StackName')),
-                ]),
-            ec2.TagSpecifications(
-                ResourceType='volume',
-                Tags=[
-                    ec2.Tag(('Name'), Ref('EnvRole')),
-                    ec2.Tag(('EnvStackName'), Ref('AWS::StackName')),
-                ]),
-        ]
+        auto_get_props(self, cfg.LaunchTemplate['Data'], recurse=True,
+                       mapname='LaunchTemplateData')
         self.UserData = Base64(Join('', [
             '#!/bin/bash\n',
             'PATH=/opt/aws/bin:$PATH\n',
@@ -1243,6 +1161,7 @@ class AS_LaunchTemplate(object):
         # Resources
         R_LaunchTemplate = ec2.LaunchTemplate(
             'LaunchTemplate',
+            LaunchTemplateName=Sub('${AWS::StackName}-${EnvRole}'),
             LaunchTemplateData=ASLaunchTemplateData(UserDataApp=UserDataApp))
         R_LaunchTemplate.LaunchTemplateData.NetworkInterfaces[0].Groups.extend(
             SecurityGroups)

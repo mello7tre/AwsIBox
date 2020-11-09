@@ -347,13 +347,17 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname,
         else:
             prop_obj = prop_class()
         auto_get_props(
-            prop_obj,
-            key=key[obj_propname],
-            mapname=f'{mapname}{obj_propname}',
-            recurse=True,
+            prop_obj, key=key[obj_propname],
+            mapname=f'{mapname}{obj_propname}', recurse=True,
             rootkey=rootkey[obj_propname] if rootkey else None,
-            rootname=f'{rootname}{obj_propname}' if rootname else None,
-        )
+            rootname=f'{rootname}{obj_propname}' if rootname else None)
+
+        return prop_obj
+
+    # trick for multiple class type support (Ex ec.TagSpecifications.Tags)
+    elif (isinstance(prop_class, tuple) and
+            prop_class[0].__bases__[0].__name__ == 'AWSHelperFn'):
+        prop_obj = prop_class[0](**key[obj_propname])
 
         return prop_obj
 
@@ -376,24 +380,13 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname,
                 rootname_o = f'{rootname}{obj_propname}{name_o}'
                 mapname_o = f'{mapname}{obj_propname}{name_o}'
                 prop_obj = prop_class()
-                auto_get_props(
-                    prop_obj,
-                    key=v,
-                    mapname=rootname_o,
-                    recurse=True,
-                    rootkey=v,
-                    rootname=rootname_o,
-                )
+                auto_get_props(prop_obj, key=v, mapname=rootname_o,
+                               recurse=True, rootkey=v, rootname=rootname_o)
                 if o in key[obj_propname]:
                     key_o = key[obj_propname][o]
-                    auto_get_props(
-                        prop_obj,
-                        key=key_o,
-                        mapname=mapname_o,
-                        recurse=True,
-                        rootkey=key_o,
-                        rootname=rootname_o,
-                    )
+                    auto_get_props(prop_obj, key=key_o, mapname=mapname_o,
+                                   recurse=True, rootkey=key_o,
+                                   rootname=rootname_o)
                 prop_list.append(prop_obj)
         # ...then iterate over key, but check if element exist in rootkey too,
         # in that case skip it (already included in previous rootkey iteration)
@@ -407,15 +400,17 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname,
             prop_obj = prop_class()
             if rootkey and o in rootkey[obj_propname]:
                 continue
-            auto_get_props(
-                prop_obj,
-                key=v,
-                mapname=mapname_o,
-                recurse=True,
-                rootkey=None,
-                rootname=None,
-            )
-            prop_list.append(prop_obj)
+
+            auto_get_props(prop_obj, key=v, mapname=mapname_o, recurse=True,
+                           rootkey=None, rootname=None)
+
+            # trick to wrapper obj in If Condition
+            try:
+                if_wrapper = v['IBOXIF']
+            except Exception:
+                prop_list.append(prop_obj)
+            else:
+                prop_list.append(If(if_wrapper[0], prop_obj, if_wrapper[1]))
 
         return prop_list
 
@@ -475,6 +470,22 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                         value,
                         Ref('AWS::NoValue')
                     )
+                # trick to wrapper value in If Condition
+                elif (isinstance(key_value, str)
+                        and key_value.startswith('IBOXIF')):
+                    if_list = key_value.split()
+                    value = If(
+                        if_list[1],
+                        value if obj_propname == if_list[2] else if_list[2],
+                        value if obj_propname == if_list[3] else if_list[3],
+                    )
+                # trick to wrapper recursed value in If Condition
+                try:
+                    if_wrapper = key_value['IBOXIF']
+                except Exception:
+                    pass
+                else:
+                    value = If(if_wrapper[0], value, if_wrapper[1])
 
             # Avoid intercepting a Template Condition as a Resource Condition
             if obj_propname == 'Condition' and not isinstance(value, str):
