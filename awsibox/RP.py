@@ -405,12 +405,6 @@ def set_cfg():
         if 'Internal' in cfg.LoadBalancerApplication:
             cfg.LoadBalancerApplicationInternal = True
 
-    # SpotASG
-    try:
-        cfg.SpotASG
-    except Exception:
-        cfg.SpotASG = None
-
     # RecordSet
     cfg.RecordSetExternal = None
     cfg.RecordSetInternal = None

@@ -21,7 +21,7 @@ def stack_add_res():
         # Automatically create override conditions for parameters
         if not n.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION):
 
-            if n == 'InstanceType':
+            if n == 'LaunchTemplateDataInstanceType':
                 default = 'default'
             elif n == 'SecurityGroups':
                 default = cfg.SECURITY_GROUPS_DEFAULT

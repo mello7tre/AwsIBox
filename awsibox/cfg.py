@@ -49,7 +49,7 @@ PARAMETERS_SKIP_OVERRIDE_CONDITION = (
     'RecordSetExternal',
     'DoNotSignal',
     'EfsMounts',
-    'ImageIdLatest',
+    'LaunchTemplateDataImageIdLatest',
     'VPCCidrBlock',
     'VPCName',
 )

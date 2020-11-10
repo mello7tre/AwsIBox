@@ -447,27 +447,18 @@ class ASInitConfigSetup(cfm.InitConfig):
             '02_disk_additional': If(
                 'AdditionalStorageMount',
                 {
-                    # 'command': Join('', [
-                    #    'file -s ',
-                    #    get_endvalue('AdditionalStorageName'), '1',
-                    #    ' | grep -q "ext[34] filesystem" || ',
-                    #    '{ parted -s ', get_endvalue('AdditionalStorageName'),
-                    #    ' mklabel gpt', ' && ',
-                    #    'parted -s ', get_endvalue('AdditionalStorageName'),
-                    #    ' mkpart primary ext2 1 ',
-                    #    get_endvalue('AdditionalStorageSize'), 'G', ' && ',
-                    #    'mkfs.ext4 ', get_endvalue('AdditionalStorageName'),
-                    #    '1', ' || continue; }\n',
-                    #    'mkdir -p /data', ' && ',
-                    #    'mount /dev/xvdx1 /data'
-                    # ])
                     'command': get_subvalue(
                         'file -s ${1M}1 | grep -q "ext[34] filesystem" ||'
                         ' { parted -s ${1M} mklabel gpt &&'
                         ' parted -s ${1M} mkpart primary ext2 1 ${2M}G &&'
                         ' mkfs.ext4 ${1M}1 || continue; }\nmkdir -p /data &&'
                         ' mount ${1M}1 /data',
-                        ['AdditionalStorageName', 'AdditionalStorageSize']
+                        [
+                            ('LaunchTemplateDataBlockDeviceMappings'
+                             'AdditionalStorageDeviceName'),
+                            ('LaunchTemplateDataBlockDeviceMappings'
+                             'AdditionalStorageEbsVolumeSize'),
+                        ]
                     )
                 },
                 Ref('AWS::NoValue')
