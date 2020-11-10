@@ -1,8 +1,5 @@
 global:
   Parameter:
-    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize:
-        Description: 'Size in GiB of additional EBS storage - 0 to disable - empty for default'
-        AllowedValues: ['', '0', '4', '8', '16', '32', '64', '128', '256', '512', '1024']
     - DoNotSignal:
         Description: 'Do Not Signal ASG - WARNING need to manually exec cfn-signal!'
         AllowedValues: ['False', 'True']
@@ -10,6 +7,9 @@ global:
     - EfsMounts:
         Description: 'Efs Mounts List'
         Type: 'CommaDelimitedList'
+    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize:
+        Description: 'Size in GiB of additional EBS storage - 0 to disable - empty for default'
+        AllowedValues: ['', '0', '4', '8', '16', '32', '64', '128', '256', '512', '1024']
     - LaunchTemplateDataImageId:
         Description: 'AMI ID - empty for default based on env/role/region'
     - LaunchTemplateDataImageIdLatest:
