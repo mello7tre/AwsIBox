@@ -1,6 +1,6 @@
 global:
   Parameter:
-    - LaunchTemplateDataAdditionalStorageEbsVolumeSize:
+    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize:
         Description: 'Size in GiB of additional EBS storage - 0 to disable - empty for default'
         AllowedValues: ['', '0', '4', '8', '16', '32', '64', '128', '256', '512', '1024']
     - DoNotSignal:
@@ -27,15 +27,15 @@ global:
         Description: 'EC2 SSH Key - empty for default'
     - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice:
         Description: 'Maximum Spot Price of ASG - empty for default based on env/role - 0 to disable'
-    - VolumeSize:
+    - LaunchTemplateDataBlockDeviceMappingsXvdaEbsVolumeSize:
         Description: 'Size of HD in GB - empty for default based on env/role'
   Condition:
-    - LaunchTemplateDataAdditionalStorage:
-        get_condition('', 'not_equals', '0', 'LaunchTemplateDataAdditionalStorageEbsVolumeSize')
-    - LaunchTemplateDataAdditionalStorageMount:
+    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage:
+        get_condition('', 'not_equals', '0', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize')
+    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount:
         And(
-          Condition('LaunchTemplateDataAdditionalStorage'),
-          get_condition('', 'not_equals', 'None', 'LaunchTemplateDataAdditionalStorageMount')
+          Condition('LaunchTemplateDataBlockDeviceMappingsAdditionalStorage'),
+          get_condition('', 'not_equals', 'None', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount')
         )
     - CloudFormationInit:
         Equals(Ref('UpdateMode'), 'Cfn')
@@ -47,18 +47,16 @@ global:
     - EfsMounts:
          Not(Equals(Select('0', Ref('EfsMounts')), ''))
     - InstaceEphemeral0:
-        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'InstanceType', 'InstaceEphemeral0'))
+        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral0'))
     - InstaceEphemeral1:
-        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'InstanceType', 'InstaceEphemeral1'))
+        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral1'))
     - InstaceEphemeral2:
-        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'InstanceType', 'InstaceEphemeral2'))
+        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral2'))
     - LaunchTemplateDataImageIdLatest:
         get_condition('', 'equals', 'latest', 'LaunchTemplateDataImageId')
     - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice:
         get_condition('', 'not_equals', '0', 'LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice')
   Output:
-    - LaunchTemplateDataAdditionalStorageEbsVolumeSize:
-        Value: get_endvalue('LaunchTemplateDataAdditionalStorageEbsVolumeSize')
     - DoNotSignal:
         Value: Ref('DoNotSignal')
     - EfsMounts:
@@ -70,12 +68,14 @@ global:
         Value: get_endvalue('LaunchTemplateDataInstanceType')
     - LaunchTemplateDataKeyName:
         Value: get_endvalue('LaunchTemplateDataKeyName')
-    - LaunchTemplateDataAdditionalStorageEbsVolumeSize:
-        Value: get_endvalue('LaunchTemplateDataAdditionalStorageEbsVolumeSize')
+    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize:
+        Value: get_endvalue('LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize')
+    - LaunchTemplateDataBlockDeviceMappingsXvdaEbsVolumeSize:
+        Value: get_endvalue('LaunchTemplateDataBlockDeviceMappingsXvdaEbsVolumeSize')
   LaunchTemplate:
     - Data:
         BlockDeviceMappings:
-          - xvda:
+          - Xvda:
               DeviceName: /dev/xvda
               Ebs:
                 VolumeSize: 8

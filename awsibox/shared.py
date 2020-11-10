@@ -479,10 +479,10 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                         if_list[1],
                         value if obj_propname == if_list[2] else (
                             eval(if_list[2]) if if_list[2].startswith(
-                                'EVAL_FUNCTIONS_IN_CFG') else if_list[2]),
+                                cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[2]),
                         value if obj_propname == if_list[3] else (
                             eval(if_list[3]) if if_list[3].startswith(
-                                'EVAL_FUNCTIONS_IN_CFG') else if_list[3]),
+                                cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[3]),
                     )
                 # trick to wrapper recursed value in If Condition
                 try:
