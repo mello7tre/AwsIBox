@@ -445,7 +445,7 @@ class ASInitConfigSetup(cfm.InitConfig):
                 ])
             },
             '02_disk_additional': If(
-                'AdditionalStorageMount',
+                'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount',
                 {
                     'command': get_subvalue(
                         'file -s ${1M}1 | grep -q "ext[34] filesystem" ||'

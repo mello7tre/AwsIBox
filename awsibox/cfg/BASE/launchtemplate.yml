@@ -30,13 +30,6 @@ global:
     - LaunchTemplateDataBlockDeviceMappingsXvdaEbsVolumeSize:
         Description: 'Size of HD in GB - empty for default based on env/role'
   Condition:
-    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage:
-        get_condition('', 'not_equals', '0', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize')
-    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount:
-        And(
-          Condition('LaunchTemplateDataBlockDeviceMappingsAdditionalStorage'),
-          get_condition('', 'not_equals', 'None', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount')
-        )
     - CloudFormationInit:
         Equals(Ref('UpdateMode'), 'Cfn')
     - DoNotSignal:
@@ -52,6 +45,13 @@ global:
         get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral1'))
     - InstaceEphemeral2:
         get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral2'))
+    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage:
+        get_condition('', 'not_equals', '0', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize')
+    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount:
+        And(
+          Condition('LaunchTemplateDataBlockDeviceMappingsAdditionalStorage'),
+          get_condition('', 'not_equals', 'None', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount')
+        )
     - LaunchTemplateDataImageIdLatest:
         get_condition('', 'equals', 'latest', 'LaunchTemplateDataImageId')
     - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice:
@@ -82,7 +82,7 @@ global:
                 VolumeType: gp2
           - AdditionalStorage:
               IBOXIF:
-                - AdditionalStorage
+                - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdx
               Ebs:
@@ -112,7 +112,7 @@ global:
         ImageId: IBOXIF LaunchTemplateDataImageIdLatest Ref('LaunchTemplateDataImageIdLatest') ImageId
         InstanceMarketOptions:
           IBOXIF:
-            - SpotPrice
+            - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice
             - Ref('AWS::NoValue')
           MarketType: spot
           SpotOptions:
