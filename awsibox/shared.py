@@ -533,3 +533,23 @@ def gen_random_string():
         [gen_random_string.rng.choice(char_set) for _ in range(length)])
 
     return secret_string
+
+
+def clf_compute_order(pattern):
+    base_ord = 999999
+
+    for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
+        pattern = pattern.replace(w, s)
+
+    n_star = 0
+    for n, v in enumerate(pattern):
+        if v == '/':
+            n_star += 1
+        if v == '?':
+            base_ord = base_ord + (100/n)
+        if v == '*':
+            base_ord = base_ord + (1000/n) - (1*n_star)
+
+    cfg.dbg_clf_compute_order[pattern] = base_ord
+
+    return base_ord

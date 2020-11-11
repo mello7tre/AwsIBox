@@ -75,6 +75,15 @@ EVAL_FUNCTIONS_IN_CFG = (
     'SG_SecurityGroups',
 )
 
+CLF_PATH_PATTERN_REPLACEMENT = {
+    '/': 'SLASH',
+    '*': 'STAR',
+    '-': 'HYPH',
+    '?': 'QUEST',
+    '.': 'DOT',
+    '_': 'USCORE',
+}
+
 BASE_CFGS = {
     'Bucket': {
         'Enabled': 'None',

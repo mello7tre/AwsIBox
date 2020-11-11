@@ -3,7 +3,7 @@ import troposphere.cloudfront as clf
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj,
-                     change_obj_data)
+                     change_obj_data, clf_compute_order)
 from .route53 import R53_RecordSetCloudFront
 
 
@@ -300,16 +300,24 @@ class CF_CloudFront(object):
         DistributionConfig = CFDistributionConfig()
 
         cachebehaviors = []
-        sortedcachebehaviors = sorted(
-            iter(cfg.CloudFrontCacheBehaviors.items()),
-            key=lambda x_y: (
-                (x_y[1]['Order']*1000) - len(x_y[1]['PathPattern'])
-                if 'PathPattern' in x_y[1] else 0
-            ) if 'Order' in x_y[1] else x_y[0]
-        )
-        itercachebehaviors = iter(sortedcachebehaviors)
+        # Skip DefaultBehaviour
+        itercachebehaviors = iter(cfg.CloudFrontCacheBehaviors.items())
         next(itercachebehaviors)
-        for n, v in itercachebehaviors:
+        
+        # Automatically compute Behaviour Order based on PathPattern
+        cfg.dbg_clf_compute_order = {}
+        sortedcachebehaviors = sorted(
+            itercachebehaviors,
+            key=lambda x_y: clf_compute_order(x_y[1]['PathPattern']))
+
+        if cfg.debug:
+            print('##########CLF_COMPUTE_ORDER#########START#######')
+            for n, v in iter(sorted(cfg.dbg_clf_compute_order.items(),
+                                    key=lambda x_y: x_y[1])):
+                print(f'{n} {v}\n')
+            print('##########CLF_COMPUTE_ORDER#########END#######')
+
+        for n, v in sortedcachebehaviors:
             if not v['PathPattern']:
                 continue
             name = f'CloudFrontCacheBehaviors{n}'

@@ -84,14 +84,7 @@ class Loader(yaml.Loader):
 
 def replace_not_allowed_char(s):
     key = str(s)
-    for s, w in {
-            '/': 'SLASH',
-            '*': 'STAR',
-            '-': 'HYPH',
-            '?': 'QUEST',
-            '.': 'DOT',
-            '_': 'USCORE',
-    }.items():
+    for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
         key = key.replace(s, w)
 
     return int(key) if key.isdigit() else key
