@@ -3,17 +3,12 @@ res-latedge-01:
   StackName: r-latedge-01
   Lambda:
     - AtEdgeAddHeaders:
-        Enabled: None
+        Enabled: True
         AtEdge: True
         Description: 'Lambda@Edge add Headers'
         MemorySize: 128
-        Runtime: nodejs8.10
+        Runtime: python3.7
         Timeout: 10
         Version: True
         Variables: []
-        CacheControl: 7776000
-
-us-east-1:
-  Lambda:
-    - AtEdgeAddHeaders:
-        Enabled: True
+        CacheControl: 31536000
