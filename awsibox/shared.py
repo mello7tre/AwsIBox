@@ -541,14 +541,14 @@ def clf_compute_order(pattern):
     for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
         pattern = pattern.replace(w, s)
 
-    n_star = 0
+    n_slash = 0
     for n, v in enumerate(pattern):
         if v == '/':
-            n_star += 1
+            n_slash += 1
         if v == '?':
-            base_ord = base_ord + (100/n)
+            base_ord = base_ord + (600/n)
         if v == '*':
-            base_ord = base_ord + (1000/n) - (1*n_star)
+            base_ord = base_ord + (1000/n) - (1*n_slash)
 
     cfg.dbg_clf_compute_order[pattern] = base_ord
 
