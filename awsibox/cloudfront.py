@@ -303,7 +303,7 @@ class CF_CloudFront(object):
         # Skip DefaultBehaviour
         itercachebehaviors = iter(cfg.CloudFrontCacheBehaviors.items())
         next(itercachebehaviors)
-        
+
         # Automatically compute Behaviour Order based on PathPattern
         cfg.dbg_clf_compute_order = {}
         sortedcachebehaviors = sorted(

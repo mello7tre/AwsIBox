@@ -102,7 +102,7 @@ def S3BucketPolicyStatementReplica(bucket, resource):
     return if_statements
 
 
-def S3BucketPolicyStatementCFOriginAccessIdentity(bucket, principal):
+def S3BucketPolicyStatementAllowGetObject(bucket, principal, sid):
     statements = []
     statements.append(
         {
@@ -116,7 +116,7 @@ def S3BucketPolicyStatementCFOriginAccessIdentity(bucket, principal):
             'Principal': {
                 'AWS': principal
             },
-            'Sid': 'AllowCFAccess'
+            'Sid': sid
         },
     )
     return statements
@@ -448,6 +448,14 @@ class S3_Buckets(object):
                     FixedStatements.append(FixedStatement)
                 BucketPolicyStatement.extend(FixedStatements)
 
+            if 'PolicyStatementExGetObjectPrincipal' in v:
+                BucketPolicyStatement.extend(
+                    S3BucketPolicyStatementAllowGetObject(
+                        resname,
+                        get_endvalue(
+                            f'{resname}PolicyStatementExGetObjectPrincipal'),
+                        'AllowGetObjectExPrincipal'))
+
             PolicyCloudFrontOriginAccessIdentityPrincipal = []
             if 'CloudFrontOriginAccessIdentity' in v:
                 identityname = v['CloudFrontOriginAccessIdentity']
@@ -484,10 +492,10 @@ class S3_Buckets(object):
 
                 # resources
                 BucketPolicyStatement.extend(
-                    S3BucketPolicyStatementCFOriginAccessIdentity(
+                    S3BucketPolicyStatementAllowGetObject(
                         resname,
-                        PolicyCloudFrontOriginAccessIdentityPrincipal)
-                )
+                        PolicyCloudFrontOriginAccessIdentityPrincipal,
+                        'AllowCFAccess'))
 
                 r_OriginAccessIdentity = CFOriginAccessIdentity(
                     identityresname, comment=identityname)
