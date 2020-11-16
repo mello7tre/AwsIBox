@@ -536,7 +536,7 @@ def gen_random_string():
 
 
 def clf_compute_order(pattern):
-    base_ord = 999999
+    base_ord = 1
 
     for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
         pattern = pattern.replace(w, s)
