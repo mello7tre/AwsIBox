@@ -410,8 +410,8 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname,
             except Exception:
                 prop_list.append(prop_obj)
             else:
-                prop_list.append(
-                    If(if_wrapper[0], prop_obj, eval(if_wrapper[1])))
+                condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
+                prop_list.append(If(condname, prop_obj, eval(if_wrapper[1])))
 
         return prop_list
 
@@ -454,17 +454,17 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                 value = get_endvalue(
                     f'{mapname}{propname}')
 
-            # if key value == 'AWS::NoValue' automatically add condition and
+            # if key value == 'IBOXIFNOVALUE' automatically add condition and
             # wrap value in AWS If Condition
             try:
                 key_value = key[obj_propname]
             except Exception:
                 pass
             else:
-                if key_value == 'AWS::NoValue':
+                if key_value == 'IBOXIFNOVALUE':
                     add_obj(
-                        get_condition(
-                            f'{mapname}{propname}', 'not_equals', 'None')
+                        get_condition(f'{mapname}{propname}',
+                                      'not_equals', 'IBOXIFNOVALUE')
                     )
                     value = If(
                         f'{mapname}{propname}',
@@ -490,7 +490,8 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                 except Exception:
                     pass
                 else:
-                    value = If(if_wrapper[0], value, eval(if_wrapper[1]))
+                    condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
+                    value = If(condname, value, eval(if_wrapper[1]))
 
             # Avoid intercepting a Template Condition as a Resource Condition
             if obj_propname == 'Condition' and not isinstance(value, str):
