@@ -17,5 +17,6 @@ reserve-cpu:
         Memory: 64
         MemoryReservation: 32
   LaunchType: EC2
-  Image: 'amazonlinux:2' 
+  Image: 'amazonlinux:2'
+  ScalableTarget: SkipClass
   SchedulingStrategy: DAEMON

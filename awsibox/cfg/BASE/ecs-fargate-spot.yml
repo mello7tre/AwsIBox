@@ -1,0 +1,31 @@
+global:
+  Parameter:
+    - FargateSpot:
+        Description: 'Use Capacity Provider FARGATE_SPOT (Two services are created) - empty for default based on mapping'
+        AllowedValues: ['', 'True', 'None']
+  Condition:
+    - FargateSpot:
+        And(
+          Condition('LaunchTypeFarGate'),
+          get_condition('', 'not_equals', 'None', 'FargateSpot')
+        )
+    - FargateBase:
+        And(
+          Condition('LaunchTypeFarGate'),
+          get_condition('', 'equals', 'None', 'FargateSpot')
+        )
+  FargateSpot: None
+  Service:
+    - Spot:
+        CapacityProviderStrategy:
+          - FargateSpot:
+              Base: get_endvalue('CapacityDesired')
+              CapacityProvider: FARGATE_SPOT
+              Weight: 1
+  ScalableTarget:
+    - Service:
+        ResourceId:
+          If('FargateSpot',
+            get_subvalue('service/${1E}/${ServiceSpot.Name}', 'Cluster', 'ClusterStack'),
+            get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
+          )

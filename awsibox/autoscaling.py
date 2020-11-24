@@ -281,19 +281,6 @@ class APPASScheduledAction(aas.ScheduledAction):
             Ref('AWS::NoValue')
         )
 
-
-class APPASScalableTarget(aas.ScalableTarget):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.MaxCapacity = get_endvalue('CapacityMax')
-        self.MinCapacity = get_endvalue('CapacityMin')
-        self.ResourceId = get_subvalue(
-            'service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
-        self.RoleARN = get_expvalue('RoleEC2ContainerServiceAutoscale', '')
-        self.ScalableDimension = 'ecs:service:DesiredCount'
-        self.ServiceNamespace = 'ecs'
-
 # E - APPLICATION AUTOSCALING #
 
 # ############################################
@@ -1255,16 +1242,23 @@ class AS_AutoscalingEC2(object):
         ])
 
 
-class AS_AutoscalingECS(object):
+class AS_ScalableTargetECS(object):
     def __init__(self, key):
-        # Resources
-        R_ScalableTarget = APPASScalableTarget('ScalableTarget')
-        R_ScalableTarget.ScheduledActions = (
-            AS_ScheduledActionsECS('ScheduledAction').ScheduledActions)
+        for n, v in getattr(cfg, key).items():
+            resname = f'{key}{n}'
 
-        add_obj([
-            R_ScalableTarget
-        ])
+            # resources
+            # trick - use fixed name ScalableTarget to avoid changin too much
+            # code for now, but this way i need param mapname
+            r_ScalableTarget = aas.ScalableTarget('ScalableTarget')
+            auto_get_props(r_ScalableTarget, v,
+                           mapname='ScalableTargetService')
+            r_ScalableTarget.ScheduledActions = (
+                AS_ScheduledActionsECS('ScheduledAction').ScheduledActions)
+    
+            add_obj([
+                r_ScalableTarget
+            ])
 
 
 class AS_LifecycleHook(object):

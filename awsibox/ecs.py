@@ -8,7 +8,7 @@ from .securitygroup import (SecurityGroupEcsService,
 
 
 class ECSService(ecs.Service):
-    def __init__(self, title, scheme, **kwargs):
+    def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
 
         self.Cluster = get_expvalue('Cluster', 'ClusterStack')
@@ -39,8 +39,6 @@ class ECSService(ecs.Service):
             )
         elif cfg.SchedulingStrategy == 'DAEMON':
             self.SchedulingStrategy = 'DAEMON'
-
-        self.LaunchType = get_endvalue('LaunchType')
 
         if cfg.HealthCheckGracePeriodSeconds != 0:
             self.HealthCheckGracePeriodSeconds = (
@@ -442,32 +440,42 @@ class ECS_Service(object):
     def __init__(self, key):
         # Resources
         R_SG = SecurityGroupEcsService('SecurityGroupEcsService')
-
-        R_Service = ECSService('Service', scheme='')
-
         if cfg.LoadBalancerApplicationExternal:
-            R_Service.LoadBalancers.append(
-                ECSLoadBalancer('', scheme='External'))
-
             SGRule = SecurityGroupRuleEcsService(scheme='External')
             R_SG.SecurityGroupIngress.append(SGRule)
 
         if cfg.LoadBalancerApplicationInternal:
-            R_Service.LoadBalancers.append(
-                ECSLoadBalancer('', scheme='Internal'))
-
             SGRule = SecurityGroupRuleEcsService(scheme='Internal')
             R_SG.SecurityGroupIngress.append(SGRule)
 
-        R_Service.NetworkConfiguration = If(
-            'NetworkModeAwsVpc',
-            ECSNetworkConfiguration(''),
-            Ref('AWS::NoValue'))
+        add_obj(R_SG)
 
-        add_obj([
-            R_Service,
-            R_SG,
-        ])
+        for n, v in getattr(cfg, key).items():
+            resname = f'{key}{n}'
+           
+            # trick to avoid changing, for now, current service resource name
+            if n == 'Spot':
+                resname = 'ServiceSpot'
+            else:
+                resname = 'Service'
+
+            R_Service = ECSService(resname)
+            auto_get_props(R_Service, v, rootname=resname, recurse=True)
+
+            if cfg.LoadBalancerApplicationExternal:
+                R_Service.LoadBalancers.append(
+                    ECSLoadBalancer('', scheme='External'))
+    
+            if cfg.LoadBalancerApplicationInternal:
+                R_Service.LoadBalancers.append(
+                    ECSLoadBalancer('', scheme='Internal'))
+    
+            R_Service.NetworkConfiguration = If(
+                'NetworkModeAwsVpc',
+                ECSNetworkConfiguration(''),
+                Ref('AWS::NoValue'))
+    
+            add_obj(R_Service)
 
 
 class ECS_Cluster(object):

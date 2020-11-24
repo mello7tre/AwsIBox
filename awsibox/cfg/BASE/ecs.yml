@@ -44,6 +44,14 @@ ecs:
     - 1:
         HostHeader: '*${EnvRole}.*'
   LoadBalancerApplicationStack: alb-a
+  ScalableTarget:
+    - Service:
+        MaxCapacity: get_endvalue('CapacityMax')
+        MinCapacity: get_endvalue('CapacityMin')
+        ResourceId: get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
+        RoleARN: get_expvalue('RoleEC2ContainerServiceAutoscale', '')
+        ScalableDimension: 'ecs:service:DesiredCount'
+        ServiceNamespace: ecs
   ScalingPolicyTrackings:
     - APPCpu:
         Enabled: True
@@ -67,7 +75,9 @@ ecs:
         MinSize: k
         Recurrence: 'cron(00 06 * * ? *)'
   SchedulingStrategy: REPLICA
-  Service: True
+  Service:
+    - Base:
+        LaunchType: get_endvalue('LaunchType')
 
 dev: &cfg_dev
   Alarm:
@@ -83,4 +93,10 @@ dev: &cfg_dev
         MaxSize: CapacityMax
         MinSize: CapacityMin
 
-stg: *cfg_dev 
+stg: *cfg_dev
+
+
+IBoxLoaderAfter: !include [
+  #ecs-fargate-spot.yml,
+]
+

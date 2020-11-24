@@ -454,13 +454,18 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                 value = get_endvalue(
                     f'{mapname}{propname}')
 
-            # if key value == 'IBOXIFNOVALUE' automatically add condition and
-            # wrap value in AWS If Condition
             try:
                 key_value = key[obj_propname]
             except Exception:
                 pass
             else:
+                # Usefull to migrate code in yaml using auto_get_props
+                if (isinstance(key_value, str) and
+                        key_value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)):
+                    value = eval(key_value)
+
+                # if key value == 'IBOXIFNOVALUE' automatically add condition
+                # and wrap value in AWS If Condition
                 if key_value == 'IBOXIFNOVALUE':
                     add_obj(
                         get_condition(f'{mapname}{propname}',
@@ -542,14 +547,21 @@ def clf_compute_order(pattern):
     for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
         pattern = pattern.replace(w, s)
 
-    n_slash = 0
+    n_star = 0
     for n, v in enumerate(pattern):
-        if v == '/':
-            n_slash += 1
         if v == '?':
-            base_ord = base_ord + (600/n)
-        if v == '*':
-            base_ord = base_ord + (1000/n) - (1*n_slash)
+            base_ord += 0.0001
+        elif v == '*':
+            if len(pattern) == n + 1 and n_star != 0:
+                # v is last char but not the only star char
+                base_ord += 0.0005
+            elif n_star != 0:
+                base_ord -= 0.000001*n
+            else:
+                base_ord += 1000/n
+                n_star += 1
+        elif n_star != 0:
+            base_ord -= 0.001
 
     cfg.dbg_clf_compute_order[pattern] = base_ord
 
