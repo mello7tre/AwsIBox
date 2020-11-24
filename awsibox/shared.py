@@ -549,12 +549,12 @@ def clf_compute_order(pattern):
         elif v == '*':
             if len(pattern) == n + 1 and n_star != 0:
                 # v is last char but not the only star char
-                base_ord += 1
+                base_ord += 0.0005
             else:
                 base_ord = base_ord + (1000/n) - (1000/n)*n_star
                 n_star += 1
         elif n_star != 0:
-            base_ord -= 1
+            base_ord -= 0.001
 
     cfg.dbg_clf_compute_order[pattern] = base_ord
 
