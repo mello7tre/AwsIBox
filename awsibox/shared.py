@@ -545,13 +545,15 @@ def clf_compute_order(pattern):
     n_star = 0
     for n, v in enumerate(pattern):
         if v == '?':
-            base_ord = base_ord + (600/n)
+            base_ord += 0.0001
         elif v == '*':
             if len(pattern) == n + 1 and n_star != 0:
                 # v is last char but not the only star char
                 base_ord += 0.0005
+            elif n_star != 0:
+                base_ord -= 0.000001*n
             else:
-                base_ord = base_ord + (1000/n) - (1000/n)*n_star
+                base_ord += 1000/n
                 n_star += 1
         elif n_star != 0:
             base_ord -= 0.001
