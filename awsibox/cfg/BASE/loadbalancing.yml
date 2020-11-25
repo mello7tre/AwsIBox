@@ -1,7 +1,7 @@
 IBoxLoader: !include [
   lb-hostedzoneid.yml,
   loadbalancing-listener.yml,
-  certificate.yml,
+  certificate-regional.yml,
 ]
 
 global:

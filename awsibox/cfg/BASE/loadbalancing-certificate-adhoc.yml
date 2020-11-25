@@ -14,6 +14,22 @@ global:
   Certificate:
     - LoadBalancerAdHocExternal:
         Enabled: True
+        Condition: LoadBalancerSslCertificateAdHoc
+        DomainName: Sub('${AWS::StackName}.${EnvRole}%s' % cfg.HostedZoneNameRegionEnv)
+        DomainValidationOptions:
+          - Full:
+              DomainName: Sub('${AWS::StackName}.${EnvRole}%s' % cfg.HostedZoneNameRegionEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
+          - EnvRole:
+              DomainName: Sub('${EnvRole}.%s' % cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
+          - Region:
+              DomainName: Sub('${EnvRole}.%s' % cfg.HostedZoneNameRegionEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
+        SubjectAlternativeNames:
+          - Sub('${EnvRole}.%s' % cfg.HostedZoneNameEnv)
+          - Sub('${EnvRole}.%s' % cfg.HostedZoneNameRegionEnv)
+        ValidationMethod: 'EMAIL'
   Listener:
     - Classic:
         SSLCertificateId:

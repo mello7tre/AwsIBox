@@ -1,5 +1,5 @@
 IBoxLoader: !include [
-  certificate.yml,
+  certificate-global.yml,
 ]
 
 global:

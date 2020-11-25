@@ -1,5 +1,6 @@
 IBoxLoader: !include [
-  certificate.yml,
+  certificate-global.yml,
+  certificate-regional.yml,
   cloudfront-policy.yml,
 ]
 
