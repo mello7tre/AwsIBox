@@ -1,7 +1,6 @@
 IBoxLoader:
   - !exclude
     - cloudfront-ios.yml
-    - certificate.yml
 
 infra-info:
   StackType: agw

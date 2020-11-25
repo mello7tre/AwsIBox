@@ -1,6 +1,5 @@
 IBoxLoader: !include [
   cloudfront-ios.yml,
-  certificate.yml,
 ]
 
 agw:

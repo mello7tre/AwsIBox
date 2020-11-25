@@ -1,0 +1,39 @@
+global:
+  Parameter:
+    - LoadBalancerSslCertificateAdHoc:
+        Description: 'Load Balancer External Ssl Certificate AdHoc - None to disable - empty for default based on env/role'
+  Condition:
+    - LoadBalancerSslCertificateAdHoc:
+        And(
+          Condition('ListenerLoadBalancerHttpsPort'),
+          get_condition('', 'not_equals', 'None', 'LoadBalancerSslCertificateAdHoc')
+        )
+  Output:
+    - LoadBalancerSslCertificateAdHoc:
+        Value: get_endvalue('LoadBalancerSslCertificateAdHoc')
+  Certificate:
+    - LoadBalancerAdHocExternal:
+        Enabled: True
+  Listener:
+    - Classic:
+        SSLCertificateId:
+          If(
+            'ListenerLoadBalancerHttpsPort',
+            If(
+              'LoadBalancerSslCertificateAdHoc',
+               Ref('CertificateLoadBalancerAdHocExternal'),
+               get_endvalue('RegionalCertificateArn')
+            ), Ref('AWS::NoValue'))
+    - Https:
+        Certificates:
+          Regional:
+            CertificateArn:
+              If(
+                'LoadBalancerSslCertificateAdHoc',
+                Ref('CertificateLoadBalancerAdHocExternal'),
+                get_endvalue('RegionalCertificateArn'),
+              )
+        Port: get_endvalue('ListenerLoadBalancerHttpsPort')
+        Protocol: HTTPS
+        SslPolicy: get_endvalue('ListenerLoadBalancerSslPolicy')
+  LoadBalancerSslCertificateAdHoc: None

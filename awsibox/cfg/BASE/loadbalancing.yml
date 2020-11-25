@@ -1,45 +1,25 @@
 IBoxLoader: !include [
-  certificate.yml,
   lb-hostedzoneid.yml,
+  loadbalancing-listener.yml,
+  certificate.yml,
 ]
 
 global:
-  Parameter:
-    - ListenerLoadBalancerHttpPort:
-        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
-    - ListenerLoadBalancerHttpsPort:
-        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
-    - LoadBalancerSslCertificate:
-        Description: 'Load Balancer External Ssl Certificate - None to disable - empty for default based on env/role'
-  Condition:
-    - ListenerLoadBalancerHttpPort:
-        get_condition('', 'not_equals', 'None', 'ListenerLoadBalancerHttpPort')
-    - ListenerLoadBalancerHttpsPort:
-        get_condition('', 'not_equals', 'None', 'ListenerLoadBalancerHttpsPort')
-    - LoadBalancerSslCertificateAdHoc:
-        And(
-          Condition('ListenerLoadBalancerHttpsPort'),
-          get_condition('', 'equals', 'None', 'LoadBalancerSslCertificate')
-        )
-  Output:
-    - LoadBalancerSslCertificate:
-        Value: get_endvalue('LoadBalancerSslCertificate')
-  Certificate:
-    - LoadBalancerAdHocExternal:
-        Enabled: True
   HealthCheckIntervalSeconds: 30
   HealthCheckTimeoutSeconds: 6
   HealthCheckPath: None
   HealthCheckTarget: None
   HealthyThresholdCount: 2
-  ListenerLoadBalancerHttpPort: 80
-  ListenerLoadBalancerHttpsPort: 443
-  ListenerLoadBalancerSslPolicy: ELBSecurityPolicy-2016-08
   LoadBalancerAccess: Public
   LoadBalancerLog: None
   LoadBalancerHttp2: True
-  LoadBalancerSslCertificate: True
   TargetGroupDeregistrationDelay: '30'
   TargetGroupCookieSticky: None
   TargetGroupProtocol: HTTP
   UnhealthyThresholdCount: 3
+
+
+IBoxLoaderAfter: !include [
+  loadbalancing-certificate-adhoc.yml,
+]
+

@@ -189,8 +189,6 @@ CFG_TO_CLASS = {
                 'class': 'ECS_Cluster'},
     'Service': {'module': 'ecs',
                 'class': 'ECS_Service'},
-    'ServiceSpot': {'module': 'ecs',
-                    'class': 'ECS_ServiceSpot'},
     'ApiGatewayAccount': {'module': 'apigateway',
                           'class': 'AGW_Account'},
     'ApiGatewayDomainName': {'module': 'apigateway',

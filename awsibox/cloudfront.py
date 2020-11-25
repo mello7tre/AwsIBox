@@ -34,16 +34,17 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
                 except Exception:
                     pass
 
-        if 'TargetOriginId' in key:
-            self.TargetOriginId = get_endvalue(f'{name}TargetOriginId')
-        else:
-            self.TargetOriginId = If(
-                'CloudFrontOriginAdHoc',
-                Ref('RecordSetExternal'),
-                Sub(
-                    '${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s'
-                    % cfg.HostedZoneNameEnv)
-            )
+        self.TargetOriginId = get_endvalue(f'{name}TargetOriginId')
+#        if 'TargetOriginId' in key:
+#            self.TargetOriginId = get_endvalue(f'{name}TargetOriginId')
+#        else:
+#            self.TargetOriginId = If(
+#                'CloudFrontOriginAdHoc',
+#                Ref('RecordSetExternal'),
+#                Sub(
+#                    '${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s'
+#                    % cfg.HostedZoneNameEnv)
+#            )
 
         if 'LambdaFunctionARN' in key:
             condname = f'{name}LambdaFunctionARN'

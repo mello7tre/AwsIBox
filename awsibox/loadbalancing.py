@@ -22,24 +22,9 @@ elbv2.one_of = my_one_of
 class ELBListener(elb.Listener):
     def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
-
         auto_get_props(self, key)
-        self.PolicyNames = [
-            If(
-                'LoadBalancerCookieSticky',
-                'LBCookieStickinessPolicy',
-                Ref('AWS::NoValue')
-            )
-        ]
-        self.SSLCertificateId = If(
-            'ListenerLoadBalancerHttpsPort',
-            If(
-                'LoadBalancerSslCertificateAdHoc',
-                Ref('CertificateLoadBalancerAdHocExternal'),
-                get_endvalue('RegionalCertificateArn')
-            ),
-            Ref('AWS::NoValue')
-        )
+        auto_get_props(self, cfg.Listener['Classic'],
+                       mapname='ListenerClassic', recurse=True)
 
 
 class ELBLoadBalancer(elb.LoadBalancer):
@@ -117,25 +102,15 @@ class ELBV2Listener(elbv2.Listener):
 class ELBV2ListenerHttp(ELBV2Listener):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-
-        self.Port = get_endvalue('ListenerLoadBalancerHttpPort')
-        self.Protocol = 'HTTP'
+        auto_get_props(self, cfg.Listener['Http'],
+                       mapname='ListenerHttp', recurse=True)
 
 
 class ELBV2ListenerHttps(ELBV2Listener):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-
-        self.Certificates = [elbv2.Certificate(
-            CertificateArn=If(
-                'LoadBalancerSslCertificateAdHoc',
-                Ref('CertificateLoadBalancerAdHocExternal'),
-                get_endvalue('RegionalCertificateArn')
-            )
-        )]
-        self.Port = get_endvalue('ListenerLoadBalancerHttpsPort')
-        self.Protocol = 'HTTPS'
-        self.SslPolicy = get_endvalue('ListenerLoadBalancerSslPolicy')
+        auto_get_props(self, cfg.Listener['Https'],
+                       mapname='ListenerHttps', recurse=True)
 
 
 class ELBV2TargetGroup(elbv2.TargetGroup):
