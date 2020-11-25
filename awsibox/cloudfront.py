@@ -180,17 +180,10 @@ class CFOriginCLF(clf.Origin):
 class CFOriginEC2ECS(clf.Origin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        auto_get_props(self, cfg.CloudFrontOrigins['Default'],
+                       mapname='CloudFrontOriginsDefault', recurse=True)
 
         cloudfrontorigincustomheaders = []
-
-        self.DomainName = If(
-            'CloudFrontOriginAdHoc',
-            Ref('RecordSetExternal'),
-            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s'
-                % cfg.HostedZoneNameEnv)
-        )
-        self.Id = self.DomainName
-        self.OriginPath = get_endvalue('CloudFrontOriginPath')
 
         try:
             custom_headers = cfg.CloudFrontOriginCustomHeaders
@@ -215,19 +208,6 @@ class CFOriginEC2ECS(clf.Origin):
                 )
 
         self.OriginCustomHeaders = cloudfrontorigincustomheaders
-        self.CustomOriginConfig = clf.CustomOriginConfig(
-            HTTPSPort=If(
-                'CloudFrontOriginProtocolHTTPS',
-                get_endvalue('ListenerLoadBalancerHttpsPort'),
-                Ref('AWS::NoValue')
-            ),
-            HTTPPort=If(
-                'CloudFrontOriginProtocolHTTP',
-                get_endvalue('ListenerLoadBalancerHttpPort'),
-                Ref('AWS::NoValue')
-            ),
-            OriginProtocolPolicy=get_endvalue('CloudFrontOriginProtocolPolicy')
-        )
 
 
 class CFOriginAGW(CFOriginEC2ECS):
@@ -366,6 +346,9 @@ class CF_CloudFront(object):
             pass
         else:
             for n, v in cfg.CloudFrontOrigins.items():
+                if n == 'Default':
+                    # skip the one defined in cloudfront-ios
+                    continue
                 name = f'CloudFrontOrigins{n}'
 
                 # parameters

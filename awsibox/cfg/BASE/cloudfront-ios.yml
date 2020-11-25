@@ -38,6 +38,16 @@ global:
   CloudFrontCacheBehaviors:
     - 0:
         TargetOriginId: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s' % cfg.HostedZoneNameEnv)
+  CloudFrontOrigins:
+    - Default:
+        CustomOriginConfig:
+          HTTPSPort: If('CloudFrontOriginProtocolHTTPS', get_endvalue('ListenerLoadBalancerHttpsPort'), Ref('AWS::NoValue'))
+          HTTPPort: If('CloudFrontOriginProtocolHTTP', get_endvalue('ListenerLoadBalancerHttpPort'), Ref('AWS::NoValue'))
+          OriginProtocolPolicy: get_endvalue('CloudFrontOriginProtocolPolicy')
+        DomainName: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
+        Id: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
+        OriginPath: get_endvalue('CloudFrontOriginPath')
+        Type: Custom
   CloudFrontAliasExtra:
     - 1: None
     - 2: None
