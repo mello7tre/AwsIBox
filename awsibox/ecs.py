@@ -452,7 +452,7 @@ class ECS_Service(object):
 
         for n, v in getattr(cfg, key).items():
             resname = f'{key}{n}'
-           
+
             # trick to avoid changing, for now, current service resource name
             if n == 'Spot':
                 resname = 'ServiceSpot'
@@ -460,21 +460,21 @@ class ECS_Service(object):
                 resname = 'Service'
 
             R_Service = ECSService(resname)
-            auto_get_props(R_Service, v, rootname=resname, recurse=True)
+            auto_get_props(R_Service, v, mapname=resname, recurse=True)
 
             if cfg.LoadBalancerApplicationExternal:
                 R_Service.LoadBalancers.append(
                     ECSLoadBalancer('', scheme='External'))
-    
+
             if cfg.LoadBalancerApplicationInternal:
                 R_Service.LoadBalancers.append(
                     ECSLoadBalancer('', scheme='Internal'))
-    
+
             R_Service.NetworkConfiguration = If(
                 'NetworkModeAwsVpc',
                 ECSNetworkConfiguration(''),
                 Ref('AWS::NoValue'))
-    
+
             add_obj(R_Service)
 
 

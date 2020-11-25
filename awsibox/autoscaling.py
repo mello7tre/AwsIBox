@@ -1255,7 +1255,7 @@ class AS_ScalableTargetECS(object):
                            mapname='ScalableTargetService')
             r_ScalableTarget.ScheduledActions = (
                 AS_ScheduledActionsECS('ScheduledAction').ScheduledActions)
-    
+
             add_obj([
                 r_ScalableTarget
             ])

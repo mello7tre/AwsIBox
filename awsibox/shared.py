@@ -460,8 +460,9 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                 pass
             else:
                 # Usefull to migrate code in yaml using auto_get_props
+                # i assume that get_endvalue is used only when migrating code
                 if (isinstance(key_value, str) and
-                        key_value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)):
+                        key_value.startswith('get_endvalue(')):
                     value = eval(key_value)
 
                 # if key value == 'IBOXIFNOVALUE' automatically add condition
