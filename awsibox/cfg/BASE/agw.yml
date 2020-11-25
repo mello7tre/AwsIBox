@@ -10,6 +10,12 @@ agw:
   BinaryMediaTypes:
     - '*/*'
   CloudFront: True
+  CloudFrontOrigins:
+    - Default:
+        CustomOriginConfig:
+          HTTPSPort: '443'
+          OriginProtocolPolicy: https-only
+        DomainName:  Sub('${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com')
   Description: 'Api-Gateway Description is missing'
   EndpointConfiguration:
     - REGIONAL

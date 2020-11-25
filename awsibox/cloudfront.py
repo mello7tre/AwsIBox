@@ -210,19 +210,6 @@ class CFOriginEC2ECS(clf.Origin):
         self.OriginCustomHeaders = cloudfrontorigincustomheaders
 
 
-class CFOriginAGW(CFOriginEC2ECS):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.DomainName = Sub(
-            '${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com')
-        self.Id = self.DomainName
-        self.CustomOriginConfig = clf.CustomOriginConfig(
-            HTTPSPort='443',
-            OriginProtocolPolicy='https-only',
-        )
-
-
 class CFCustomErrorResponse(clf.CustomErrorResponse):
     def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
@@ -454,9 +441,6 @@ class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
             {'ListenerLoadBalancerHttpPort': Equals('True', 'False')},
             {'ListenerLoadBalancerHttpsPort': Equals('True', 'True')},
         ])
-
-        Origin = CFOriginAGW()
-        self.CloudFrontDistribution.DistributionConfig.Origins = [Origin]
 
         # RecordSetExternal do not exist replace it with Ref('AWS::NoValue')
         change_obj_data(
