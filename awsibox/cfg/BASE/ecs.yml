@@ -39,7 +39,7 @@ ecs:
     MaximumPercent: 200
     MinimumHealthyPercent: 100
   HealthCheckGracePeriodSeconds: 0
-  ScalingPolicyUpScalingAdjustment1: SkipClass
+  ScalingPolicyUpScalingAdjustment1: IBOXSKIPCLASS
   ListenerRules:
     - 1:
         HostHeader: '*${EnvRole}.*'

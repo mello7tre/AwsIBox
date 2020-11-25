@@ -15,7 +15,7 @@ def execute_class(RP_cmm):
 
         if k in list(RP_cmm.keys()):
             RP_value = RP_cmm[k]
-            if isinstance(RP_value, str) and RP_value == 'SkipClass':
+            if isinstance(RP_value, str) and RP_value == 'IBOXSKIPCLASS':
                 continue
             if isinstance(class_name, list):
                 for n in class_name:

@@ -8,7 +8,7 @@ IBoxLoader:
 buildkite:
   StackType: ecs
   StackName: bkt
-  ScalingPolicyTrackings: SkipClass
+  ScalingPolicyTrackings: IBOXSKIPCLASS
   Capacity:
     Desired: 3
     Max: 4

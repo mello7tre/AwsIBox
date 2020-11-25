@@ -64,7 +64,7 @@ ecs-cluster:
         ManagedPolicyArns:
           - IBOXADDTOLIST
           - get_expvalue('IAMPolicyEcs')
-  ScalingPolicyUpScalingAdjustment1: SkipClass
+  ScalingPolicyUpScalingAdjustment1: IBOXSKIPCLASS
   ScalingPolicyTrackings:
     - ASCustom:
         Enabled: True
