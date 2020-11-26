@@ -60,5 +60,5 @@ global:
 
 
 IBoxLoaderAfter: !include [
-  cloudfront-adhoc.yml,
+  #cloudfront-adhoc.yml,
 ]
