@@ -57,27 +57,6 @@ ec2:
               Key: EnvStackName
               Value: Ref('AWS::StackName')
               PropagateAtLaunch: True
-          - SpotAuto:
-              IBOXIF:
-                - SpotAuto
-                - Ref('AWS::NoValue')
-              Key: spot-enabled
-              Value: 'true'
-              PropagateAtLaunch: True
-          - SpotAutoMinOnDemandNumber:
-              IBOXIF:
-                - SpotAutoMinOnDemandNumber
-                - Ref('AWS::NoValue')
-              Key: autospotting_min_on_demand_number
-              Value: get_endvalue('SpotAutoMinOnDemandNumber')
-              PropagateAtLaunch: True
-          - SpotAutoAllowedInstances:
-              IBOXIF:
-                - SpotAutoAllowedInstances
-                - Ref('AWS::NoValue')
-              Key: autospotting_allowed_instance_types
-              Value: get_endvalue('SpotAutoAllowedInstances')
-              PropagateAtLaunch: True
         TerminationPolicies: ['OldestInstance']
         UpdatePolicy:
           AutoScalingReplacingUpdate:
