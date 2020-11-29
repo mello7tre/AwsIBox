@@ -1,4 +1,5 @@
 import troposphere.ssm as ssm
+import troposphere.policies as pol
 
 from .common import *
 
@@ -336,9 +337,15 @@ def import_lambda(name):
 
 def auto_get_props_recurse(obj, key, props, obj_propname, mapname,
                            propname, rootkey=None, rootname=None):
-    prop_class = props[obj_propname][0]
+    # trick (bad) to detect attributes as CreationPolicy and UpdatePolicy
+    if obj_propname in ['CreationPolicy', 'UpdatePolicy']:
+        prop_class = getattr(pol, obj_propname)
+    else:
+        prop_class = props[obj_propname][0]
+
     if (isinstance(prop_class, type) and
-            prop_class.__bases__[0].__name__ == 'AWSProperty'):
+            prop_class.__bases__[0].__name__ in ['AWSProperty',
+                                                 'AWSAttribute']):
         # If object already have that props, object class is
         # the existing already defined object,
         # so extend its property with auto_get_props
@@ -354,11 +361,27 @@ def auto_get_props_recurse(obj, key, props, obj_propname, mapname,
 
         return prop_obj
 
-    # trick for multiple class type support (Ex ec.TagSpecifications.Tags)
-    elif (isinstance(prop_class, tuple) and
-            prop_class[0].__bases__[0].__name__ == 'AWSHelperFn'):
-        prop_obj = prop_class[0](**key[obj_propname])
+    # trick for multiple class type support (Ex ec2.TagSpecifications.Tags)
+    elif (isinstance(prop_class, tuple)
+            and prop_class[1].__bases__[0].__name__ == 'object'):
+        prop_obj = []
+        for k, v in key[obj_propname].items():
+            value = v
+            key = value['Key']
+            value['Value'] = get_endvalue(f'{mapname}{obj_propname}{k}Value')
 
+            try:
+                if_wrapper = value['IBOXIF']
+            except Exception:
+                pass
+            else:
+                del value['IBOXIF']
+                value = If(if_wrapper[0], value, eval(if_wrapper[1]))
+
+            prop_obj.append(value)
+
+        # elif prop_class[0].__bases__[0].__name__ == 'AWSHelperFn':
+        #     prop_obj = prop_class[0](**key[obj_propname])
         return prop_obj
 
     elif (isinstance(prop_class, list) and

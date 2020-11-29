@@ -15,7 +15,7 @@ ec2:
         Description: 'How to update Instances'
         AllowedValue: ['None', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
         Default: 'None'
-    - HealthCheckGracePeriod:
+    - AutoScalingGroupBaseHealthCheckGracePeriod:
         Description: 'How long to wait before ASG check instance health - empty for default based on env/role'
   Condition:
     - RollingUpdate:
@@ -30,6 +30,77 @@ ec2:
   Output:
     - UpdateMode:
         Value: Ref('UpdateMode')
+  AutoScalingGroup:
+    - Base:
+        AvailabilityZones: GetAZs()
+        DesiredCapacity: get_endvalue('CapacityDesired')
+        MinSize: get_endvalue('CapacityMin')
+        CreationPolicy:
+          ResourceSignal:
+            Count: get_endvalue('CapacityDesired')
+            Timeout: PT15M
+        HealthCheckGracePeriod: 600
+        HealthCheckType: EC2
+        LaunchTemplate:
+          LaunchTemplateId: Ref('LaunchTemplate')
+          Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
+        MaxSize: get_endvalue('CapacityMax')
+        MetricsCollection:
+          - 0:
+              Granularity: 1Minute
+        Tags:
+          - Name:
+              Key: Name
+              Value: Ref('EnvRole')
+              PropagateAtLaunch: True
+          - EnvStackName:
+              Key: EnvStackName
+              Value: Ref('AWS::StackName')
+              PropagateAtLaunch: True
+          - SpotAuto:
+              IBOXIF:
+                - SpotAuto
+                - Ref('AWS::NoValue')
+              Key: spot-enabled
+              Value: 'true'
+              PropagateAtLaunch: True
+          - SpotAutoMinOnDemandNumber:
+              IBOXIF:
+                - SpotAutoMinOnDemandNumber
+                - Ref('AWS::NoValue')
+              Key: autospotting_min_on_demand_number
+              Value: get_endvalue('SpotAutoMinOnDemandNumber')
+              PropagateAtLaunch: True
+          - SpotAutoAllowedInstances:
+              IBOXIF:
+                - SpotAutoAllowedInstances
+                - Ref('AWS::NoValue')
+              Key: autospotting_allowed_instance_types
+              Value: get_endvalue('SpotAutoAllowedInstances')
+              PropagateAtLaunch: True
+        TerminationPolicies: ['OldestInstance']
+        UpdatePolicy:
+          AutoScalingReplacingUpdate:
+            IBOXIF:
+              - WillReplace
+              - Ref('AWS::NoValue')
+            WillReplace: True
+          AutoScalingRollingUpdate:
+            IBOXIF:
+              - RollingUpdate
+              - Ref('AWS::NoValue')
+            MaxBatchSize: 1
+            MinInstancesInService: get_endvalue('CapacityDesired')
+            MinSuccessfulInstancesPercent: 100 
+            PauseTime: PT20M
+            SuspendProcesses:
+              - HealthCheck
+              - ReplaceUnhealthy
+              - AlarmNotification
+              - ScheduledActions
+            WaitOnResourceSignals: True
+          AutoScalingScheduledAction:
+            IgnoreUnmodifiedGroupSizeProperties: True
   MappingClass:
     - EC2:
   AlarmCPUBase: &cpu
@@ -45,11 +116,8 @@ ec2:
     - CPULow:
         <<: *cpu
         Enabled: True
-  AutoscalingCreationTimeout: PT15M
   CustomUserDataScript: init.sh
   DeploymentGroup: False
-  HealthCheckType: ELB
-  HealthCheckGracePeriod: 600
   LoadBalancer:
     CookieSticky: None
     IdleTimeout: 60
@@ -72,11 +140,6 @@ ec2:
           - get_expvalue('IAMPolicyBaseInstance')
           - get_expvalue('IAMPolicySSM')
         Principal: ec2.amazonaws.com
-  RollingUpdate:
-    MaxBatchSize: 1
-    MinInstancesInService: 1
-    MinSuccessfulInstancesPercent: 100
-    PauseTime: PT20M
   ScalingPolicyTrackings:
     - ASCustom:
         TargetTrackingConfiguration:
@@ -110,6 +173,9 @@ dev: &cfg_dev
 
 stg: *cfg_dev 
 
+
+prd:
+  #AutoScalingGroupBaseHealthCheckType: ELB
 
 IBoxLoaderAfter: !include [
   spot-auto.yml,

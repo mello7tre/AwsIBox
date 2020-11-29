@@ -907,7 +907,7 @@ class LB_ElasticLoadBalancingClassicEC2(LB_ListenersEC2):
             'Type=${Type},Target=${Target},Interval=${Interval},'
             'Timeout=${Timeout},Healthy=${Healthy},Unhealthy=${Unhealthy}',
             **{
-                'Type': get_endvalue('HealthCheckType'),
+                'Type': get_endvalue('AutoScalingGroupBaseHealthCheckType'),
                 'Target': get_endvalue('HealthCheckTarget')
                 if cfg.HealthCheckTarget != 'None' else '',
                 'Interval': get_endvalue('HealthCheckIntervalSeconds'),
@@ -950,7 +950,7 @@ class LB_ElasticLoadBalancingApplicationEC2(object):
             'Type=${Type},Path=${Path},Interval=${Interval},'
             'Timeout=${Timeout},Healthy=${Healthy},Unhealthy=${Unhealthy}',
             **{
-                'Type': get_endvalue('HealthCheckType'),
+                'Type': get_endvalue('AutoScalingGroupBaseHealthCheckType'),
                 'Path': get_endvalue('HealthCheckPath')
                 if cfg.HealthCheckPath != 'None' else '',
                 'Interval': get_endvalue('HealthCheckIntervalSeconds'),

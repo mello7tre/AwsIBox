@@ -131,14 +131,18 @@ global:
           - instance:
               ResourceType: instance
               Tags:
-                Name:
-                  Ref: 'EnvRole'
-                EnvStackName:
-                  Ref: 'AWS::StackName'
+                - Name:
+                    Key: Name
+                    Value: Ref('EnvRole')
+                - EnvStackName:
+                    Key: EnvStackName
+                    Value: Ref('AWS::StackName')
           - volume:
               ResourceType: volume
               Tags:
-                Name:
-                  Ref: 'EnvRole'
-                EnvStackName:
-                  Ref: 'AWS::StackName'
+                - Name:
+                    Key: Name
+                    Value: Ref('EnvRole')
+                - EnvStackName:
+                    Key: EnvStackName
+                    Value: Ref('AWS::StackName')

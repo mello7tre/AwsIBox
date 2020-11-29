@@ -25,42 +25,6 @@ except ImportError:
 
 
 # S - AUTOSCALING #
-class ASAutoScalingGroup(asg.AutoScalingGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.AvailabilityZones = GetAZs()
-        self.DesiredCapacity = get_endvalue('CapacityDesired')
-        self.LaunchTemplate = asg.LaunchTemplateSpecification(
-            LaunchTemplateId=Ref('LaunchTemplate'),
-            Version=GetAtt('LaunchTemplate', 'LatestVersionNumber'))
-        self.MinSize = get_endvalue('CapacityMin')
-
-        self.CreationPolicy = pol.CreationPolicy(
-            ResourceSignal=pol.ResourceSignal(
-                Count=self.DesiredCapacity,
-                Timeout=get_endvalue('AutoscalingCreationTimeout')
-            )
-        )
-        self.HealthCheckGracePeriod = get_endvalue('HealthCheckGracePeriod')
-        self.HealthCheckType = get_endvalue('HealthCheckType')
-        self.MaxSize = get_endvalue('CapacityMax')
-        self.MetricsCollection = [asg.MetricsCollection(
-            Granularity='1Minute'
-        )]
-        self.Tags = [
-            asg.Tag(('Name'), Ref('EnvRole'), True),
-            asg.Tag(('EnvStackName'), Ref('AWS::StackName'), True),
-        ]
-        self.TerminationPolicies = ['OldestInstance']
-
-        if cfg.VPCZoneIdentifier == 'SubnetsPublic':
-            self.VPCZoneIdentifier = Split(',', get_expvalue('SubnetsPublic'))
-        else:
-            self.VPCZoneIdentifier = Split(',', get_expvalue('SubnetsPrivate'))
-
-        self.UpdatePolicy = ASUpdatePolicy()
-
-
 class ASLaunchTemplateData(ec2.LaunchTemplateData):
     def __init__(self, UserDataApp, **kwargs):
         super().__init__(**kwargs)
@@ -159,13 +123,6 @@ class ASScheduledAction(asg.ScheduledAction):
             Ref('AWS::NoValue')
         )
 
-
-class ASLifecycleHook(asg.LifecycleHook):
-    def __init__(self, title, name, key, **kwargs):
-        super().__init__(title, **kwargs)
-
-        auto_get_props(self, key)
-        self.HeartbeatTimeout = get_endvalue(f'{title}HeartbeatTimeout')
 
 # E - AUTOSCALING #
 
@@ -289,40 +246,6 @@ class APPASScheduledAction(aas.ScheduledAction):
 
 
 # S - AUTOSCALING #
-class ASUpdatePolicy(pol.UpdatePolicy):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.AutoScalingReplacingUpdate = If(
-            'WillReplace',
-            pol.AutoScalingReplacingUpdate(
-                WillReplace=True
-            ),
-            Ref('AWS::NoValue')
-        )
-        self.AutoScalingRollingUpdate = If(
-            'RollingUpdate',
-            pol.AutoScalingRollingUpdate(
-                MaxBatchSize=get_endvalue('RollingUpdateMaxBatchSize'),
-                # MinInstancesInService=get_endvalue('RollingUpdateMinInstancesInService'),
-                MinInstancesInService=get_endvalue('CapacityDesired'),
-                MinSuccessfulInstancesPercent=get_endvalue(
-                    'RollingUpdateMinSuccessfulInstancesPercent'),
-                PauseTime=get_endvalue('RollingUpdatePauseTime'),
-                SuspendProcesses=[
-                    'HealthCheck',
-                    'ReplaceUnhealthy',
-                    'AlarmNotification',
-                    'ScheduledActions'
-                ],
-                WaitOnResourceSignals=True
-            ),
-            Ref('AWS::NoValue')
-        )
-        self.AutoScalingScheduledAction = pol.AutoScalingScheduledAction(
-            IgnoreUnmodifiedGroupSizeProperties=True
-        )
-
-
 class ASInitConfigSets(cfm.InitConfigSets):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1199,33 +1122,21 @@ class AS_AutoscalingEC2(object):
         # AS_ScalingPoliciesEC2()
 
         LaunchTemplate = AS_LaunchTemplate()
-        Tags = LaunchTemplate.Tags
 
-        R_ASG = ASAutoScalingGroup('AutoScalingGroup')
+        R_ASG = asg.AutoScalingGroup('AutoScalingGroup')
+        auto_get_props(R_ASG, cfg.AutoScalingGroup['Base'],
+                       mapname='AutoScalingGroupBase', recurse=True)
+
         R_ASG.LoadBalancerNames = LoadBalancers
         R_ASG.TargetGroupARNs = TargetGroups
-        R_ASG.Tags.extend(Tags)
-        R_ASG.Tags.extend([
-            If(
-                'SpotAuto',
-                asg.Tag('spot-enabled', 'true', True),
-                Ref('AWS::NoValue')
-            ),
-            If(
-                'SpotAutoMinOnDemandNumber',
-                asg.Tag(
-                    'autospotting_min_on_demand_number',
-                    get_endvalue('SpotAutoMinOnDemandNumber'), True),
-                Ref('AWS::NoValue')
-            ),
-            If(
-                'SpotAutoAllowedInstances',
-                asg.Tag(
-                    'autospotting_allowed_instance_types',
-                    get_endvalue('SpotAutoAllowedInstances'), True),
-                Ref('AWS::NoValue')
-            )
-        ])
+        R_ASG.Tags.extend(LaunchTemplate.Tags)
+
+        if cfg.VPCZoneIdentifier == 'SubnetsPublic':
+            R_ASG.VPCZoneIdentifier = Split(
+                ',', get_expvalue('SubnetsPublic'))
+        else:
+            R_ASG.VPCZoneIdentifier = Split(
+                ',', get_expvalue('SubnetsPrivate'))
 
         # Notifications currently are not associeted to "any actions" -
         # now using CW events - this way works with autospotting too
@@ -1267,8 +1178,8 @@ class AS_LifecycleHook(object):
             resname = f'{key}{n}'
 
             # resources
-            r_Hook = ASLifecycleHook(resname, name=n, key=v)
-            r_Hook.AutoScalingGroupName = Ref('AutoScalingGroup')
+            r_Hook = asg.LifecycleHook(resname)
+            auto_get_props(r_Hook, v, recurse=True)
 
             add_obj([
                 r_Hook,

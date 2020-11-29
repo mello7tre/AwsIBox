@@ -38,6 +38,7 @@ ecs-cluster:
         Enabled: None
   ASGLifecycleHook:
     - ECSDrainInstance:
+        AutoScalingGroupName: Ref('AutoScalingGroup')
         DefaultResult: 'ABANDON'
         HeartbeatTimeout: 3600
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
@@ -45,7 +46,6 @@ ecs-cluster:
         RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance') 
   Apps: []
   Cluster: True
-  HealthCheckType: EC2
   Listeners: []
   RecordSet: []
   SecurityGroupIngress:
