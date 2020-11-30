@@ -364,24 +364,24 @@ def auto_get_props(obj, key, mapname=None, rootdict=None, del_prefix=''):
         # trick for multiple class type support (Ex ec2.TagSpecifications.Tags)
         elif (isinstance(prop_class, tuple)
                 and prop_class[1].__bases__[0].__name__ == 'object'):
-            if obj_propname == 'Tags':
-                prop_obj = []
-                for k, v in key[obj_propname].items():
+            prop_obj = []
+            for k, v in key[obj_propname].items():
+                if obj_propname == 'Tags':
                     v['Value'] = get_endvalue(f'{mapname_obj}{k}Value')
 
-                    try:
-                        if_wrapper = v['IBOXIF']
-                    except Exception:
-                        pass
-                    else:
-                        del v['IBOXIF']
-                        v = If(if_wrapper[0], v, eval(if_wrapper[1]))
+                try:
+                    if_wrapper = v['IBOXIF']
+                except Exception:
+                    pass
+                else:
+                    del v['IBOXIF']
+                    v = If(if_wrapper[0], v, eval(if_wrapper[1]))
 
-                    prop_obj.append(v)
+                prop_obj.append(v)
 
-                return prop_obj
             # elif prop_class[0].__bases__[0].__name__ == 'AWSHelperFn':
             #     prop_obj = prop_class[0](**key[obj_propname])
+            return prop_obj
 
         elif (isinstance(prop_class, list) and
                 isinstance(prop_class[0], type) and
