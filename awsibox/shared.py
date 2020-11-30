@@ -335,141 +335,108 @@ def import_lambda(name):
         exit(1)
 
 
-def auto_get_props_recurse(obj, key, props, obj_propname, mapname,
-                           propname, rootkey=None, rootname=None):
-    # trick (bad) to detect attributes as CreationPolicy and UpdatePolicy
-    if obj_propname in ['CreationPolicy', 'UpdatePolicy']:
-        prop_class = getattr(pol, obj_propname)
-    else:
-        prop_class = props[obj_propname][0]
+def auto_get_props(obj, key, mapname=None, rootdict=None, del_prefix=''):
 
-    if (isinstance(prop_class, type) and
-            prop_class.__bases__[0].__name__ in ['AWSProperty',
-                                                 'AWSAttribute']):
-        # If object already have that props, object class is
-        # the existing already defined object,
-        # so extend its property with auto_get_props
-        if obj_propname in obj.properties:
-            prop_obj = obj.properties[obj_propname]
+    def _get_obj(obj, key, props, obj_propname, mapname):
+        mapname_obj = f'{mapname}{obj_propname}'
+
+        # trick (bad) to detect attributes as CreationPolicy and UpdatePolicy
+        if obj_propname in ['CreationPolicy', 'UpdatePolicy']:
+            prop_class = getattr(pol, obj_propname)
         else:
-            prop_obj = prop_class()
-        auto_get_props(
-            prop_obj, key=key[obj_propname],
-            mapname=f'{mapname}{obj_propname}', recurse=True,
-            rootkey=rootkey[obj_propname] if rootkey else None,
-            rootname=f'{rootname}{obj_propname}' if rootname else None)
+            prop_class = props[obj_propname][0]
 
-        return prop_obj
-
-    # trick for multiple class type support (Ex ec2.TagSpecifications.Tags)
-    elif (isinstance(prop_class, tuple)
-            and prop_class[1].__bases__[0].__name__ == 'object'):
-        prop_obj = []
-        for k, v in key[obj_propname].items():
-            value = v
-            key = value['Key']
-            value['Value'] = get_endvalue(f'{mapname}{obj_propname}{k}Value')
-
-            try:
-                if_wrapper = value['IBOXIF']
-            except Exception:
-                pass
+        if (isinstance(prop_class, type) and
+                prop_class.__bases__[0].__name__ in ['AWSProperty',
+                                                     'AWSAttribute']):
+            # If object already have that props, object class is
+            # the existing already defined object,
+            # so extend its property with auto_get_props
+            if obj_propname in obj.properties:
+                prop_obj = obj.properties[obj_propname]
             else:
-                del value['IBOXIF']
-                value = If(if_wrapper[0], value, eval(if_wrapper[1]))
-
-            prop_obj.append(value)
-
-        # elif prop_class[0].__bases__[0].__name__ == 'AWSHelperFn':
-        #     prop_obj = prop_class[0](**key[obj_propname])
-        return prop_obj
-
-    elif (isinstance(prop_class, list) and
-            isinstance(prop_class[0], type) and
-            prop_class[0].__bases__[0].__name__ == 'AWSProperty'):
-        # If object props already is a list, keep existing list objects
-        # need to make a change, if object already exist,
-        # i must first iterate over old list with rootkey and
-        # rootname and then over new one
-        prop_list = []
-        prop_class = props[obj_propname][0][0]
-        # If rootkey is defined, first iterate over rootkey and
-        # execute auto_get_props passing rootkey and rootname,
-        # but check if element exist in key too,
-        # in that case execute execute auto_get_props passing key and mapname
-        if rootkey:
-            for o, v in rootkey[obj_propname].items():
-                name_o = str(o)
-                rootname_o = f'{rootname}{obj_propname}{name_o}'
-                mapname_o = f'{mapname}{obj_propname}{name_o}'
                 prop_obj = prop_class()
-                auto_get_props(prop_obj, key=v, mapname=rootname_o,
-                               recurse=True, rootkey=v, rootname=rootname_o)
-                if o in key[obj_propname]:
-                    key_o = key[obj_propname][o]
-                    auto_get_props(prop_obj, key=key_o, mapname=mapname_o,
-                                   recurse=True, rootkey=key_o,
-                                   rootname=rootname_o)
-                prop_list.append(prop_obj)
-        # ...then iterate over key, but check if element exist in rootkey too,
-        # in that case skip it (already included in previous rootkey iteration)
-        # when calling auto_get_props rootkey and rootname can be setted to
-        # None, cause if element has not been skipped mean that
-        # it do not exist in rootkey so there is no need to pass it
-        # (there cannot be a corrispective node in rootkey)
-        for o, v in key[obj_propname].items():
-            name_o = str(o)
-            mapname_o = f'{mapname}{obj_propname}{name_o}'
-            prop_obj = prop_class()
-            if rootkey and o in rootkey[obj_propname]:
+
+            _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
+
+            return prop_obj
+
+        # trick for multiple class type support (Ex ec2.TagSpecifications.Tags)
+        elif (isinstance(prop_class, tuple)
+                and prop_class[1].__bases__[0].__name__ == 'object'):
+            prop_obj = []
+            for k, v in key[obj_propname].items():
+                value = v
+                key = value['Key']
+                value['Value'] = get_endvalue(f'{mapname_obj}{k}Value')
+
+                try:
+                    if_wrapper = value['IBOXIF']
+                except Exception:
+                    pass
+                else:
+                    del value['IBOXIF']
+                    value = If(if_wrapper[0], value, eval(if_wrapper[1]))
+
+                prop_obj.append(value)
+
+            # elif prop_class[0].__bases__[0].__name__ == 'AWSHelperFn':
+            #     prop_obj = prop_class[0](**key[obj_propname])
+            return prop_obj
+
+        elif (isinstance(prop_class, list) and
+                isinstance(prop_class[0], type) and
+                prop_class[0].__bases__[0].__name__ == 'AWSProperty'):
+            prop_list = []
+            prop_class = props[obj_propname][0][0]
+            for o, v in key[obj_propname].items():
+                name_o = str(o)
+                mapname_o = f'{mapname_obj}{name_o}'
+                prop_obj = prop_class()
+
+                _populate(prop_obj, key=v, mapname=mapname_o)
+
+                # trick to wrapper obj in If Condition
+                try:
+                    if_wrapper = v['IBOXIF']
+                except Exception:
+                    prop_list.append(prop_obj)
+                else:
+                    condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
+                    prop_list.append(If(
+                        condname, prop_obj, eval(if_wrapper[1])))
+
+            return prop_list
+
+    def _populate(obj, key=None, mapname=None):
+        # Allowed object properties
+        props = vars(obj)['propnames']
+        props.extend(vars(obj)['attributes'])
+
+        # Object class
+        classname = obj.__class__.__name__
+
+        # build up mapname
+        mapname = mapname if mapname is not None else obj.title
+        if classname in ['Output', 'Parameter']:
+            mapname = f'{classname}{mapname}'
+
+        # iterate over props or key choosing the one with less objects
+        use_key = True if len(props) > len(key) else None
+        for propname in key if use_key else props:
+            obj_propname = (propname.replace(del_prefix, '') if use_key
+                            else f'{del_prefix}{propname}')
+
+            if obj_propname not in (props if use_key else key):
+                # NO match between one of obj props and a key name
                 continue
 
-            auto_get_props(prop_obj, key=v, mapname=mapname_o, recurse=True,
-                           rootkey=None, rootname=None)
+            # key value is a dict, get populated object
+            if isinstance(key[propname], dict):
+                value = _get_obj(obj, key, obj.props, propname, mapname)
 
-            # trick to wrapper obj in If Condition
-            try:
-                if_wrapper = v['IBOXIF']
-            except Exception:
-                prop_list.append(prop_obj)
-            else:
-                condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
-                prop_list.append(If(condname, prop_obj, eval(if_wrapper[1])))
-
-        return prop_list
-
-    return get_endvalue(f'{mapname}{propname}')
-
-
-def auto_get_props(obj, key=None, del_prefix='', mapname=None,
-                   recurse=False, rootkey=None, rootname=None, rootdict=None):
-    # set default if not defined
-    if not key:
-        key = cfg.RP_cmm
-
-    # Allowed object properties
-    props = vars(obj)['propnames']
-    props.extend(vars(obj)['attributes'])
-    # Object class
-    classname = obj.__class__.__name__
-
-    # build up mapname
-    mapname = mapname if mapname is not None else obj.title
-    if classname in ['Output', 'Parameter']:
-        mapname = f'{classname}{mapname}'
-
-    # iterate over props or key choosing the one with less objects
-    use_key = True if len(props) > len(key) else None
-    for propname in key if use_key else props:
-        obj_propname = (propname.replace(del_prefix, '') if use_key
-                        else f'{del_prefix}{propname}')
-        if obj_propname in (props if use_key else key):
-            if recurse and isinstance(key[obj_propname], dict):
-                value = auto_get_props_recurse(
-                    obj, key, obj.props, obj_propname,
-                    mapname, propname, rootkey, rootname)
-            # needed for lib/efs.py EFS_FileStorage SGIExtra -
-            # where is passed as key a new dictionary to parse for parameters
+            # rootdict is needed for lib/efs.py EFS_FileStorage SGIExtra,
+            # is passed as a dictionary to parse for parameters
             elif rootdict:
                 value = get_endvalue(
                     f'{mapname}{propname}', fixedvalues=rootdict)
@@ -483,23 +450,20 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                 pass
             else:
                 # Usefull to migrate code in yaml using auto_get_props
-                # i assume that get_endvalue is used only when migrating code
-                if (isinstance(key_value, str) and
-                        key_value.startswith('get_endvalue(')):
+                # get_endvalue is used only when migrating code
+                if (isinstance(key_value, str)
+                        and key_value.startswith('get_endvalue(')):
                     value = eval(key_value)
 
-                # if key value == 'IBOXIFNOVALUE' automatically add condition
+                # key value == 'IBOXIFNOVALUE' automatically add condition
                 # and wrap value in AWS If Condition
                 if key_value == 'IBOXIFNOVALUE':
-                    add_obj(
-                        get_condition(f'{mapname}{propname}',
-                                      'not_equals', 'IBOXIFNOVALUE')
-                    )
+                    add_obj(get_condition(f'{mapname}{propname}',
+                                          'not_equals', 'IBOXIFNOVALUE'))
                     value = If(
                         f'{mapname}{propname}',
                         value,
-                        Ref('AWS::NoValue')
-                    )
+                        Ref('AWS::NoValue'))
                 # trick to wrapper value in If Condition
                 elif (isinstance(key_value, str)
                         and key_value.startswith('IBOXIF')):
@@ -530,6 +494,8 @@ def auto_get_props(obj, key=None, del_prefix='', mapname=None,
                 setattr(obj, obj_propname, value)
             except TypeError:
                 pass
+
+    _populate(obj, key, mapname)
 
 
 def auto_build_obj(obj, key):

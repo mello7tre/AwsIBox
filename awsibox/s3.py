@@ -14,7 +14,7 @@ class S3Bucket(s3.Bucket):
         super().__init__(title, **kwargs)
 
         name = self.title  # Ex. BucketStatic
-        auto_get_props(self, key, recurse=True)
+        auto_get_props(self, key)
         self.Condition = name
         self.BucketName = Sub(bucket_name)
         self.CorsConfiguration = If(
@@ -344,7 +344,7 @@ class S3_Buckets(object):
 
                 # resources
                 rule = s3.ReplicationConfigurationRules()
-                auto_get_props(rule, w, mapname=replica_name, recurse=True)
+                auto_get_props(rule, w, mapname=replica_name)
 
                 rule.Status = 'Enabled'
                 Replica_Rules.append(If(
@@ -434,8 +434,7 @@ class S3_Buckets(object):
                 r_Bucket.WebsiteConfiguration = s3.WebsiteConfiguration(
                     f'{resname}WebsiteConfiguration')
                 auto_get_props(
-                    r_Bucket.WebsiteConfiguration, v['WebsiteConfiguration'],
-                    recurse=True)
+                    r_Bucket.WebsiteConfiguration, v['WebsiteConfiguration'])
 
             if 'PolicyStatement' in v:
                 FixedStatements = []

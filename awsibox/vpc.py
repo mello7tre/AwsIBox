@@ -141,7 +141,7 @@ class VPC_VPC(object):
 
         # Resources
         R_VPC = ec2.VPC('VPC')
-        auto_get_props(R_VPC, mapname='')
+        auto_get_props(R_VPC, cfg.VPC['Base'], mapname='VPCBase')
 
         R_RouteTablePrivate = EC2RouteTable('RouteTablePrivate')
         R_RouteTablePrivate.Tags = Tags(Name=Sub('${VPCName}-Private'))

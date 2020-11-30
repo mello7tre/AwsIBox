@@ -28,7 +28,7 @@ except ImportError:
 class ASLaunchTemplateData(ec2.LaunchTemplateData):
     def __init__(self, UserDataApp, **kwargs):
         super().__init__(**kwargs)
-        auto_get_props(self, cfg.LaunchTemplate['Data'], recurse=True,
+        auto_get_props(self, cfg.LaunchTemplate['Data'],
                        mapname='LaunchTemplateData')
         self.UserData = Base64(Join('', [
             '#!/bin/bash\n',
@@ -927,7 +927,7 @@ class AS_ScalingPoliciesTracking(object):
             else:
                 r_Tracking = aas.ScalingPolicy(resname)
 
-            auto_get_props(r_Tracking, v, recurse=True)
+            auto_get_props(r_Tracking, v)
             r_Tracking.Condition = resname
 
             add_obj(r_Tracking)
@@ -1125,7 +1125,7 @@ class AS_AutoscalingEC2(object):
 
         R_ASG = asg.AutoScalingGroup('AutoScalingGroup')
         auto_get_props(R_ASG, cfg.AutoScalingGroup['Base'],
-                       mapname='AutoScalingGroupBase', recurse=True)
+                       mapname='AutoScalingGroupBase')
 
         R_ASG.LoadBalancerNames = LoadBalancers
         R_ASG.TargetGroupARNs = TargetGroups
@@ -1179,7 +1179,7 @@ class AS_LifecycleHook(object):
 
             # resources
             r_Hook = asg.LifecycleHook(resname)
-            auto_get_props(r_Hook, v, recurse=True)
+            auto_get_props(r_Hook, v)
 
             add_obj([
                 r_Hook,

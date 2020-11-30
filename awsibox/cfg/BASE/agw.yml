@@ -5,10 +5,17 @@ IBoxLoader: !include [
 agw:
   Output:
     - InvokeUrl:
-        Value: Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/' + cfg.Stage)
-  ApiKeySourceType: HEADER
-  BinaryMediaTypes:
-    - '*/*'
+        Value: Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/%s' % cfg.ApiGatewayRestApi['Base']['Stage'])
+  ApiGatewayRestApi:
+    - Base:
+        ApiKeySourceType: HEADER
+        BinaryMediaTypes:
+          - '*/*'
+        Description: 'Api-Gateway Description is missing'
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+        Name: 'Api-Gateway Name is missing'
   CloudFront: True
   CloudFrontOrigins:
     - Default:
@@ -16,7 +23,3 @@ agw:
           HTTPSPort: '443'
           OriginProtocolPolicy: https-only
         DomainName:  Sub('${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com')
-  Description: 'Api-Gateway Description is missing'
-  EndpointConfiguration:
-    - REGIONAL
-  Name: 'Api-Gateway Name is missing'

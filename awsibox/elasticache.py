@@ -6,46 +6,6 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
 from .route53 import R53_RecordSetCCH
 
 
-class CCHCacheCluster(cch.CacheCluster):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        auto_get_props(self, mapname='')
-
-
-class CCHReplicationGroup(cch.ReplicationGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        auto_get_props(self, mapname='')
-
-
-class CCHReplicationGroupPublic(CCHReplicationGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPublic')
-        self.CacheSecurityGroupNames = [Ref('SecurityGroupCCH')]
-
-
-class CCHReplicationGroupPrivate(CCHReplicationGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPrivate')
-        self.SecurityGroupIds = [Ref('SecurityGroupCCH')]
-
-
-class CCHCacheClusterPublic(CCHCacheCluster):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPublic')
-        self.CacheSecurityGroupNames = [Ref('SecurityGroupCCH')]
-
-
-class CCHCacheClusterPrivate(CCHCacheCluster):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.CacheSubnetGroupName = get_expvalue('CacheSubnetGroupPrivate')
-        self.VpcSecurityGroupIds = [Ref('SecurityGroupCCH')]
-
-
 class CCHCacheSubnetGroupPrivate(cch.SubnetGroup):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -67,15 +27,16 @@ class CCHCacheSubnetGroupPublic(cch.SubnetGroup):
 class CCH_Cache(object):
     def __init__(self, key):
         # Resources
-        if cfg.CCHScheme == 'External':
-            R_Cache = CCHCacheClusterPublic('ElastiCacheCacheCluster')
-            R_Group = CCHReplicationGroupPublic('ElastiCacheReplicationGroup')
-        if cfg.CCHScheme == 'Internal':
-            R_Cache = CCHCacheClusterPrivate('ElastiCacheCacheCluster')
-            R_Group = CCHReplicationGroupPrivate('ElastiCacheReplicationGroup')
+        R_Cache = cch.CacheCluster('ElastiCacheCacheCluster')
+        R_Group = cch.ReplicationGroup('ElastiCacheReplicationGroup')
 
-        R_Cache.Condition = 'CacheCluster'
-        R_Group.Condition = 'ReplicationGroup'
+        auto_get_props(R_Cache, cfg.CacheCluster['Base'],
+                       mapname='CacheClusterBase')
+        
+        auto_get_props(R_Group, cfg.CacheCluster['Base'],
+                       mapname='CacheClusterBase')
+        auto_get_props(R_Group, cfg.ReplicationGroup['Base'],
+                       mapname='ReplicationGroupBase')
 
         R53_RecordSetCCH()
 

@@ -5,11 +5,13 @@ IBoxLoader:
 infra-info:
   StackType: agw
   StackName: iif
-  Description: 'Infrastracture Informations'
-  Name: 'InfraInfo'
-  Stage: v1
+  ApiGatewayRestApi:
+    - Base:
+        Description: 'Infrastracture Informations'
+        Name: 'InfraInfo'
+        Stage: v1
+        BinaryMediaTypes: ['*/*']
   CloudFront: IBOXSKIPCLASS
-  BinaryMediaTypes: ['*/*']
   ApiGatewayResource:
     - 01Root:
         ParentId: GetAtt('ApiGatewayRestApi', 'RootResourceId')

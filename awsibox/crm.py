@@ -5,12 +5,6 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 
 
-class CRMCertificate(crm.Certificate):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-        auto_get_props(self, key, recurse=True)
-
-
 # #################################
 # ### START STACK INFRA CLASSES ###
 # #################################
@@ -22,7 +16,8 @@ class CRM_Certificate(object):
                 continue
             # resources
             resname = f'{key}{n}'
-            r_Certificate = CRMCertificate(resname, key=v)
+            r_Certificate = crm.Certificate(resname)
+            auto_get_props(r_Certificate, v)
             r_Certificate.Tags = Tags(Name=n)
 
             add_obj([

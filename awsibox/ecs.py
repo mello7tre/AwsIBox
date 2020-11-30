@@ -135,7 +135,7 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
         super().__init__(title, **kwargs)
 
         name = self.title  # Ex. ContainerDefinitions1
-        auto_get_props(self, key, recurse=True)
+        auto_get_props(self, key)
 
         self.Essential = True
 
@@ -460,7 +460,7 @@ class ECS_Service(object):
                 resname = 'Service'
 
             R_Service = ECSService(resname)
-            auto_get_props(R_Service, v, mapname=resname, recurse=True)
+            auto_get_props(R_Service, v, mapname=resname)
 
             if cfg.LoadBalancerApplicationExternal:
                 R_Service.LoadBalancers.append(

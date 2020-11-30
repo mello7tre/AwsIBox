@@ -88,7 +88,7 @@ class EVE_EventRules(object):
                                    mapname='', del_prefix=targetname)
 
                 # add props found in yaml cfg
-                auto_get_props(Target, w, mapname=targetname, recurse=True)
+                auto_get_props(Target, w, mapname=targetname)
                 Targets.append(Target)
 
             r_Rule = eve.Rule(resname)

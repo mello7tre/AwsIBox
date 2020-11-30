@@ -4,10 +4,10 @@ IBoxLoader: !include [
 
 cch:
   Parameter:
-    - AutomaticFailoverEnabled:
+    - ReplicationGroupBaseAutomaticFailoverEnabled:
         Description: 'Multi-AZ is enabled for this replication group (only for redis and ReplicationGroup) - empty for default based on env/role'
         AllowedValues: ['', 'True', 'False']
-    - CacheNodeType:
+    - CacheClusterBaseCacheNodeType:
         Description: 'Node Type - empty for default based on env/role'
         AllowedValues: [
           '', 'cache.t2.micro', 'cache.t2.small', 'cache.t2.medium', 'cache.t2.large',
@@ -22,16 +22,16 @@ cch:
     - CCHAccess:
         Description: 'Access type public or private - empty for default based on env/role'
         AllowedValues: ['', 'Private', 'Public']
-    - Engine:
+    - CacheClusterBaseEngine:
         Description: 'Engine - empty for default based on env/role'
         AllowedValues: ['', 'memcached', 'redis']
-    - EngineVersion:
+    - CacheClusterBaseEngineVersion:
         Description: 'Engine Version - empty for default based on env/role'
-    - NumCacheClusters:
+    - ReplicationGroupBaseNumCacheClusters:
         Description: 'The number of clusters this replication group initially has - empty for default based on env/role'
-    - NumCacheNodes:
+    - CacheClusterBaseNumCacheNodes:
         Description: 'The number of cache nodes that the cache cluster should have - empty for default based on env/role'
-    - ReplicationGroup:
+    - ReplicationGroupBaseEnabled:
         Description: 'Create a ElastiCache Redis Replication Group instead of a Cache Cluster - empty for default based on env/role'
         AllowedValues: ['', 'True', 'False']
   Condition:
@@ -45,41 +45,52 @@ cch:
           And(
             Condition('CacheEnabled'),
             Condition('EngineRedis'),
-            get_condition('', 'not_equals', 'True', 'ReplicationGroup'),
+            get_condition('', 'not_equals', 'True', 'ReplicationGroupBaseEnabled'),
           )
         )
     - CacheEnabled: Equals(Ref('CacheEnabled'), 'True')
-    - EngineRedis: get_condition('', 'equals', 'redis', 'Engine')
-    - EngineMemCached: get_condition('', 'equals', 'memcached', 'Engine')
+    - EngineRedis: get_condition('', 'equals', 'redis', 'CacheClusterBaseEngine')
+    - EngineMemCached: get_condition('', 'equals', 'memcached', 'CacheClusterBaseEngine')
     - ReplicationGroup:
         And(
           Condition('CacheEnabled'),
           Condition('EngineRedis'),
-          get_condition('', 'equals', 'True', 'ReplicationGroup'),
+          get_condition('', 'equals', 'True', 'ReplicationGroupBaseEnabled'),
         )
   Output:
     - CacheNodeType:
-        Value: get_endvalue('CacheNodeType')
+        Value: get_endvalue('CacheClusterBaseCacheNodeType')
     - Engine:
-        Value: get_endvalue('Engine')
+        Value: get_endvalue('CacheClusterBaseEngine')
     - EngineVersion: 
-        Value: get_endvalue('EngineVersion')
+        Value: get_endvalue('CacheClusterBaseEngineVersion')
     - CCHAccess:
         Value: get_endvalue('CCHAccess')
-    - CCHScheme:
-        Value: get_endvalue('CCHScheme')
     - NumCacheNodes:
         Condition: 'CacheCluster'
-        Value: get_endvalue('NumCacheNodes')
+        Value: get_endvalue('CacheClusterBaseNumCacheNodes')
     - NumCacheClusters:
         Condition: 'ReplicationGroup'
-        Value: get_endvalue('NumCacheClusters')
-  AutomaticFailoverEnabled: 'False'
-  AZMode: single-az
-  AutoMinorVersionUpgrade: True
+        Value: get_endvalue('CacheClusterBaseNumCacheClusters')
+  CacheCluster:
+    - Base:
+        Condition: CacheCluster
+        ## Internal
+        CacheSubnetGroupName: get_expvalue(f'CacheSubnetGroupPrivate')
+        VpcSecurityGroupIds: [Ref('SecurityGroupCCH')]
+        ## External
+        #CacheSubnetGroupName: get_expvalue(f'CacheSubnetGroupPublic')
+        #CacheSecurityGroupNames: [Ref('SecurityGroupCCH')]
+        AZMode: single-az
+        AutoMinorVersionUpgrade: True
+        NumCacheNodes: 1
+  ReplicationGroup:
+    - Base:
+        Condition: ReplicationGroup
+        ## Internal
+        SecurityGroupIds: [Ref('SecurityGroupCCH')]
+        Enabled: None
+        AutomaticFailoverEnabled: 'False'
+        NumCacheClusters: 1
+        ReplicationGroupDescription: 'Redis ReplicaGroup'
   CCHAccess: Public
-  CCHScheme: Internal
-  NumCacheNodes: 1
-  NumCacheClusters: 1
-  ReplicationGroup: 'False'
-  ReplicationGroupDescription: 'Redis ReplicaGroup'

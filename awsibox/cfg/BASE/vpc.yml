@@ -19,9 +19,10 @@ vpc:
         Export: Export('RouteTablePrivate')
   MappingClass:
     - AZones:
+  VPC:
+    - Base:
+        CidrBlock: Ref('VPCCidrBlock')
+        EnableDnsSupport: True
+        EnableDnsHostnames: True
+        Tags: Tags(Name=Ref('VPCName'))
   NatGateway: True
-  VPC: True
-  CidrBlock: Ref('VPCCidrBlock')
-  EnableDnsSupport: True
-  EnableDnsHostnames: True
-  Tags: Tags(Name=Ref('VPCName'))

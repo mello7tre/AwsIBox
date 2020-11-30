@@ -71,7 +71,7 @@ class LambdaFunction(lbd.Function):
                     'print("Use Code parameter in yaml '
                     f'or create file lib/lambas/{import_name}.code '
                     'with lambda code to execute.")')
-        auto_get_props(self, key, recurse=True)
+        auto_get_props(self, key)
         self.FunctionName = Sub('${AWS::StackName}-${EnvRole}-%s' % name)
         if 'Handler' not in key:
             self.Handler = 'index.lambda_handler'
@@ -279,7 +279,7 @@ class LBD_LayerVersions(object):
 
             # resources
             r_Layer = lbd.LayerVersion(resname)
-            auto_get_props(r_Layer, v, recurse=True)
+            auto_get_props(r_Layer, v)
             r_LayerPermission = LambdaLayerVersionPermission(
                 f'LambdaLayerPermission{n}')
             r_LayerPermission.LayerVersionArn = Ref(resname)
@@ -305,7 +305,7 @@ class LBD_Permissions(object):
             # resources
             r_Permission = LambdaPermission(resname)
             r_Permission.setup()
-            auto_get_props(r_Permission, v, recurse=True)
+            auto_get_props(r_Permission, v)
 
             add_obj([
                 r_Permission,
@@ -320,7 +320,7 @@ class LBD_EventSourceMappings(object):
 
             # resources
             r_EventSourceMapping = lbd.EventSourceMapping(resname)
-            auto_get_props(r_EventSourceMapping, v, recurse=True)
+            auto_get_props(r_EventSourceMapping, v)
 
             add_obj([
                 r_EventSourceMapping,
@@ -335,7 +335,7 @@ class LBD_EventInvokeConfig(object):
 
             # resources
             r_EventInvokeConfig = lbd.EventInvokeConfig(resname)
-            auto_get_props(r_EventInvokeConfig, v, recurse=True)
+            auto_get_props(r_EventInvokeConfig, v)
 
             add_obj([
                 r_EventInvokeConfig,

@@ -24,7 +24,7 @@ class ELBListener(elb.Listener):
         super().__init__(title, **kwargs)
         auto_get_props(self, key)
         auto_get_props(self, cfg.Listener['Classic'],
-                       mapname='ListenerClassic', recurse=True)
+                       mapname='ListenerClassic')
 
 
 class ELBLoadBalancer(elb.LoadBalancer):
@@ -102,15 +102,13 @@ class ELBV2Listener(elbv2.Listener):
 class ELBV2ListenerHttp(ELBV2Listener):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-        auto_get_props(self, cfg.Listener['Http'],
-                       mapname='ListenerHttp', recurse=True)
+        auto_get_props(self, cfg.Listener['Http'], mapname='ListenerHttp')
 
 
 class ELBV2ListenerHttps(ELBV2Listener):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-        auto_get_props(self, cfg.Listener['Https'],
-                       mapname='ListenerHttps', recurse=True)
+        auto_get_props(self, cfg.Listener['Https'], mapname='ListenerHttps')
 
 
 class ELBV2TargetGroup(elbv2.TargetGroup):
@@ -189,8 +187,7 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
     def __init__(self, title, key, index, mapname, scheme, **kwargs):
         super().__init__(title, **kwargs)
 
-        auto_get_props(
-            self, key, mapname=f'ListenerRules{index}', recurse=True)
+        auto_get_props(self, key, mapname=f'ListenerRules{index}')
         if 'Conditions' not in key:
             self.Conditions = []
             if 'HostHeader' in key:

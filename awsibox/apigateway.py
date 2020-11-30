@@ -30,8 +30,8 @@ class ApiGatewayResource(agw.Resource):
 
         self.RestApiId = Ref('ApiGatewayRestApi')
 
-        auto_get_props(self, stagekey, mapname=mapname, recurse=True,
-                       rootkey=key, rootname=self.title)
+        auto_get_props(self, stagekey, mapname=mapname)
+        auto_get_props(self, key, self.title)
 
 
 class ApiGatewayMethod(agw.Method):
@@ -47,13 +47,13 @@ class ApiGatewayMethod(agw.Method):
         except Exception:
             stagekey = {'Empty': True}
 
-        auto_get_props(self, key, recurse=True)
+        auto_get_props(self, key)
 
         self.RestApiId = Ref('ApiGatewayRestApi')
         self.ResourceId = Ref(f'ApiGatewayResource{basename}')
 
-        auto_get_props(self, stagekey, mapname=mapname, recurse=True,
-                       rootkey=key, rootname=self.title)
+        auto_get_props(self, stagekey, mapname=mapname)
+        auto_get_props(self, key, self.title)
 
         # If Uri is a lambda self.Integration.Uri will be like:
         # 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaName.Arn}/invocations'
@@ -74,7 +74,7 @@ class ApiGatewayStage(agw.Stage):
 
         self.StageName = name
 
-        auto_get_props(self, key, recurse=True)
+        auto_get_props(self, key)
 
         self.RestApiId = Ref('ApiGatewayRestApi')
         self.DeploymentId = Ref(f'ApiGatewayDeployment{name}')
@@ -123,7 +123,7 @@ class AGW_DomainName(object):
             resname = f'{key}{n}'
             # resources
             r_Domain = agw.DomainName(resname)
-            auto_get_props(r_Domain, v, recurse=True)
+            auto_get_props(r_Domain, v)
 
             r_r53 = R53RecordApiGatewayDomainName(
                 f'RecordSet{resname}', resname, MappedDomainName,
@@ -148,7 +148,7 @@ class AGW_BasePathMapping(object):
 
             # resources
             r_Path = agw.BasePathMapping(resname)
-            auto_get_props(r_Path, v, recurse=True)
+            auto_get_props(r_Path, v)
 
             add_obj(r_Path)
 
@@ -167,7 +167,7 @@ class AGW_UsagePlans(object):
 
             # resources
             r_UsagePlan = agw.UsagePlan(resname)
-            auto_get_props(r_UsagePlan, v, recurse=True)
+            auto_get_props(r_UsagePlan, v)
 
             add_obj([
                 r_UsagePlan,
@@ -203,7 +203,7 @@ class AGW_ApiKeys(object):
 
             # resources
             r_ApiKey = agw.ApiKey(resname)
-            auto_get_props(r_ApiKey, v, recurse=True)
+            auto_get_props(r_ApiKey, v)
 
             add_obj([
                 r_ApiKey,
@@ -288,11 +288,10 @@ class AGW_RestApi(object):
     def __init__(self, key):
         # Resources
         R_RestApi = agw.RestApi('ApiGatewayRestApi')
-        auto_get_props(R_RestApi, mapname='')
-        R_RestApi.EndpointConfiguration = agw.EndpointConfiguration(
-            Types=get_endvalue('EndpointConfiguration')
-        )
+        auto_get_props(R_RestApi, cfg.ApiGatewayRestApi['Base'],
+                       mapname='ApiGatewayRestApiBase')
         R_RestApi.Policy = IAMPolicyApiGatewayPrivate()
+
         try:
             condition = cfg.PolicyCondition
             R_RestApi.Policy['Statement'][0]['Condition'] = condition
@@ -303,9 +302,9 @@ class AGW_RestApi(object):
             R_RestApi,
         ])
 
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-            agw_stage = cfg.Stage
+        for n, v in cfg.ApiGatewayResource.items():
+            resname = f'ApiGatewayResource{n}'
+            agw_stage = cfg.ApiGatewayRestApi['Base']['Stage']
             r_Resource = ApiGatewayResource(resname, key=v, stage=agw_stage)
 
             for m, w in v['Method'].items():
