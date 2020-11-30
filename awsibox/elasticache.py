@@ -32,7 +32,7 @@ class CCH_Cache(object):
 
         auto_get_props(R_Cache, cfg.CacheCluster['Base'],
                        mapname='CacheClusterBase')
-        
+
         auto_get_props(R_Group, cfg.CacheCluster['Base'],
                        mapname='CacheClusterBase')
         auto_get_props(R_Group, cfg.ReplicationGroup['Base'],

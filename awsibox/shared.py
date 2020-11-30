@@ -379,8 +379,8 @@ def auto_get_props(obj, key, mapname=None, rootdict=None, del_prefix=''):
 
                 prop_obj.append(v)
 
-            # elif prop_class[0].__bases__[0].__name__ == 'AWSHelperFn':
-            #     prop_obj = prop_class[0](**key[obj_propname])
+        # elif prop_class[0].__bases__[0].__name__ == 'AWSHelperFn':
+        #     prop_obj = prop_class[0](**key[obj_propname])
             return prop_obj
 
         elif (isinstance(prop_class, list) and
