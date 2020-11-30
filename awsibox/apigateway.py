@@ -11,14 +11,12 @@ from .route53 import R53RecordApiGatewayDomainName
 class ApiGatewayAccount(agw.Account):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-
         self.CloudWatchRoleArn = get_expvalue('RoleApiGatewayCloudWatch')
 
 
 class ApiGatewayResource(agw.Resource):
     def __init__(self, title, key, stage, **kwargs):
         super().__init__(title, **kwargs)
-
         mapname = f'ApiGatewayStage{stage}ApiGatewayResource'
 
         try:
@@ -37,7 +35,6 @@ class ApiGatewayResource(agw.Resource):
 class ApiGatewayMethod(agw.Method):
     def __init__(self, title, key, basename, name, stage, **kwargs):
         super().__init__(title, **kwargs)
-
         mapname = (f'ApiGatewayStage{stage}'
                    f'ApiGatewayResource{basename}Method{name}')
 
@@ -71,7 +68,6 @@ class ApiGatewayMethod(agw.Method):
 class ApiGatewayStage(agw.Stage):
     def __init__(self, title, name, key, **kwargs):
         super().__init__(title, **kwargs)
-
         self.StageName = name
 
         auto_get_props(self, key)
@@ -88,7 +84,6 @@ class ApiGatewayStage(agw.Stage):
 class ApiGatewayDeployment(agw.Deployment):
     def __init__(self, title, name, key, **kwargs):
         super().__init__(title, **kwargs)
-
         lastresource = next(reversed(list(cfg.ApiGatewayResource)))
         lastmethod = (next(
             reversed(list(cfg.ApiGatewayResource[lastresource]['Method']))))
