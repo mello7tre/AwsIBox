@@ -367,7 +367,6 @@ def auto_get_props(obj, key, mapname=None, rootdict=None, del_prefix=''):
             if obj_propname == 'Tags':
                 prop_obj = []
                 for k, v in key[obj_propname].items():
-                    key = v['Key']
                     v['Value'] = get_endvalue(f'{mapname_obj}{k}Value')
 
                     try:
