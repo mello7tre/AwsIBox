@@ -335,7 +335,7 @@ def import_lambda(name):
         exit(1)
 
 
-def auto_get_props(obj, key=None, mapname=None, rootdict=None):
+def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     if not mapname:
         mapname = obj.title
     if rootdict:
@@ -419,12 +419,6 @@ def auto_get_props(obj, key=None, mapname=None, rootdict=None):
         props = vars(obj)['propnames']
         props.extend(vars(obj)['attributes'])
 
-        # Object class
-        classname = obj.__class__.__name__
-
-        if classname in ['Output', 'Parameter']:
-            mapname = f'{classname}{mapname}'
-
         for propname in key:
             if propname not in props:
                 # NO match between propname and one of obj props
@@ -499,7 +493,7 @@ def auto_build_obj(obj, key):
     classname = obj.__class__
     for resname, resvalue in key.items():
         final_obj = classname(resname)
-        auto_get_props(final_obj, resvalue)
+        auto_get_props(final_obj, f'{final_obj.__class__.__name__}{resname}')
 
         add_obj(final_obj)
 

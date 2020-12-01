@@ -28,7 +28,7 @@ class ApiGatewayResource(agw.Resource):
         except Exception:
             pass
         else:
-            auto_get_props(self, mapname=mapname)
+            auto_get_props(self, mapname)
 
 
 class ApiGatewayMethod(agw.Method):
