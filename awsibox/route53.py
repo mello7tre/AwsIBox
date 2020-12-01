@@ -441,8 +441,8 @@ class R53_HostedZones(object):
                 add_obj(c_Enabled)
 
             # resources
-            r_HostedZone = r53.HostedZone(v['ResourceName'])
-            auto_get_props(r_HostedZone, v, mapname=mapname)
+            r_HostedZone = r53.HostedZone(resname)
+            auto_get_props(r_HostedZone, mapname=mapname)
 
             if n.startswith('Public'):
                 r_HostedZone.Condition = resname

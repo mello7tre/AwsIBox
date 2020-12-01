@@ -28,8 +28,7 @@ except ImportError:
 class ASLaunchTemplateData(ec2.LaunchTemplateData):
     def __init__(self, UserDataApp, **kwargs):
         super().__init__(**kwargs)
-        auto_get_props(self, cfg.LaunchTemplate['Data'],
-                       mapname='LaunchTemplateData')
+        auto_get_props(self, mapname='LaunchTemplateData')
         self.UserData = Base64(Join('', [
             '#!/bin/bash\n',
             'PATH=/opt/aws/bin:$PATH\n',
@@ -927,7 +926,7 @@ class AS_ScalingPoliciesTracking(object):
             else:
                 r_Tracking = aas.ScalingPolicy(resname)
 
-            auto_get_props(r_Tracking, v)
+            auto_get_props(r_Tracking)
             r_Tracking.Condition = resname
 
             add_obj(r_Tracking)
@@ -1107,7 +1106,7 @@ class AS_LaunchTemplate(object):
         self.Tags = Tags
 
 
-class AS_AutoscalingEC2(object):
+class AS_Autoscaling(object):
     def __init__(self, key):
         LoadBalancers = []
         for n in cfg.LoadBalancerClassic:
@@ -1124,8 +1123,7 @@ class AS_AutoscalingEC2(object):
         LaunchTemplate = AS_LaunchTemplate()
 
         R_ASG = asg.AutoScalingGroup('AutoScalingGroup')
-        auto_get_props(R_ASG, cfg.AutoScalingGroup['Base'],
-                       mapname='AutoScalingGroupBase')
+        auto_get_props(R_ASG, mapname=f'{key}Base')
 
         R_ASG.LoadBalancerNames = LoadBalancers
         R_ASG.TargetGroupARNs = TargetGroups
@@ -1160,10 +1158,9 @@ class AS_ScalableTargetECS(object):
 
             # resources
             # trick - use fixed name ScalableTarget to avoid changin too much
-            # code for now, but this way i need param mapname
+            # code for now
             r_ScalableTarget = aas.ScalableTarget('ScalableTarget')
-            auto_get_props(r_ScalableTarget, v,
-                           mapname='ScalableTargetService')
+            auto_get_props(r_ScalableTarget, mapname='ScalableTargetService')
             r_ScalableTarget.ScheduledActions = (
                 AS_ScheduledActionsECS('ScheduledAction').ScheduledActions)
 
@@ -1179,7 +1176,7 @@ class AS_LifecycleHook(object):
 
             # resources
             r_Hook = asg.LifecycleHook(resname)
-            auto_get_props(r_Hook, v)
+            auto_get_props(r_Hook)
 
             add_obj([
                 r_Hook,

@@ -14,7 +14,7 @@ class EFSFileSystem(efs.FileSystem):
         # by defualt do not encrypt and lower cost performaceMode
         self.Encrypted = False
         self.PerformanceMode = 'generalPurpose'
-        auto_get_props(self, key)
+        auto_get_props(self)
 
 
 class EFSMountTarget(efs.MountTarget):

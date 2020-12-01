@@ -24,7 +24,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
 
         name = self.title
         # Look for default values in awsibox/cfg.py [BASE_CFGS]
-        auto_get_props(self, key)
+        auto_get_props(self)
 
         # Use CachePolicyId/OriginRequestPolicyId or legacy mode
         if 'CachePolicyId' in key:
@@ -180,8 +180,7 @@ class CFOriginCLF(clf.Origin):
 class CFOriginEC2ECS(clf.Origin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        auto_get_props(self, cfg.CloudFrontOrigins['Default'],
-                       mapname='CloudFrontOriginsDefault')
+        auto_get_props(self, mapname='CloudFrontOriginsDefault')
 
         cloudfrontorigincustomheaders = []
 
@@ -466,7 +465,7 @@ class CF_CachePolicy(object):
 
             # resources
             r_CachePolicy = clf.CachePolicy(resname)
-            auto_get_props(r_CachePolicy, v)
+            auto_get_props(r_CachePolicy)
             r_CachePolicy.CachePolicyConfig.Name = n
 
             # outputs
@@ -488,7 +487,7 @@ class CF_OriginRequestPolicy(object):
 
             # resources
             r_OriginRequestPolicy = clf.OriginRequestPolicy(resname)
-            auto_get_props(r_OriginRequestPolicy, v)
+            auto_get_props(r_OriginRequestPolicy)
             r_OriginRequestPolicy.OriginRequestPolicyConfig.Name = n
 
             # outputs

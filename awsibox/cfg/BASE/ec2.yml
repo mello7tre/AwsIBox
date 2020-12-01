@@ -1,5 +1,6 @@
 IBoxLoader: !include [
   autoscaling.yml,
+  autoscalinggroup.yml,
   loadbalancing-elb.yml,
   securitygroup.yml,
   alarms.yml,
@@ -30,56 +31,6 @@ ec2:
   Output:
     - UpdateMode:
         Value: Ref('UpdateMode')
-  AutoScalingGroup:
-    - Base:
-        AvailabilityZones: GetAZs()
-        DesiredCapacity: get_endvalue('CapacityDesired')
-        MinSize: get_endvalue('CapacityMin')
-        CreationPolicy:
-          ResourceSignal:
-            Count: get_endvalue('CapacityDesired')
-            Timeout: PT15M
-        HealthCheckGracePeriod: 600
-        HealthCheckType: EC2
-        LaunchTemplate:
-          LaunchTemplateId: Ref('LaunchTemplate')
-          Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
-        MaxSize: get_endvalue('CapacityMax')
-        MetricsCollection:
-          - 0:
-              Granularity: 1Minute
-        Tags:
-          - Name:
-              Key: Name
-              Value: Ref('EnvRole')
-              PropagateAtLaunch: True
-          - EnvStackName:
-              Key: EnvStackName
-              Value: Ref('AWS::StackName')
-              PropagateAtLaunch: True
-        TerminationPolicies: ['OldestInstance']
-        UpdatePolicy:
-          AutoScalingReplacingUpdate:
-            IBOXIF:
-              - WillReplace
-              - Ref('AWS::NoValue')
-            WillReplace: True
-          AutoScalingRollingUpdate:
-            IBOXIF:
-              - RollingUpdate
-              - Ref('AWS::NoValue')
-            MaxBatchSize: 1
-            MinInstancesInService: get_endvalue('CapacityDesired')
-            MinSuccessfulInstancesPercent: 100 
-            PauseTime: PT20M
-            SuspendProcesses:
-              - HealthCheck
-              - ReplaceUnhealthy
-              - AlarmNotification
-              - ScheduledActions
-            WaitOnResourceSignals: True
-          AutoScalingScheduledAction:
-            IgnoreUnmodifiedGroupSizeProperties: True
   MappingClass:
     - EC2:
   AlarmCPUBase: &cpu

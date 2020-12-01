@@ -135,7 +135,7 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
         super().__init__(title, **kwargs)
 
         name = self.title  # Ex. ContainerDefinitions1
-        auto_get_props(self, key)
+        auto_get_props(self)
 
         self.Essential = True
 
@@ -193,8 +193,8 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
             self.Name = Ref('EnvRole')
 
         if 'ContainerPort' in key:
-            PortMapping = ecs.PortMapping()
-            auto_get_props(PortMapping, key, mapname=self.title)
+            PortMapping = ecs.PortMapping(name)
+            auto_get_props(PortMapping)
             if 'HostPort' not in key:
                 PortMapping.HostPort = If(
                     'NetworkModeAwsVpc',
@@ -451,7 +451,7 @@ class ECS_Service(object):
         add_obj(R_SG)
 
         for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
+            mapname = f'{key}{n}'
 
             # trick to avoid changing, for now, current service resource name
             if n == 'Spot':
@@ -460,7 +460,7 @@ class ECS_Service(object):
                 resname = 'Service'
 
             R_Service = ECSService(resname)
-            auto_get_props(R_Service, v, mapname=resname)
+            auto_get_props(R_Service, mapname=mapname)
 
             if cfg.LoadBalancerApplicationExternal:
                 R_Service.LoadBalancers.append(

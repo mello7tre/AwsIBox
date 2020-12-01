@@ -17,7 +17,7 @@ class CRM_Certificate(object):
             # resources
             resname = f'{key}{n}'
             r_Certificate = crm.Certificate(resname)
-            auto_get_props(r_Certificate, v)
+            auto_get_props(r_Certificate)
             r_Certificate.Tags = Tags(Name=n)
 
             add_obj([

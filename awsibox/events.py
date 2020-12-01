@@ -87,11 +87,11 @@ class EVE_EventRules(object):
                     auto_get_props(Target, rootdict=props)
 
                 # add props found in yaml cfg
-                auto_get_props(Target, w, mapname=targetname)
+                auto_get_props(Target)
                 Targets.append(Target)
 
             r_Rule = eve.Rule(resname)
-            auto_get_props(r_Rule, v)
+            auto_get_props(r_Rule)
             r_Rule.Name = Sub('${AWS::StackName}-${EnvRole}-' f'Rule{n}')
             r_Rule.Targets = Targets
 

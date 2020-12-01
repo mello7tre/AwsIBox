@@ -39,7 +39,7 @@ class IAMPolicy(iam.PolicyType):
         super().__init__(title, **kwargs)
 
         self.PolicyName = name
-        auto_get_props(self, key)
+        auto_get_props(self)
         self.PolicyDocument = {
             'Version': '2012-10-17',
         }
@@ -49,7 +49,7 @@ class IAMManagedPolicy(iam.ManagedPolicy):
     def __init__(self, title, key, name, **kwargs):
         super().__init__(title, **kwargs)
 
-        auto_get_props(self, key)
+        auto_get_props(self)
         self.PolicyDocument = {
             'Version': '2012-10-17',
         }
@@ -142,7 +142,7 @@ class IAMRoleIBox(iam.Role):
 class IAMRole(iam.Role):
     def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
-        auto_get_props(self, key)
+        auto_get_props(self)
         self.AssumeRolePolicyDocument = {
             'Statement': [{
                 'Action': 'sts:AssumeRole',
@@ -151,6 +151,28 @@ class IAMRole(iam.Role):
                     key['PrincipalType'] if 'PrincipalType' in key else
                     'Service': [get_endvalue(f'{self.title}Principal')]
                 },
+            }]
+        }
+        self.Path = '/'
+
+
+class IAMRoleUser(iam.Role):
+    def __init__(self, title, key, resnameuser, **kwargs):
+        super().__init__(title, **kwargs)
+        self.Condition = f'{resnameuser}RoleAccount'
+        self.RoleName = key['UserName']
+        self.MaxSessionDuration = 43200
+        self.AssumeRolePolicyDocument = {
+            'Statement': [{
+                'Action': 'sts:AssumeRole',
+                'Condition': {
+                    'StringEquals': {'aws:username': key['UserName']}
+                },
+                'Effect': 'Allow',
+                'Principal': {
+                    'AWS': Sub('arn:aws:iam::${IdAccount}:root',
+                               **{'IdAccount': get_endvalue(
+                                   f'{resnameuser}RoleAccount')})},
             }]
         }
         self.Path = '/'
@@ -306,21 +328,8 @@ class IAM_Users(object):
                             )
 
             # resources
-            r_Role = IAMRole(f'IAMRole{n}', key={'Principal': ''})
-            r_Role.Condition = f'{resname}RoleAccount'
-            r_Role.RoleName = v['UserName']
-            r_Role.MaxSessionDuration = 43200
+            r_Role = IAMRoleUser(f'IAMRole{n}', key=v, resnameuser=resname)
             r_Role.ManagedPolicyArns = ManagedPolicyArns
-            AssumeRoleStatement = (
-                r_Role.AssumeRolePolicyDocument['Statement'][0])
-            AssumeRoleStatement['Condition'] = {
-                'StringEquals': {'aws:username': v['UserName']}
-            }
-            AssumeRoleStatement['Principal'] = {
-                'AWS': Sub(
-                    'arn:aws:iam::${IdAccount}:root',
-                    **{'IdAccount': get_endvalue(f'{resname}RoleAccount')})
-            }
 
             r_User = IAMUser(resname, key=v, name=n)
             r_User.Groups = RoleGroups

@@ -32,7 +32,6 @@ class LambdaPermissionS3(LambdaPermission):
 class LambdaPermissionSNS(LambdaPermission):
     def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
-        auto_get_props(self, key)
         self.Principal = 'sns.amazonaws.com'
         self.FunctionName = eval(key['Endpoint'])
         self.SourceArn = eval(key['TopicArn'])
@@ -71,7 +70,7 @@ class LambdaFunction(lbd.Function):
                     'print("Use Code parameter in yaml '
                     f'or create file lib/lambas/{import_name}.code '
                     'with lambda code to execute.")')
-        auto_get_props(self, key)
+        auto_get_props(self)
         self.FunctionName = Sub('${AWS::StackName}-${EnvRole}-%s' % name)
         if 'Handler' not in key:
             self.Handler = 'index.lambda_handler'
@@ -79,7 +78,7 @@ class LambdaFunction(lbd.Function):
 
         if all(k in key for k in ['SecurityGroupIds', 'SubnetIds']):
             self.VpcConfig = lbd.VPCConfig('')
-            auto_get_props(self.VpcConfig, key, mapname=self.title)
+            auto_get_props(self.VpcConfig, mapname=self.title)
 
         # Variables - skip if atEdge - always set Env, EnvRole
         try:
@@ -279,7 +278,7 @@ class LBD_LayerVersions(object):
 
             # resources
             r_Layer = lbd.LayerVersion(resname)
-            auto_get_props(r_Layer, v)
+            auto_get_props(r_Layer)
             r_LayerPermission = LambdaLayerVersionPermission(
                 f'LambdaLayerPermission{n}')
             r_LayerPermission.LayerVersionArn = Ref(resname)
@@ -305,7 +304,7 @@ class LBD_Permissions(object):
             # resources
             r_Permission = LambdaPermission(resname)
             r_Permission.setup()
-            auto_get_props(r_Permission, v)
+            auto_get_props(r_Permission)
 
             add_obj([
                 r_Permission,
@@ -320,7 +319,7 @@ class LBD_EventSourceMappings(object):
 
             # resources
             r_EventSourceMapping = lbd.EventSourceMapping(resname)
-            auto_get_props(r_EventSourceMapping, v)
+            auto_get_props(r_EventSourceMapping)
 
             add_obj([
                 r_EventSourceMapping,
@@ -335,7 +334,7 @@ class LBD_EventInvokeConfig(object):
 
             # resources
             r_EventInvokeConfig = lbd.EventInvokeConfig(resname)
-            auto_get_props(r_EventInvokeConfig, v)
+            auto_get_props(r_EventInvokeConfig)
 
             add_obj([
                 r_EventInvokeConfig,

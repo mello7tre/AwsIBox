@@ -45,7 +45,7 @@ class SQS_Queues(object):
             resname = f'{key}{n}'
             # resources
             r_Queue = sqs.Queue(resname)
-            auto_get_props(r_Queue, v)
+            auto_get_props(r_Queue)
 
             add_obj([
                 r_Queue,

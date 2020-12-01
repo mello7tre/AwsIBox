@@ -19,15 +19,16 @@ class ApiGatewayResource(agw.Resource):
         super().__init__(title, **kwargs)
         mapname = f'ApiGatewayStage{stage}ApiGatewayResource'
 
-        try:
-            stagekey = cfg.ApiGatewayStage[stage]['ApiGatewayResource']
-        except Exception:
-            stagekey = {'Empty': True}
-
+        auto_get_props(self)
         self.RestApiId = Ref('ApiGatewayRestApi')
 
-        auto_get_props(self, stagekey, mapname=mapname)
-        auto_get_props(self, key)
+        # if stage override ApiGatewayResource specs, get it
+        try:
+            getattr(cfg, mapname)
+        except Exception:
+            pass
+        else:
+            auto_get_props(self, mapname=mapname)
 
 
 class ApiGatewayMethod(agw.Method):
@@ -37,16 +38,15 @@ class ApiGatewayMethod(agw.Method):
                    f'ApiGatewayResource{basename}Method{name}')
 
         try:
-            stagekey = (cfg.ApiGatewayStage[stage]['ApiGatewayResource']
-                        [basename]['Method'][name])
+            getattr(cfg, mapname)
         except Exception:
-            stagekey = {'Empty': True}
+            pass
+        else:
+            auto_get_props(self, mapname=mapname)
 
+        auto_get_props(self)
         self.RestApiId = Ref('ApiGatewayRestApi')
         self.ResourceId = Ref(f'ApiGatewayResource{basename}')
-
-        auto_get_props(self, stagekey, mapname=mapname)
-        auto_get_props(self, key)
 
         # If Uri is a lambda self.Integration.Uri will be like:
         # 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaName.Arn}/invocations'
@@ -66,7 +66,7 @@ class ApiGatewayStage(agw.Stage):
         super().__init__(title, **kwargs)
         self.StageName = name
 
-        auto_get_props(self, key)
+        auto_get_props(self)
 
         self.RestApiId = Ref('ApiGatewayRestApi')
         self.DeploymentId = Ref(f'ApiGatewayDeployment{name}')
@@ -114,7 +114,7 @@ class AGW_DomainName(object):
             resname = f'{key}{n}'
             # resources
             r_Domain = agw.DomainName(resname)
-            auto_get_props(r_Domain, v)
+            auto_get_props(r_Domain)
 
             r_r53 = R53RecordApiGatewayDomainName(
                 f'RecordSet{resname}', resname, MappedDomainName,
@@ -139,7 +139,7 @@ class AGW_BasePathMapping(object):
 
             # resources
             r_Path = agw.BasePathMapping(resname)
-            auto_get_props(r_Path, v)
+            auto_get_props(r_Path)
 
             add_obj(r_Path)
 
@@ -158,7 +158,7 @@ class AGW_UsagePlans(object):
 
             # resources
             r_UsagePlan = agw.UsagePlan(resname)
-            auto_get_props(r_UsagePlan, v)
+            auto_get_props(r_UsagePlan)
 
             add_obj([
                 r_UsagePlan,
@@ -194,7 +194,7 @@ class AGW_ApiKeys(object):
 
             # resources
             r_ApiKey = agw.ApiKey(resname)
-            auto_get_props(r_ApiKey, v)
+            auto_get_props(r_ApiKey)
 
             add_obj([
                 r_ApiKey,
@@ -279,8 +279,7 @@ class AGW_RestApi(object):
     def __init__(self, key):
         # Resources
         R_RestApi = agw.RestApi('ApiGatewayRestApi')
-        auto_get_props(R_RestApi, cfg.ApiGatewayRestApi['Base'],
-                       mapname='ApiGatewayRestApiBase')
+        auto_get_props(R_RestApi, mapname=f'{key}Base')
         R_RestApi.Policy = IAMPolicyApiGatewayPrivate()
 
         try:

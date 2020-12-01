@@ -47,7 +47,7 @@ class CW_Alarms(object):
 
             # resources
             r_Alarm = clw.Alarm(resname)
-            auto_get_props(r_Alarm, v)
+            auto_get_props(r_Alarm)
             if hasattr(r_Alarm, 'Metrics'):
                 r_Alarm.Period = Ref('AWS::NoValue')
             if not hasattr(r_Alarm, 'Condition'):

@@ -10,7 +10,7 @@ from .sqs import SQSQueuePolicy
 class SNSSubscription(sns.SubscriptionResource):
     def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
-        auto_get_props(self, key)
+        auto_get_props(self)
 
 
 class SNSTopic(sns.Topic):

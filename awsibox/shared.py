@@ -430,9 +430,6 @@ def auto_get_props(obj, key=None, mapname=None, rootdict=None):
                 # NO match between propname and one of obj props
                 continue
 
-            if rootdict:
-                propname = propname.replace(obj.title, '')
-
             # key value is a dict, get populated object
             if isinstance(key[propname], dict):
                 value = _get_obj(obj, key, obj.props, propname, mapname)
@@ -446,47 +443,44 @@ def auto_get_props(obj, key=None, mapname=None, rootdict=None):
                 value = get_endvalue(
                     f'{mapname}{propname}')
 
+            key_value = key[propname]
+
+            # Usefull to migrate code in yaml using auto_get_props
+            # get_endvalue is used only when migrating code
+            if (isinstance(key_value, str)
+                    and key_value.startswith('get_endvalue(')):
+                value = eval(key_value)
+
+            # key value == 'IBOXIFNOVALUE' automatically add condition
+            # and wrap value in AWS If Condition
+            if key_value == 'IBOXIFNOVALUE':
+                add_obj(get_condition(f'{mapname}{propname}',
+                                      'not_equals', 'IBOXIFNOVALUE'))
+                value = If(
+                    f'{mapname}{propname}',
+                    value,
+                    Ref('AWS::NoValue'))
+            # trick to wrapper value in If Condition
+            elif (isinstance(key_value, str)
+                    and key_value.startswith('IBOXIF')):
+                if_list = key_value.split()
+                value = If(
+                    if_list[1],
+                    value if propname == if_list[2] else (
+                        eval(if_list[2]) if if_list[2].startswith(
+                            cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[2]),
+                    value if propname == if_list[3] else (
+                        eval(if_list[3]) if if_list[3].startswith(
+                            cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[3]),
+                )
+            # trick to wrapper recursed value in If Condition
             try:
-                key_value = key[propname]
+                if_wrapper = key_value['IBOXIF']
             except Exception:
                 pass
             else:
-                # Usefull to migrate code in yaml using auto_get_props
-                # get_endvalue is used only when migrating code
-                if (isinstance(key_value, str)
-                        and key_value.startswith('get_endvalue(')):
-                    value = eval(key_value)
-
-                # key value == 'IBOXIFNOVALUE' automatically add condition
-                # and wrap value in AWS If Condition
-                if key_value == 'IBOXIFNOVALUE':
-                    add_obj(get_condition(f'{mapname}{propname}',
-                                          'not_equals', 'IBOXIFNOVALUE'))
-                    value = If(
-                        f'{mapname}{propname}',
-                        value,
-                        Ref('AWS::NoValue'))
-                # trick to wrapper value in If Condition
-                elif (isinstance(key_value, str)
-                        and key_value.startswith('IBOXIF')):
-                    if_list = key_value.split()
-                    value = If(
-                        if_list[1],
-                        value if propname == if_list[2] else (
-                            eval(if_list[2]) if if_list[2].startswith(
-                                cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[2]),
-                        value if propname == if_list[3] else (
-                            eval(if_list[3]) if if_list[3].startswith(
-                                cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[3]),
-                    )
-                # trick to wrapper recursed value in If Condition
-                try:
-                    if_wrapper = key_value['IBOXIF']
-                except Exception:
-                    pass
-                else:
-                    condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
-                    value = If(condname, value, eval(if_wrapper[1]))
+                condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
+                value = If(condname, value, eval(if_wrapper[1]))
 
             # Avoid intercepting a Template Condition as a Resource Condition
             if propname == 'Condition' and not isinstance(value, str):

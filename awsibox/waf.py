@@ -79,22 +79,6 @@ class WAFIPSetDescriptors(waf.IPSetDescriptors, wafr.IPSetDescriptors):
         self.Value = Select(int(self.title), get_endvalue(f'{name}Ips'))
 
 
-class WAFFieldToMatch(waf.FieldToMatch, wafr.FieldToMatch):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-        name = self.title
-        auto_get_props(self, key, del_prefix='FieldToMatch')
-
-
-class WAFByteMatchTuples(waf.ByteMatchTuples, wafr.ByteMatchTuples):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-        name = self.title  # Ex. WafByteMatchSets1Matches1
-        auto_get_props(self, key)
-        FieldToMatch = WAFFieldToMatch(self.title, key=key)
-        self.FieldToMatch = FieldToMatch
-
-
 class WAFPredicates(waf.Predicates, wafr.Predicates):
     def __init__(self, title, name, ptype, wtype, **kwargs):
         super().__init__(title, **kwargs)

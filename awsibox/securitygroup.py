@@ -192,7 +192,7 @@ class SG_SecurityGroupIngressesExtra(object):
         for n, v in getattr(cfg, key).items():
             resname = f'{key}{n}'
             r_SGI = SecurityGroupIngress(resname)
-            auto_get_props(r_SGI, v)
+            auto_get_props(r_SGI)
 
             add_obj(r_SGI)
 
