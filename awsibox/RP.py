@@ -345,8 +345,19 @@ def get_stack_type(cfgs):
 
 
 def set_cfg():
-    for n, v in cfg.RP_cmm.items():
-        setattr(cfg, n, v)
+    def RP_to_cfg(key):
+        if hasattr(key, 'items'):
+            for k, v in key.items():
+                setattr(cfg, k, v)
+                # recursively traverse dict
+                # keys name are the concatenation of traversed dict keys
+                if isinstance(v, dict):
+                    for j, w in v.items():
+                        RP_to_cfg({f'{k}{j}': w})
+
+    # for n, v in cfg.RP_cmm.items():
+    #     setattr(cfg, n, v)
+    RP_to_cfg(cfg.RP_cmm)
 
     # set generic attribute based on condition:
 

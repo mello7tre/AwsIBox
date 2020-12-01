@@ -183,17 +183,10 @@ class WAF_ByteMatchSets(object):
             add_obj(WAF_condition(resname, mapname, wtype))
 
             # resources
-            ByteMatchTuples = []
-            for m, w in v['Matches'].items():
-                matchname = f'{mapname}Matches{m}'
-                ByteMatchTuple = WAFByteMatchTuples(matchname, key=w)
+            r_ByteMatchSet = globals()[f'WAF{name}'](resname, name=n)
+            auto_get_props(r_ByteMatchSet, mapname=mapname)
 
-                ByteMatchTuples.append(ByteMatchTuple)
-
-            ByteMatchSet = globals()[f'WAF{name}'](resname, name=n)
-            ByteMatchSet.ByteMatchTuples = ByteMatchTuples
-
-            add_obj(ByteMatchSet)
+            add_obj(r_ByteMatchSet)
 
 
 class WAF_Rules(object):

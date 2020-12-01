@@ -24,12 +24,10 @@ class ApiGatewayResource(agw.Resource):
         except Exception:
             stagekey = {'Empty': True}
 
-        auto_get_props(self, key)
-
         self.RestApiId = Ref('ApiGatewayRestApi')
 
         auto_get_props(self, stagekey, mapname=mapname)
-        auto_get_props(self, key, self.title)
+        auto_get_props(self, key)
 
 
 class ApiGatewayMethod(agw.Method):
@@ -44,13 +42,11 @@ class ApiGatewayMethod(agw.Method):
         except Exception:
             stagekey = {'Empty': True}
 
-        auto_get_props(self, key)
-
         self.RestApiId = Ref('ApiGatewayRestApi')
         self.ResourceId = Ref(f'ApiGatewayResource{basename}')
 
         auto_get_props(self, stagekey, mapname=mapname)
-        auto_get_props(self, key, self.title)
+        auto_get_props(self, key)
 
         # If Uri is a lambda self.Integration.Uri will be like:
         # 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaName.Arn}/invocations'

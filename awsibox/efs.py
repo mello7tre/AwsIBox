@@ -96,8 +96,7 @@ class EFS_FileStorage(object):
             }
 
             r_SGI = SecurityGroupIngress(sginame)
-            auto_get_props(r_SGI, SGIExtra, rootdict=SGIExtra,
-                           mapname='', del_prefix=sginame)
+            auto_get_props(r_SGI, rootdict=SGIExtra)
 
             add_obj([
                 r_File,

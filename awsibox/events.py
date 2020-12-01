@@ -61,7 +61,7 @@ class EVE_EventRules(object):
             need_ecsEventsRole = None
             for m, w in v['Targets'].items():
                 targetname = f'{resname}Targets{m}'
-                Target = eve.Target('')
+                Target = eve.Target(targetname)
 
                 if m.startswith('Lambda'):
                     permname = '%s%s' % (
@@ -84,8 +84,7 @@ class EVE_EventRules(object):
                     need_ecsEventsRole = True
 
                     # add common "fixed" props
-                    auto_get_props(Target, props, rootdict=props,
-                                   mapname='', del_prefix=targetname)
+                    auto_get_props(Target, rootdict=props)
 
                 # add props found in yaml cfg
                 auto_get_props(Target, w, mapname=targetname)

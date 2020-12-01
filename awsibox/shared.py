@@ -335,7 +335,14 @@ def import_lambda(name):
         exit(1)
 
 
-def auto_get_props(obj, key, mapname=None, rootdict=None, del_prefix=''):
+def auto_get_props(obj, key=None, mapname=None, rootdict=None):
+    if not mapname:
+        mapname = obj.title
+    if rootdict:
+        key = rootdict
+        mapname = ''
+    if not key:
+        key = getattr(cfg, mapname)
 
     def _get_obj(obj, key, props, obj_propname, mapname):
         mapname_obj = f'{mapname}{obj_propname}'
@@ -415,20 +422,16 @@ def auto_get_props(obj, key, mapname=None, rootdict=None, del_prefix=''):
         # Object class
         classname = obj.__class__.__name__
 
-        # build up mapname
-        mapname = mapname if mapname is not None else obj.title
         if classname in ['Output', 'Parameter']:
             mapname = f'{classname}{mapname}'
 
-        # iterate over props or key choosing the one with less objects
-        use_key = True if len(props) > len(key) else None
-        for propname in key if use_key else props:
-            obj_propname = (propname.replace(del_prefix, '') if use_key
-                            else f'{del_prefix}{propname}')
-
-            if obj_propname not in (props if use_key else key):
-                # NO match between one of obj props and a key name
+        for propname in key:
+            if propname not in props:
+                # NO match between propname and one of obj props
                 continue
+
+            if rootdict:
+                propname = propname.replace(obj.title, '')
 
             # key value is a dict, get populated object
             if isinstance(key[propname], dict):
@@ -444,7 +447,7 @@ def auto_get_props(obj, key, mapname=None, rootdict=None, del_prefix=''):
                     f'{mapname}{propname}')
 
             try:
-                key_value = key[obj_propname]
+                key_value = key[propname]
             except Exception:
                 pass
             else:
@@ -469,10 +472,10 @@ def auto_get_props(obj, key, mapname=None, rootdict=None, del_prefix=''):
                     if_list = key_value.split()
                     value = If(
                         if_list[1],
-                        value if obj_propname == if_list[2] else (
+                        value if propname == if_list[2] else (
                             eval(if_list[2]) if if_list[2].startswith(
                                 cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[2]),
-                        value if obj_propname == if_list[3] else (
+                        value if propname == if_list[3] else (
                             eval(if_list[3]) if if_list[3].startswith(
                                 cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[3]),
                     )
@@ -486,11 +489,11 @@ def auto_get_props(obj, key, mapname=None, rootdict=None, del_prefix=''):
                     value = If(condname, value, eval(if_wrapper[1]))
 
             # Avoid intercepting a Template Condition as a Resource Condition
-            if obj_propname == 'Condition' and not isinstance(value, str):
+            if propname == 'Condition' and not isinstance(value, str):
                 continue
 
             try:
-                setattr(obj, obj_propname, value)
+                setattr(obj, propname, value)
             except TypeError:
                 pass
 
