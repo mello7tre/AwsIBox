@@ -168,7 +168,7 @@ class WAF_ByteMatchSets(object):
 
             # resources
             r_ByteMatchSet = globals()[f'WAF{name}'](resname, name=n)
-            auto_get_props(r_ByteMatchSet, mapname=mapname)
+            auto_get_props(r_ByteMatchSet, mapname)
 
             add_obj(r_ByteMatchSet)
 

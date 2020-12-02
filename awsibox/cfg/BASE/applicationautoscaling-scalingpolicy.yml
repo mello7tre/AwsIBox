@@ -1,0 +1,78 @@
+APP: &app
+  Enabled: None
+  ScalingTargetId: Ref('ScalableTarget')
+
+APP-Tracking: &apptracking
+  <<: *app
+  PolicyType: TargetTrackingScaling
+
+APP-Step: &appstep
+  <<: *app
+  PolicyType: StepScaling
+  StepScalingPolicyConfiguration:
+    AdjustmentType: ChangeInCapacity
+    MetricAggregationType: Average
+
+APP-TrackingCpu: &apptrackingcpu
+  <<: *apptracking
+  Type: Cpu
+  TargetTrackingScalingPolicyConfiguration:
+    PredefinedMetricSpecification:
+      PredefinedMetricType: 'ECSServiceAverageCPUUtilization'
+    ScaleInCooldown: 60
+    ScaleOutCooldown: 60
+    TargetValue: 80
+
+APP-TrackingsCustom: &apptrackingcustom
+  <<: *apptracking
+  Type: Custom
+  TargetTrackingScalingPolicyConfiguration:
+    CustomizedMetricSpecification:
+      Dimensions: []
+      Namespace: 'AWS/ECS'
+
+APP-StepDOWN: &appstepdown
+  <<: *appstep
+  StepScalingPolicyConfiguration:
+    StepAdjustments:
+      - 0:
+          MetricIntervalLowerBound: -10
+          MetricIntervalUpperBound: 0
+          ScalingAdjustment: -1
+      - 1:
+          MetricIntervalLowerBound: -20
+          MetricIntervalUpperBound: -10
+          ScalingAdjustment: -2
+      - 2:
+          MetricIntervalUpperBound: -20
+          ScalingAdjustment: -2
+
+APP-StepUP: &appstepup
+  <<: *appstep
+  StepScalingPolicyConfiguration:
+    StepAdjustments:
+      - 0:
+          MetricIntervalLowerBound: 0
+          MetricIntervalUpperBound: 10
+          ScalingAdjustment: 1
+      - 1:
+          MetricIntervalLowerBound: 10
+          MetricIntervalUpperBound: 20
+          ScalingAdjustment: 2
+      - 2:
+          MetricIntervalLowerBound: 20
+          ScalingAdjustment: 2
+
+
+global:
+  ApplicationAutoScalingScalingPolicy:
+    - Cpu:
+        <<: *apptrackingcpu
+        PolicyName: ScalingPolicyTrackingsAPPCpu
+    - Custom:
+        <<: *apptrackingcustom
+        PolicyName: ScalingPolicyTrackingsAPPCustom
+    - Down:
+        <<: *appstepdown
+    - Up:
+        <<: *appstepup

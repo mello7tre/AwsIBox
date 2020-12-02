@@ -28,7 +28,7 @@ except ImportError:
 class ASLaunchTemplateData(ec2.LaunchTemplateData):
     def __init__(self, UserDataApp, **kwargs):
         super().__init__(**kwargs)
-        auto_get_props(self, mapname='LaunchTemplateData')
+        auto_get_props(self, 'LaunchTemplateData')
         self.UserData = Base64(Join('', [
             '#!/bin/bash\n',
             'PATH=/opt/aws/bin:$PATH\n',
@@ -53,40 +53,6 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
             ),
             'rm /var/lib/cloud/instance/sem/config_scripts_user\n',
         ]))
-
-
-class ASScalingPolicyStep(asg.ScalingPolicy):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title  # Ex. ScalingPolicyDown
-        self.AdjustmentType = 'ChangeInCapacity'
-        self.AutoScalingGroupName = Ref('AutoScalingGroup')
-        self.EstimatedInstanceWarmup = get_endvalue(
-            f'{name}EstimatedInstanceWarmup')
-        self.PolicyType = 'StepScaling'
-        self.StepAdjustments = [
-            asg.StepAdjustments(
-                MetricIntervalLowerBound=get_endvalue(
-                    f'{name}MetricIntervalLowerBound1'),
-                MetricIntervalUpperBound=get_endvalue(
-                    f'{name}MetricIntervalUpperBound1'),
-                ScalingAdjustment=get_endvalue(
-                    f'{name}ScalingAdjustment1')
-            ),
-            asg.StepAdjustments(
-                MetricIntervalLowerBound=get_endvalue(
-                    f'{name}MetricIntervalLowerBound2'),
-                MetricIntervalUpperBound=get_endvalue(
-                    f'{name}MetricIntervalUpperBound2'),
-                ScalingAdjustment=get_endvalue(
-                    f'{name}ScalingAdjustment2')
-            ),
-            asg.StepAdjustments(
-                ScalingAdjustment=get_endvalue(
-                    f'{name}ScalingAdjustment3')
-            )
-        ]
 
 
 class ASScheduledAction(asg.ScheduledAction):
@@ -126,24 +92,6 @@ class ASScheduledAction(asg.ScheduledAction):
 # E - AUTOSCALING #
 
 
-class ASScalingPolicyStepDown(ASScalingPolicyStep):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-        self.StepAdjustments[2].MetricIntervalUpperBound = get_endvalue(
-            f'{name}MetricIntervalUpperBound3')
-
-
-class ASScalingPolicyStepUp(ASScalingPolicyStep):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-        self.StepAdjustments[2].MetricIntervalLowerBound = get_endvalue(
-            f'{name}MetricIntervalLowerBound3')
-
-
 # S - APPLICATION AUTOSCALING #
 class APPASScalingPolicy(aas.ScalingPolicy):
     def __init__(self, title, **kwargs):
@@ -152,62 +100,6 @@ class APPASScalingPolicy(aas.ScalingPolicy):
         name = self.title
         self.PolicyName = self.title
         self.ScalingTargetId = Ref('ScalableTarget')
-
-
-class APPASScalingPolicyStep(APPASScalingPolicy):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-        self.PolicyType = 'StepScaling'
-        self.StepScalingPolicyConfiguration = (
-            aas.StepScalingPolicyConfiguration(
-                AdjustmentType='ChangeInCapacity',
-                MetricAggregationType='Average',
-                StepAdjustments=[
-                    aas.StepAdjustment(
-                        MetricIntervalLowerBound=get_endvalue(
-                            f'{name}MetricIntervalLowerBound1'),
-                        MetricIntervalUpperBound=get_endvalue(
-                            f'{name}MetricIntervalUpperBound1'),
-                        ScalingAdjustment=get_endvalue(
-                            f'{name}ScalingAdjustment1')
-                        ),
-                    aas.StepAdjustment(
-                        MetricIntervalLowerBound=get_endvalue(
-                            f'{name}MetricIntervalLowerBound2'),
-                        MetricIntervalUpperBound=get_endvalue(
-                            f'{name}MetricIntervalUpperBound2'),
-                        ScalingAdjustment=get_endvalue(
-                            f'{name}ScalingAdjustment2')
-                        ),
-                    aas.StepAdjustment(
-                        ScalingAdjustment=get_endvalue(
-                            f'{name}ScalingAdjustment3')
-                    )
-                ]
-            )
-        )
-
-
-class APPASScalingPolicyStepDown(APPASScalingPolicyStep):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-        step = self.StepScalingPolicyConfiguration.StepAdjustments[2]
-        step.MetricIntervalUpperBound = get_endvalue(
-            f'{name}MetricIntervalUpperBound3')
-
-
-class APPASScalingPolicyStepUp(APPASScalingPolicyStep):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-        step = self.StepScalingPolicyConfiguration.StepAdjustments[2]
-        step.MetricIntervalLowerBound = get_endvalue(
-            f'{name}MetricIntervalLowerBound3')
 
 
 class APPASScheduledAction(aas.ScheduledAction):
@@ -829,117 +721,96 @@ class AS_ScheduledActionsECS(object):
         self.ScheduledActions = ScheduledActions
 
 
-class AS_ScalingPoliciesStepEC2(object):
+class AS_ScalingPolicies(object):
     def __init__(self, key):
-        R_Down = ASScalingPolicyStepDown('ScalingPolicyDown')
-
-        R_Up = ASScalingPolicyStepUp('ScalingPolicyUp')
-
-        add_obj([
-            R_Down,
-            R_Up,
-        ])
-
-
-class AS_ScalingPoliciesStepECS(object):
-    def __init__(self, key):
-        R_Down = APPASScalingPolicyStepDown('ScalingPolicyDown')
-
-        R_Up = APPASScalingPolicyStepUp('ScalingPolicyUp')
-
-        add_obj([
-            R_Down,
-            R_Up,
-        ])
-
-
-class AS_ScalingPoliciesTracking(object):
-    def __init__(self, key):
-        ScalingPolicyTrackings_Out_String = []
-        ScalingPolicyTrackings_Out_Map = {}
+        Out_String = []
+        Out_Map = {}
         for n, v in getattr(cfg, key).items():
             if not ('Enabled' in v and v['Enabled'] is True):
                 continue
 
             resname = f'{key}{n}'
 
-            # Autoscaling
-            if 'TargetTrackingConfiguration' in v:
-                TargetTrackingConfigurationName = (
-                    'TargetTrackingConfiguration')
-                p_type = 'autoscaling'
-            # Application Autoscaling
-            elif 'TargetTrackingScalingPolicyConfiguration' in v:
-                TargetTrackingConfigurationName = (
-                    'TargetTrackingScalingPolicyConfiguration')
-                p_type = 'application_autoscaling'
-
-            basename = f'{resname}{TargetTrackingConfigurationName}'
-
-            # parameters
-            p_Value = Parameter(f'{basename}TargetValue')
-            p_Value.Description = (
-                f'Tracking {n} Value - 0 to disable - '
-                'empty for default based on env/role')
-
-            p_Statistic = Parameter(
-                f'{basename}CustomizedMetricSpecificationStatistic')
-            p_Statistic.Description = (
-                f'Tracking {n} Statistic - 0 to disable - '
-                'empty for default based on env/role')
-
-            add_obj([
-                p_Value,
-                p_Statistic,
-            ])
-
-            #  conditions
-            c_TargetValue = get_condition(
-                resname, 'not_equals', '0', f'{basename}TargetValue')
-
-            add_obj(c_TargetValue)
-
-            # outputs
-            if v['Type'] == 'Cpu' or (
-                    v['Type'] == 'Custom' and
-                    v[TargetTrackingConfigurationName]
-                    ['CustomizedMetricSpecification']
-                    ['MetricName'] == 'CPUUtilization'):
-                # Use Cpu Metric
-                ScalingPolicyTrackings_Out_String.append(
-                        'Cpu${Statistic}:${Cpu}')
-
-                if v['Type'] == 'Custom':
-                    statistic = get_endvalue(
-                        f'{basename}CustomizedMetricSpecificationStatistic')
-                else:
-                    statistic = ''
-
-                ScalingPolicyTrackings_Out_Map.update({
-                    'Statistic': statistic,
-                    'Cpu': get_endvalue(f'{basename}TargetValue'),
-                })
+            # for tracking create param cond and out
+            if v['PolicyType'] == 'TargetTrackingScaling':
+                # Autoscaling
+                if 'TargetTrackingConfiguration' in v:
+                    TargetTrackingConfigurationName = (
+                        'TargetTrackingConfiguration')
+                # Application Autoscaling
+                elif 'TargetTrackingScalingPolicyConfiguration' in v:
+                    TargetTrackingConfigurationName = (
+                        'TargetTrackingScalingPolicyConfiguration')
+    
+                basename = f'{resname}{TargetTrackingConfigurationName}'
+    
+                # parameters
+                p_Value = Parameter(f'{basename}TargetValue')
+                p_Value.Description = (
+                    f'Tracking {n} Value - 0 to disable - '
+                    'empty for default based on env/role')
+    
+                p_Statistic = Parameter(
+                    f'{basename}CustomizedMetricSpecificationStatistic')
+                p_Statistic.Description = (
+                    f'Tracking {n} Statistic - 0 to disable - '
+                    'empty for default based on env/role')
+    
+                add_obj([
+                    p_Value,
+                    p_Statistic,
+                ])
+    
+                #  conditions
+                c_TargetValue = get_condition(
+                    resname, 'not_equals', '0', f'{basename}TargetValue')
+    
+                add_obj(c_TargetValue)
+    
+                # outputs
+                if v['Type'] == 'Cpu' or (
+                        v['Type'] == 'Custom' and
+                        v[TargetTrackingConfigurationName]
+                        ['CustomizedMetricSpecification']
+                        ['MetricName'] == 'CPUUtilization'):
+                    # Use Cpu Metric
+                    ScalingPolicyTrackings_Out_String.append(
+                            'Cpu${Statistic}:${Cpu}')
+    
+                    if v['Type'] == 'Custom':
+                        statistic = get_endvalue(
+                            f'{basename}CustomizedMetricSpecificationStatistic')
+                    else:
+                        statistic = ''
+    
+                    ScalingPolicyTrackings_Out_Map.update({
+                        'Statistic': statistic,
+                        'Cpu': get_endvalue(f'{basename}TargetValue'),
+                    })
 
             # resources
-            if p_type == 'autoscaling':
-                r_Tracking = asg.ScalingPolicy(resname)
+            if key == 'AutoScalingScalingPolicy':
+                r_Policy = asg.ScalingPolicy(resname)
             else:
-                r_Tracking = aas.ScalingPolicy(resname)
+                r_Policy = aas.ScalingPolicy(resname)
 
-            auto_get_props(r_Tracking)
-            r_Tracking.Condition = resname
+            auto_get_props(r_Policy)
 
-            add_obj(r_Tracking)
+            if v['PolicyType'] == 'TargetTrackingScaling':
+                r_Policy.Condition = resname
 
-        # Outputs
-        O_Policy = Output(key)
-        O_Policy.Value = Sub(
-            ','.join(ScalingPolicyTrackings_Out_String),
-            **ScalingPolicyTrackings_Out_Map)
+            add_obj(r_Policy)
 
-        add_obj([
-            O_Policy,
-        ])
+        if Out_String:
+            # Outputs
+            O_Policy = Output(key)
+            O_Policy.Value = Sub(
+                ','.join(Out_String),
+                **Out_Map)
+    
+            add_obj([
+                O_Policy,
+            ])
 
 
 class AS_LaunchTemplate(object):
@@ -1123,18 +994,11 @@ class AS_Autoscaling(object):
         LaunchTemplate = AS_LaunchTemplate()
 
         R_ASG = asg.AutoScalingGroup('AutoScalingGroup')
-        auto_get_props(R_ASG, mapname=f'{key}Base')
+        auto_get_props(R_ASG, f'{key}Base')
 
         R_ASG.LoadBalancerNames = LoadBalancers
         R_ASG.TargetGroupARNs = TargetGroups
         R_ASG.Tags.extend(LaunchTemplate.Tags)
-
-        if cfg.VPCZoneIdentifier == 'SubnetsPublic':
-            R_ASG.VPCZoneIdentifier = Split(
-                ',', get_expvalue('SubnetsPublic'))
-        else:
-            R_ASG.VPCZoneIdentifier = Split(
-                ',', get_expvalue('SubnetsPrivate'))
 
         # Notifications currently are not associeted to "any actions" -
         # now using CW events - this way works with autospotting too
@@ -1160,7 +1024,7 @@ class AS_ScalableTargetECS(object):
             # trick - use fixed name ScalableTarget to avoid changin too much
             # code for now
             r_ScalableTarget = aas.ScalableTarget('ScalableTarget')
-            auto_get_props(r_ScalableTarget, mapname='ScalableTargetService')
+            auto_get_props(r_ScalableTarget, f'{key}Service')
             r_ScalableTarget.ScheduledActions = (
                 AS_ScheduledActionsECS('ScheduledAction').ScheduledActions)
 

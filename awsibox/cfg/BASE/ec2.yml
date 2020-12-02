@@ -1,5 +1,6 @@
 IBoxLoader: !include [
   autoscaling.yml,
+  autoscaling-scalingpolicy.yml,
   autoscalinggroup.yml,
   loadbalancing-elb.yml,
   securitygroup.yml,
@@ -70,14 +71,18 @@ ec2:
           - get_expvalue('IAMPolicyBaseInstance')
           - get_expvalue('IAMPolicySSM')
         Principal: ec2.amazonaws.com
-  ScalingPolicyTrackings:
-    - ASCustom:
+  AutoScalingScalingPolicy:
+    - Custom:
         TargetTrackingConfiguration:
           CustomizedMetricSpecification:
             Dimensions:
               - AutoScaling:
                   Name: AutoScalingGroupName
                   Value: Ref('AutoScalingGroup')
+    - Down:
+        Enabled: True
+    - Up:
+        Enabled: True
   ScheduledAction:
     - Down:
         DesiredSize: CapacityDesired

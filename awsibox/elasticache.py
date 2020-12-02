@@ -30,10 +30,10 @@ class CCH_Cache(object):
         R_Cache = cch.CacheCluster('ElastiCacheCacheCluster')
         R_Group = cch.ReplicationGroup('ElastiCacheReplicationGroup')
 
-        auto_get_props(R_Cache, mapname=f'{key}Base')
+        auto_get_props(R_Cache, f'{key}Base')
 
-        auto_get_props(R_Group, mapname=f'{key}Base')
-        auto_get_props(R_Group, mapname='ReplicationGroupBase')
+        auto_get_props(R_Group, f'{key}Base')
+        auto_get_props(R_Group, 'ReplicationGroupBase')
 
         R53_RecordSetCCH()
 

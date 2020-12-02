@@ -42,7 +42,7 @@ class ApiGatewayMethod(agw.Method):
         except Exception:
             pass
         else:
-            auto_get_props(self, mapname=mapname)
+            auto_get_props(self, mapname)
 
         auto_get_props(self)
         self.RestApiId = Ref('ApiGatewayRestApi')
@@ -279,7 +279,7 @@ class AGW_RestApi(object):
     def __init__(self, key):
         # Resources
         R_RestApi = agw.RestApi('ApiGatewayRestApi')
-        auto_get_props(R_RestApi, mapname=f'{key}Base')
+        auto_get_props(R_RestApi, f'{key}Base')
         R_RestApi.Policy = IAMPolicyApiGatewayPrivate()
 
         try:

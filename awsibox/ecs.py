@@ -460,7 +460,7 @@ class ECS_Service(object):
                 resname = 'Service'
 
             R_Service = ECSService(resname)
-            auto_get_props(R_Service, mapname=mapname)
+            auto_get_props(R_Service, mapname)
 
             if cfg.LoadBalancerApplicationExternal:
                 R_Service.LoadBalancers.append(

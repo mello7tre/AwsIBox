@@ -424,13 +424,12 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 # NO match between propname and one of obj props
                 continue
 
-            # key value is a dict, get populated object
             if isinstance(key[propname], dict):
+                # key value is a dict, get populated object
                 value = _get_obj(obj, key, obj.props, propname, mapname)
-
-            # rootdict is needed for lib/efs.py EFS_FileStorage SGIExtra,
-            # is passed as a dictionary to parse for parameters
             elif rootdict:
+                # rootdict is needed for lib/efs.py EFS_FileStorage SGIExtra,
+                # is passed as a dictionary to parse for parameters
                 value = get_endvalue(
                     f'{mapname}{propname}', fixedvalues=rootdict)
             else:
@@ -480,6 +479,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             if propname == 'Condition' and not isinstance(value, str):
                 continue
 
+            # Finally set obj property
             try:
                 setattr(obj, propname, value)
             except TypeError:

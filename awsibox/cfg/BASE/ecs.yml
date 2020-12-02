@@ -1,5 +1,6 @@
 IBoxLoader: !include [
   autoscaling.yml,
+  applicationautoscaling-scalingpolicy.yml,
   loadbalancing-ecs.yml,
   alarms.yml,
   cloudfront-ios.yml,
@@ -33,13 +34,14 @@ ecs:
   Alarm:
     - CPUHigh:
         <<: *cpu
+        AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyUp')]
     - CPULow:
         <<: *cpu
+        AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyDown')]
   DeploymentConfiguration:
     MaximumPercent: 200
     MinimumHealthyPercent: 100
   HealthCheckGracePeriodSeconds: 0
-  ScalingPolicyUpScalingAdjustment1: IBOXSKIPCLASS
   ListenerRules:
     - 1:
         HostHeader: '*${EnvRole}.*'
@@ -52,10 +54,10 @@ ecs:
         RoleARN: get_expvalue('RoleEC2ContainerServiceAutoscale', '')
         ScalableDimension: 'ecs:service:DesiredCount'
         ServiceNamespace: ecs
-  ScalingPolicyTrackings:
-    - APPCpu:
+  ApplicationAutoScalingScalingPolicy:
+    - Cpu:
         Enabled: True
-    - APPCustom:
+    - Custom:
         TargetTrackingScalingPolicyConfiguration:
           CustomizedMetricSpecification:
             Dimensions:

@@ -35,7 +35,7 @@ global:
       ScaleOutCooldown: 60
       TargetValue: 80
 
-  ASScalingPolicyTrackingsCustom: &apptrackingcustom
+  APPScalingPolicyTrackingsCustom: &apptrackingcustom
     <<: *apptracking
     Type: Custom
     TargetTrackingScalingPolicyConfiguration:
@@ -53,7 +53,6 @@ global:
   Output:
     - Capacity:
         Value: get_subvalue('Desired=${1M},Min=${2M},Max=${3M}',['CapacityDesired', 'CapacityMin', 'CapacityMax'])
-  AssociatePublicIpAddress: False
   Capacity:
     Desired: 1
     Min: 1
@@ -89,4 +88,3 @@ global:
     - APPCustom:
         <<: *apptrackingcustom
         PolicyName: ScalingPolicyTrackingsAPPCustom
-  VPCZoneIdentifier: SubnetsPrivate

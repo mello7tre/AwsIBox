@@ -180,7 +180,7 @@ class CFOriginCLF(clf.Origin):
 class CFOriginEC2ECS(clf.Origin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        auto_get_props(self, mapname='CloudFrontOriginsDefault')
+        auto_get_props(self, 'CloudFrontOriginsDefault')
 
         cloudfrontorigincustomheaders = []
 

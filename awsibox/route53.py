@@ -442,7 +442,7 @@ class R53_HostedZones(object):
 
             # resources
             r_HostedZone = r53.HostedZone(resname)
-            auto_get_props(r_HostedZone, mapname=mapname)
+            auto_get_props(r_HostedZone, mapname)
 
             if n.startswith('Public'):
                 r_HostedZone.Condition = resname

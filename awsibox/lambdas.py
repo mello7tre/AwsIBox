@@ -78,7 +78,7 @@ class LambdaFunction(lbd.Function):
 
         if all(k in key for k in ['SecurityGroupIds', 'SubnetIds']):
             self.VpcConfig = lbd.VPCConfig('')
-            auto_get_props(self.VpcConfig, mapname=self.title)
+            auto_get_props(self.VpcConfig, self.title)
 
         # Variables - skip if atEdge - always set Env, EnvRole
         try:
