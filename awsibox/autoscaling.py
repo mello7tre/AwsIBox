@@ -561,15 +561,6 @@ class ASInitConfigELBApplicationInternal(cfm.InitConfig):
         }
 
 
-class ASNotificationConfiguration(asg.NotificationConfigurations):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.NotificationTypes = [
-            'autoscaling:EC2_INSTANCE_LAUNCH',
-            'autoscaling:EC2_INSTANCE_TERMINATE',
-        ]
-        self.TopicARN = get_expvalue('SNSTopicASGNotification')
 # E - AUTOSCALING #
 
 # ##########################################
@@ -968,16 +959,6 @@ class AS_Autoscaling(object):
         R_ASG.LoadBalancerNames = LoadBalancers
         R_ASG.TargetGroupARNs = TargetGroups
         R_ASG.Tags.extend(LaunchTemplate.Tags)
-
-        # Notifications currently are not associeted to "any actions" -
-        # now using CW events - this way works with autospotting too
-        try:
-            cfg.NotificationConfiguration
-        except Exception as e:
-            pass
-        else:
-            NotificationConfiguration = ASNotificationConfiguration()
-            R_ASG.NotificationConfigurations = [NotificationConfiguration]
 
         add_obj([
             R_ASG,
