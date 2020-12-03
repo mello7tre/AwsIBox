@@ -7,7 +7,7 @@ from .common import *
 # S - PARAMETERS #
 class Parameter(Parameter):
     def __init__(self, title, **kwargs):
-        super(Parameter, self).__init__(title, **kwargs)
+        super().__init__(title, **kwargs)
         self.Type = 'String'
         self.Default = ''
 
@@ -414,10 +414,38 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
             return prop_list
 
+    def _parameter(k, mapname):
+        for n, v in k.items():
+            parameter = Parameter(f'{mapname}{n}')
+            auto_get_props(parameter, f'{mapname}IBOXPARAMETER{n}')
+            add_obj(parameter)
+
+    def _condition(k, mapname):
+        for n, v in k.items():
+            IBOXRESNAME = mapname
+            condition = eval(v)
+            add_obj(condition)
+
     def _populate(obj, key=None, mapname=None):
         # Allowed object properties
         props = vars(obj)['propnames']
         props.extend(vars(obj)['attributes'])
+
+        # Parameters in yaml cfg
+        try:
+            iboxparameter = key['IBOXPARAMETER']
+        except Exception:
+            pass
+        else:
+            _parameter(iboxparameter, mapname)
+
+        # Conditions in yaml cfg
+        try:
+            iboxcondition = key['IBOXCONDITION']
+        except Exception:
+            pass
+        else:
+            _condition(iboxcondition, mapname)
 
         for propname in key:
             if propname not in props:
@@ -475,9 +503,13 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
                 value = If(condname, value, eval(if_wrapper[1]))
 
-            # Avoid intercepting a Template Condition as a Resource Condition
-            if propname == 'Condition' and not isinstance(value, str):
-                continue
+            if propname == 'Condition':
+                # Avoid intercepting Template Condition as Resource Condition
+                if not isinstance(value, str):
+                    continue
+                elif key_value == 'IBOXRESNAME':
+                    # Force Condition value to obj name
+                    value = obj.title
 
             # Finally set obj property
             try:
@@ -488,12 +520,14 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     _populate(obj, key, mapname)
 
 
-def auto_build_obj(obj, key):
+def auto_build_obj(obj, key, name=None):
     props = vars(obj)['propnames']
     classname = obj.__class__
     for resname, resvalue in key.items():
         final_obj = classname(resname)
-        auto_get_props(final_obj, f'{final_obj.__class__.__name__}{resname}')
+        if not name:
+            name = final_obj.__class__.__name__
+        auto_get_props(final_obj, f'{name}{resname}')
 
         add_obj(final_obj)
 

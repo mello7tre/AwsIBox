@@ -1,20 +1,29 @@
-APP: &app
+Base: &base
   Enabled: None
   ScalingTargetId: Ref('ScalableTarget')
 
-APP-Tracking: &apptracking
-  <<: *app
+Tracking: &tracking
+  <<: *base
+  Condition: IBOXRESNAME
+  IBOXPARAMETER:
+    - TargetTrackingScalingPolicyConfigurationCustomizedMetricSpecificationStatistic:
+        Description: '0 to disable - empty for mapped value'
+    - TargetTrackingScalingPolicyConfigurationTargetValue:
+        Description: '0 to disable - empty for mapped value'
+  IBOXCONDITION:
+    - TargetValue:
+        get_condition(IBOXRESNAME, 'not_equals', '0', f'{IBOXRESNAME}TargetTrackingScalingPolicyConfigurationTargetValue')
   PolicyType: TargetTrackingScaling
 
-APP-Step: &appstep
-  <<: *app
+Step: &step
+  <<: *base
   PolicyType: StepScaling
   StepScalingPolicyConfiguration:
     AdjustmentType: ChangeInCapacity
     MetricAggregationType: Average
 
-APP-TrackingCpu: &apptrackingcpu
-  <<: *apptracking
+TrackingCpu: &trackingcpu
+  <<: *tracking
   Type: Cpu
   TargetTrackingScalingPolicyConfiguration:
     PredefinedMetricSpecification:
@@ -23,16 +32,16 @@ APP-TrackingCpu: &apptrackingcpu
     ScaleOutCooldown: 60
     TargetValue: 80
 
-APP-TrackingsCustom: &apptrackingcustom
-  <<: *apptracking
+TrackingsCustom: &trackingcustom
+  <<: *tracking
   Type: Custom
   TargetTrackingScalingPolicyConfiguration:
     CustomizedMetricSpecification:
       Dimensions: []
       Namespace: 'AWS/ECS'
 
-APP-StepDOWN: &appstepdown
-  <<: *appstep
+StepDOWN: &stepdown
+  <<: *step
   StepScalingPolicyConfiguration:
     StepAdjustments:
       - 0:
@@ -47,8 +56,8 @@ APP-StepDOWN: &appstepdown
           MetricIntervalUpperBound: -20
           ScalingAdjustment: -2
 
-APP-StepUP: &appstepup
-  <<: *appstep
+StepUP: &stepup
+  <<: *step
   StepScalingPolicyConfiguration:
     StepAdjustments:
       - 0:
@@ -67,12 +76,10 @@ APP-StepUP: &appstepup
 global:
   ApplicationAutoScalingScalingPolicy:
     - Cpu:
-        <<: *apptrackingcpu
-        PolicyName: ScalingPolicyTrackingsAPPCpu
+        <<: *trackingcpu
     - Custom:
-        <<: *apptrackingcustom
-        PolicyName: ScalingPolicyTrackingsAPPCustom
+        <<: *trackingcustom
     - Down:
-        <<: *appstepdown
+        <<: *stepdown
     - Up:
-        <<: *appstepup
+        <<: *stepup

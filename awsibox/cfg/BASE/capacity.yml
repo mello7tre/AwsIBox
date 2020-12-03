@@ -1,0 +1,15 @@
+global:
+  Parameter:
+    - CapacityDesired:
+        Description: 'Desired Autoscaling Capacity - empty for default based on env/role'
+    - CapacityMin:
+        Description: 'Min Autoscaling Capacity - empty for default based on env/role'
+    - CapacityMax:
+        Description: 'Max Autoscaling Capacity - empty for default based on env/role'
+  Output:
+    - Capacity:
+        Value: get_subvalue('Desired=${1M},Min=${2M},Max=${3M}',['CapacityDesired', 'CapacityMin', 'CapacityMax'])
+  Capacity:
+    Desired: 1
+    Min: 1
+    Max: 1

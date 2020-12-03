@@ -731,7 +731,16 @@ class AS_ScalingPolicies(object):
 
             resname = f'{key}{n}'
 
-            # for tracking create param cond and out
+            # resources
+            if key == 'AutoScalingScalingPolicy':
+                r_Policy = asg.ScalingPolicy(resname)
+            else:
+                r_Policy = aas.ScalingPolicy(resname)
+
+            auto_get_props(r_Policy)
+            add_obj(r_Policy)
+
+            # for tracking create output
             if v['PolicyType'] == 'TargetTrackingScaling':
                 # Autoscaling
                 if 'TargetTrackingConfiguration' in v:
@@ -741,32 +750,9 @@ class AS_ScalingPolicies(object):
                 elif 'TargetTrackingScalingPolicyConfiguration' in v:
                     TargetTrackingConfigurationName = (
                         'TargetTrackingScalingPolicyConfiguration')
-    
+
                 basename = f'{resname}{TargetTrackingConfigurationName}'
-    
-                # parameters
-                p_Value = Parameter(f'{basename}TargetValue')
-                p_Value.Description = (
-                    f'Tracking {n} Value - 0 to disable - '
-                    'empty for default based on env/role')
-    
-                p_Statistic = Parameter(
-                    f'{basename}CustomizedMetricSpecificationStatistic')
-                p_Statistic.Description = (
-                    f'Tracking {n} Statistic - 0 to disable - '
-                    'empty for default based on env/role')
-    
-                add_obj([
-                    p_Value,
-                    p_Statistic,
-                ])
-    
-                #  conditions
-                c_TargetValue = get_condition(
-                    resname, 'not_equals', '0', f'{basename}TargetValue')
-    
-                add_obj(c_TargetValue)
-    
+
                 # outputs
                 if v['Type'] == 'Cpu' or (
                         v['Type'] == 'Custom' and
@@ -774,43 +760,26 @@ class AS_ScalingPolicies(object):
                         ['CustomizedMetricSpecification']
                         ['MetricName'] == 'CPUUtilization'):
                     # Use Cpu Metric
-                    ScalingPolicyTrackings_Out_String.append(
-                            'Cpu${Statistic}:${Cpu}')
-    
+                    Out_String.append('Cpu${Statistic}:${Cpu}')
+
                     if v['Type'] == 'Custom':
                         statistic = get_endvalue(
-                            f'{basename}CustomizedMetricSpecificationStatistic')
+                            f'{basename}'
+                            'CustomizedMetricSpecificationStatistic')
                     else:
                         statistic = ''
-    
-                    ScalingPolicyTrackings_Out_Map.update({
+
+                    Out_Map.update({
                         'Statistic': statistic,
                         'Cpu': get_endvalue(f'{basename}TargetValue'),
                     })
 
-            # resources
-            if key == 'AutoScalingScalingPolicy':
-                r_Policy = asg.ScalingPolicy(resname)
-            else:
-                r_Policy = aas.ScalingPolicy(resname)
-
-            auto_get_props(r_Policy)
-
-            if v['PolicyType'] == 'TargetTrackingScaling':
-                r_Policy.Condition = resname
-
-            add_obj(r_Policy)
-
         if Out_String:
             # Outputs
             O_Policy = Output(key)
-            O_Policy.Value = Sub(
-                ','.join(Out_String),
-                **Out_Map)
-    
-            add_obj([
-                O_Policy,
-            ])
+            O_Policy.Value = Sub(','.join(Out_String), **Out_Map)
+
+            add_obj(O_Policy)
 
 
 class AS_LaunchTemplate(object):

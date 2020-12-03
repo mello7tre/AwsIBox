@@ -1,35 +1,44 @@
-AS: &as
+Base: &base
   Enabled: None
   AutoScalingGroupName: Ref('AutoScalingGroup')
 
-AS-Tracking: &astracking
-  <<: *as
+Tracking: &tracking
+  <<: *base
+  Condition: IBOXRESNAME
+  IBOXPARAMETER:
+    - TargetTrackingConfigurationCustomizedMetricSpecificationStatistic:
+        Description: '0 to disable - empty for mapped value'
+    - TargetTrackingConfigurationTargetValue:
+        Description: '0 to disable - empty for mapped value'
+  IBOXCONDITION:
+    - TargetValue:
+        get_condition(IBOXRESNAME, 'not_equals', '0', f'{IBOXRESNAME}TargetTrackingConfigurationTargetValue')
   EstimatedInstanceWarmup: 120
   PolicyType: TargetTrackingScaling
 
-AS-Step: &asstep
-  <<: *as
+Step: &step
+  <<: *base
   AdjustmentType: ChangeInCapacity
   EstimatedInstanceWarmup: 600
   PolicyType: StepScaling
 
-AS-TrackingCpu: &astrackingcpu
-  <<: *astracking
+TrackingCpu: &trackingcpu
+  <<: *tracking
   Type: Cpu
   TargetTrackingConfiguration:
     PredefinedMetricType: 'ASGAverageCPUUtilization'
     TargetValue: 70
 
-AS-TrackingCustom: &astrackingcustom
-  <<: *astracking
+TrackingCustom: &trackingcustom
+  <<: *tracking
   Type: Custom
   TargetTrackingConfiguration:
     CustomizedMetricSpecification:
       Dimensions: []
       Namespace: 'AWS/EC2'
 
-AS-StepDOWN: &asstepdown
-  <<: *asstep
+StepDOWN: &stepdown
+  <<: *step
   StepAdjustments:
     - 0:
         MetricIntervalLowerBound: -10
@@ -43,8 +52,8 @@ AS-StepDOWN: &asstepdown
         MetricIntervalUpperBound: -20
         ScalingAdjustment: -2
 
-AS-StepUP: &asstepup
-  <<: *asstep
+StepUP: &stepup
+  <<: *step
   StepAdjustments:
     - 0:
         MetricIntervalLowerBound: 0
@@ -62,10 +71,10 @@ AS-StepUP: &asstepup
 global:
   AutoScalingScalingPolicy:
     - Cpu:
-        <<: *astrackingcpu
+        <<: *trackingcpu
     - Custom:
-        <<: *astrackingcustom
+        <<: *trackingcustom
     - Down:
-        <<: *asstepdown
+        <<: *stepdown
     - Up:
-        <<: *asstepup
+        <<: *stepup

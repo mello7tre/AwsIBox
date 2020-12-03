@@ -64,9 +64,8 @@ ecs-cluster:
         ManagedPolicyArns:
           - IBOXADDTOLIST
           - get_expvalue('IAMPolicyEcs')
-  ScalingPolicyUpScalingAdjustment1: IBOXSKIPCLASS
-  ScalingPolicyTrackings:
-    - ASCustom:
+  AutoScalingScalingPolicy:
+    - Custom:
         Enabled: True
         EstimatedInstanceWarmup: 60
         TargetTrackingConfiguration:
@@ -75,6 +74,10 @@ ecs-cluster:
             Statistic: Maximum
             Unit: Percent
           TargetValue: 60
+    - Down:
+        Enabled: None
+    - Up:
+        Enabled: None
   ScheduledAction:
     - Rotate:
         DesiredSize: CapacityDesired

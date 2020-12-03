@@ -1,5 +1,4 @@
 IBoxLoader: !exclude [
-  autoscaling.yml,
   applicationautoscaling-scalingpolicy.yml,
   loadbalancing-ecs.yml,
   securitygroup.yml,

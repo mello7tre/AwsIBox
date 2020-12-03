@@ -1,5 +1,5 @@
 IBoxLoader: !include [
-  autoscaling.yml,
+  capacity.yml,
   autoscaling-scalingpolicy.yml,
   autoscalinggroup.yml,
   loadbalancing-elb.yml,
