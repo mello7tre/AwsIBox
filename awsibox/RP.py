@@ -131,7 +131,7 @@ def gen_dict_extract(cfg, envs, check_root=None):
                     yield result
             if check_root:
                 # If iam here means i do not have yet encountered a envs key in
-                # an IBoxLoader included dict, so skip properties until i find 
+                # an IBoxLoader included dict, so skip properties until i find
                 continue
             # for recursively descending in dict not in RP_base_keys
             # (env/region/envrole/stacktype)
