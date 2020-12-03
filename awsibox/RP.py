@@ -90,7 +90,7 @@ def replace_not_allowed_char(s):
     return int(key) if key.isdigit() else key
 
 
-def gen_dict_extract(cfg, envs):
+def gen_dict_extract(cfg, envs, check_root=None):
     global enforce_list
     if hasattr(cfg, 'items'):
         # This method allow to delete items from a dictionary
@@ -112,6 +112,12 @@ def gen_dict_extract(cfg, envs):
             # for recursively descending in env/region role dict.
             # List is needed for IBoxLoader include list.
             if k in envs and isinstance(v, (dict, list)):
+                if k in ['IBoxLoader', 'IBoxLoaderAfter']:
+                    # IBoxLoader included dict processed by
+                    # gen_dict_extract have check_root = True
+                    kwargs = {'check_root': True}
+                else:
+                    kwargs = {}
                 try:
                     # after descending in env main key
                     # (not the one nested under region) delete key
@@ -121,8 +127,12 @@ def gen_dict_extract(cfg, envs):
                         del cfg[k]
                 except Exception:
                     pass
-                for result in gen_dict_extract(v, envs):
+                for result in gen_dict_extract(v, envs, **kwargs):
                     yield result
+            if check_root:
+                # If iam here means i do not have yet encountered a envs key in
+                # an IBoxLoader included dict, so skip properties until i find 
+                continue
             # for recursively descending in dict not in RP_base_keys
             # (env/region/envrole/stacktype)
             # (final key is the concatenation of traversed dict keys)
@@ -132,7 +142,7 @@ def gen_dict_extract(cfg, envs):
                         yield result
     if isinstance(cfg, list):
         for n in cfg:
-            for result in gen_dict_extract(n, envs):
+            for result in gen_dict_extract(n, envs, check_root=check_root):
                 yield result
 
 
