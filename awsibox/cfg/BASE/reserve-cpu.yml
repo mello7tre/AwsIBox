@@ -9,7 +9,7 @@ IBoxLoader: !exclude [
 reserve-cpu:
   StackType: ecs
   StackName: rsc
-  ScalingPolicyTrackings: IBOXSKIPCLASS
+  ApplicationAutoScalingScalingPolicy: IBOXSKIPCLASS
   ContainerDefinitions:
     - 1:
         Command: ['tail', '-f', '.dockerenv']

@@ -1,6 +1,7 @@
 Base: &base
   Enabled: None
   ScalingTargetId: Ref('ScalableTarget')
+  PolicyName: IBOXRESNAME
 
 Tracking: &tracking
   <<: *base

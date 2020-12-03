@@ -101,6 +101,7 @@ AlarmDiskUsed: &diskused
         Name: AutoScalingGroupName
         Value: Ref('AutoScalingGroup')
 
+
 global:
   AlarmCPUBase: &cpu
     Enabled: None

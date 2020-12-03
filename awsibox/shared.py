@@ -344,6 +344,9 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     if not key:
         key = getattr(cfg, mapname)
 
+    # IBOXRESNAME can be used in yaml
+    IBOXRESNAME = mapname
+
     def _get_obj(obj, key, props, obj_propname, mapname):
         mapname_obj = f'{mapname}{obj_propname}'
 
@@ -420,9 +423,10 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             auto_get_props(parameter, f'{mapname}IBOXPARAMETER{n}')
             add_obj(parameter)
 
-    def _condition(k, mapname):
+    def _condition(k):
+        # this is needed or eval do not find IBOXRESNAME??
+        IBOXRESNAME
         for n, v in k.items():
-            IBOXRESNAME = mapname
             condition = eval(v)
             add_obj(condition)
 
@@ -445,7 +449,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
         except Exception:
             pass
         else:
-            _condition(iboxcondition, mapname)
+            _condition(iboxcondition)
 
         for propname in key:
             if propname not in props:
@@ -503,13 +507,13 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
                 value = If(condname, value, eval(if_wrapper[1]))
 
-            if propname == 'Condition':
+            if key_value == 'IBOXRESNAME':
+                # Force value to obj name
+                value = IBOXRESNAME
+
+            if propname == 'Condition' and not isinstance(value, str):
                 # Avoid intercepting Template Condition as Resource Condition
-                if not isinstance(value, str):
-                    continue
-                elif key_value == 'IBOXRESNAME':
-                    # Force Condition value to obj name
-                    value = obj.title
+                continue
 
             # Finally set obj property
             try:
