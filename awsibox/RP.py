@@ -24,11 +24,12 @@ class Loader(yaml.Loader):
         self.stream = stream
         super(Loader, self).__init__(stream)
         Loader.add_constructor('!include', Loader.include)
-        Loader.add_constructor('!import',  Loader.include)
-        Loader.add_constructor('!exclude',  Loader.exclude)
+        Loader.add_constructor('!import', Loader.include)
+        Loader.add_constructor('!exclude', Loader.exclude)
 
     def exclude(self, node):
         global exclude_list
+        global include_list
         if isinstance(node, yaml.ScalarNode):
             exclude_list.append(node)
         elif isinstance(node, yaml.SequenceNode):
@@ -36,7 +37,10 @@ class Loader(yaml.Loader):
                 exclude_list.append(filename)
 
     def include(self, node):
-        if isinstance(node, yaml.ScalarNode) and node not in exclude_list:
+        if isinstance(node, yaml.ScalarNode) and node not in (
+                exclude_list + include_list):
+            # a yml file can be included only once
+            include_list.append(node)
             return self.extractFile(
                 self.construct_scalar(node), self._root_current)
 
@@ -440,9 +444,11 @@ def build_RP():
     global CFG_FILE_EXT
     global enforce_list
     global exclude_list
+    global include_list
 
     enforce_list = []
     exclude_list = []
+    include_list = []
 
     CFG_FILE_INT = '%s/cfg' % os.path.dirname(os.path.realpath(__file__))
     CFG_FILE_INT = os.path.normpath(CFG_FILE_INT)
@@ -508,9 +514,12 @@ def build_RP():
         print('##########ENFORCED######START#####')
         pprint(enforce_list)
         print('##########ENFORCED######END#######')
-        print('##########EXCLUDE#######START#####')
+        print('##########EXCLUDED#######START#####')
         pprint(exclude_list)
-        print('##########EXCLUDE#######END#######')
+        print('##########EXCLUDED#######END#######')
+        print('##########INCLUDED#######START#####')
+        pprint(include_list)
+        print('##########INCLUDED#######END#######')
 
     try:
         stacktype = RP['cmm']['cmm']['StackType']

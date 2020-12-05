@@ -20,7 +20,7 @@ Base: &base
     Timeout: 6
     UnhealthyThreshold: 3
   LBCookieStickinessPolicy:
-  # need to do it this "BAD" way cause troposphere/elasticloadbalancing.py classes do not specify class inside list
+  # need to do it this "BAD" way cause troposphere/elasticloadbalancing.py classes do not specify class "type" inside list
     If(
       'LoadBalancerCookieSticky',
       [dict([
