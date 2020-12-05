@@ -1,4 +1,5 @@
 IBoxLoader: !include [
+  elasticloadbalancing-loadbalancer.yml,
   lb-hostedzoneid.yml,
   loadbalancing-listener.yml,
   certificate-regional.yml,

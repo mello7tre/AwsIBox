@@ -1,0 +1,52 @@
+Base: &base
+  AccessLoggingPolicy:
+    IBOXIF:
+      - LoadBalancerLog
+      - Ref('AWS::NoValue')
+    EmitInterval: get_endvalue('LoadBalancerLog')
+    Enabled: True
+    S3BucketName: Sub(cfg.BucketLogs)
+    S3BucketPrefix: ''
+  ConnectionDrainingPolicy:
+    Enabled: True
+    Timeout: 5
+  ConnectionSettings:
+    IdleTimeout: 60
+  CrossZone: True
+  HealthCheck:
+    HealthyThreshold: 2
+    Interval: 30
+    Target: get_endvalue('HealthCheckTarget')
+    Timeout: 6
+    UnhealthyThreshold: 3
+  LBCookieStickinessPolicy:
+  # need to do it this "BAD" way cause troposphere/elasticloadbalancing.py classes do not specify class inside list
+    If(
+      'LoadBalancerCookieSticky',
+      [dict([
+        ('PolicyName', 'LBCookieStickinessPolicy'),
+        ('CookieExpirationPeriod', get_endvalue('LoadBalancerCookieSticky')),
+      ])], Ref('AWS::NoValue')
+    )
+  SecurityGroups:
+    - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
+
+External: &external
+  <<: *base
+  Scheme: 'internet-facing'
+  Subnets: Split(',', get_expvalue('SubnetsPublic'))
+
+Internal: &internal
+  <<: *base
+  Scheme: 'internal'
+  Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+
+global:
+  Condition:
+    - LoadBalancerCookieSticky:
+        get_condition('', 'not_equals', 'None', 'LoadBalancerCookieSticky')
+  ElasticLoadBalancingLoadBalancer:
+    - External:
+        <<: *external
+    - Internal:
+        <<: *internal

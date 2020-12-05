@@ -456,7 +456,9 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 # NO match between propname and one of obj props
                 continue
 
-            if isinstance(key[propname], dict):
+            key_value = key[propname]
+
+            if isinstance(key_value, dict):
                 # key value is a dict, get populated object
                 value = _get_obj(obj, key, obj.props, propname, mapname)
             elif rootdict:
@@ -467,8 +469,6 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             else:
                 value = get_endvalue(
                     f'{mapname}{propname}')
-
-            key_value = key[propname]
 
             # Usefull to migrate code in yaml using auto_get_props
             # get_endvalue is used only when migrating code

@@ -18,74 +18,6 @@ from .lambdas import LambdaPermissionLoadBalancing
 elbv2.one_of = my_one_of
 
 
-# S - CLASSIC LOAD BALANCING #
-class ELBListener(elb.Listener):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-        auto_get_props(self)
-        auto_get_props(self, 'ListenerClassic')
-
-
-class ELBLoadBalancer(elb.LoadBalancer):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.AccessLoggingPolicy = If(
-            'LoadBalancerLog',
-            elb.AccessLoggingPolicy(
-                EmitInterval=get_endvalue('LoadBalancerLog'),
-                Enabled=True,
-                S3BucketName=Sub(cfg.BucketLogs),
-                S3BucketPrefix=''
-            ),
-            Ref('AWS::NoValue')
-        )
-        self.ConnectionDrainingPolicy = elb.ConnectionDrainingPolicy(
-            Enabled=True,
-            Timeout=5
-        )
-        self.ConnectionSettings = elb.ConnectionSettings(
-            IdleTimeout=get_endvalue('LoadBalancerIdleTimeout')
-        )
-        self.CrossZone = True
-        self.HealthCheck = elb.HealthCheck(
-            HealthyThreshold=get_endvalue('HealthyThresholdCount'),
-            Interval=get_endvalue('HealthCheckIntervalSeconds'),
-            Target=get_endvalue('HealthCheckTarget'),
-            Timeout=get_endvalue('HealthCheckTimeoutSeconds'),
-            UnhealthyThreshold=get_endvalue('UnhealthyThresholdCount')
-        )
-        self.LBCookieStickinessPolicy = If(
-            'LoadBalancerCookieSticky',
-            [
-                elb.LBCookieStickinessPolicy(
-                    PolicyName='LBCookieStickinessPolicy',
-                    CookieExpirationPeriod=get_endvalue(
-                        'LoadBalancerCookieSticky')
-                )
-            ],
-            Ref('AWS::NoValue')
-        )
-        self.SecurityGroups = [GetAtt('SecurityGroupLoadBalancer', 'GroupId')]
-
-
-class ELBLoadBalancerExternal(ELBLoadBalancer):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Scheme = 'internet-facing'
-        self.Subnets = Split(',', get_expvalue('SubnetsPublic'))
-
-
-class ELBLoadBalancerInternal(ELBLoadBalancer):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Scheme = 'internal'
-        self.Subnets = Split(',', get_expvalue('SubnetsPrivate'))
-# E - CLASSIC LOAD BALANCING #
-
-
 # S - V2 LOAD BALANCING #
 class ELBV2Listener(elbv2.Listener):
     def __init__(self, title, scheme, **kwargs):
@@ -337,7 +269,9 @@ class LB_ListenersEC2(LB_Listeners):
             mapname = f'Listeners{n}'  # Ex Listeners1
 
             if cfg.LoadBalancerClassic:
-                Listener = ELBListener(mapname, key=v)
+                Listener = elb.Listener(mapname)
+                auto_get_props(Listener)
+                auto_get_props(Listener, 'ListenerClassic')
                 Listeners.append(Listener)
 
             for i in cfg.AllowedIp:
@@ -874,28 +808,17 @@ class LB_ElasticLoadBalancingApplication(object):
 class LB_ElasticLoadBalancingClassicEC2(LB_ListenersEC2):
     def __init__(self):
         super().__init__()
-        # Conditions
-        add_obj(get_condition(
-            'LoadBalancerCookieSticky', 'not_equals', 'None'))
+        for n, v in cfg.ElasticLoadBalancingLoadBalancer.items():
+            # resources
+            if n not in cfg.LoadBalancerClassic:
+                continue
+            r_LB = elb.LoadBalancer(f'LoadBalancerClassic{n}')
+            auto_get_props(r_LB,
+                           mapname=f'ElasticLoadBalancingLoadBalancer{n}')
+            r_LB.Listeners = self.Listeners
 
-        # Resources
-        if cfg.LoadBalancerClassicExternal:
-            R_ELBExternal = ELBLoadBalancerExternal(
-                'LoadBalancerClassicExternal')
-            R_ELBExternal.Listeners = self.Listeners
-
-            add_obj(R_ELBExternal)
-
-            cfg.Alarm['BackendExternal5XX']['Enabled'] = True
-
-        if cfg.LoadBalancerClassicInternal:
-            R_ELBInternal = ELBLoadBalancerInternal(
-                'LoadBalancerClassicInternal')
-            R_ELBInternal.Listeners = self.Listeners
-
-            add_obj(R_ELBInternal)
-
-            cfg.Alarm['BackendInternal5XX']['Enabled'] = True
+            add_obj(r_LB)
+            cfg.Alarm[f'Backend{n}5XX']['Enabled'] = True
 
         # Outputs
         O_HealthCheck = Output('HealthCheck')
