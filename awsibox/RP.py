@@ -47,8 +47,9 @@ class Loader(yaml.Loader):
         elif isinstance(node, yaml.SequenceNode):
             result = []
             for filename in self.construct_sequence(node):
-                if filename in exclude_list:
+                if filename in exclude_list + include_list:
                     continue
+                include_list.append(filename)
                 # if including Ext cfg
                 # try to include BASE file from CFG_FILE_INT too
                 if CFG_FILE_EXT in self.stream.name:
@@ -68,8 +69,9 @@ class Loader(yaml.Loader):
         elif isinstance(node, yaml.MappingNode):
             result = {}
             for k, v in self.construct_mapping(node).items():
-                if k in exclude_list:
+                if k in exclude_list + include_list:
                     continue
+                include_list.append(k)
                 result[k] = self.extractFile(v, self._root_current)
             return result
 
