@@ -66,8 +66,21 @@ Classic: &classic
     )
 
 Application: &application
-  LoadBalancerAttributes: []
-
+  LoadBalancerAttributes:
+    - LogEnabled:
+        IBOXIF:
+          - LoadBalancerLog
+          - 
+            Key: access_logs.s3.enabled
+            Value: 'False'
+        Key: access_logs.s3.enabled
+        Value: 'True'
+    - LogBucket:
+        IBOXIF:
+          - LoadBalancerLog
+          - Ref('AWS::NoValue')
+        Key: access_logs.s3.bucket
+        Value: Sub(cfg.BucketLogs)
 
 global:
   ElasticLoadBalancingLoadBalancer:

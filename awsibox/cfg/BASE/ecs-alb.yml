@@ -1,10 +1,7 @@
-IBoxLoader: 
-  - !exclude [
-      elasticloadbalancing-loadbalancer.yml,
-    ]
-  - !include [
-      loadbalancing-elb.yml,
-    ]
+IBoxLoader: !include [
+  elasticloadbalancing-loadbalancer.yml,
+  loadbalancing.yml,
+]
 
 ecs-alb:
   StackType: alb

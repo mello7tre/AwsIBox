@@ -864,6 +864,21 @@ class LB_ElasticLoadBalancingApplicationEC2(object):
         ])
 
 
+class LB_ElasticLoadBalancingApplicationEC2(object):
+    def __init__(self):
+        super().__init__()
+        for n, v in cfg.ElasticLoadBalancingV2LoadBalancer.items():
+            # resources
+            if n not in cfg.LoadBalancerApplication:
+                continue
+            r_LB = elbv2.LoadBalancer(f'LoadBalancerApplication{n}')
+            auto_get_props(r_LB,
+                           mapname=f'ElasticLoadBalancingV2LoadBalancer{n}')
+            add_obj(r_LB)
+
+        LB_ListenersV2EC2()
+
+
 class LB_ElasticLoadBalancingEC2(object):
     def __init__(self, key):
         # Resources

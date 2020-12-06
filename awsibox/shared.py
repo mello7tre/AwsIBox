@@ -385,7 +385,9 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     pass
                 else:
                     del v['IBOXIF']
-                    v = If(if_wrapper[0], v, eval(if_wrapper[1]))
+                    v = If(if_wrapper[0], v,
+                           if_wrapper[1] if isinstance(
+                               if_wrapper[1], dict) else eval(if_wrapper[1]))
 
                 prop_obj.append(v)
 
@@ -413,7 +415,9 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 else:
                     condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
                     prop_list.append(If(
-                        condname, prop_obj, eval(if_wrapper[1])))
+                        condname, prop_obj,
+                        if_wrapper[1] if isinstance(
+                            if_wrapper[1], dict) else eval(if_wrapper[1])))
 
             return prop_list
 
@@ -514,7 +518,9 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 pass
             else:
                 condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
-                value = If(condname, value, eval(if_wrapper[1]))
+                value = If(condname, value,
+                           if_wrapper[1] if isinstance(
+                               if_wrapper[1], dict) else eval(if_wrapper[1]))
 
             if key_value == 'IBOXRESNAME':
                 # Force value to obj name
