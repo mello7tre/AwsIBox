@@ -72,9 +72,9 @@ Application: &application
           - LoadBalancerLog
           - 
             Key: access_logs.s3.enabled
-            Value: 'False'
+            Value: 'false'
         Key: access_logs.s3.enabled
-        Value: 'True'
+        Value: 'true'
     - LogBucket:
         IBOXIF:
           - LoadBalancerLog
