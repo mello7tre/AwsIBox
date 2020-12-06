@@ -419,37 +419,46 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
     def _parameter(k, mapname):
         for n, v in k.items():
-            parameter = Parameter(f'{mapname}{n}')
-            auto_get_props(parameter, f'{mapname}IBOXPARAMETER{n}')
+            n = n.replace('IBOXRESNAME', IBOXRESNAME)
+            parameter = Parameter(n)
+            auto_get_props(parameter, rootdict=v)
             add_obj(parameter)
 
-    def _condition(k):
+    def _condition(k, mapname):
         # this is needed or eval do not find IBOXRESNAME??
         IBOXRESNAME
         for n, v in k.items():
             condition = eval(v)
             add_obj(condition)
 
+    def _output(k, mapname):
+        for n, v in k.items():
+            n = n.replace('IBOXRESNAME', IBOXRESNAME)
+            output = Output(n)
+            auto_get_props(output, rootdict=v)
+            add_obj(output)
+
+    def try_PCO_in_obj(key, mapname=None):
+        func_map = {
+            'IBOXPARAMETER': _parameter,
+            'IBOXCONDITION': _condition,
+            'IBOXOUTPUT': _output,
+        }
+        for pco in list(func_map.keys()):
+            try:
+                k = key[pco]
+            except Exception:
+                pass
+            else:
+                func_map[pco](k, mapname)
+
     def _populate(obj, key=None, mapname=None):
         # Allowed object properties
         props = vars(obj)['propnames']
         props.extend(vars(obj)['attributes'])
 
-        # Parameters in yaml cfg
-        try:
-            iboxparameter = key['IBOXPARAMETER']
-        except Exception:
-            pass
-        else:
-            _parameter(iboxparameter, mapname)
-
-        # Conditions in yaml cfg
-        try:
-            iboxcondition = key['IBOXCONDITION']
-        except Exception:
-            pass
-        else:
-            _condition(iboxcondition)
+        # Parameters, Conditions, Outpus in yaml cfg
+        try_PCO_in_obj(key, mapname)
 
         for propname in key:
             if propname not in props:

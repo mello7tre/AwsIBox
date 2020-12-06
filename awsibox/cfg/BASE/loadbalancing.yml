@@ -1,5 +1,4 @@
 IBoxLoader: !include [
-  elasticloadbalancing-loadbalancer.yml,
   lb-hostedzoneid.yml,
   loadbalancing-listener.yml,
   certificate-regional.yml,
@@ -11,9 +10,6 @@ global:
   HealthCheckPath: None
   HealthCheckTarget: None
   HealthyThresholdCount: 2
-  LoadBalancerAccess: Public
-  LoadBalancerLog: None
-  LoadBalancerHttp2: True
   TargetGroupDeregistrationDelay: '30'
   TargetGroupCookieSticky: None
   TargetGroupProtocol: HTTP

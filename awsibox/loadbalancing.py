@@ -820,26 +820,6 @@ class LB_ElasticLoadBalancingClassicEC2(LB_ListenersEC2):
             add_obj(r_LB)
             cfg.Alarm[f'Backend{n}5XX']['Enabled'] = True
 
-        # Outputs
-        O_HealthCheck = Output('HealthCheck')
-        O_HealthCheck.Value = Sub(
-            'Type=${Type},Target=${Target},Interval=${Interval},'
-            'Timeout=${Timeout},Healthy=${Healthy},Unhealthy=${Unhealthy}',
-            **{
-                'Type': get_endvalue('AutoScalingGroupBaseHealthCheckType'),
-                'Target': get_endvalue('HealthCheckTarget')
-                if cfg.HealthCheckTarget != 'None' else '',
-                'Interval': get_endvalue('HealthCheckIntervalSeconds'),
-                'Timeout': get_endvalue('HealthCheckTimeoutSeconds'),
-                'Healthy': get_endvalue('HealthyThresholdCount'),
-                'Unhealthy': get_endvalue('UnhealthyThresholdCount'),
-            }
-        )
-
-        add_obj([
-            O_HealthCheck,
-        ])
-
 
 class LB_ElasticLoadBalancingApplicationEC2(object):
     def __init__(self):

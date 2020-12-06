@@ -4,7 +4,7 @@ IBoxLoader:
     ]
   - !exclude [
       cloudfront-ios.yml,
-      loadbalancing-elb.yml,
+      loadbalancing-ec2.yml,
     ]
 
 ecs-cluster:

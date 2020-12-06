@@ -12,3 +12,4 @@ global:
   Output:
     - LoadBalancerLog:
         Value: get_endvalue('LoadBalancerLog')
+LoadBalancerLog: None

@@ -1,0 +1,4 @@
+IBoxLoader: !include [
+  loadbalancing.yml,
+  elasticloadbalancing-loadbalancer.yml,
+]

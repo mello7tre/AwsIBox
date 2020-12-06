@@ -1,4 +1,40 @@
 Base: &base
+  IBOXPARAMETER:
+    - LoadBalancerLog:
+        Description: 'None to disable - empty for mapped value - for ELBClassic Value is used for EmitInterval too'
+  IBOXCONDITION:
+    - LoadBalancerLog:
+        get_condition('LoadBalancerLog', 'not_equals', 'None', 'LoadBalancerLog')
+    - LoadBalancerCookieSticky:
+        get_condition('LoadBalancerCookieSticky', 'not_equals', 'None', 'LoadBalancerCookieSticky')
+  IBOXOUTPUT:
+    - HealthCheck:
+        Value:
+          get_subvalue(
+            'Type=${1M},Target=${2M},Interval=${3M},Timeout=${4M},Healthy=${5M},Unhealthy=${6M}',
+            [
+              'AutoScalingGroupBaseHealthCheckType',
+              'HealthCheckTarget',
+              'HealthCheckIntervalSeconds',
+              'HealthCheckTimeoutSeconds',
+              'HealthyThresholdCount',
+              'UnhealthyThresholdCount'])
+    - LoadBalancerLog:
+        Value: get_endvalue('LoadBalancerLog')
+  SecurityGroups:
+    - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
+
+External: &external
+  <<: *base
+  Scheme: 'internet-facing'
+  Subnets: Split(',', get_expvalue('SubnetsPublic'))
+
+Internal: &internal
+  <<: *base
+  Scheme: 'internal'
+  Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+
+Classic: &classic
   AccessLoggingPolicy:
     IBOXIF:
       - LoadBalancerLog
@@ -14,11 +50,11 @@ Base: &base
     IdleTimeout: 60
   CrossZone: True
   HealthCheck:
-    HealthyThreshold: 2
-    Interval: 30
+    HealthyThreshold: get_endvalue('HealthyThresholdCount')
+    Interval: get_endvalue('HealthCheckIntervalSeconds')
     Target: get_endvalue('HealthCheckTarget')
-    Timeout: 6
-    UnhealthyThreshold: 3
+    Timeout: get_endvalue('HealthCheckTimeoutSeconds')
+    UnhealthyThreshold: get_endvalue('UnhealthyThresholdCount')
   LBCookieStickinessPolicy:
   # need to do it this "BAD" way cause troposphere/elasticloadbalancing.py classes do not specify class "type" inside list
     If(
@@ -28,25 +64,25 @@ Base: &base
         ('CookieExpirationPeriod', get_endvalue('LoadBalancerCookieSticky')),
       ])], Ref('AWS::NoValue')
     )
-  SecurityGroups:
-    - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
 
-External: &external
-  <<: *base
-  Scheme: 'internet-facing'
-  Subnets: Split(',', get_expvalue('SubnetsPublic'))
+Application: &application
+  LoadBalancerAttributes: []
 
-Internal: &internal
-  <<: *base
-  Scheme: 'internal'
-  Subnets: Split(',', get_expvalue('SubnetsPrivate'))
 
 global:
-  Condition:
-    - LoadBalancerCookieSticky:
-        get_condition('', 'not_equals', 'None', 'LoadBalancerCookieSticky')
   ElasticLoadBalancingLoadBalancer:
     - External:
+        <<: *classic
         <<: *external
     - Internal:
+        <<: *classic
         <<: *internal
+  ElasticLoadBalancingV2LoadBalancer:
+    - External:
+        <<: *application
+        <<: *external
+    - Internal:
+        <<: *application
+        <<: *internal
+  LoadBalancerLog: None
+  LoadBalancerHttp2: True

@@ -1,14 +1,10 @@
 IBoxLoader: !include [
-  capacity.yml,
-  autoscaling-scalingpolicy.yml,
   autoscalinggroup.yml,
-  loadbalancing-elb.yml,
+  loadbalancing-ec2.yml,
   securitygroup.yml,
   alarms.yml,
   cloudfront-ios.yml,
   parameterstore.yml,
-  imageid-ec2.yml,
-  launchtemplate.yml,
 ]
 
 ec2:

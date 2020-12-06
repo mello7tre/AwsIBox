@@ -6,9 +6,9 @@ Tracking: &tracking
   <<: *base
   Condition: IBOXRESNAME
   IBOXPARAMETER:
-    - TargetTrackingConfigurationCustomizedMetricSpecificationStatistic:
+    - IBOXRESNAMETargetTrackingConfigurationCustomizedMetricSpecificationStatistic:
         Description: '0 to disable - empty for mapped value'
-    - TargetTrackingConfigurationTargetValue:
+    - IBOXRESNAMETargetTrackingConfigurationTargetValue:
         Description: '0 to disable - empty for mapped value'
   IBOXCONDITION:
     - TargetValue:

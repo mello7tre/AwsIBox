@@ -1,3 +1,11 @@
+IBoxLoader: !include [
+  capacity.yml,
+  imageid-ec2.yml,
+  launchtemplate.yml,
+  autoscaling-scalingpolicy.yml,
+]
+
+
 global:
   AutoScalingGroup:
     - Base:

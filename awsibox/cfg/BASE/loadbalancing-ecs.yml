@@ -25,3 +25,4 @@ global:
         Value: get_endvalue('LoadBalancerApplication', nolist=True)
     - ListenerLoadBalancer:
         Value: get_subvalue('HttpPort=${1M},HttpsPort=${2M}', ['ListenerLoadBalancerHttpPort', 'ListenerLoadBalancerHttpsPort'])
+  LoadBalancerAccess: Public
