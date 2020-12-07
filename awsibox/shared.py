@@ -79,63 +79,62 @@ def do_no_override(action):
         cfg.no_override = False
 
 
-def _get_value(param, fixedvalues, strout, nolist, issub):
-    # Its not pythonic, but it's only way to avoid circular import problems
-    from .securitygroup import SG_SecurityGroupsTSK
-
-    # set default if not defined
-    if not fixedvalues:
-        fixedvalues = cfg.fixedvalues
-
-    # if param in fixedvalues means its value do not changes
-    # based on Env/Region so hardcode the value in json, ...
-    if param in fixedvalues:
-        value = fixedvalues[param]
-        # check if value start with method and use eval to run code
-        if isinstance(value, list):
-            value = [
-                eval(r) if r.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
-                else r for r in value
-            ]
-        if isinstance(value, str):
-            value = (
-                eval(value.replace('\n', ''))
-                if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
-                else value)
-    # ... otherway use mapping
-    else:
-        value = FindInMap(Ref('EnvShort'), Ref('AWS::Region'), param)
-
-    if strout is True and isinstance(value, int):
-        value = str(value)
-
-    if nolist is True and isinstance(value, list):
-        value = ','.join(value)
-
-    if issub:
-        value = Sub(value)
-
-    return value
-
-
-def _get_overridevalue(param, value, condname=None):
-    if param not in cfg.Parameters and condname in cfg.Parameters:
-        param = condname
-
-    if (cfg.no_override is False and param in cfg.Parameters and not
-            param.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
-        override_value = If(f'{param}Override', Ref(param), value)
-    else:
-        override_value = value
-
-    return override_value
-
-
 def get_endvalue(param, ssm=False, condition=False, nocondition=False,
                  nolist=False, inlist=False, split=False, issub=False,
-                 strout=False, fixedvalues=None, mapinlist=False):
+                 strout=False, fixedvalues=None, mapinlist=False,
+                 resname=None):
+    if not fixedvalues:
+        # set default if not defined
+        fixedvalues = cfg.fixedvalues
+ 
+    def _get_overridevalue(param, value, condname=None):
+        if param not in cfg.Parameters and condname in cfg.Parameters:
+            param = condname
+        if (cfg.no_override is False and param in cfg.Parameters and not
+                param.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)):
+            override_value = If(f'{param}Override', Ref(param), value)
+        else:
+            override_value = value
+    
+        return override_value
 
-    value = _get_value(param, fixedvalues, strout, nolist, issub)
+    def _get_value():
+        # Its not pythonic, but it's only way to avoid circular import problems
+        from .securitygroup import SG_SecurityGroupsTSK
+   
+        if resname:
+            IBOXRESNAME = resname
+        # if param in fixedvalues means its value do not changes
+        # based on Env/Region so hardcode the value in json, ...
+        if param in fixedvalues:
+            value = fixedvalues[param]
+            # check if value start with method and use eval to run code
+            if isinstance(value, list):
+                value = [
+                    eval(r) if r.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
+                    else r for r in value
+                ]
+            if isinstance(value, str):
+                value = (
+                    eval(value.replace('\n', ''))
+                    if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
+                    else value)
+        # ... otherway use mapping
+        else:
+            value = FindInMap(Ref('EnvShort'), Ref('AWS::Region'), param)
+    
+        if strout is True and isinstance(value, int):
+            value = str(value)
+    
+        if nolist is True and isinstance(value, list):
+            value = ','.join(value)
+    
+        if issub:
+            value = Sub(value)
+    
+        return value
+
+    value = _get_value()
 
     if mapinlist is not False:
         value = Select(mapinlist, value)
@@ -344,9 +343,6 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     if not key:
         key = getattr(cfg, mapname)
 
-    # IBOXRESNAME can be used in yaml
-    IBOXRESNAME = mapname
-
     def _get_obj(obj, key, props, obj_propname, mapname):
         mapname_obj = f'{mapname}{obj_propname}'
 
@@ -421,73 +417,80 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
             return prop_list
 
-    def _parameter(k, mapname):
-        for n, v in k.items():
-            n = n.replace('IBOXRESNAME', IBOXRESNAME)
-            parameter = Parameter(n)
-            auto_get_props(parameter, rootdict=v)
-            add_obj(parameter)
-
-    def _condition(k, mapname):
-        # this is needed or eval do not find IBOXRESNAME??
-        IBOXRESNAME
-        for n, v in k.items():
-            condition = eval(v)
-            add_obj(condition)
-
-    def _output(k, mapname):
-        for n, v in k.items():
-            n = n.replace('IBOXRESNAME', IBOXRESNAME)
-            output = Output(n)
-            auto_get_props(output, rootdict=v)
-            add_obj(output)
-
-    def try_PCO_in_obj(key, mapname=None):
-        func_map = {
-            'IBOXPARAMETER': _parameter,
-            'IBOXCONDITION': _condition,
-            'IBOXOUTPUT': _output,
-        }
-        for pco in list(func_map.keys()):
-            try:
-                k = key[pco]
-            except Exception:
-                pass
-            else:
-                func_map[pco](k, mapname)
 
     def _populate(obj, key=None, mapname=None):
+        # IBOXRESNAME can be used in yaml
+        IBOXRESNAME = obj.title
+
+        def _try_PCO_in_obj(key):
+            def _parameter(k):
+                for n, v in k.items():
+                    n = n.replace('IBOXRESNAME', IBOXRESNAME)
+                    parameter = Parameter(n)
+                    auto_get_props(parameter, rootdict=v)
+                    add_obj(parameter)
+        
+            def _condition(k):
+                # this is needed or eval do not find IBOXRESNAME??
+                IBOXRESNAME
+                for n, v in k.items():
+                    condition = eval(v)
+                    add_obj(condition)
+        
+            def _output(k):
+                for n, v in k.items():
+                    n = n.replace('IBOXRESNAME', IBOXRESNAME)
+                    output = Output(n)
+                    auto_get_props(output, rootdict=v)
+                    add_obj(output)
+    
+            func_map = {
+                'IBOXPARAMETER': _parameter,
+                'IBOXCONDITION': _condition,
+                'IBOXOUTPUT': _output,
+            }
+            for pco in list(func_map.keys()):
+                try:
+                    k = key[pco]
+                except Exception:
+                    pass
+                else:
+                    func_map[pco](k)
+
         # Allowed object properties
         props = vars(obj)['propnames']
         props.extend(vars(obj)['attributes'])
 
         # Parameters, Conditions, Outpus in yaml cfg
-        try_PCO_in_obj(key, mapname)
+        _try_PCO_in_obj(key)
 
         for propname in key:
             if propname not in props:
                 # NO match between propname and one of obj props
                 continue
-
             key_value = key[propname]
 
+            # set value
             if isinstance(key_value, dict):
                 # key value is a dict, get populated object
                 value = _get_obj(obj, key, obj.props, propname, mapname)
+            elif key_value == 'IBOXRESNAME':
+                # Force value to obj name
+                value = IBOXRESNAME
             elif rootdict:
                 # rootdict is needed for lib/efs.py EFS_FileStorage SGIExtra,
                 # is passed as a dictionary to parse for parameters
                 value = get_endvalue(
-                    f'{mapname}{propname}', fixedvalues=rootdict)
+                    f'{mapname}{propname}', fixedvalues=rootdict,
+                    resname=IBOXRESNAME)
+            elif (isinstance(key_value, str)
+                    and key_value.startswith('get_endvalue(')):
+                # Usefull to migrate code in yaml using auto_get_props
+                # get_endvalue is used only when migrating code
+                value = eval(key_value)
             else:
                 value = get_endvalue(
-                    f'{mapname}{propname}')
-
-            # Usefull to migrate code in yaml using auto_get_props
-            # get_endvalue is used only when migrating code
-            if (isinstance(key_value, str)
-                    and key_value.startswith('get_endvalue(')):
-                value = eval(key_value)
+                    f'{mapname}{propname}', resname=IBOXRESNAME)
 
             # key value == 'IBOXIFNOVALUE' automatically add condition
             # and wrap value in AWS If Condition
@@ -521,10 +524,6 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 value = If(condname, value,
                            if_wrapper[1] if isinstance(
                                if_wrapper[1], dict) else eval(if_wrapper[1]))
-
-            if key_value == 'IBOXRESNAME':
-                # Force value to obj name
-                value = IBOXRESNAME
 
             if propname == 'Condition' and not isinstance(value, str):
                 # Avoid intercepting Template Condition as Resource Condition

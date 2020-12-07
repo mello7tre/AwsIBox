@@ -1,0 +1,82 @@
+Base: &base
+  HealthCheckIntervalSeconds: get_endvalue('HealthCheckIntervalSeconds')
+  HealthCheckTimeoutSeconds: get_endvalue('HealthCheckTimeoutSeconds')
+  HealthCheckPath: get_endvalue('HealthCheckPath')
+  HealthyThresholdCount: get_endvalue('HealthyThresholdCount')
+  UnhealthyThresholdCount: get_endvalue('UnhealthyThresholdCount')
+  TargetGroupAttributes:
+    - DeregistrationDelay:
+        Key: 'deregistration_delay.timeout_seconds'
+        Value: get_endvalue('TargetGroupDeregistrationDelay')
+    - GroupCookieSticky:
+        Key: 'stickiness.enabled'
+        Value: If('TargetGroupCookieSticky', 'true', 'false')
+    - CookieDuration:
+        IBOXIF:
+          - TargetGroupCookieSticky
+          - Ref('AWS::NoValue')
+        Key: 'stickiness.lb_cookie.duration_seconds'
+        Value: get_endvalue('TargetGroupCookieSticky')
+  Protocol: get_endvalue('TargetGroupProtocol')
+  VpcId: get_expvalue('VpcId')
+
+EC2: &ec2
+  <<: *base
+  IBOXOUTPUT:
+    - HealthCheck:
+        Value:
+          get_subvalue(
+            'Type=${1M},Path=${2M},Interval=${3M},Timeout=${4M},Healthy=${5M},Unhealthy=${6M}',
+            [
+              'AutoScalingGroupBaseHealthCheckType',
+              'HealthCheckPath',
+              'HealthCheckIntervalSeconds',
+              'HealthCheckTimeoutSeconds',
+              'HealthyThresholdCount',
+              'UnhealthyThresholdCount'])
+  Port: get_endvalue('Listeners1InstancePort')
+
+ECS: &ecs
+  <<: *base
+  IBOXCONDITION:
+    - LoadBalancerPublic:
+        get_condition('LoadBalancerPublic', 'equals', 'Public', 'LoadBalancerAccess')
+  IBOXOUTPUT:
+    - HealthCheck:
+        Value:
+          get_subvalue(
+            'Path=${1M},Interval=${2M},Timeout=${3M},Healthy=${4M},Unhealthy=${5M}',
+            [
+              'HealthCheckPath',
+              'HealthCheckIntervalSeconds',
+              'HealthCheckTimeoutSeconds',
+              'HealthyThresholdCount',
+              'UnhealthyThresholdCount'])
+    - LoadBalancerAccess:
+        Value: get_endvalue('LoadBalancerAccess')
+    - LoadBalancerApplication:
+        Value: get_endvalue('LoadBalancerApplication', nolist=True)
+    - ListenerLoadBalancer:
+        Value: get_subvalue('HttpPort=${1M},HttpsPort=${2M}', ['ListenerLoadBalancerHttpPort', 'ListenerLoadBalancerHttpsPort'])
+  Port: get_endvalue('ContainerDefinitions1ContainerPort')
+  TargetType: If('NetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))
+
+ALB: &alb
+  Targets:
+    - ServiceUnavailable:
+        Id: get_expvalue(f'LambdaServiceUnavailableArn')
+  TargetType: lambda
+
+
+global:
+  Condition:
+    - TargetGroupCookieSticky:
+        get_condition('', 'not_equals', 'None', 'TargetGroupCookieSticky')
+  ElasticLoadBalancingV2TargetGroup:
+    - EC2: *ec2
+    - ECS: *ecs
+    - ALB: *alb
+  LoadBalancerAccess: Public
+  TargetGroupDeregistrationDelay: '30'
+  TargetGroupCookieSticky: None
+  TargetGroupProtocol: HTTP

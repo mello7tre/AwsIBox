@@ -1,6 +1,5 @@
 IBoxLoader: !include [
-  elasticloadbalancing-loadbalancer.yml,
-  loadbalancing.yml,
+  loadbalancing-elb.yml,
 ]
 
 ecs-alb:

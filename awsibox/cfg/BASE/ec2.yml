@@ -1,6 +1,6 @@
 IBoxLoader: !include [
   autoscalinggroup.yml,
-  loadbalancing-ec2.yml,
+  loadbalancing-elb.yml,
   securitygroup.yml,
   alarms.yml,
   cloudfront-ios.yml,

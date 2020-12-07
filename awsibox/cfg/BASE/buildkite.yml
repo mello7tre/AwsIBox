@@ -1,14 +1,15 @@
 IBoxLoader:
   - !exclude
     - cloudfront-ios.yml
-    - loadbalancing-ecs.yml
+    - loadbalancing.yml
+    - applicationautoscaling-scalingpolicy.yml
   - !include
     - iampolicy-update_stack.yml
 
 buildkite:
   StackType: ecs
   StackName: bkt
-  ScalingPolicyTrackings: IBOXSKIPCLASS
+  ApplicationAutoScalingScalingPolicy: IBOXSKIPCLASS
   Capacity:
     Desired: 3
     Max: 4

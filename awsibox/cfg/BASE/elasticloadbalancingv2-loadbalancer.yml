@@ -1,0 +1,42 @@
+Base: &base
+  LoadBalancerAttributes:
+    - LogEnabled:
+        IBOXIF:
+          - LoadBalancerLog
+          - 
+            Key: access_logs.s3.enabled
+            Value: 'false'
+        Key: access_logs.s3.enabled
+        Value: 'true'
+    - LogBucket:
+        IBOXIF:
+          - LoadBalancerLog
+          - Ref('AWS::NoValue')
+        Key: access_logs.s3.bucket
+        Value: Sub(cfg.BucketLogs)
+    - LogPrefix:
+        IBOXIF:
+          - LoadBalancerLog
+          - Ref('AWS::NoValue')
+        Key: access_logs.s3.prefix
+        Value: Sub('${EnvRole}.${AWS::StackName}')
+    - Http2:
+        IBOXIF:
+          - LoadBalancerHttp2
+          - Ref('AWS::NoValue')
+        Key: routing.http2.enabled
+        Value: get_endvalue('LoadBalancerHttp2')
+  SecurityGroups:
+    - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
+
+
+global:
+  ElasticLoadBalancingV2LoadBalancer:
+    - External:
+        <<: *base
+        Scheme: 'internet-facing'
+        Subnets: Split(',', get_expvalue('SubnetsPublic'))
+    - Internal:
+        <<: *base
+        Scheme: 'internal'
+        Subnets: Split(',', get_expvalue('SubnetsPrivate'))

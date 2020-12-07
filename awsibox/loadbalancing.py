@@ -42,78 +42,6 @@ class ELBV2ListenerHttps(ELBV2Listener):
         auto_get_props(self, 'ListenerHttps')
 
 
-class ELBV2TargetGroup(elbv2.TargetGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.HealthCheckIntervalSeconds = get_endvalue(
-            'HealthCheckIntervalSeconds')
-        self.HealthCheckTimeoutSeconds = get_endvalue(
-            'HealthCheckTimeoutSeconds')
-        if cfg.HealthCheckPath != 'None':
-            self.HealthCheckPath = get_endvalue(
-                'HealthCheckPath')
-        self.HealthyThresholdCount = get_endvalue(
-            'HealthyThresholdCount')
-        self.UnhealthyThresholdCount = get_endvalue(
-            'UnhealthyThresholdCount')
-        self.TargetGroupAttributes = [
-            elbv2.TargetGroupAttribute(
-                Key='deregistration_delay.timeout_seconds',
-                Value=get_endvalue('TargetGroupDeregistrationDelay')
-            ),
-            elbv2.TargetGroupAttribute(
-                Key='stickiness.enabled',
-                Value=If(
-                    'TargetGroupCookieSticky',
-                    'true',
-                    'false',
-                )
-            ),
-            If(
-                'TargetGroupCookieSticky',
-                elbv2.TargetGroupAttribute(
-                    Key='stickiness.lb_cookie.duration_seconds',
-                    Value=get_endvalue('TargetGroupCookieSticky')
-                ),
-                Ref('AWS::NoValue')
-            )
-        ]
-        self.Protocol = get_endvalue('TargetGroupProtocol')
-        self.VpcId = get_expvalue('VpcId')
-
-
-class ELBV2TargetGroupEC2(ELBV2TargetGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Port = get_endvalue('Listeners1InstancePort')
-
-
-class ELBV2TargetGroupALB(elbv2.TargetGroup):
-    def __init__(self, title, lambda_arn, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Targets = [
-            elbv2.TargetDescription(
-                Id=lambda_arn,
-            )
-        ]
-        self.TargetType = 'lambda'
-
-
-class ELBV2TargetGroupECS(ELBV2TargetGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Port = get_endvalue('ContainerDefinitions1ContainerPort')
-        self.TargetType = If(
-            'NetworkModeAwsVpc',
-            'ip',
-            Ref('AWS::NoValue')
-        )
-
-
 class ELBV2ListernerRuleECS(elbv2.ListenerRule):
     def __init__(self, title, key, index, mapname, scheme, **kwargs):
         super().__init__(title, **kwargs)
@@ -701,42 +629,32 @@ class LB_TargetGroups(object):
             'TargetGroupCookieSticky', 'not_equals', 'None'))
 
 
-class LB_TargetGroupsEC2(LB_TargetGroups):
+class LB_TargetGroupsEC2(object):
     def __init__(self):
-        super().__init__()
-        # Resources
-        if cfg.LoadBalancerApplicationExternal:
-            R_TargetGroup = ELBV2TargetGroupEC2('TargetGroupExternal')
+        for n in ['External', 'Internal']:             
+            # resources                                                         
+            if n not in cfg.LoadBalancerApplication:                            
+                continue                                                        
+            r_TG = elbv2.TargetGroup(f'TargetGroup{n}')            
+            auto_get_props(r_TG,                                                
+                           mapname=f'ElasticLoadBalancingV2TargetGroupEC2')    
+            add_obj(r_TG)                                           
 
-            add_obj(R_TargetGroup)
-
-            cfg.Alarm['TargetEC2External5XX']['Enabled'] = True
-
-        if cfg.LoadBalancerApplicationInternal:
-            R_TargetGroup = ELBV2TargetGroupEC2('TargetGroupInternal')
-
-            add_obj(R_TargetGroup)
-
-            cfg.Alarm['TargetEC2Internal5XX']['Enabled'] = True
+            cfg.Alarm[f'TargetEC2{n}5XX']['Enabled'] = True
 
 
-class LB_TargetGroupsECS(LB_TargetGroups):
+class LB_TargetGroupsECS(object):
     def __init__(self):
-        super().__init__()
-        # Resources
-        if cfg.LoadBalancerApplicationExternal:
-            R_TargetGroup = ELBV2TargetGroupECS('TargetGroupExternal')
+        for n in ['External', 'Internal']:             
+            # resources                                                         
+            if n not in cfg.LoadBalancerApplication:                            
+                continue                                                        
+            r_TG = elbv2.TargetGroup(f'TargetGroup{n}')            
+            auto_get_props(r_TG,                                                
+                           mapname=f'ElasticLoadBalancingV2TargetGroupECS')    
+            add_obj(r_TG)                                           
 
-            add_obj(R_TargetGroup)
-
-            cfg.Alarm['TargetExternal5XX']['Enabled'] = True
-
-        if cfg.LoadBalancerApplicationInternal:
-            R_TargetGroup = ELBV2TargetGroupECS('TargetGroupInternal')
-
-            add_obj(R_TargetGroup)
-
-            cfg.Alarm['TargetInternal5XX']['Enabled'] = True
+            cfg.Alarm[f'Target{n}5XX']['Enabled'] = True
 
 
 class LB_TargetGroupsALB(object):
@@ -745,48 +663,29 @@ class LB_TargetGroupsALB(object):
         lambda_arn = get_expvalue(f'Lambda{lambda_name}Arn')
         perm_name = f'LambdaPermission{lambda_name}LoadBalancerApplication'
 
-        # Resources
-        if cfg.LoadBalancerApplicationExternal:
-            R_TargetGroup = ELBV2TargetGroupALB(
-                'TargetGroupServiceUnavailableExternal', lambda_arn=lambda_arn)
-            R_TargetGroup.Condition = 'LoadBalancerApplicationExternal'
-            R_TargetGroup.DependsOn = f'{perm_name}External'
+        for n in ['External', 'Internal']:             
+            # resources                                                         
+            if n not in cfg.LoadBalancerApplication:                            
+                continue
+            r_TG = elbv2.TargetGroup(f'TargetGroupServiceUnavailable{n}')            
+            auto_get_props(r_TG,
+                mapname=f'ElasticLoadBalancingV2TargetGroupALB')
+            r_TG.DependsOn = f'{perm_name}{n}'
+            r_TG.Condition = f'LoadBalancerApplication{n}'
 
-            R_Permission = LambdaPermissionLoadBalancing(
-                f'{perm_name}External', name=lambda_arn)
+            r_LambdaPermission = LambdaPermissionLoadBalancing(
+                f'{perm_name}{n}', name=lambda_arn)
+            r_LambdaPermission.Condition = f'LoadBalancerApplication{n}'
 
-            R_Permission.Condition = 'LoadBalancerApplicationExternal'
-
-            O_TargetGroup = Output('TargetGroupServiceUnavailableExternal')
-            O_TargetGroup.Condition = 'LoadBalancerApplicationExternal'
-            O_TargetGroup.Value = Ref('TargetGroupServiceUnavailableExternal')
-
-            add_obj([
-                R_TargetGroup,
-                R_Permission,
-                O_TargetGroup,
-            ])
-
-        if cfg.LoadBalancerApplicationInternal:
-            R_TargetGroup = ELBV2TargetGroupALB(
-                'TargetGroupServiceUnavailableInternal', lambda_arn=lambda_arn)
-            R_TargetGroup.Condition = 'LoadBalancerApplicationInternal'
-            R_TargetGroup.DependsOn = f'{perm_name}Internal'
-
-            R_Permission = LambdaPermissionLoadBalancing(
-                f'{perm_name}Internal', name=lambda_arn)
-
-            R_Permission.Condition = 'LoadBalancerApplicationInternal'
-
-            O_TargetGroup = Output('TargetGroupServiceUnavailableInternal')
-            O_TargetGroup.Condition = 'LoadBalancerApplicationInternal'
-            O_TargetGroup.Value = Ref('TargetGroupServiceUnavailableInternal')
+            o_TargetGroup = Output(f'TargetGroupServiceUnavailable{n}')
+            o_TargetGroup.Condition = f'LoadBalancerApplication{n}'
+            o_TargetGroup.Value = Ref(f'TargetGroupServiceUnavailable{n}')
 
             add_obj([
-                R_TargetGroup,
-                R_Permission,
-                O_TargetGroup,
-            ])
+                r_TG,
+                r_LambdaPermission,
+                o_TargetGroup,
+            ])                                           
 
 
 class LB_ElasticLoadBalancingApplication(object):

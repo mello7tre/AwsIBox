@@ -1,10 +1,5 @@
 Base: &base
-  IBOXPARAMETER:
-    - LoadBalancerLog:
-        Description: 'None to disable - empty for mapped value - for ELBClassic Value is used for EmitInterval too'
   IBOXCONDITION:
-    - LoadBalancerLog:
-        get_condition('LoadBalancerLog', 'not_equals', 'None', 'LoadBalancerLog')
     - LoadBalancerCookieSticky:
         get_condition('LoadBalancerCookieSticky', 'not_equals', 'None', 'LoadBalancerCookieSticky')
   IBOXOUTPUT:
@@ -19,22 +14,6 @@ Base: &base
               'HealthCheckTimeoutSeconds',
               'HealthyThresholdCount',
               'UnhealthyThresholdCount'])
-    - LoadBalancerLog:
-        Value: get_endvalue('LoadBalancerLog')
-  SecurityGroups:
-    - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
-
-External: &external
-  <<: *base
-  Scheme: 'internet-facing'
-  Subnets: Split(',', get_expvalue('SubnetsPublic'))
-
-Internal: &internal
-  <<: *base
-  Scheme: 'internal'
-  Subnets: Split(',', get_expvalue('SubnetsPrivate'))
-
-Classic: &classic
   AccessLoggingPolicy:
     IBOXIF:
       - LoadBalancerLog
@@ -64,38 +43,17 @@ Classic: &classic
         ('CookieExpirationPeriod', get_endvalue('LoadBalancerCookieSticky')),
       ])], Ref('AWS::NoValue')
     )
+  SecurityGroups:
+    - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
 
-Application: &application
-  LoadBalancerAttributes:
-    - LogEnabled:
-        IBOXIF:
-          - LoadBalancerLog
-          - 
-            Key: access_logs.s3.enabled
-            Value: 'false'
-        Key: access_logs.s3.enabled
-        Value: 'true'
-    - LogBucket:
-        IBOXIF:
-          - LoadBalancerLog
-          - Ref('AWS::NoValue')
-        Key: access_logs.s3.bucket
-        Value: Sub(cfg.BucketLogs)
 
 global:
   ElasticLoadBalancingLoadBalancer:
     - External:
-        <<: *classic
-        <<: *external
+        <<: *base
+        Scheme: 'internet-facing'
+        Subnets: Split(',', get_expvalue('SubnetsPublic'))
     - Internal:
-        <<: *classic
-        <<: *internal
-  ElasticLoadBalancingV2LoadBalancer:
-    - External:
-        <<: *application
-        <<: *external
-    - Internal:
-        <<: *application
-        <<: *internal
-  LoadBalancerLog: None
-  LoadBalancerHttp2: True
+        <<: *base
+        Scheme: 'internal'
+        Subnets: Split(',', get_expvalue('SubnetsPrivate'))

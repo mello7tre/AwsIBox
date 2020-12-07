@@ -1,6 +1,7 @@
 IBoxLoader: !include [
   lb-hostedzoneid.yml,
   loadbalancing-listener.yml,
+  loadbalancing-targetgroup.yml,
   certificate-regional.yml,
 ]
 
@@ -10,9 +11,6 @@ global:
   HealthCheckPath: None
   HealthCheckTarget: None
   HealthyThresholdCount: 2
-  TargetGroupDeregistrationDelay: '30'
-  TargetGroupCookieSticky: None
-  TargetGroupProtocol: HTTP
   UnhealthyThresholdCount: 3
 
 
