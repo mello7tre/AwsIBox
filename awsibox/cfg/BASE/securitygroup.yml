@@ -1,4 +1,43 @@
+Rule:
+  - Http: &rulehttp
+      IpProtocol: tcp
+      CidrIp: '0.0.0.0/0'
+      FromPort: 80
+      ToPort: 80
+  - Https: &rulehttps
+      IpProtocol: tcp
+      CidrIp: '0.0.0.0/0'
+      FromPort: 443
+      ToPort: 443
+
+ALBExternal: &albexternal
+  IBOXOUTPUT:
+    - IBOXRESNAME:
+        Condition: LoadBalancerApplicationExternal
+        Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')
+        Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+  Condition: 'LoadBalancerApplicationExternal'
+  GroupDescription: Sub('Access to LoadBalancerApplicationExternal ${AWS::StackName}')
+  SecurityGroupIngress:
+    - Http: *rulehttp
+    - Https: *rulehttps 
+
+ALBInternal: &albinternal
+  IBOXOUTPUT:
+    - IBOXRESNAME:
+        Condition: LoadBalancerApplicationInternal
+        Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')
+        Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+  Condition: 'LoadBalancerApplicationInternal'
+  GroupDescription: Sub('Access to LoadBalancerApplicationInternal ${AWS::StackName}')
+  SecurityGroupIngress:
+    - Http: *rulehttp
+
+
 global:
+  SecurityGroup:
+    - ALBExternal: *albexternal
+    - ALBInternal: *albinternal
   AllowedIp:
     - 1:
         Enabled: True

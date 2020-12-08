@@ -3,6 +3,7 @@ IBoxLoader: !include [
   loadbalancing-listener.yml,
   loadbalancing-targetgroup.yml,
   certificate-regional.yml,
+  securitygroup.yml,
 ]
 
 global:

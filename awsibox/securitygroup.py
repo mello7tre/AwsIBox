@@ -7,6 +7,17 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
 
 # S - SECURITY GROUP #
 class SecurityGroup(ec2.SecurityGroup):
+    # troposphere ec2 is quite old and SecurityGroupIngress is only a list
+    # without the obj type, this break auto_get_props, fix it overriding
+    props = {
+        'GroupName': (str, False),
+        'GroupDescription': (str, True),
+        'SecurityGroupEgress': (list, False),
+        'SecurityGroupIngress': ([ec2.SecurityGroupRule], False),
+        'VpcId': (str, False),
+        'Tags': ((Tags, list), False),
+    }
+
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.VpcId = get_expvalue('VpcId')
