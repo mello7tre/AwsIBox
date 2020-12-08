@@ -1,4 +1,11 @@
 Base: &base
+  IBOXPARAMETER:
+    - LoadBalancerHttp2:
+        Description: 'empty for mapped value'
+        AllowedValues: ['', 'true', 'false']
+  IBOXCONDITION:
+    - LoadBalancerHttp2:
+        get_condition('LoadBalancerHttp2', 'not_equals', 'None', 'LoadBalancerHttp2')
   LoadBalancerAttributes:
     - LogEnabled:
         IBOXIF:
@@ -29,14 +36,41 @@ Base: &base
   SecurityGroups:
     - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
 
+ALB: &alb
+  <<: *base
+  IBOXOUTPUT:
+    - IBOXRESNAME:
+        Condition: IBOXRESNAME
+        Value: Ref(IBOXRESNAME)
+        Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+    - IBOXRESNAMEDNS:
+        Condition: IBOXRESNAME
+        Value: GetAtt(IBOXRESNAME, 'DNSName')
+        Export: Export(Sub('%sDNS-${AWS::StackName}' % IBOXRESNAME))
+    - IBOXRESNAMEFullName:
+        Condition: IBOXRESNAME
+        Value: GetAtt(IBOXRESNAME, 'LoadBalancerFullName')
+        Export: Export(Sub('%sFullName-${AWS::StackName}' % IBOXRESNAME))
+  Condition: IBOXRESNAME
+  SecurityGroups:
+    - get_expvalue(f'SecurityGroup{IBOXRESNAME}')
+    - GetAtt(f'SecurityGroup{IBOXRESNAME}', 'GroupId')
+
 
 global:
   ElasticLoadBalancingV2LoadBalancer:
-    - External:
+    - External: &external
         <<: *base
         Scheme: 'internet-facing'
         Subnets: Split(',', get_expvalue('SubnetsPublic'))
-    - Internal:
+    - Internal: &internal
         <<: *base
         Scheme: 'internal'
         Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+  ElasticLoadBalancingV2LoadBalancerALB:
+    - External:
+        <<: *external
+        <<: *alb
+    - Internal:
+        <<: *internal
+        <<: *alb

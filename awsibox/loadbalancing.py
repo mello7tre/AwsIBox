@@ -669,7 +669,7 @@ class LB_TargetGroupsALB(object):
                 continue
             r_TG = elbv2.TargetGroup(f'TargetGroupServiceUnavailable{n}')            
             auto_get_props(r_TG,
-                mapname=f'ElasticLoadBalancingV2TargetGroupALB')
+                           mapname=f'ElasticLoadBalancingV2TargetGroupALB')
             r_TG.DependsOn = f'{perm_name}{n}'
             r_TG.Condition = f'LoadBalancerApplication{n}'
 
@@ -765,7 +765,6 @@ class LB_ElasticLoadBalancingApplicationEC2(object):
 
 class LB_ElasticLoadBalancingApplicationEC2(object):
     def __init__(self):
-        super().__init__()
         for n, v in cfg.ElasticLoadBalancingV2LoadBalancer.items():
             # resources
             if n not in cfg.LoadBalancerApplication:
@@ -792,7 +791,7 @@ class LB_ElasticLoadBalancingEC2(object):
 
 class LB_ElasticLoadBalancingALB(object):
     def __init__(self, key):
-        LB_ElasticLoadBalancingApplication()
+        #LB_ElasticLoadBalancingApplication()
 
         if cfg.LoadBalancerApplicationExternal:
             # Resources
@@ -861,6 +860,28 @@ class LB_ElasticLoadBalancingALB(object):
                 O_ELBDNS,
                 O_ELBFullName,
             ])
+
+        # Resources
+        LB_ListenersV2ALB()
+        # Create TargetGroups pointing to LambdaServiceUnavailable
+        try:
+            cfg.ServiceUnavailable
+        except Exception:
+            pass
+        else:
+            LB_TargetGroupsALB()
+
+
+class LB_ElasticLoadBalancingALB(object):
+    def __init__(self, key):
+        for n, v in cfg.ElasticLoadBalancingV2LoadBalancerALB.items():
+            # resources
+            if n not in cfg.LoadBalancerApplication:
+                continue
+            r_LB = elbv2.LoadBalancer(f'LoadBalancerApplication{n}')
+            auto_get_props(r_LB,
+                           mapname=f'ElasticLoadBalancingV2LoadBalancerALB{n}')
+            add_obj(r_LB)
 
         # Resources
         LB_ListenersV2ALB()

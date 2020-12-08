@@ -86,7 +86,7 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
     if not fixedvalues:
         # set default if not defined
         fixedvalues = cfg.fixedvalues
- 
+
     def _get_overridevalue(param, value, condname=None):
         if param not in cfg.Parameters and condname in cfg.Parameters:
             param = condname
@@ -95,13 +95,13 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
             override_value = If(f'{param}Override', Ref(param), value)
         else:
             override_value = value
-    
+
         return override_value
 
     def _get_value():
         # Its not pythonic, but it's only way to avoid circular import problems
         from .securitygroup import SG_SecurityGroupsTSK
-   
+
         if resname:
             IBOXRESNAME = resname
         # if param in fixedvalues means its value do not changes
@@ -110,9 +110,11 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
             value = fixedvalues[param]
             # check if value start with method and use eval to run code
             if isinstance(value, list):
+                scope_g = globals()
+                scope_l = locals()
                 value = [
-                    eval(r) if r.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
-                    else r for r in value
+                    eval(r, scope_g, scope_l) if r.startswith(
+                        cfg.EVAL_FUNCTIONS_IN_CFG) else r for r in value
                 ]
             if isinstance(value, str):
                 value = (
@@ -122,16 +124,16 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
         # ... otherway use mapping
         else:
             value = FindInMap(Ref('EnvShort'), Ref('AWS::Region'), param)
-    
+
         if strout is True and isinstance(value, int):
             value = str(value)
-    
+
         if nolist is True and isinstance(value, list):
             value = ','.join(value)
-    
+
         if issub:
             value = Sub(value)
-    
+
         return value
 
     value = _get_value()
@@ -335,13 +337,8 @@ def import_lambda(name):
 
 
 def auto_get_props(obj, mapname=None, key=None, rootdict=None):
-    if not mapname:
-        mapname = obj.title
-    if rootdict:
-        key = rootdict
-        mapname = ''
-    if not key:
-        key = getattr(cfg, mapname)
+    # IBOXRESNAME can be used in yaml
+    IBOXRESNAME = obj.title
 
     def _get_obj(obj, key, props, obj_propname, mapname):
         mapname_obj = f'{mapname}{obj_propname}'
@@ -417,33 +414,37 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
             return prop_list
 
-
-    def _populate(obj, key=None, mapname=None):
-        # IBOXRESNAME can be used in yaml
-        IBOXRESNAME = obj.title
+    def _populate(obj, key=None, mapname=None, rootdict=None):
+        if not mapname:
+            mapname = obj.title
+        if rootdict:
+            key = rootdict
+            mapname = ''
+        if not key:
+            key = getattr(cfg, mapname)
 
         def _try_PCO_in_obj(key):
             def _parameter(k):
                 for n, v in k.items():
                     n = n.replace('IBOXRESNAME', IBOXRESNAME)
                     parameter = Parameter(n)
-                    auto_get_props(parameter, rootdict=v)
+                    _populate(parameter, rootdict=v)
                     add_obj(parameter)
-        
+
             def _condition(k):
                 # this is needed or eval do not find IBOXRESNAME??
                 IBOXRESNAME
                 for n, v in k.items():
                     condition = eval(v)
                     add_obj(condition)
-        
+
             def _output(k):
                 for n, v in k.items():
                     n = n.replace('IBOXRESNAME', IBOXRESNAME)
                     output = Output(n)
-                    auto_get_props(output, rootdict=v)
+                    _populate(output, rootdict=v)
                     add_obj(output)
-    
+
             func_map = {
                 'IBOXPARAMETER': _parameter,
                 'IBOXCONDITION': _condition,
@@ -535,7 +536,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             except TypeError:
                 pass
 
-    _populate(obj, key, mapname)
+    _populate(obj, key, mapname, rootdict)
 
 
 def auto_build_obj(obj, key, name=None):
