@@ -12,14 +12,16 @@ Https: &https
 
 External: &external
   DefaultActions:
-    Type: forward
-    TargetGroupArn: Ref(f'TargetGroupExternal')
+    - TG:
+        Type: forward
+        TargetGroupArn: Ref(f'TargetGroupExternal')
   LoadBalancerArn: Ref(f'LoadBalancerApplicationExternal')
   
 Internal: &internal
   DefaultActions:
-    Type: forward
-    TargetGroupArn: Ref(f'TargetGroupInternal')
+    - TG:
+        Type: forward
+        TargetGroupArn: Ref(f'TargetGroupInternal')
   LoadBalancerArn: Ref(f'LoadBalancerApplicationInternal')
 
 HttpExternal: &httpexternal

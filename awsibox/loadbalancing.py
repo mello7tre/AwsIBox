@@ -9,7 +9,6 @@ from .route53 import R53_RecordSetEC2LoadBalancer, R53_RecordSetECSLoadBalancer
 from .securitygroup import (
     SecurityGroupRuleELBPorts, SecurityGroupIngressInstanceELBPorts,
     SecurityGroupLoadBalancer, SecurityGroupsIngressEcs, SecurityGroup,
-    SecurityGroupRuleHttp, SecurityGroupRuleHttps,
     SG_SecurityGroupIngressesECS)
 from .lambdas import LambdaPermissionLoadBalancing
 
@@ -19,29 +18,6 @@ elbv2.one_of = my_one_of
 
 
 # S - V2 LOAD BALANCING #
-class ELBV2Listener(elbv2.Listener):
-    def __init__(self, title, scheme, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.DefaultActions = [elbv2.Action(
-            Type='forward',
-            TargetGroupArn=Ref(f'TargetGroup{scheme}')
-        )]
-        self.LoadBalancerArn = Ref(f'LoadBalancerApplication{scheme}')
-
-
-class ELBV2ListenerHttp(ELBV2Listener):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        auto_get_props(self, 'ListenerHttp')
-
-
-class ELBV2ListenerHttps(ELBV2Listener):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        auto_get_props(self, 'ListenerHttps')
-
-
 class ELBV2ListernerRuleECS(elbv2.ListenerRule):
     def __init__(self, title, key, index, mapname, scheme, **kwargs):
         super().__init__(title, **kwargs)
@@ -68,16 +44,6 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
                 TargetGroupArn=Ref(f'TargetGroup{scheme}')
             )]
         self.Priority = get_endvalue(f'{mapname}Priority')
-
-
-class ELBV2ListenerAction404(elbv2.Action):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.FixedResponseConfig = elbv2.FixedResponseConfig('')
-        self.FixedResponseConfig.ContentType = 'text/plain'
-        self.FixedResponseConfig.MessageBody = '404 Not Found\n'
-        self.FixedResponseConfig.StatusCode = '404'
-        self.Type = 'fixed-response'
 
 
 # E - V2 LOAD BALANCING #
@@ -318,72 +284,21 @@ class LB_ListenerRules(object):
             add_obj(o_ListenerRule)
 
 
-class LB_ListenersV2ECSExternal(object):
-    def __init__(self):
-        if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
-            R_ListenerHttp = ELBV2ListenerHttp(
-                'ListenerHttpExternal', scheme='External')
-            R_ListenerHttp.LoadBalancerArn = get_expvalue(
-                'LoadBalancerApplicationExternal',
-                'LoadBalancerApplicationStack')
-
-            add_obj(R_ListenerHttp)
-
-            SG_SecurityGroupIngressesECS(scheme='External', proto='Http')
-
-        if cfg.ListenerLoadBalancerHttpsPort not in ['None', 443]:
-            R_ListenerHttps = ELBV2ListenerHttps(
-                'ListenerHttpsExternal', scheme='External')
-            R_ListenerHttps.Condition = 'ListenerLoadBalancerHttpsPort'
-            R_ListenerHttps.LoadBalancerArn = get_expvalue(
-                'LoadBalancerApplicationExternal',
-                'LoadBalancerApplicationStack')
-
-            add_obj(R_ListenerHttps)
-
-            SG_SecurityGroupIngressesECS(scheme='External', proto='Https')
-
-
-class LB_ListenersV2ECSInternal(object):
-    def __init__(self):
-        if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
-            R_ListenerHttp = ELBV2ListenerHttp(
-                'ListenerHttpInternal', scheme='Internal')
-            R_ListenerHttp.LoadBalancerArn = get_expvalue(
-                'LoadBalancerApplicationInternal',
-                'LoadBalancerApplicationStack')
-
-            add_obj(R_ListenerHttp)
-
-            SG_SecurityGroupIngressesECS(scheme='Internal', proto='Http')
-
-
 class LB_ListenersV2EC2(LB_ListenersEC2):
     def __init__(self):
         super().__init__()
-        # Resources
-        if cfg.LoadBalancerApplicationExternal:
-            R_ListenerHttpExternal = ELBV2ListenerHttp(
-                'ListenerHttpExternal', scheme='External')
-            R_ListenerHttpExternal.Condition = 'ListenerLoadBalancerHttpPort'
+        for n in ['External', 'Internal']:
+            # resources
+            if n not in cfg.LoadBalancerApplication:
+                continue
+            r_Http = elbv2.Listener(f'ListenerHttp{n}')
+            auto_get_props(r_Http, mapname=f'ListenerV2EC2Http{n}')
+            add_obj(r_Http)
 
-            R_ListenerHttpsExternal = ELBV2ListenerHttps(
-                'ListenerHttpsExternal', scheme='External')
-            R_ListenerHttpsExternal.Condition = 'ListenerLoadBalancerHttpsPort'
-
-            add_obj([
-                R_ListenerHttpExternal,
-                R_ListenerHttpsExternal,
-            ])
-
-        if cfg.LoadBalancerApplicationInternal:
-            R_ListenerHttpInternal = ELBV2ListenerHttp(
-                'ListenerHttpInternal', scheme='Internal')
-            R_ListenerHttpInternal.Condition = 'ListenerLoadBalancerHttpPort'
-
-            add_obj([
-                R_ListenerHttpInternal,
-            ])
+            if n == 'External':
+                r_Https = elbv2.Listener(f'ListenerHttps{n}')
+                auto_get_props(r_Https, mapname=f'ListenerV2EC2Https{n}')
+                add_obj(r_Https)
 
         LB_TargetGroupsEC2()
 
@@ -391,13 +306,24 @@ class LB_ListenersV2EC2(LB_ListenersEC2):
 class LB_ListenersV2ECS(LB_Listeners):
     def __init__(self):
         super().__init__()
+        for n in ['External', 'Internal']:
+            # resources
+            if n not in cfg.LoadBalancerApplication:
+                continue
+            if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
+                r_Http = elbv2.Listener(f'ListenerHttp{n}')
+                auto_get_props(r_Http, mapname=f'ListenerV2ECSHttp{n}')
+                add_obj(r_Http)
+                SG_SecurityGroupIngressesECS(scheme=n, proto='Http')
+
+            if (cfg.ListenerLoadBalancerHttpsPort not in ['None', 443]
+                    and n == 'External'):
+                r_Https = elbv2.Listener(f'ListenerHttps{n}')
+                auto_get_props(r_Https, mapname=f'ListenerV2ECSHttps{n}')
+                add_obj(r_Https)
+                SG_SecurityGroupIngressesECS(scheme=n, proto='Https')
+
         # Resources
-        if cfg.LoadBalancerApplicationExternal:
-            LB_ListenersV2ECSExternal()
-
-        if cfg.LoadBalancerApplicationInternal:
-            LB_ListenersV2ECSInternal()
-
         LB_TargetGroupsECS()
         LB_ListenerRules()
 

@@ -106,22 +106,6 @@ class SecurityGroupRuleEcsService(SecurityGroupRule):
         self.ToPort = self.FromPort
 
 
-class SecurityGroupRuleHttp(SecurityGroupRule):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.CidrIp = '0.0.0.0/0'
-        self.FromPort = '80'
-        self.ToPort = '80'
-
-
-class SecurityGroupRuleHttps(SecurityGroupRule):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.CidrIp = '0.0.0.0/0'
-        self.FromPort = '443'
-        self.ToPort = '443'
-
-
 # ##########################################
 # ### END STACK META CLASSES AND METHODS ###
 # ##########################################
