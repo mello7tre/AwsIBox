@@ -93,14 +93,6 @@ class ASScheduledAction(asg.ScheduledAction):
 
 
 # S - APPLICATION AUTOSCALING #
-class APPASScalingPolicy(aas.ScalingPolicy):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-        self.PolicyName = self.title
-        self.ScalingTargetId = Ref('ScalableTarget')
-
 
 class APPASScheduledAction(aas.ScheduledAction):
     def __init__(self, title, **kwargs):
@@ -949,7 +941,6 @@ class AS_Autoscaling(object):
 
         # Resources
         AS_ScheduledActionsEC2('ScheduledAction')
-        # AS_ScalingPoliciesEC2()
 
         LaunchTemplate = AS_LaunchTemplate()
 
@@ -975,8 +966,18 @@ class AS_ScalableTargetECS(object):
             # code for now
             r_ScalableTarget = aas.ScalableTarget('ScalableTarget')
             auto_get_props(r_ScalableTarget, f'{key}Service')
-            r_ScalableTarget.ScheduledActions = (
-                AS_ScheduledActionsECS('ScheduledAction').ScheduledActions)
+            ScheduledActions = []
+            for m, w in cfg.ScheduledAction.items():
+                sc_name = f'ScheduledAction{m}'
+                r_ScheduledAction = aas.ScheduledAction(sc_name)
+                auto_get_props(r_ScheduledAction)
+                ScheduledActions.append(If(
+                    f'{sc_name}Disable',
+                    Ref('AWS::NoValue'),
+                    r_ScheduledAction))
+            r_ScalableTarget.ScheduledActions = ScheduledActions
+            #r_ScalableTarget.ScheduledActions = (
+            #    AS_ScheduledActionsECS('ScheduledAction').ScheduledActions)
 
             add_obj([
                 r_ScalableTarget

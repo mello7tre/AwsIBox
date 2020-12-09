@@ -340,7 +340,8 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     # IBOXRESNAME can be used in yaml
     IBOXRESNAME = obj.title
 
-    def _get_obj(obj, key, props, obj_propname, mapname):
+    def _get_obj(obj, key, obj_propname, mapname):
+        props = obj.props
         mapname_obj = f'{mapname}{obj_propname}'
 
         # trick (bad) to detect attributes as CreationPolicy and UpdatePolicy
@@ -474,7 +475,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             # set value
             if isinstance(key_value, dict):
                 # key value is a dict, get populated object
-                value = _get_obj(obj, key, obj.props, propname, mapname)
+                value = _get_obj(obj, key, propname, mapname)
             elif key_value == 'IBOXRESNAME':
                 # Force value to obj name
                 value = IBOXRESNAME

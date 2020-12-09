@@ -1,6 +1,7 @@
 IBoxLoader: !include [
   capacity.yml,
   applicationautoscaling-scalingpolicy.yml,
+  applicationautoscaling-scalabletarget.yml,
   loadbalancing.yml,
   alarms.yml,
   cloudfront-ios.yml,
@@ -46,7 +47,7 @@ ecs:
     - 1:
         HostHeader: '*${EnvRole}.*'
   LoadBalancerApplicationStack: alb-a
-  ScalableTarget:
+  ScalableTarget_DIS:
     - Service:
         MaxCapacity: get_endvalue('CapacityMax')
         MinCapacity: get_endvalue('CapacityMin')
@@ -67,15 +68,15 @@ ecs:
               - Service:
                   Name: ServiceName
                   Value: GetAtt('Service', 'Name')
-  ScheduledAction:
+  ScheduledAction_DIS:
     - Down:
-        MaxSize: k
-        MinSize: k
-        Recurrence: 'cron(00 22 * * ? *)'
+        CapacityMax: k
+        CapacityMin: k
+        Schedule: 'cron(00 22 * * ? *)'
     - Up:
-        MaxSize: k
-        MinSize: k
-        Recurrence: 'cron(00 06 * * ? *)'
+        CapacityMax: k
+        CapacityMin: k
+        Schedule: 'cron(00 06 * * ? *)'
   SchedulingStrategy: REPLICA
   Service:
     - Base:
@@ -87,13 +88,13 @@ dev: &cfg_dev
         EvaluationPeriods: 0
     - TargetInternal5XX:
         EvaluationPeriods: 0
-  ScheduledAction:
+  ScheduledAction_DIS:
     - Down:
-        MaxSize: k
-        MinSize: k
+        CapacityMax: k
+        CapacityMin: k
     - Up:
-        MaxSize: CapacityMax
-        MinSize: CapacityMin
+        CapacityMax: CapacityMax
+        CapacityMin: CapacityMin
 
 stg: *cfg_dev
 
