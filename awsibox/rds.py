@@ -120,7 +120,14 @@ class RDSDBInstancePrivate(RDSDBInstance):
 class RDSDBParameterGroup(rds.DBParameterGroup):
     def setup(self):
         self.Description = Sub('MYSQL %s - ${AWS::StackName}' % self.title)
-        self.Family = get_subvalue('mysql${1M}', 'EngineVersion')
+        #self.Family = get_subvalue('mysql${1M}', 'EngineVersion')
+        self.Family = Sub('${Engine}${EngineVersion}', **{
+            'Engine': Ref('Engine'),
+            'EngineVersion': Join('.', [
+                Select(0, Split('.', Ref('EngineVersion'))),
+                Select(1, Split('.', Ref('EngineVersion'))),
+            ])
+        })
 
 
 class RDSDBSubnetGroupPrivate(rds.DBSubnetGroup):

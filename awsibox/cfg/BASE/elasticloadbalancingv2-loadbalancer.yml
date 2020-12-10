@@ -5,7 +5,7 @@ Base: &base
         AllowedValues: ['', 'true', 'false']
   IBOXCONDITION:
     - LoadBalancerHttp2:
-        get_condition('LoadBalancerHttp2', 'not_equals', 'None', 'LoadBalancerHttp2')
+        get_condition('not_equals', 'None', 'LoadBalancerHttp2')
   LoadBalancerAttributes:
     - LogEnabled:
         IBOXIF:

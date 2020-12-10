@@ -12,8 +12,8 @@ Tracking: &tracking
     - IBOXRESNAMETargetTrackingScalingPolicyConfigurationTargetValue:
         Description: '0 to disable - empty for mapped value'
   IBOXCONDITION:
-    - TargetValue:
-        get_condition(IBOXRESNAME, 'not_equals', '0', f'{IBOXRESNAME}TargetTrackingScalingPolicyConfigurationTargetValue')
+    - IBOXRESNAME:
+        get_condition('not_equals', '0', f'{IBOXRESNAME}TargetTrackingScalingPolicyConfigurationTargetValue')
   PolicyType: TargetTrackingScaling
 
 Step: &step

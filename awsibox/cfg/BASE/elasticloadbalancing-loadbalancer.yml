@@ -1,7 +1,7 @@
 Base: &base
   IBOXCONDITION:
     - LoadBalancerCookieSticky:
-        get_condition('LoadBalancerCookieSticky', 'not_equals', 'None', 'LoadBalancerCookieSticky')
+        get_condition('not_equals', 'None', 'LoadBalancerCookieSticky')
   IBOXOUTPUT:
     - HealthCheck:
         Value:

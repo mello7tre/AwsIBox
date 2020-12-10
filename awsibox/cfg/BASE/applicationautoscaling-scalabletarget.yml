@@ -20,29 +20,31 @@ ScheduledAction: &scheduledaction
     - IBOXRESNAMEStartTime:
         Description: 'empty for mapped value'
   IBOXCONDITION:
-    - KeepMinSize:
-        get_condition(f'{IBOXRESNAME}KeepMinSize', 'equals', 'k', f'{IBOXRESNAME}CapacityMin')
-    - KeepMaxSize:
-        get_condition(f'{IBOXRESNAME}KeepMaxSize', 'equals', 'k', f'{IBOXRESNAME}CapacityMax')
-    - CapacityMinSize:
-        get_condition(f'{IBOXRESNAME}CapacityMinSize', 'equals', 'CapacityMin', f'{IBOXRESNAME}CapacityMin')
-    - CapacityMaxSize:
-        get_condition(f'{IBOXRESNAME}CapacityMaxSize', 'equals', 'CapacityMax', f'{IBOXRESNAME}CapacityMax')
-    - Schedule:
-        get_condition(IBOXRESNAME, 'not_equals', 'None', f'{IBOXRESNAME}Schedule')
-    - Disable:
-        "{f'{IBOXRESNAME}Disable': Or(
+    - IBOXRESNAMEKeepMinSize:
+        get_condition('equals', 'k', f'{IBOXRESNAME}CapacityMin')
+    - IBOXRESNAMEKeepMaxSize:
+        get_condition('equals', 'k', f'{IBOXRESNAME}CapacityMax')
+    - IBOXRESNAMECapacityMinSize:
+        get_condition('equals', 'CapacityMin', f'{IBOXRESNAME}CapacityMin')
+    - IBOXRESNAMECapacityMaxSize:
+        get_condition('equals', 'CapacityMax', f'{IBOXRESNAME}CapacityMax')
+    - IBOXRESNAME:
+        get_condition('not_equals', 'None', f'{IBOXRESNAME}Schedule')
+    - IBOXRESNAMEDisable: Or(
           Not(Condition(IBOXRESNAME)),
           And(
             Condition(f'{IBOXRESNAME}KeepMaxSize'),
-            Condition(f'{IBOXRESNAME}KeepMinSize')))}"
-  OUTPUT:
+            Condition(f'{IBOXRESNAME}KeepMinSize')))
+  IBOXOUTPUT:
     - IBOXRESNAME:
         Value:
           get_subvalue(
             'CapacityMin=${1M},CapacityMax=${2M},Schedule=${3M},StartTime=${4M}',
             [
-              'CapacityMin', 'CapacityMax', 'Schedule', 'StartTime'])
+              f'{IBOXRESNAME}CapacityMin',
+              f'{IBOXRESNAME}CapacityMax',
+              f'{IBOXRESNAME}Schedule',
+              f'{IBOXRESNAME}StartTime'])
   ScalableTargetAction:
     MinCapacity: If(f'{IBOXRESNAME}CapacityMinSize',
                     get_endvalue('CapacityMin'),
@@ -52,20 +54,12 @@ ScheduledAction: &scheduledaction
                     get_endvalue(f'{IBOXRESNAME}CapacityMax', nocondition=f'{IBOXRESNAME}KeepMaxSize'))
   Schedule: get_endvalue(f'{IBOXRESNAME}Schedule')
   ScheduledActionName: IBOXRESNAME
-  StartTime: If(f'{IBOXRESNAME}StartTimeOverride', Ref(f'{IBOXRESNAME}StartTime'), Ref('AWS::NoValue'))
+  StartTime: Ref('AWS::NoValue')
 
 global:
   ScalableTarget:
     - Service: *ecs
         
   ScheduledAction:
-    - Down:
-        <<: *scheduledaction
-        CapacityMax: k
-        CapacityMin: k
-        Schedule: 'cron(00 22 * * ? *)'
-    - Up:
-        <<: *scheduledaction
-        CapacityMax: k
-        CapacityMin: k
-        Schedule: 'cron(00 06 * * ? *)'
+    - Down: *scheduledaction
+    - Up: *scheduledaction

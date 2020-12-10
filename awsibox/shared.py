@@ -228,7 +228,7 @@ def get_resvalue(resname, propname):
     return getattr(res, propname)
 
 
-def get_condition(cond_name, cond, value2,
+def get_condition(cond_name='', cond='equals', value2='None',
                   key=None, OrExtend=[], mapinlist=False, nomap=None):
     # record current state
     override_state = cfg.no_override
@@ -436,7 +436,8 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 # this is needed or eval do not find IBOXRESNAME??
                 IBOXRESNAME
                 for n, v in k.items():
-                    condition = eval(v)
+                    n = n.replace('IBOXRESNAME', IBOXRESNAME)
+                    condition = {n: eval(v)}
                     add_obj(condition)
 
             def _output(k):
