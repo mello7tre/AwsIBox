@@ -80,22 +80,6 @@ class RDSDBInstance(rds.DBInstance):
         return True
 
 
-class RDSDBInstancePublic(RDSDBInstance):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.DBSubnetGroupName = get_expvalue('DBSubnetGroupPublic')
-        self.PubliclyAccessible = 'True'
-
-
-class RDSDBInstancePrivate(RDSDBInstance):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.DBSubnetGroupName = get_expvalue('DBSubnetGroupPrivate')
-        self.PubliclyAccessible = 'False'
-
-
 class RDSDBParameterGroup(rds.DBParameterGroup):
     def setup(self):
         self.Description = Sub('MYSQL %s - ${AWS::StackName}' % self.title)
@@ -162,12 +146,12 @@ class RDS_DB(object):
                       'MasterUsername',
                       'MasterUserPassword']:
                 setattr(r_DB, m, If(
-                    'DBInstanceSkipProperties',
+                    f'{mapname}DBInstanceSkipProperties',
                     Ref('AWS::NoValue'),
                     getattr(r_DB, m)))
             for m in ['SourceDBInstanceIdentifier', 'DBSnapshotIdentifier']:
                 setattr(r_DB, m, If(
-                    m,
+                    f'{mapname}{m}',
                     getattr(r_DB, m),
                     Ref('AWS::NoValue')))
 
