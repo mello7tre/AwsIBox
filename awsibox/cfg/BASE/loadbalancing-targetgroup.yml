@@ -40,7 +40,7 @@ ECS: &ecs
   <<: *base
   IBOXCONDITION:
     - LoadBalancerPublic:
-        get_condition('equals', 'Public', 'LoadBalancerAccess')
+        get_condition('', 'equals', 'Public', 'LoadBalancerAccess')
   IBOXOUTPUT:
     - HealthCheck:
         Value:

@@ -7,27 +7,6 @@ from .route53 import R53_RecordSetRDS
 
 
 class RDSDBInstance(rds.DBInstance):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.AllocatedStorage = get_endvalue('AllocatedStorage')
-        self.AllowMajorVersionUpgrade = 'True'
-        self.DBInstanceClass = get_endvalue('DBInstanceClass')
-        self.DBName = get_endvalue(
-            'DBName', nocondition='DBInstanceSkipProperties')
-        self.Engine = get_endvalue('Engine')
-        self.EngineVersion = get_endvalue('EngineVersion')
-        self.MasterUsername = get_endvalue(
-            'MasterUsername', nocondition='DBInstanceSkipProperties')
-        self.MasterUserPassword = get_endvalue(
-            'MasterUserPassword', nocondition='DBInstanceSkipProperties')
-        self.MultiAZ = get_endvalue('MultiAZ')
-        self.DBParameterGroupName = Ref('DBParameterGroup1')
-        self.SourceDBInstanceIdentifier = get_endvalue(
-            'SourceDBInstanceIdentifier', condition=True)
-        self.StorageType = get_endvalue('StorageType')
-        self.VPCSecurityGroups = [Ref('SecurityGroupRDS')]
-
     def validate(self):
         if 'DBSnapshotIdentifier' not in self.properties:
             if 'Engine' not in self.properties:
@@ -160,17 +139,41 @@ class RDS_ParameterGroups(object):
 
 class RDS_DB(object):
     def __init__(self, key):
-        # Resources
-        if cfg.RDSScheme == 'External':
-            R_DB = RDSDBInstancePublic('DBInstance')
-        if cfg.RDSScheme == 'Internal':
-            R_DB = RDSDBInstancePrivate('DBInstance')
+        for n, v in getattr(cfg, key).items():
+            mapname = f'{key}{n}'
 
-        R53_RecordSetRDS()
+            if not v['IBOXENABLED']:
+                continue
 
-        add_obj([
-            R_DB,
-        ])
+            try:
+                resname = v['IBOXRESNAME']
+            except Exception:
+                resname = mapname
+
+            # resources
+            r_DB = RDSDBInstance(mapname)
+            auto_get_props(r_DB, mapname=mapname)
+            # trick to keep current in use resname obj.title - need to be
+            # executed after invoking auto_get_props
+            r_DB.title = resname
+            # trick - when providing DBSnapshotIdentifier
+            # or SourceDBInstanceIdentifier some props must not exists
+            for m in ['DBName',
+                      'MasterUsername',
+                      'MasterUserPassword']:
+                setattr(r_DB, m, If(
+                    'DBInstanceSkipProperties',
+                    Ref('AWS::NoValue'),
+                    getattr(r_DB, m)))
+            for m in ['SourceDBInstanceIdentifier', 'DBSnapshotIdentifier']:
+                setattr(r_DB, m, If(
+                    m,
+                    getattr(r_DB, m),
+                    Ref('AWS::NoValue')))
+
+            R53_RecordSetRDS(resname)
+
+            add_obj(r_DB)
 
 
 class RDS_SubnetGroups(object):

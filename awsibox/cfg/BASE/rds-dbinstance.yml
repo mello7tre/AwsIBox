@@ -1,0 +1,112 @@
+Base: &base
+  IBOXENABLED: False
+  IBOXPARAMETER:
+    - IBOXRESNAMEAllocatedStorage:
+        Description: 'Storage Size in GB - empty for mapped value'
+    - IBOXRESNAMEDBInstanceClass:
+        Description: 'Instance Type - empty for mapped value'
+        AllowedValues: [
+          '', 'db.m3.medium', 'db.m3.large', 'db.m3.xlarge', 'db.m3.2xlarge',
+          'db.m4.large', 'db.m4.xlarge', 'db.m4.2xlarge', 'db.m4.4xlarge', 'db.m4.10xlarge',
+          'db.m5.large', 'db.m5.xlarge', 'db.m5.2xlarge', 'db.m5.4xlarge', 'db.m5.12xlarge',
+          'db.r3.large', 'db.r3.xlarge', 'db.r3.2xlarge', 'db.r3.4xlarge', 'db.r3.8xlarge',
+          'db.r5.large', 'db.r5.xlarge', 'db.r5.2xlarge', 'db.r5.4xlarge', 'db.r5.12xlarge',
+          'db.t2.micro', 'db.t2.small', 'db.t2.medium', 'db.t2.large',
+          'db.t3.micro', 'db.t3.small', 'db.t3.medium', 'db.t3.large']
+    - IBOXRESNAMEDBName:
+        Description: 'None for not creating one - empty for mapped value'
+    - IBOXRESNAMEDBSnapshotIdentifier:
+        Description: 'DB snapshot used to restore the DB instance - None for not using one - empty for mapped value'
+    - IBOXRESNAMESourceDBInstanceIdentifier:
+        Description: 'ID of the source DB instance to create ReadReplica - None for not using one - empty for mapped value'
+    - IBOXRESNAMEEngine:
+        Description: 'Engine - empty for mapped value'
+        AllowedValues: [
+          '', 'mysql', 'mariadb', 'oracle-se1', 'oracle-se2', 'oracle-se', 'oracle-ee',
+          'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web', 'postgres', 'aurora'
+        ]
+    - IBOXRESNAMEEngineVersion:
+        Description: 'Engine Version - empty for mapped value'
+    - IBOXRESNAMEMasterUsername:
+        Description: 'Username - empty for mapped value'
+    - IBOXRESNAMEMasterUserPassword:
+        Description: 'Password - empty for mapped value'
+        NoEcho: True
+    - IBOXRESNAMEMultiAZ:
+        Description: 'Use multiple Availability Zone - empty for mapped value'
+        AllowedValues: ['', 'True', 'False']
+    - IBOXRESNAMEAccess:
+        Description: 'Access type public or private - empty for mapped value'
+        AllowedValues: ['', 'Private', 'Public']
+    - IBOXRESNAMEStorageType:
+        Description: 'empty for mapped value'
+        AllowedValues: ['', 'standard', 'gp2']
+  IBOXCONDITION:
+    - IBOXRESNAMEDBName:
+        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}DBName')
+    - IBOXRESNAMEPublic:
+        get_condition('', 'equals', 'Public', f'{IBOXRESNAME}Access')
+    - IBOXRESNAMEDBSnapshotIdentifier:
+        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}DBSnapshotIdentifier')
+    - IBOXRESNAMESourceDBInstanceIdentifier:
+        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}SourceDBInstanceIdentifier')
+    - IBOXRESNAMEDBInstanceSkipProperties:
+        Or(Condition(f'{IBOXRESNAME}DBSnapshotIdentifier'), Condition(f'{IBOXRESNAME}SourceDBInstanceIdentifier'))
+    - IBOXRESNAMEInternal:
+        get_condition('', 'equals', 'false', f'{IBOXRESNAME}PubliclyAccessible')
+  IBOXOUTPUT:
+    - IBOXRESNAMEAllocatedStorage:
+        Value: get_endvalue(f'{IBOXRESNAME}AllocatedStorage')
+    - IBOXRESNAMEDBInstanceClass:
+        Value: get_endvalue(f'{IBOXRESNAME}DBInstanceClass')
+    - IBOXRESNAMEDBName:
+        Value: get_endvalue(f'{IBOXRESNAME}DBName')
+    - IBOXRESNAMEDBSnapshotIdentifier:
+        Value: get_endvalue(f'{IBOXRESNAME}DBSnapshotIdentifier')
+    - IBOXRESNAMEEngine:
+        Value: get_endvalue(f'{IBOXRESNAME}Engine')
+    - IBOXRESNAMEEngineVersion:
+        Value: get_endvalue(f'{IBOXRESNAME}EngineVersion')
+    - IBOXRESNAMEMasterUsername:
+        Value: get_endvalue(f'{IBOXRESNAME}MasterUsername')
+    - IBOXRESNAMEMultiAZ:
+        Value: get_endvalue(f'{IBOXRESNAME}MultiAZ')
+    - IBOXRESNAMEAccess:
+        Value: get_endvalue(f'{IBOXRESNAME}Access')
+    - IBOXRESNAMEScheme:
+        Value: If(f'{IBOXRESNAME}Internal', 'Internal', 'External')
+    - IBOXRESNAMESourceDBInstanceIdentifier:
+        Value: get_endvalue(f'{IBOXRESNAME}SourceDBInstanceIdentifier')
+    - IBOXRESNAMEStorageType:
+        Value: get_endvalue(f'{IBOXRESNAME}StorageType')
+  AllocatedStorage: 50
+  AllowMajorVersionUpgrade: True
+  DBInstanceClass: db.t3.micro
+  DBName: dbname
+  DBParameterGroupName: Ref('DBParameterGroup1')
+  DBSnapshotIdentifier: None
+  MasterUsername: masterusername
+  MasterUserPassword: masteruserpassword
+  MultiAZ: False
+  Access: Public
+  SourceDBInstanceIdentifier: None
+  StorageType: gp2
+  VPCSecurityGroups:
+    - Ref(f'SecurityGroup{IBOXRESNAME}')
+
+Mysql: &mysql
+  <<: *base
+  Engine: mysql
+  EngineVersion: '5.7'
+
+
+global:
+  DBInstance:
+    - MysqlInternal:
+        <<: [*base, *mysql]
+        PubliclyAccessible: False
+        DBSubnetGroupName: get_expvalue('DBSubnetGroupPrivate')
+    - MysqlExternal:
+        <<: [*base, *mysql]
+        PubliclyAccessible: True
+        DBSubnetGroupName: get_expvalue('DBSubnetGroupPublic')

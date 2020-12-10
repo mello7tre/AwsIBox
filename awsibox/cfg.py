@@ -258,7 +258,7 @@ CFG_TO_CLASS = {
                  'class': 'SQS_Queues'},
     'ASGLifecycleHook': {'module': 'autoscaling',
                          'class': 'AS_LifecycleHook'},
-    'DBInstanceClass': {'module': 'rds',
+    'DBInstance': {'module': 'rds',
                         'class': 'RDS_DB'},
     'DBParameterGroup': {'module': 'rds',
                          'class': 'RDS_ParameterGroups'},

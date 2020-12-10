@@ -307,6 +307,13 @@ class SG_SecurityGroupIngressesExtraService(object):
         Securitygroup_Rules = []
         for n, v in getattr(cfg, key).items():
             name = str(v['FromPort'])  # Ex 3306
+
+            # service name override needed for multiple RDS in same stack
+            try:
+                service = v['IBOXService']
+            except:
+                pass
+
             for i in cfg.AllowedIp:
                 ipname = f'AllowedIp{i}'
                 condnameprivate = (

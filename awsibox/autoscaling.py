@@ -92,37 +92,6 @@ class ASScheduledAction(asg.ScheduledAction):
 # E - AUTOSCALING #
 
 
-# S - APPLICATION AUTOSCALING #
-
-class APPASScheduledAction(aas.ScheduledAction):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-        self.ScalableTargetAction = aas.ScalableTargetAction(
-            MinCapacity=If(
-                f'{name}CapacityMinSize',
-                get_endvalue('CapacityMin'),
-                get_endvalue(
-                    f'{name}MinSize', nocondition=f'{name}KeepMinSize')
-            ),
-            MaxCapacity=If(
-                f'{name}CapacityMaxSize',
-                get_endvalue('CapacityMax'),
-                get_endvalue(
-                    f'{name}MaxSize', nocondition=f'{name}KeepMaxSize')
-            )
-        )
-        self.Schedule = get_endvalue(f'{name}Recurrence')
-        self.ScheduledActionName = name
-        self.StartTime = If(
-            f'{name}StartTimeOverride',
-            Ref(f'{name}StartTime'),
-            Ref('AWS::NoValue')
-        )
-
-# E - APPLICATION AUTOSCALING #
-
 # ############################################
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################
@@ -673,37 +642,6 @@ class AS_ScheduledActionsEC2(object):
             add_obj(r_ScheduledAction)
 
 
-class AS_ScheduledActionsECS(object):
-    def __init__(self, key):
-        ScheduledActions = []
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-            # conditions
-            c_disable = {f'{resname}Disable': Or(
-                Not(Condition(resname)),
-                And(
-                    Condition(f'{resname}KeepMaxSize'),
-                    Condition(f'{resname}KeepMinSize'),
-                )
-            )}
-
-            add_obj(c_disable)
-
-            # resources
-            AS_ScheduledAction(resname, [])
-            ScheduledAction = APPASScheduledAction(resname)
-
-            ScheduledActions.append(
-                If(
-                    f'{resname}Disable',
-                    Ref('AWS::NoValue'),
-                    ScheduledAction,
-                )
-            )
-
-        self.ScheduledActions = ScheduledActions
-
-
 class AS_ScalingPolicies(object):
     def __init__(self, key):
         Out_String = []
@@ -966,6 +904,7 @@ class AS_ScalableTargetECS(object):
             # code for now
             r_ScalableTarget = aas.ScalableTarget('ScalableTarget')
             auto_get_props(r_ScalableTarget, f'{key}Service')
+
             ScheduledActions = []
             for m, w in cfg.ScheduledAction.items():
                 sc_name = f'ScheduledAction{m}'
@@ -976,8 +915,6 @@ class AS_ScalableTargetECS(object):
                     Ref('AWS::NoValue'),
                     r_ScheduledAction))
             r_ScalableTarget.ScheduledActions = ScheduledActions
-            #r_ScalableTarget.ScheduledActions = (
-            #    AS_ScheduledActionsECS('ScheduledAction').ScheduledActions)
 
             add_obj([
                 r_ScalableTarget

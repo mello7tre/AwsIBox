@@ -21,15 +21,15 @@ ScheduledAction: &scheduledaction
         Description: 'empty for mapped value'
   IBOXCONDITION:
     - IBOXRESNAMEKeepMinSize:
-        get_condition('equals', 'k', f'{IBOXRESNAME}CapacityMin')
+        get_condition('', 'equals', 'k', f'{IBOXRESNAME}CapacityMin')
     - IBOXRESNAMEKeepMaxSize:
-        get_condition('equals', 'k', f'{IBOXRESNAME}CapacityMax')
+        get_condition('', 'equals', 'k', f'{IBOXRESNAME}CapacityMax')
     - IBOXRESNAMECapacityMinSize:
-        get_condition('equals', 'CapacityMin', f'{IBOXRESNAME}CapacityMin')
+        get_condition('', 'equals', 'CapacityMin', f'{IBOXRESNAME}CapacityMin')
     - IBOXRESNAMECapacityMaxSize:
-        get_condition('equals', 'CapacityMax', f'{IBOXRESNAME}CapacityMax')
+        get_condition('', 'equals', 'CapacityMax', f'{IBOXRESNAME}CapacityMax')
     - IBOXRESNAME:
-        get_condition('not_equals', 'None', f'{IBOXRESNAME}Schedule')
+        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}Schedule')
     - IBOXRESNAMEDisable: Or(
           Not(Condition(IBOXRESNAME)),
           And(

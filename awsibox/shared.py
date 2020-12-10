@@ -228,8 +228,8 @@ def get_resvalue(resname, propname):
     return getattr(res, propname)
 
 
-def get_condition(cond_name='', cond='equals', value2='None',
-                  key=None, OrExtend=[], mapinlist=False, nomap=None):
+def get_condition(cond_name, cond, value2, key=None, OrExtend=[],
+                  mapinlist=False, nomap=None):
     # record current state
     override_state = cfg.no_override
     do_no_override(True)

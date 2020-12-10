@@ -94,10 +94,10 @@ class R53RecordSetEFS(R53RecordSet):
 
 
 class R53RecordSetRDS(R53RecordSet):
-    def __init__(self, title, **kwargs):
+    def __init__(self, title, rds_resname, **kwargs):
         super().__init__(title, **kwargs)
         self.Type = 'CNAME'
-        self.ResourceRecords = [GetAtt('DBInstance', 'Endpoint.Address')]
+        self.ResourceRecords = [GetAtt(rds_resname, 'Endpoint.Address')]
         self.TTL = '300'
 
 
@@ -338,10 +338,11 @@ class R53_RecordSetECSLoadBalancer(object):
 
 
 class R53_RecordSetRDS(object):
-    def __init__(self):
+    def __init__(self, rds_resname):
         # Resources
         if cfg.RecordSetExternal:
-            R_External = R53RecordSetRDSExternal('RecordSetExternal')
+            R_External = R53RecordSetRDSExternal('RecordSetExternal',
+                                                 rds_resname)
             add_obj(R_External)
 
             # outputs
@@ -351,7 +352,8 @@ class R53_RecordSetRDS(object):
             add_obj(O_External)
 
         if cfg.RecordSetInternal:
-            R_Internal = R53RecordSetRDSInternal('RecordSetInternal')
+            R_Internal = R53RecordSetRDSInternal('RecordSetInternal',
+                                                 rds_resname)
             add_obj(R_Internal)
 
             # outputs
