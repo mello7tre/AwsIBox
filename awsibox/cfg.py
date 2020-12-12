@@ -260,8 +260,6 @@ CFG_TO_CLASS = {
                          'class': 'AS_LifecycleHook'},
     'DBInstance': {'module': 'rds',
                         'class': 'RDS_DB'},
-    'DBParameterGroup': {'module': 'rds',
-                         'class': 'RDS_ParameterGroups'},
     'DBSubnetGroup': {'module': 'rds',
                       'class': 'RDS_SubnetGroups'},
     'HostedZone': {'module': 'route53',

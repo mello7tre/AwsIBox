@@ -81,14 +81,14 @@ class RDSDBInstance(rds.DBInstance):
 
 
 class RDSDBParameterGroup(rds.DBParameterGroup):
-    def setup(self):
+    def __init__(self, title, dbinstance, **kwargs):
+        super().__init__(title, **kwargs)
         self.Description = Sub('MYSQL %s - ${AWS::StackName}' % self.title)
-        #self.Family = get_subvalue('mysql${1M}', 'EngineVersion')
         self.Family = Sub('${Engine}${EngineVersion}', **{
-            'Engine': Ref('Engine'),
+            'Engine': Ref(f'{dbinstance}Engine'),
             'EngineVersion': Join('.', [
-                Select(0, Split('.', Ref('EngineVersion'))),
-                Select(1, Split('.', Ref('EngineVersion'))),
+                Select(0, Split('.', Ref(f'{dbinstance}EngineVersion'))),
+                Select(1, Split('.', Ref(f'{dbinstance}EngineVersion'))),
             ])
         })
 
@@ -107,18 +107,6 @@ class RDSDBSubnetGroupPublic(rds.DBSubnetGroup):
 # #################################
 # ### START STACK INFRA CLASSES ###
 # #################################
-
-
-class RDS_ParameterGroups(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-            # Resources
-            r_PG = RDSDBParameterGroup(resname)
-            r_PG.setup()
-            r_PG.Parameters = v
-
-            add_obj(r_PG)
 
 
 class RDS_DB(object):
@@ -156,8 +144,13 @@ class RDS_DB(object):
                     Ref('AWS::NoValue')))
 
             R53_RecordSetRDS(resname)
+            r_PG = RDSDBParameterGroup('DBParameterGroup1', mapname)
+            r_PG.Parameters = cfg.DBParameterGroup1
 
-            add_obj(r_DB)
+            add_obj([
+                r_DB,
+                r_PG,
+            ])
 
 
 class RDS_SubnetGroups(object):
