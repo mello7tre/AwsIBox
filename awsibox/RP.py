@@ -272,9 +272,20 @@ def merge_cfg(cfgs, cfg_key, list_base=None):
 def prepend_base_cfgs(cfg_cmm):
     for cfg_key, cfg_value in cfg.BASE_CFGS.items():
         key_names = []
+        BASE = {}
         for c in cfg_cmm:
             if cfg_key in c:
                 for k in c[cfg_key]:
+                    # trick to be able to append a BASE cfg defined in yaml 
+                    # look at RDS DBInstance (cfg/BASE/rds-dbinstance.yml)
+                    if cfg_value == 'IBOXBASE':
+                        try:
+                            cfg_value = k['BASE']
+                        except Exception:
+                            pass
+                        else:
+                            del c[cfg_key]
+                            continue
                     key_names.extend(list(k.keys()))
 
         if key_names:

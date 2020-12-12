@@ -99,14 +99,15 @@ Mysql: &mysql
   Engine: mysql
   EngineVersion: '5.7'
 
+MysqlInternal:
+  <<: [*base, *mysql]
+  PubliclyAccessible: False
+  DBSubnetGroupName: get_expvalue('DBSubnetGroupPrivate')
+MysqlExternal:
+  <<: [*base, *mysql]
+  PubliclyAccessible: True
+  DBSubnetGroupName: get_expvalue('DBSubnetGroupPublic')
 
 global:
   DBInstance:
-    - MysqlInternal:
-        <<: [*base, *mysql]
-        PubliclyAccessible: False
-        DBSubnetGroupName: get_expvalue('DBSubnetGroupPrivate')
-    - MysqlExternal:
-        <<: [*base, *mysql]
-        PubliclyAccessible: True
-        DBSubnetGroupName: get_expvalue('DBSubnetGroupPublic')
+    - BASE: *base

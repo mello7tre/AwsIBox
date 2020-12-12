@@ -88,9 +88,9 @@ class RDSDBParameterGroup(rds.DBParameterGroup):
             'Engine': get_endvalue(f'{dbinstance}Engine'),
             'EngineVersion': Join('.', [
                 Select(0,
-                    Split('.',get_endvalue(f'{dbinstance}EngineVersion'))),
+                       Split('.', get_endvalue(f'{dbinstance}EngineVersion'))),
                 Select(1,
-                    Split('.',get_endvalue(f'{dbinstance}EngineVersion'))),
+                       Split('.', get_endvalue(f'{dbinstance}EngineVersion'))),
             ])
         })
 

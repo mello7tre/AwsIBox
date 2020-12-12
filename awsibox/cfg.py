@@ -122,7 +122,8 @@ BASE_CFGS = {
             'Headers': []
         },
         'ViewerProtocolPolicy': 'redirect-to-https'
-    }
+    },
+    'DBInstance': 'IBOXBASE',
 }
 
 INSTANCE_LIST = [
@@ -259,7 +260,7 @@ CFG_TO_CLASS = {
     'ASGLifecycleHook': {'module': 'autoscaling',
                          'class': 'AS_LifecycleHook'},
     'DBInstance': {'module': 'rds',
-                        'class': 'RDS_DB'},
+                   'class': 'RDS_DB'},
     'DBSubnetGroup': {'module': 'rds',
                       'class': 'RDS_SubnetGroups'},
     'HostedZone': {'module': 'route53',

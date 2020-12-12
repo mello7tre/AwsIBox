@@ -311,7 +311,7 @@ class SG_SecurityGroupIngressesExtraService(object):
             # service name override needed for multiple RDS in same stack
             try:
                 service = v['IBOXService']
-            except:
+            except Exception:
                 pass
 
             for i in cfg.AllowedIp:
