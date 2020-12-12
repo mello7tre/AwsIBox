@@ -87,8 +87,10 @@ class RDSDBParameterGroup(rds.DBParameterGroup):
         self.Family = Sub('${Engine}${EngineVersion}', **{
             'Engine': Ref(f'{dbinstance}Engine'),
             'EngineVersion': Join('.', [
-                Select(0, Split('.', Ref(f'{dbinstance}EngineVersion'))),
-                Select(1, Split('.', Ref(f'{dbinstance}EngineVersion'))),
+                Select(0,
+                    Split('.',get_endvalue(f'{dbinstance}EngineVersion'))),
+                Select(1,
+                    Split('.',get_endvalue(f'{dbinstance}EngineVersion'))),
             ])
         })
 
