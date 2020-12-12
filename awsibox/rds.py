@@ -146,6 +146,8 @@ class RDS_DB(object):
                     Ref('AWS::NoValue')))
 
             R53_RecordSetRDS(resname)
+            # trick fixed name to avoid reboot for now
+            # best way should be to use a name like DBParameterGroup{Engine}
             r_PG = RDSDBParameterGroup('DBParameterGroup1', mapname)
             r_PG.Parameters = cfg.DBParameterGroup1
 
