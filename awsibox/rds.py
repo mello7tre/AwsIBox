@@ -85,7 +85,7 @@ class RDSDBParameterGroup(rds.DBParameterGroup):
         super().__init__(title, **kwargs)
         self.Description = Sub('MYSQL %s - ${AWS::StackName}' % self.title)
         self.Family = Sub('${Engine}${EngineVersion}', **{
-            'Engine': Ref(f'{dbinstance}Engine'),
+            'Engine': get_endvalue(f'{dbinstance}Engine'),
             'EngineVersion': Join('.', [
                 Select(0,
                     Split('.',get_endvalue(f'{dbinstance}EngineVersion'))),
