@@ -278,14 +278,13 @@ def prepend_base_cfgs(cfg_cmm):
                 for k in c[cfg_key]:
                     # trick to be able to append a BASE cfg defined in yaml 
                     # look at RDS DBInstance (cfg/BASE/rds-dbinstance.yml)
-                    if cfg_value == 'IBOXBASE':
-                        try:
-                            cfg_value = k['BASE']
-                        except Exception:
-                            pass
-                        else:
-                            del c[cfg_key]
-                            continue
+                    try:
+                        cfg_value = k[cfg_value]
+                    except Exception:
+                        pass
+                    else:
+                        del c[cfg_key]
+                        continue
                     key_names.extend(list(k.keys()))
 
         if key_names:

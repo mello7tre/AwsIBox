@@ -110,4 +110,4 @@ MysqlExternal:
 
 global:
   DBInstance:
-    - BASE: *base
+    - IBOXBASE: *base
