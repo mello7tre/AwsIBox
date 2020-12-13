@@ -1,0 +1,61 @@
+Base: &base
+  IBOXPARAMETER:
+    - IBOXRESNAMEDesiredSize:
+        Description: 'k to keep current value - empty for mapped value'
+    - IBOXRESNAMEMinSize:
+        Description: 'k to keep current value - empty for mapped value'
+    - IBOXRESNAMEMaxSize:
+        Description: 'k to keep current value - empty for mapped value'
+    - IBOXRESNAMERecurrence:
+        Description: 'empty for mapped value'
+    - IBOXRESNAMEStartTime:
+        Description: 'empty for mapped value'
+  IBOXCONDITION:
+    - IBOXRESNAMEKeepDesiredSize:
+        get_condition('', 'equals', 'k', f'{IBOXRESNAME}DesiredSize')
+    - IBOXRESNAMEKeepMinSize:
+        get_condition('', 'equals', 'k', f'{IBOXRESNAME}MinSize')
+    - IBOXRESNAMEKeepMaxSize:
+        get_condition('', 'equals', 'k', f'{IBOXRESNAME}MaxSize')
+    - IBOXRESNAMECapacityDesiredSize:
+        get_condition('', 'equals', 'CapacityDesired', f'{IBOXRESNAME}DesiredSize')
+    - IBOXRESNAMECapacityMinSize:
+        get_condition('', 'equals', 'CapacityMin', f'{IBOXRESNAME}MinSize')
+    - IBOXRESNAMECapacityMaxSize:
+        get_condition('', 'equals', 'CapacityMax', f'{IBOXRESNAME}MaxSize')
+    - IBOXRESNAME:
+        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}Recurrence')
+  IBOXOUTPUT:
+    - IBOXRESNAME:
+        Value:
+          get_subvalue(
+            'DesiredSize=${1M}MinSize=${2M},MaxSize=${3M},Recurrence=${4M},StartTime=${5M}',
+            [
+              f'{IBOXRESNAME}DesiredSize',
+              f'{IBOXRESNAME}MinSize',
+              f'{IBOXRESNAME}MaxSize',
+              f'{IBOXRESNAME}Recurrence',
+              f'{IBOXRESNAME}StartTime'])
+  Condition: IBOXRESNAME
+  AutoScalingGroupName: Ref('AutoScalingGroup')
+  DesiredCapacity: If(
+    f'{IBOXRESNAME}CapacityDesiredSize',
+    get_endvalue('CapacityDesired'),
+    get_endvalue(f'{IBOXRESNAME}DesiredSize', nocondition=f'{IBOXRESNAME}KeepDesiredSize'))
+  MinSize: If(
+    f'{IBOXRESNAME}CapacityMinSize',
+    get_endvalue('CapacityMin'),
+    get_endvalue(f'{IBOXRESNAME}MinSize', nocondition=f'{IBOXRESNAME}KeepMinSize'))
+  MaxSize: If(
+    f'{IBOXRESNAME}CapacityMaxSize',
+    get_endvalue('CapacityMax'),
+    get_endvalue(f'{IBOXRESNAME}MaxSize', nocondition=f'{IBOXRESNAME}KeepMaxSize'))
+  Recurrence: get_endvalue(f'{IBOXRESNAME}Recurrence')
+  StartTime: get_endvalue(f'{IBOXRESNAME}StartTime')
+
+
+global:
+  ScheduledAction:
+    - IBOXBASE:
+        IBOXCODE: *base
+        StartTime: Ref('AWS::NoValue')

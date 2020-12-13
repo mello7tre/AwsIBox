@@ -124,6 +124,7 @@ BASE_CFGS = {
         'ViewerProtocolPolicy': 'redirect-to-https'
     },
     'DBInstance': 'IBOXBASE',
+    'ScheduledAction': 'IBOXBASE',
 }
 
 INSTANCE_LIST = [

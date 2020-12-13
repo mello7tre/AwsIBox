@@ -54,41 +54,6 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
             'rm /var/lib/cloud/instance/sem/config_scripts_user\n',
         ]))
 
-
-class ASScheduledAction(asg.ScheduledAction):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        name = self.title
-
-        self.Condition = name
-        self.AutoScalingGroupName = Ref('AutoScalingGroup')
-
-        self.DesiredCapacity = If(
-            f'{name}CapacityDesiredSize',
-            get_endvalue('CapacityDesired'),
-            get_endvalue(f'{name}DesiredSize',
-                         nocondition=f'{name}KeepDesiredSize')
-        )
-        self.MinSize = If(
-            f'{name}CapacityMinSize',
-            get_endvalue('CapacityMin'),
-            get_endvalue(f'{name}MinSize',
-                         nocondition=f'{name}KeepMinSize')
-        )
-        self.MaxSize = If(
-            f'{name}CapacityMaxSize',
-            get_endvalue('CapacityMax'),
-            get_endvalue(f'{name}MaxSize',
-                         nocondition=f'{name}KeepMaxSize')
-        )
-        self.Recurrence = get_endvalue(f'{name}Recurrence')
-        self.StartTime = If(
-            f'{name}StartTimeOverride',
-            Ref(f'{name}StartTime'),
-            Ref('AWS::NoValue')
-        )
-
-
 # E - AUTOSCALING #
 
 
@@ -528,118 +493,24 @@ class ASInitConfigELBApplicationInternal(cfm.InitConfig):
 # ### END STACK META CLASSES AND METHODS ###
 # ##########################################
 
-
-class AS_ScheduledAction(object):
-    def __init__(self, resname, OutKey=[]):
-        OutKey.extend([
-            'MinSize',
-            'MaxSize',
-            'Recurrence',
-            'StartTime',
-        ])
-
-        # parameters
-        P_MinSize = Parameter(f'{resname}MinSize')
-        P_MinSize.Description = (
-            f'{resname}Min Capacity - k to keep current value - '
-            'empty for default based on env/role')
-
-        P_MaxSize = Parameter(f'{resname}MaxSize')
-        P_MaxSize.Description = (
-            f'{resname}Max Capacity - k to keep current value - '
-            'empty for default based on env/role')
-
-        P_Recurrence = Parameter(f'{resname}Recurrence')
-        P_Recurrence.Description = (
-            f'{resname}Recurrence - k to keep current value - '
-            'empty for default based on env/role')
-
-        P_StartTime = Parameter(f'{resname}StartTime')
-        P_StartTime.Description = (
-            f'{resname}StartTime - k to keep current value - '
-            'empty for default based on env/role')
-
-        add_obj([
-            P_MinSize,
-            P_MaxSize,
-            P_Recurrence,
-            P_StartTime,
-        ])
-
-        # conditions
-        C_KeepMinSize = get_condition(
-            f'{resname}KeepMinSize', 'equals', 'k', f'{resname}MinSize')
-
-        C_KeepMaxSize = get_condition(
-            f'{resname}KeepMaxSize', 'equals', 'k', f'{resname}MaxSize')
-
-        C_CapacityMinSize = get_condition(
-            f'{resname}CapacityMinSize', 'equals', 'CapacityMin',
-            f'{resname}MinSize')
-
-        C_CapacityMaxSize = get_condition(
-            f'{resname}CapacityMaxSize', 'equals', 'CapacityMax',
-            f'{resname}MaxSize')
-
-        C_Recurrence = get_condition(
-            resname, 'not_equals', 'None', f'{resname}Recurrence')
-
-        add_obj([
-            C_KeepMinSize,
-            C_KeepMaxSize,
-            C_CapacityMinSize,
-            C_CapacityMaxSize,
-            C_Recurrence,
-        ])
-
-        # outputs
-        out_String = []
-        out_Map = {}
-        for k in OutKey:
-            out_String.append('%s=${%s}' % (k, k))  # Ex. 'MinSize=${MinSize}'
-            out_Map.update({
-                k: get_endvalue(f'{resname}{k}') if k != 'StartTime'
-                else Ref(f'{resname}{k}')})
-
-        O_ScheduledAction = Output(resname)
-        O_ScheduledAction.Value = Sub(','.join(out_String), **out_Map)
-
-        add_obj(O_ScheduledAction)
-
-
 class AS_ScheduledActionsEC2(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
             resname = f'{key}{n}'
-            # parameters
-            p_DesiredSize = Parameter(f'{resname}DesiredSize')
-            p_DesiredSize.Description = (
-                f'{resname}Desired Capacity - k to keep current value - '
-                'empty for default based on env/role')
 
-            add_obj(p_DesiredSize)
+            # trick - obj mapped props have same name/key of the one used for
+            # code, so i create a subpro named IBOXCODE and used that as
+            # rootdict
+            try:
+                rootdict = cfg.ScheduledAction[n]['IBOXCODE']
+            except Exception:
+                kwargs = {}
+            else:
+                kwargs = {'rootdict': rootdict}
 
-            # conditions
-            c_KeepDesiredSize = get_condition(
-                f'{resname}KeepDesiredSize', 'equals', 'k',
-                f'{resname}DesiredSize')
-
-            c_CapacityDesiredSize = get_condition(
-                f'{resname}CapacityDesiredSize', 'equals', 'CapacityDesired',
-                f'{resname}DesiredSize')
-
-            add_obj([
-                c_KeepDesiredSize,
-                c_CapacityDesiredSize,
-            ])
-
-            # resources
-            OutKey = ['DesiredSize']
-
-            AS_ScheduledAction(resname, OutKey)
-            r_ScheduledAction = ASScheduledAction(resname)
-
-            add_obj(r_ScheduledAction)
+            r_ScheduledActions = asg.ScheduledAction(resname)
+            auto_get_props(r_ScheduledActions, **kwargs)
+            add_obj(r_ScheduledActions)
 
 
 class AS_ScalingPolicies(object):
