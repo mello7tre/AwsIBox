@@ -52,15 +52,9 @@ def get_template():
 
 def do_write(role): 
     cfg.envrole = role
-    print('Brand: %s - EnvRole: %s' % (brand, role))
-
-    try:
-        template = get_template()
-    except Exception as e:
-        print('ERROR: %s' % e)
-        exit(1)
-
+    template = get_template()
     output_template(template, brand, role)
+    print('Brand: %s - EnvRole: %s' % (brand, role))
 
 
 def concurrent_exec(roles, kwargs):

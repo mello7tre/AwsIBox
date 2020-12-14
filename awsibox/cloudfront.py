@@ -70,48 +70,6 @@ class CFCacheBehavior(clf.CacheBehavior, CFDefaultCacheBehavior):
         self.PathPattern = get_endvalue(f'{name}PathPattern')
 
 
-class CFDistributionConfig(clf.DistributionConfig):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.Enabled = 'True'
-        DefaultCacheBehavior = CFDefaultCacheBehavior(
-            'CloudFrontCacheBehaviors0', key=cfg.CloudFrontCacheBehaviors[0])
-        self.DefaultCacheBehavior = DefaultCacheBehavior
-        self.HttpVersion = get_endvalue('CloudFrontHttpVersion')
-        self.Logging = If(
-            'CloudFrontLogging',
-            clf.Logging(
-                Bucket=Sub(f'{cfg.BucketLogs}.s3.amazonaws.com'),
-                Prefix=Sub('${EnvRole}.${AWS::StackName}/'),
-            ),
-            Ref('AWS::NoValue')
-        )
-        self.PriceClass = 'PriceClass_100'
-        self.ViewerCertificate = clf.ViewerCertificate()
-        self.ViewerCertificate.AcmCertificateArn = If(
-            'CloudFrontAcmCertificate',
-            get_endvalue('GlobalCertificateArn'),
-            Ref('AWS::NoValue')
-        )
-        self.ViewerCertificate.CloudFrontDefaultCertificate = If(
-            'CloudFrontAcmCertificate',
-            Ref('AWS::NoValue'),
-            'True'
-        )
-        self.ViewerCertificate.SslSupportMethod = If(
-            'CloudFrontAcmCertificate',
-            'sni-only',
-            Ref('AWS::NoValue')
-        )
-        self.ViewerCertificate.MinimumProtocolVersion = If(
-            'CloudFrontAcmCertificate',
-            get_endvalue('CloudFrontMinimumProtocolVersion'),
-            Ref('AWS::NoValue')
-        )
-        self.WebACLId = get_endvalue('CloudFrontWebACLId', condition=True)
-
-
 class CFCustomOrigin(clf.CustomOriginConfig):
     def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
@@ -258,7 +216,11 @@ class CF_CloudFront(object):
         # Resources
         CloudFrontDistribution = clf.Distribution('CloudFrontDistribution')
 
-        DistributionConfig = CFDistributionConfig()
+        DistributionConfig = clf.DistributionConfig(
+            'CloudFrontDistributionConfig')
+        auto_get_props(DistributionConfig, 'CloudFrontDistributionIBOXBASE')
+        DistributionConfig.DefaultCacheBehavior = CFDefaultCacheBehavior(
+            'CloudFrontCacheBehaviors0', key=cfg.CloudFrontCacheBehaviors[0])
 
         cachebehaviors = []
         # Skip DefaultBehaviour

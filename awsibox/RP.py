@@ -276,7 +276,7 @@ def prepend_base_cfgs(cfg_cmm):
         for c in cfg_cmm:
             if cfg_key in c:
                 for k in c[cfg_key]:
-                    # trick to be able to append a BASE cfg defined in yaml 
+                    # trick to be able to append a BASE cfg defined in yaml
                     # look at RDS DBInstance (cfg/BASE/rds-dbinstance.yml)
                     try:
                         cfg_value = k[cfg_value]
