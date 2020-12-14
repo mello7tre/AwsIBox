@@ -2,6 +2,8 @@
 import sys
 import os
 import json
+import concurrent.futures
+from traceback import print_exc
 
 from troposphere import Template
 from awsibox import args, cfg, RP, discover, generate
@@ -48,6 +50,37 @@ def get_template():
     return template
 
 
+def do_write(role): 
+    cfg.envrole = role
+    print('Brand: %s - EnvRole: %s' % (brand, role))
+
+    try:
+        template = get_template()
+    except Exception as e:
+        print('ERROR: %s' % e)
+        exit(1)
+
+    output_template(template, brand, role)
+
+
+def concurrent_exec(roles, kwargs):
+    with concurrent.futures.ProcessPoolExecutor(**kwargs) as executor:
+        data = {}
+        future_to_role = {}
+        for n in roles:
+            ex_sub = executor.submit(do_write, n)
+            future_to_role[ex_sub] = n
+
+        for future in concurrent.futures.as_completed(future_to_role):
+            role = future_to_role[future]
+            try:
+                data[role] = future.result()
+            except Exception as e:
+                print(f'{role} generated an exception: {e}')
+                print_exc()
+                exit(1)
+
+
 if args.action == 'view':
     cfg.envrole = args.EnvRole
     cfg.brand = args.Brand
@@ -62,16 +95,8 @@ elif args.action == 'write':
 
     for brand, roles in discover_map.items():
         cfg.brand = brand
-
-        for role in roles:
-            cfg.envrole = role
-
-            print('Brand: %s - EnvRole: %s' % (brand, role))
-
-            try:
-                template = get_template()
-            except Exception as e:
-                print('ERROR: %s' % e)
-                exit(1)
-
-            output_template(template, brand, role)
+        if args.jobs:
+            kwargs = {'max_workers': args.jobs}
+        else:
+            kwargs = {}
+        concurrent_exec(roles, kwargs)

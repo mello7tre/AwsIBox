@@ -41,6 +41,9 @@ def get_args():
         '-b', '--Brands',
         help='Limit generation to EnvRoles defined in the specified Brands',
         nargs='+')
+    parser_write.add_argument(
+        '-j', '--jobs',
+        help='Max concurrent template generation jobs', type=int)
 
     roletype_group_write = parser_write.add_mutually_exclusive_group(
         required=False)
