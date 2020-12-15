@@ -270,38 +270,6 @@ def merge_cfg(cfgs, cfg_key, list_base=None):
 
 
 def prepend_base_cfgs(cfg_cmm):
-    for cfg_key, cfg_value in cfg.BASE_CFGS.items():
-        key_names = []
-        cfg_listvalue = []
-        BASE = {}
-        for c in cfg_cmm:
-            if cfg_key in c:
-                for n, k in enumerate(c[cfg_key]):
-                    # trick to be able to append a BASE cfg defined in yaml
-                    # look at RDS DBInstance (cfg/BASE/rds-dbinstance.yml)
-                    try:
-                        cfg_listvalue.append(k[cfg_value])
-                    except Exception:
-                        pass
-                    else:
-                        del c[cfg_key][n]
-                        if not c[cfg_key]:
-                            del c[cfg_key]
-                        continue
-                    key_names.extend(list(k.keys()))
-
-        if key_names:
-            keys = []
-            for k in key_names:
-                for value in cfg_listvalue:
-                    keys.append({
-                        k: value
-                    })
-
-            cfg_cmm.insert(0, {cfg_key: keys})
-
-
-def prepend_base_cfgs(cfg_cmm):
     base_cfgs = {}
     key_names = {}
     for c in cfg_cmm:
@@ -319,8 +287,8 @@ def prepend_base_cfgs(cfg_cmm):
                         try:
                             base_value = k[base_key_value]
                         except Exception:
-                            # use dict value in cfg.BASE_CFGS
                             if isinstance(base_key_value, dict):
+                                # use dict value in cfg.BASE_CFGS
                                 base_cfgs[n] = base_key_value
                             key_names[n].extend(list(k.keys()))
                         else:
@@ -333,6 +301,7 @@ def prepend_base_cfgs(cfg_cmm):
 
     for n, v in key_names.items():
         values = []
+        # can be optimized with "set(v):" but change order so for now keep it
         for m in v:
             values.append({m: base_cfgs[n]})
         cfg_cmm.insert(0, {n: values})

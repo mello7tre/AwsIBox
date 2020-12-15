@@ -15,6 +15,23 @@ Distribution: &distribution
     MinimumProtocolVersion: If('CloudFrontAcmCertificate', get_endvalue('CloudFrontMinimumProtocolVersion'), Ref('AWS::NoValue'))
   WebACLId: get_endvalue('CloudFrontWebACLId', condition=True)
 
+Origin: &origin
+  IBOXPARAMETER:
+    - IBOXRESNAMEDomainName:
+        Description: 'empty for mapped value'
+  CustomOriginConfig:
+    IBOXPARAMETER:
+      - IBOXRESNAMECustomOriginConfigHTTPSPort:
+          Description: 'empty for mapped value'
+    OriginProtocolPolicy: https-only
+  OriginPath: ''
+  S3OriginConfig:
+    IBOXPARAMETER:
+      - IBOXRESNAMES3OriginConfigOriginAccessIdentity:
+          Description: 'empty for mapped value'
+
 global:
   CloudFrontDistribution:
     - IBOXBASE: *distribution
+  CloudFrontOrigins:
+    - IBOXBASE: *origin

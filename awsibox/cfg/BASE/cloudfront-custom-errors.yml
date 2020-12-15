@@ -11,8 +11,7 @@ global:
     - PortalStatic:
         DomainName: Sub(cfg.BucketPortalStatic + '.s3.amazonaws.com')
         Id: portal-static
-        Path: ''
-        Type: s3
+        OriginCustomHeaders: []
   CloudFrontCustomErrorResponses:
     - 1:
         ErrorCode: 404
