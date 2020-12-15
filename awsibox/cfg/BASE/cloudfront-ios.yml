@@ -14,15 +14,15 @@ global:
         get_condition('', 'not_equals', 'None', 'CloudFrontAliasZone')
     - CloudFrontDistribution:
         get_condition('', 'not_equals', 'None', 'CloudFront')
-    - CloudFrontOriginProtocolHTTP:
+    - CloudFrontOriginsDefaultProtocolHTTP:
         And(
           Condition('ListenerLoadBalancerHttpPort'),
-          get_condition('', 'not_equals', 'https-only', 'CloudFrontOriginProtocolPolicy')
+          get_condition('', 'not_equals', 'https-only', 'CloudFrontOriginsDefaultCustomOriginConfigOriginProtocolPolicy')
         )
-    - CloudFrontOriginProtocolHTTPS:
+    - CloudFrontOriginsDefaultProtocolHTTPS:
         And(
           Condition('ListenerLoadBalancerHttpsPort'),
-          get_condition('', 'not_equals', 'http-only', 'CloudFrontOriginProtocolPolicy')
+          get_condition('', 'not_equals', 'http-only', 'CloudFrontOriginsDefaultCustomOriginConfigOriginProtocolPolicy')
         )
     - RecordSetCloudFront:
         And(
@@ -41,19 +41,16 @@ global:
   CloudFrontOrigins:
     - Default:
         CustomOriginConfig:
-          HTTPSPort: If('CloudFrontOriginProtocolHTTPS', get_endvalue('ListenerLoadBalancerHttpsPort'), Ref('AWS::NoValue'))
-          HTTPPort: If('CloudFrontOriginProtocolHTTP', get_endvalue('ListenerLoadBalancerHttpPort'), Ref('AWS::NoValue'))
-          OriginProtocolPolicy: get_endvalue('CloudFrontOriginProtocolPolicy')
+          HTTPSPort: If('CloudFrontOriginsDefaultProtocolHTTPS', get_endvalue('ListenerLoadBalancerHttpsPort'), Ref('AWS::NoValue'))
+          HTTPPort: If('CloudFrontOriginsDefaultProtocolHTTP', get_endvalue('ListenerLoadBalancerHttpPort'), Ref('AWS::NoValue'))
+          OriginProtocolPolicy: https-only
         DomainName: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
         Id: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
-        OriginPath: get_endvalue('CloudFrontOriginPath')
-        Type: Custom
+        OriginPath: ''
   CloudFrontAliasExtra:
     - 1: None
     - 2: None
   CloudFrontAliasZone: None
-  CloudFrontOriginPath: ''
-  CloudFrontOriginProtocolPolicy: https-only
   CloudFrontOriginKeepaliveTimeout: 5
   CloudFrontOriginReadTimeout: 30
   RecordSetCloudFront: None

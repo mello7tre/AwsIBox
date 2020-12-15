@@ -123,6 +123,7 @@ BASE_CFGS = {
         },
         'ViewerProtocolPolicy': 'redirect-to-https'
     },
+    'CloudFrontOrigins': 'IBOXBASE',
     'DBInstance': 'IBOXBASE',
     'ScheduledAction': 'IBOXBASE',
 }

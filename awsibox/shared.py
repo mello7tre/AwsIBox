@@ -539,6 +539,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 pass
 
     _populate(obj, key, mapname, rootdict)
+    return obj
 
 
 def auto_build_obj(obj, key, name=None):

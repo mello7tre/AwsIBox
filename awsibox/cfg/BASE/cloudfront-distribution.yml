@@ -15,7 +15,6 @@ Distribution: &distribution
     MinimumProtocolVersion: If('CloudFrontAcmCertificate', get_endvalue('CloudFrontMinimumProtocolVersion'), Ref('AWS::NoValue'))
   WebACLId: get_endvalue('CloudFrontWebACLId', condition=True)
 
-
 global:
   CloudFrontDistribution:
     - IBOXBASE: *distribution

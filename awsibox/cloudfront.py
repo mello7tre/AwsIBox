@@ -70,103 +70,6 @@ class CFCacheBehavior(clf.CacheBehavior, CFDefaultCacheBehavior):
         self.PathPattern = get_endvalue(f'{name}PathPattern')
 
 
-class CFCustomOrigin(clf.CustomOriginConfig):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-
-        if 'HTTPSPort' in key:
-            self.HTTPSPort = get_endvalue(f'{name}HTTPSPort')
-        if 'HTTPSort' in key:
-            self.HTTPPort = get_endvalue(f'{name}HTTPPort')
-
-        self.OriginProtocolPolicy = get_endvalue(
-                f'{name}ProtocolPolicy')
-
-        if 'SSLProtocols' in key:
-            self.OriginSSLProtocols = get_endvalue(
-                f'{name}SSLProtocols')
-        if 'ReadTimeout' in key:
-            self.OriginReadTimeout = get_endvalue(
-                f'{name}ReadTimeout')
-        if 'KeepaliveTimeout' in key:
-            self.OriginKeepaliveTimeout = get_endvalue(
-                f'{name}KeepaliveTimeout')
-
-
-class CFOriginCustomHeader(clf.OriginCustomHeader):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-        self.HeaderName = get_endvalue(f'{name}Name')
-        self.HeaderValue = get_endvalue(f'{name}Value')
-
-
-class CFOriginCLF(clf.Origin):
-    def __init__(self, title, index, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title
-        key = cfg.CloudFrontOrigins[index]
-
-        CustomHeaders = []
-        if 'Headers' in key:
-            for n in key['Headers']:
-                headername = f'{name}Headers{n}'
-                CustomHeader = CFOriginCustomHeader(headername)
-
-                CustomHeaders.append(CustomHeader)
-
-        if key['Type'] == 'custom':
-            CustomOrigin = CFCustomOrigin(name, key=key)
-            self.CustomOriginConfig = CustomOrigin
-        else:
-            self.S3OriginConfig = clf.S3OriginConfig()
-            if 'OriginAccessIdentity' in key:
-                self.S3OriginConfig.OriginAccessIdentity = get_subvalue(
-                    'origin-access-identity/cloudfront/${1M}',
-                    f'{name}OriginAccessIdentity')
-
-        self.DomainName = get_endvalue(f'{name}DomainName')
-        self.OriginPath = get_endvalue(f'{name}Path')
-        self.Id = get_endvalue(f'{name}Id')
-        self.OriginCustomHeaders = CustomHeaders
-
-
-class CFOriginEC2ECS(clf.Origin):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        auto_get_props(self, 'CloudFrontOriginsDefault')
-
-        cloudfrontorigincustomheaders = []
-
-        try:
-            custom_headers = cfg.CloudFrontOriginCustomHeaders
-        except Exception:
-            pass
-        else:
-            for n in custom_headers:
-                name = f'CloudFrontOriginCustomHeaders{n}'
-                cloudfrontorigincustomheaders.append(
-                    If(
-                        name,
-                        clf.OriginCustomHeader(
-                            HeaderName=get_endvalue(f'{name}HeaderName'),
-                            HeaderValue=get_endvalue(f'{name}HeaderValue')
-                        ),
-                        Ref('AWS::NoValue')
-                    )
-                )
-                # conditions
-                add_obj(
-                    get_condition(name, 'not_equals', '', f'{name}HeaderName')
-                )
-
-        self.OriginCustomHeaders = cloudfrontorigincustomheaders
-
-
 class CFCustomErrorResponse(clf.CustomErrorResponse):
     def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
@@ -198,6 +101,30 @@ def CFCustomErrors():
             CustomErrorResponses.append(CustomErrorResponse)
 
     return CustomErrorResponses
+
+
+def CFOrigins():
+    Origins = []
+    for n, v in cfg.CloudFrontOrigins.items():
+        resname = f'CloudFrontOrigins{n}'
+
+        try:
+            S3OriginConfig = v['S3OriginConfig']
+        except Exception:
+            pass
+        else:
+            if 'OriginAccessIdentity' in S3OriginConfig:
+                try:
+                    del getattr(cfg, resname)['CustomOriginConfig']
+                except Exception:
+                    pass
+            else:
+                del getattr(cfg, resname)['S3OriginConfig']
+
+        Origins.append(
+            auto_get_props(clf.Origin(resname)))
+
+    return Origins
 
 
 # ##########################################
@@ -287,45 +214,7 @@ class CF_CloudFront(object):
         DistributionConfig.Aliases = cloudfrontaliasextra
         CloudFrontDistribution.DistributionConfig = DistributionConfig
 
-        Origins = []
-        try:
-            cfg.CloudFrontOrigins
-        except Exception:
-            pass
-        else:
-            for n, v in cfg.CloudFrontOrigins.items():
-                if n == 'Default':
-                    # skip the one defined in cloudfront-ios
-                    continue
-                name = f'CloudFrontOrigins{n}'
-
-                # parameters
-                p_Origin = Parameter(f'CloudFrontOrigins{n}DomainName')
-                p_Origin.Description = (
-                    'Origin - empty for default based on env/role')
-
-                p_OriginHTTPSPort = Parameter(f'CloudFrontOrigins{n}HTTPSPort')
-                p_OriginHTTPSPort.Description = (
-                    'Origin - empty for default based on env/role')
-
-                if 'OriginAccessIdentity' in v:
-                    p_OriginAccessIdentity = Parameter(
-                        f'CloudFrontOrigins{n}OriginAccessIdentity')
-                    p_OriginAccessIdentity.Description = (
-                        'OriginAccessIdentity - '
-                        'empty for default based on env/role')
-
-                    add_obj(p_OriginAccessIdentity)
-
-                add_obj([
-                    p_Origin,
-                    p_OriginHTTPSPort,
-                ])
-
-                Origin = CFOriginCLF(name, index=n)
-                Origins.append(Origin)
-
-        CloudFrontDistribution.DistributionConfig.Origins = Origins
+        CloudFrontDistribution.DistributionConfig.Origins = CFOrigins()
         CloudFrontDistribution.DistributionConfig.Comment = get_endvalue(
             'CloudFrontComment')
 
@@ -364,8 +253,6 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
 
         self.CloudFrontDistribution.Condition = 'CloudFrontDistribution'
 
-        Origin = CFOriginEC2ECS()
-        self.CloudFrontDistribution.DistributionConfig.Origins.append(Origin)
         self.CloudFrontDistribution.DistributionConfig.Comment = Sub(
             '${AWS::StackName}-${EnvRole}')
 

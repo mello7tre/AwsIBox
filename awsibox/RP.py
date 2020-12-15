@@ -272,29 +272,70 @@ def merge_cfg(cfgs, cfg_key, list_base=None):
 def prepend_base_cfgs(cfg_cmm):
     for cfg_key, cfg_value in cfg.BASE_CFGS.items():
         key_names = []
+        cfg_listvalue = []
         BASE = {}
         for c in cfg_cmm:
             if cfg_key in c:
-                for k in c[cfg_key]:
+                for n, k in enumerate(c[cfg_key]):
                     # trick to be able to append a BASE cfg defined in yaml
                     # look at RDS DBInstance (cfg/BASE/rds-dbinstance.yml)
                     try:
-                        cfg_value = k[cfg_value]
+                        cfg_listvalue.append(k[cfg_value])
                     except Exception:
                         pass
                     else:
-                        del c[cfg_key]
+                        del c[cfg_key][n]
+                        if not c[cfg_key]:
+                            del c[cfg_key]
                         continue
                     key_names.extend(list(k.keys()))
 
         if key_names:
             keys = []
             for k in key_names:
-                keys.append({
-                    k: cfg_value
-                })
+                for value in cfg_listvalue:
+                    keys.append({
+                        k: value
+                    })
 
             cfg_cmm.insert(0, {cfg_key: keys})
+
+
+def prepend_base_cfgs(cfg_cmm):
+    base_cfgs = {}
+    key_names = {}
+    for c in cfg_cmm:
+        if isinstance(c, dict):
+            for n in list(c):
+                # need to delete items while iterating
+                v = c[n]
+                if n in cfg.BASE_CFGS:
+                    if n not in base_cfgs:
+                        base_cfgs[n] = {}
+                    if n not in key_names:
+                        key_names[n] = []
+                    base_key_value = cfg.BASE_CFGS[n]
+                    for k in list(v):
+                        try:
+                            base_value = k[base_key_value]
+                        except Exception:
+                            # use dict value in cfg.BASE_CFGS
+                            if isinstance(base_key_value, dict):
+                                base_cfgs[n] = base_key_value
+                            key_names[n].extend(list(k.keys()))
+                        else:
+                            # use IBOXBASE (or other value in cfg.BASE_CFGS)
+                            for j, w in base_value.items():
+                                base_cfgs[n][j] = w
+                            v.remove(k)
+                    if not c[n]:
+                        del c[n]
+
+    for n, v in key_names.items():
+        values = []
+        for m in v:
+            values.append({m: base_cfgs[n]})
+        cfg_cmm.insert(0, {n: values})
 
 
 def get_RP(cfgs):

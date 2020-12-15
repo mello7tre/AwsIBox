@@ -1,0 +1,18 @@
+Origin: &origin
+  IBOXPARAMETER:
+    - IBOXRESNAMEDomainName:
+        Description: 'empty for mapped value'
+  CustomOriginConfig:
+    IBOXPARAMETER:
+      - IBOXRESNAMECustomOriginConfigHTTPSPort:
+          Description: 'empty for mapped value'
+    OriginProtocolPolicy: https-only
+  OriginPath: ''
+  S3OriginConfig:
+    IBOXPARAMETER:
+      - IBOXRESNAMES3OriginConfigOriginAccessIdentity:
+          Description: 'empty for mapped value'
+
+global:
+  CloudFrontOrigins:
+    - IBOXBASE: *origin
