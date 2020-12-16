@@ -24,6 +24,7 @@ ecs:
   AllowedIp**: {}
   LaunchType: EC2
   AlarmCPUBase: &cpu
+    IBOXENABLED: False
     Dimensions:
       - Cluster:
           Name: ClusterName

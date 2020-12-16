@@ -339,7 +339,7 @@ class LB_TargetGroupsEC2(object):
                            mapname=f'ElasticLoadBalancingV2TargetGroupEC2')
             add_obj(r_TG)
 
-            cfg.Alarm[f'TargetEC2{n}5XX']['Enabled'] = True
+            cfg.Alarm[f'TargetEC2{n}5XX']['IBOXENABLED'] = True
 
 
 class LB_TargetGroupsECS(object):
@@ -353,7 +353,7 @@ class LB_TargetGroupsECS(object):
                            mapname=f'ElasticLoadBalancingV2TargetGroupECS')
             add_obj(r_TG)
 
-            cfg.Alarm[f'Target{n}5XX']['Enabled'] = True
+            cfg.Alarm[f'Target{n}5XX']['IBOXENABLED'] = True
 
 
 class LB_TargetGroupsALB(object):
@@ -400,7 +400,7 @@ class LB_ElasticLoadBalancingClassicEC2(LB_ListenersEC2):
             r_LB.Listeners = self.Listeners
 
             add_obj(r_LB)
-            cfg.Alarm[f'Backend{n}5XX']['Enabled'] = True
+            cfg.Alarm[f'Backend{n}5XX']['IBOXENABLED'] = True
 
 
 class LB_ElasticLoadBalancingApplicationEC2(object):

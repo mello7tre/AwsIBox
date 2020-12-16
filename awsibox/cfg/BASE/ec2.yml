@@ -39,10 +39,10 @@ ec2:
   Alarm:
     - CPUHigh:
         <<: *cpu
-        Enabled: True
+        IBOXENABLED: True
     - CPULow:
         <<: *cpu
-        Enabled: True
+        IBOXENABLED: True
   CustomUserDataScript: init.sh
   DeploymentGroup: False
   LoadBalancer:

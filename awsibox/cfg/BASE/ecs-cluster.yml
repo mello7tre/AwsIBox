@@ -33,9 +33,9 @@ ecs-cluster:
         Export: Export(Sub('Cluster-${AWS::StackName}'))
   Alarm:
     - CPUHigh:
-        Enabled: None
+        IBOXENABLED: False
     - CPULow:
-        Enabled: None
+        IBOXENABLED: False
   ASGLifecycleHook:
     - ECSDrainInstance:
         AutoScalingGroupName: Ref('AutoScalingGroup')

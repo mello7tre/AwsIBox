@@ -1,5 +1,5 @@
 AlarmTarget5XX: &target5xx
-  Enabled: None
+  IBOXENABLED: False
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
   ActionsEnabled: True
   EvaluationPeriods: 2
@@ -13,7 +13,7 @@ AlarmTarget5XX: &target5xx
   Dimensions: []
 
 AlarmBackend5XX: &backend5xx
-  Enabled: None
+  IBOXENABLED: False
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
   ActionsEnabled: True
   EvaluationPeriods: 2
@@ -27,7 +27,7 @@ AlarmBackend5XX: &backend5xx
   Dimensions: []
 
 AlarmASGSpot: &asgspot
-  Enabled: None
+  IBOXENABLED: False
   Condition: SpotASG
   AlarmActions: [Ref('SNSTopicASGSpot')]
   ActionsEnabled: True
@@ -88,7 +88,7 @@ AlarmASGSpot: &asgspot
           Period: 60
 
 AlarmDiskUsed: &diskused
-  Enabled: None
+  IBOXENABLED: False
   ActionsEnabled: True
   EvaluationPeriods: 3
   MetricName: 'root_disk_used_percent'
@@ -104,7 +104,7 @@ AlarmDiskUsed: &diskused
 
 global:
   AlarmCPUBase: &cpu
-    Enabled: None
+    IBOXENABLED: False
     ActionsEnabled: True
     EvaluationPeriods: 5
     MetricName: 'CPUUtilization'
