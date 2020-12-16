@@ -93,4 +93,4 @@ elif args.action == 'write':
             kwargs = {'max_workers': args.jobs}
         else:
             kwargs = {}
-        concurrent_exec(roles, kwargs)
+        concurrent_exec(set(roles), kwargs)

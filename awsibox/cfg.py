@@ -68,6 +68,7 @@ EVAL_FUNCTIONS_IN_CFG = (
     'Export(',
     'Join(',
     'If(',
+    'Equals(',
     'GetAZs(',
     'dict(',
     'eval(',

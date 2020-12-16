@@ -27,19 +27,6 @@ class R53RecordSetZoneInternal(R53RecordSet):
                         % cfg.HostedZoneNamePrivate)
 
 
-class R53RecordSetCloudFront(R53RecordSetZoneExternal):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Condition = 'RecordSetCloudFront'
-        self.AliasTarget = r53.AliasTarget(
-            DNSName=GetAtt('CloudFrontDistribution', 'DomainName'),
-            HostedZoneId=cfg.HostedZoneIdCF
-        )
-        self.Name = Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s'
-                        % cfg.HostedZoneNameEnv)
-        self.Type = 'A'
-
-
 class R53RecordSetLoadBalancer(R53RecordSet):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -225,16 +212,6 @@ class R53RecordApiGatewayDomainName(R53RecordSetZoneExternal):
 # #################################
 # ### START STACK INFRA CLASSES ###
 # #################################
-
-
-class R53_RecordSetCloudFront(object):
-    def __init__(self):
-        # Resources
-        R_RecordSet = R53RecordSetCloudFront('RecordSetCloudFront')
-
-        add_obj([
-            R_RecordSet,
-        ])
 
 
 class R53_RecordSetEC2LoadBalancer(object):

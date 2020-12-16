@@ -94,9 +94,9 @@ def discover(brands, envroles, stacktypes):
                 if brand == 'BASE':
                     files.append(
                         os.path.join(cfg.PATH_INT, brand, role + '.yml'))
-        else:
+            build_discover_map(brand, files, stacktypes=[''])
+        if stacktypes:
             files = get_files(brand)
-
-        build_discover_map(brand, files, stacktypes)
+            build_discover_map(brand, files, stacktypes)
 
     return discover_map

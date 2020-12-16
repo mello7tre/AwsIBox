@@ -3,6 +3,10 @@ IBoxLoader: !include [
 ]
 
 agw:
+  Condition:
+    - ListenerLoadBalancerHttpPort: Equals('True', 'False')
+    - ListenerLoadBalancerHttpsPort: Equals('True', 'True')
+    - RecordSetCloudFront: Equals('True', 'True')
   Output:
     - InvokeUrl:
         Value: Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/%s' % cfg.ApiGatewayRestApi['Base']['Stage'])
@@ -21,5 +25,4 @@ agw:
     - Default:
         CustomOriginConfig:
           HTTPSPort: '443'
-          OriginProtocolPolicy: https-only
         DomainName:  Sub('${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com')

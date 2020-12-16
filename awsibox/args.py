@@ -45,15 +45,14 @@ def get_args():
         '-j', '--jobs',
         help='Max concurrent template generation jobs', type=int)
 
-    roletype_group_write = parser_write.add_mutually_exclusive_group(
-        required=False)
-    roletype_group_write.add_argument(
+    parser_write.add_argument(
         '-r', '--EnvRoles',
         help='Limit generation to specified EnvRoles', nargs='+')
-    roletype_group_write.add_argument(
+
+    parser_write.add_argument(
         '-t', '--StackTypes',
         help='Limit generation to EnvRoles of the specified StackTypes',
-        nargs='+', default=[''])
+        nargs='+', default=[])
 
     args = parser.parse_args()
 

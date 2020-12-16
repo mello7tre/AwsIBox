@@ -57,8 +57,6 @@ global:
     - Zone: If('CloudFrontAliasZone',
               Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)), Ref('AWS::NoValue'))
   CloudFrontAliasZone: None
-  CloudFrontOriginKeepaliveTimeout: 5
-  CloudFrontOriginReadTimeout: 30
   RecordSetCloudFront: None
   R53RecordSet:
     - CloudFront:

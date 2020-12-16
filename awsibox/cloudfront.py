@@ -4,7 +4,6 @@ from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj,
                      change_obj_data, clf_compute_order)
-from .route53 import R53_RecordSetCloudFront
 
 
 class CFOriginAccessIdentity(clf.CloudFrontOriginAccessIdentity):
@@ -237,86 +236,6 @@ class CF_CloudFront(object):
         add_obj([
             R_CloudFrontDistribution,
         ])
-
-
-
-class CF_CloudFrontInOtherService(CF_CloudFront):
-    def __init__(self, key):
-        super().__init__()
-
-        # Resources
-        # Prepend to Aliases list
-        self.CloudFrontDistribution.DistributionConfig.Aliases[0:0] = [
-            If(
-                'RecordSetCloudFront',
-                Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s'
-                    % cfg.HostedZoneNameEnv),
-                Ref('RecordSetExternal')
-            ),
-            Sub('${EnvRole}${RecordSetCloudFrontSuffix}.%s'
-                % cfg.HostedZoneNameEnv),
-            If(
-                'CloudFrontAliasZone',
-                Sub('%s.%s' % (
-                    get_endvalue('CloudFrontAliasZone'),
-                    cfg.HostedZoneNameEnv)),
-                Ref('AWS::NoValue')
-            ),
-        ]
-
-        self.CloudFrontDistribution.Condition = 'CloudFrontDistribution'
-
-        self.CloudFrontDistribution.DistributionConfig.Comment = Sub(
-            '${AWS::StackName}-${EnvRole}')
-
-        try:
-            cfg.CloudFrontCustomErrorResponses
-        except Exception:
-            pass
-        else:
-            (self.CloudFrontDistribution.
-                DistributionConfig.CustomErrorResponses) = CFCustomErrors()
-
-        R53_RecordSetCloudFront()
-
-
-class CF_CloudFrontEC2NO(CF_CloudFrontInOtherService):
-    def __init__(self, key):
-        super().__init__(key)
-
-
-class CF_CloudFrontECSNO(CF_CloudFrontInOtherService):
-    def __init__(self, key):
-        super().__init__(key)
-
-
-class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
-    def __init__(self, key):
-        super().__init__(key)
-
-        # To use the same code of ecs ec2 need to add "fake" condition,
-        # api-gateway use https only
-
-        # Conditions
-        add_obj([
-            {'ListenerLoadBalancerHttpPort': Equals('True', 'False')},
-            {'ListenerLoadBalancerHttpsPort': Equals('True', 'True')},
-        ])
-
-        # RecordSetExternal do not exist replace it with Ref('AWS::NoValue')
-        change_obj_data(
-            self.CloudFrontDistribution.DistributionConfig.Aliases,
-            'RecordSetExternal',
-            Ref('AWS::NoValue')
-        )
-
-
-class CF_CloudFrontCLFNO(CF_CloudFront):
-    def __init__(self, key):
-        super(CF_CloudFrontCLF, self).__init__()
-
-        (self.CloudFrontDistribution.
-            DistributionConfig.CustomErrorResponses) = CFCustomErrors()
 
 
 class CF_CachePolicy(object):
