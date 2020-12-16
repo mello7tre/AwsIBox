@@ -98,5 +98,9 @@ def discover(brands, envroles, stacktypes):
         if stacktypes:
             files = get_files(brand)
             build_discover_map(brand, files, stacktypes)
+        if not stacktypes and not envroles:
+            # match all
+            files = get_files(brand)
+            build_discover_map(brand, files, stacktypes=[''])
 
     return discover_map

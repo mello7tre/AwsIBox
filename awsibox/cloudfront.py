@@ -69,22 +69,6 @@ class CFCacheBehavior(clf.CacheBehavior, CFDefaultCacheBehavior):
         self.PathPattern = get_endvalue(f'{name}PathPattern')
 
 
-class CFCustomErrorResponse(clf.CustomErrorResponse):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title  # Ex. CustomErrorResponses1
-
-        self.ErrorCode = get_endvalue(f'{name}ErrorCode')
-        self.ErrorCachingMinTTL = get_endvalue(f'{name}ErrorCachingMinTTL')
-
-        if 'ResponsePagePath' in key:
-            self.ResponsePagePath = get_endvalue(f'{name}ResponsePagePath')
-
-        if 'ResponseCode' in key:
-            self.ResponseCode = get_endvalue(f'{name}ResponseCode')
-
-
 def CFCustomErrors():
     CustomErrorResponses = []
     mapname = 'CloudFrontCustomErrorResponses'
@@ -95,9 +79,10 @@ def CFCustomErrors():
         pass
     else:
         for n, v in ErrorResponses.items():
-            name = f'{mapname}{n}'
-            CustomErrorResponse = CFCustomErrorResponse(name, key=v)
-            CustomErrorResponses.append(CustomErrorResponse)
+            resname = f'{mapname}{n}'
+            CustomErrorResponse = clf.CustomErrorResponse(resname)
+            CustomErrorResponses.append(
+                auto_get_props(CustomErrorResponse))
 
     return CustomErrorResponses
 
