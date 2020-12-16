@@ -267,6 +267,8 @@ CFG_TO_CLASS = {
                       'class': 'RDS_SubnetGroups'},
     'HostedZone': {'module': 'route53',
                    'class': 'R53_HostedZones'},
+    'R53RecordSet': {'module': 'route53',
+                     'class': 'R53_RecordSets'},
     'WafByteMatchSet': {'module': 'waf',
                         'class': ['WAF_GlobalByteMatchSets',
                                   'WAF_RegionalByteMatchSets']},

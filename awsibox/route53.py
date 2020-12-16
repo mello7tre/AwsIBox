@@ -468,3 +468,14 @@ class R53_HostedZones(object):
                 o_HostedZoneName,
                 o_HostedZoneId,
             ])
+
+
+class R53_RecordSets(object):
+    def __init__(self, key):
+        for n, v in getattr(cfg, key).items():
+            if not v['IBOXENABLED']:
+                continue
+            resname = f'RecordSet{n}'
+
+            r_Record = r53.RecordSetType(resname)
+            add_obj(auto_get_props(r_Record, f'R53{resname}'))

@@ -1,0 +1,23 @@
+ZoneExternal: &zoneexternal
+  HostedZoneId: get_expvalue('HostedZoneIdEnv')
+  Name: Sub('${AWS::StackName}.${EnvRole}.%s' % cfg.HostedZoneNameRegionEnv)
+
+ZoneInternal: &zoneinternal
+  HostedZoneId: get_expvalue('HostedZoneIdPrivate')
+  Name: Sub('${AWS::StackName}.${EnvRole}.%s' % cfg.HostedZoneNamePrivate)
+
+CloudFront: &cloudfront
+  <<: *zoneexternal
+  Condition: RecordSetCloudFront
+  AliasTarget:
+    DNSName: GetAtt('CloudFrontDistribution', 'DomainName')
+    HostedZoneId: cfg.HostedZoneIdCF
+  Name: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv)
+  Type: A
+
+
+global:
+  R53RecordSet:
+    - CloudFront:
+        <<: *cloudfront
+        IBOXENABLED: None

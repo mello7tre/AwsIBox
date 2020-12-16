@@ -1,5 +1,6 @@
 IBoxLoader: !include [
   cloudfront.yml,
+  route53-recordset.yml,
 ]
 
 global:
@@ -38,22 +39,30 @@ global:
   CloudFrontCacheBehaviors:
     - 0:
         TargetOriginId: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s' % cfg.HostedZoneNameEnv)
+  CloudFrontComment: Sub('${AWS::StackName}-${EnvRole}')
+  CloudFrontDistributionCondition: CloudFrontDistribution
   CloudFrontOrigins:
     - Default:
         CustomOriginConfig:
-          HTTPSPort: If('CloudFrontOriginsDefaultProtocolHTTPS', get_endvalue('ListenerLoadBalancerHttpsPort'), Ref('AWS::NoValue'))
-          HTTPPort: If('CloudFrontOriginsDefaultProtocolHTTP', get_endvalue('ListenerLoadBalancerHttpPort'), Ref('AWS::NoValue'))
-          OriginProtocolPolicy: https-only
+          HTTPSPort: If('CloudFrontOriginsDefaultCustomOriginConfigProtocolHTTPS',
+                        get_endvalue('ListenerLoadBalancerHttpsPort'), Ref('AWS::NoValue'))
+          HTTPPort:  If('CloudFrontOriginsDefaultCustomOriginConfigProtocolHTTP',
+                        get_endvalue('ListenerLoadBalancerHttpPort'), Ref('AWS::NoValue'))
         DomainName: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
         Id: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
-        OriginPath: ''
   CloudFrontAliasExtra:
-    - 1: None
-    - 2: None
+    - Cdn: If('RecordSetCloudFront',
+              Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv), Ref('RecordSetExternal'))
+    - Env: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.%s' % cfg.HostedZoneNameEnv)
+    - Zone: If('CloudFrontAliasZone',
+              Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)), Ref('AWS::NoValue'))
   CloudFrontAliasZone: None
   CloudFrontOriginKeepaliveTimeout: 5
   CloudFrontOriginReadTimeout: 30
   RecordSetCloudFront: None
+  R53RecordSet:
+    - CloudFront:
+        IBOXENABLED: True
 
 
 IBoxLoaderAfter: !include [

@@ -24,6 +24,9 @@ global:
     - CloudFrontMinimumProtocolVersion:
         Value: get_resvalue('CloudFrontDistribution', 'DistributionConfig.ViewerCertificate.MinimumProtocolVersion')
   CloudFront: None
+  CloudFrontAliasExtra:
+    - 1: None
+    - 2: None
   CloudFrontAcmCertificate: True
   CloudFrontCacheBehaviors:
     - 0: {}

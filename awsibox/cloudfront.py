@@ -139,7 +139,7 @@ def CFOrigins():
 
 # S - CLOUDFRONT #
 class CF_CloudFront(object):
-    def __init__(self):
+    def __init__(self, key):
         # Resources
         CloudFrontDistribution = clf.Distribution('CloudFrontDistribution')
 
@@ -196,8 +196,13 @@ class CF_CloudFront(object):
         DistributionConfig.CacheBehaviors = cachebehaviors
 
         cloudfrontaliasextra = []
-        for n in cfg.CloudFrontAliasExtra:
+        for n, v in cfg.CloudFrontAliasExtra.items():
             name = f'CloudFrontAliasExtra{n}'
+
+            # skip parameter and condition for Cdn, Env, Zone
+            if v.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+                cloudfrontaliasextra.append(get_endvalue(name))
+                continue
 
             # parameters
             p_Alias = Parameter(name)
@@ -212,11 +217,20 @@ class CF_CloudFront(object):
             add_obj(get_condition(name, 'not_equals', 'None'))
 
         DistributionConfig.Aliases = cloudfrontaliasextra
+        DistributionConfig.CustomErrorResponses = CFCustomErrors()
         CloudFrontDistribution.DistributionConfig = DistributionConfig
 
         CloudFrontDistribution.DistributionConfig.Origins = CFOrigins()
         CloudFrontDistribution.DistributionConfig.Comment = get_endvalue(
             'CloudFrontComment')
+
+        try:
+            cfg.CloudFrontDistributionCondition
+        except Exception:
+            pass
+        else:
+            CloudFrontDistribution.Condition = (
+                cfg.CloudFrontDistributionCondition)
 
         R_CloudFrontDistribution = CloudFrontDistribution
 
@@ -224,7 +238,6 @@ class CF_CloudFront(object):
             R_CloudFrontDistribution,
         ])
 
-        self.CloudFrontDistribution = CloudFrontDistribution
 
 
 class CF_CloudFrontInOtherService(CF_CloudFront):
@@ -267,12 +280,12 @@ class CF_CloudFrontInOtherService(CF_CloudFront):
         R53_RecordSetCloudFront()
 
 
-class CF_CloudFrontEC2(CF_CloudFrontInOtherService):
+class CF_CloudFrontEC2NO(CF_CloudFrontInOtherService):
     def __init__(self, key):
         super().__init__(key)
 
 
-class CF_CloudFrontECS(CF_CloudFrontEC2):
+class CF_CloudFrontECSNO(CF_CloudFrontInOtherService):
     def __init__(self, key):
         super().__init__(key)
 
@@ -298,7 +311,7 @@ class CF_CloudFrontAGW(CF_CloudFrontInOtherService):
         )
 
 
-class CF_CloudFrontCLF(CF_CloudFront):
+class CF_CloudFrontCLFNO(CF_CloudFront):
     def __init__(self, key):
         super(CF_CloudFrontCLF, self).__init__()
 
