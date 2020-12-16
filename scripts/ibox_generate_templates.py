@@ -72,7 +72,9 @@ def concurrent_exec(roles, kwargs):
             except Exception as e:
                 print(f'{role} generated an exception: {e}')
                 print_exc()
-                exit(1)
+                break
+        for future in future_to_role:
+            future.cancel()
 
 
 if args.action == 'view':
