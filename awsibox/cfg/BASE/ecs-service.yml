@@ -1,0 +1,56 @@
+Base: &base
+  IBOXENABLED: False
+  Cluster: get_expvalue('Cluster', 'ClusterStack')
+  HealthCheckGracePeriodSeconds: 0
+  PlatformVersion: LATEST
+  TaskDefinition: Ref('TaskDefinition')
+
+Replica: &replica
+  IBOXPARAMETER:
+    - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
+        Description: 'empty for mapped value'
+    - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
+        Description: 'empty for mapped value'
+  IBOXOUTPUT:
+    - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
+        Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMaximumPercent')
+    - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
+        Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMinimumHealthyPercent')
+  DesiredCount: get_endvalue('CapacityDesired')
+  DeploymentConfiguration:
+    MaximumPercent: 200
+    MinimumHealthyPercent: 100
+  LaunchType: get_endvalue('LaunchType')
+  PlacementStrategies:
+    - IBOXIF:
+        - LaunchTypeFarGate
+        - Ref('AWS::NoValue')
+        - IBOXVALUE
+    - Instance:
+        Type: spread
+        Field: instanceId
+
+#    If('LaunchTypeFarGate', Ref('AWS::NoValue'),
+#                          [ecs.PlacementStrategy(Type='spread', Field='instanceId')])
+#                          #ecs.PlacementStrategy(Type='spread', Field='attribute:ecs.availability-zone')
+  SchedulingStrategy: REPLICA
+  
+Daemon: &daemon
+  SchedulingStrategy: DAEMON
+
+Spot: &spot
+  CapacityProviderStrategy:
+    - FargateSpot:
+        Base: get_endvalue('CapacityDesired')
+        CapacityProvider: FARGATE_SPOT
+        Weight: 1
+
+
+global:
+  Service:
+    - Base:
+        <<: [*base, *replica]
+    - Daemon:
+        <<: [*base, *daemon]
+    - Spot:
+        <<: [*base, *spot]

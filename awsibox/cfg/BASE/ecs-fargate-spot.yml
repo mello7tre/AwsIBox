@@ -17,11 +17,7 @@ global:
   FargateSpot: None
   Service:
     - Spot:
-        CapacityProviderStrategy:
-          - FargateSpot:
-              Base: get_endvalue('CapacityDesired')
-              CapacityProvider: FARGATE_SPOT
-              Weight: 1
+        IBOXENABLED: True
   ScalableTarget:
     - Service:
         ResourceId:

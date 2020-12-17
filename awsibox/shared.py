@@ -395,13 +395,17 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             prop_list = []
             prop_class = props[obj_propname][0][0]
             for o, v in key[obj_propname].items():
+                if o == 'IBOXIF':
+                    # element named IBOXIF must no be parsed
+                    # is needed for wrapping whole returned obj in _populate
+                    continue
                 name_o = str(o)
                 mapname_o = f'{mapname_obj}{name_o}'
                 prop_obj = prop_class()
 
                 _populate(prop_obj, key=v, mapname=mapname_o)
 
-                # trick to wrapper obj in If Condition
+                # trick to wrapper single obj in If Condition
                 try:
                     if_wrapper = v['IBOXIF']
                 except Exception:
@@ -517,16 +521,31 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                         eval(if_list[3]) if if_list[3].startswith(
                             cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[3]),
                 )
-            # trick to wrapper recursed value in If Condition
+            # trick to wrapper recursed returned value in If Condition
+            # TODO NEED TO CREATE A BETTER IF IN YAML CFG
             try:
                 if_wrapper = key_value['IBOXIF']
             except Exception:
                 pass
             else:
                 condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
-                value = If(condname, value,
-                           if_wrapper[1] if isinstance(
-                               if_wrapper[1], dict) else eval(if_wrapper[1]))
+                try:
+                    if_wrapper[2]
+                except Exception:
+                    # short two element condition
+                    value1 = value
+                    value2 = (if_wrapper[1] if isinstance(if_wrapper[1], dict)
+                              else eval(if_wrapper[1]))
+                else:
+                    # full three element condition
+                    if if_wrapper[1] == 'IBOXVALUE':
+                        value1 = value
+                        value2 = eval(if_wrapper[2])
+                    else:
+                        value1 = eval(if_wrapper[1])
+                        value2 = value
+
+                value = If(condname, value1, value2)
 
             if propname == 'Condition' and not isinstance(value, str):
                 # Avoid intercepting Template Condition as Resource Condition

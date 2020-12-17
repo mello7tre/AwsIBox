@@ -20,4 +20,8 @@ reserve-cpu:
   LaunchType: EC2
   Image: 'amazonlinux:2'
   ScalableTarget: IBOXSKIPCLASS
-  SchedulingStrategy: DAEMON
+  Service:
+    - Base:
+        IBOXENBALED: False
+    - Daemon:
+        IBOXENBALED: True

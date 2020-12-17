@@ -7,63 +7,6 @@ from .securitygroup import (SecurityGroupEcsService,
                             SecurityGroupRuleEcsService, SG_SecurityGroupsECS)
 
 
-class ECSService(ecs.Service):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Cluster = get_expvalue('Cluster', 'ClusterStack')
-
-        # DAEMON MODE DO NOT SUPPORT DESIRED OR PLACEMENT STRATEGIES,
-        # IS SIMPLY ONE TASK FOR CONTAINER INSTANCE
-        if cfg.SchedulingStrategy == 'REPLICA':
-            self.DesiredCount = get_endvalue('CapacityDesired')
-            self.DeploymentConfiguration = ecs.DeploymentConfiguration(
-                MaximumPercent=get_endvalue(
-                    'DeploymentConfigurationMaximumPercent'),
-                MinimumHealthyPercent=get_endvalue(
-                    'DeploymentConfigurationMinimumHealthyPercent'),
-            )
-            self.PlacementStrategies = If(
-                'LaunchTypeFarGate',
-                Ref('AWS::NoValue'),
-                [
-                    # ecs.PlacementStrategy(
-                    #    Type='spread',
-                    #    Field='attribute:ecs.availability-zone'
-                    # ),
-                    ecs.PlacementStrategy(
-                        Type='spread',
-                        Field='instanceId'
-                    )
-                ]
-            )
-        elif cfg.SchedulingStrategy == 'DAEMON':
-            self.SchedulingStrategy = 'DAEMON'
-
-        if cfg.HealthCheckGracePeriodSeconds != 0:
-            self.HealthCheckGracePeriodSeconds = (
-                get_endvalue('HealthCheckGracePeriodSeconds'))
-
-        # self.PlatformVersion = 'LATEST'
-
-        if cfg.LoadBalancerApplication:
-            self.LoadBalancers = []
-            self.Role = If(
-                'NetworkModeAwsVpc',
-                Ref('AWS::NoValue'),
-                get_expvalue('RoleECSService')
-            )
-            # When creating a service that specifies multiple target groups,
-            # the Amazon ECS service-linked role must be created.
-            # The role is created by omitting the Role property
-            # in AWS CloudFormation
-            if (cfg.LoadBalancerApplicationExternal and
-                    cfg.LoadBalancerApplicationInternal):
-                self.Role = Ref('AWS::NoValue')
-
-        self.TaskDefinition = Ref('TaskDefinition')
-
-
 class ECSTaskDefinition(ecs.TaskDefinition):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -451,6 +394,8 @@ class ECS_Service(object):
         add_obj(R_SG)
 
         for n, v in getattr(cfg, key).items():
+            if not v['IBOXENABLED']:
+                continue
             mapname = f'{key}{n}'
 
             # trick to avoid changing, for now, current service resource name
@@ -459,23 +404,39 @@ class ECS_Service(object):
             else:
                 resname = 'Service'
 
-            R_Service = ECSService(resname)
-            auto_get_props(R_Service, mapname)
+            r_Service = ecs.Service(mapname)
+            auto_get_props(r_Service)
+            r_Service.title = resname
+
+            if cfg.LoadBalancerApplication:
+                r_Service.LoadBalancers = []
+                r_Service.Role = If(
+                    'NetworkModeAwsVpc',
+                    Ref('AWS::NoValue'),
+                    get_expvalue('RoleECSService'))
+
+            # When creating a service that specifies multiple target groups,
+            # the Amazon ECS service-linked role must be created.
+            # The role is created by omitting the Role property
+            # in AWS CloudFormation
+            if (cfg.LoadBalancerApplicationExternal and
+                    cfg.LoadBalancerApplicationInternal):
+                r_Service.Role = Ref('AWS::NoValue')
 
             if cfg.LoadBalancerApplicationExternal:
-                R_Service.LoadBalancers.append(
+                r_Service.LoadBalancers.append(
                     ECSLoadBalancer('', scheme='External'))
 
             if cfg.LoadBalancerApplicationInternal:
-                R_Service.LoadBalancers.append(
+                r_Service.LoadBalancers.append(
                     ECSLoadBalancer('', scheme='Internal'))
 
-            R_Service.NetworkConfiguration = If(
+            r_Service.NetworkConfiguration = If(
                 'NetworkModeAwsVpc',
                 ECSNetworkConfiguration(''),
                 Ref('AWS::NoValue'))
 
-            add_obj(R_Service)
+            add_obj(r_Service)
 
 
 class ECS_Cluster(object):

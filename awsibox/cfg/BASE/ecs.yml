@@ -6,21 +6,13 @@ IBoxLoader: !include [
   alarms.yml,
   cloudfront-ios.yml,
   ecs-task.yml,
+  ecs-service.yml,
 ]
 
 ecs:
   Parameter:
-    - DeploymentConfigurationMaximumPercent:
-        Description: 'DeploymentConfiguration MaximumPercent - empty for default based on env/role'
-    - DeploymentConfigurationMinimumHealthyPercent:
-        Description: 'DeploymentConfiguration MinimumHealthyPercent - empty for default based on env/role'
     - LoadBalancerApplicationStack:
         Description: 'LoadBalancer Application Stack to use - empty for default based on env/role'
-  Output:
-    - DeploymentConfigurationMaximumPercent:
-        Value: get_endvalue('DeploymentConfigurationMaximumPercent')
-    - DeploymentConfigurationMinimumHealthyPercent:
-        Value: get_endvalue('DeploymentConfigurationMinimumHealthyPercent')
   AllowedIp**: {}
   LaunchType: EC2
   AlarmCPUBase: &cpu
@@ -40,22 +32,10 @@ ecs:
     - CPULow:
         <<: *cpu
         AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyDown')]
-  DeploymentConfiguration:
-    MaximumPercent: 200
-    MinimumHealthyPercent: 100
-  HealthCheckGracePeriodSeconds: 0
   ListenerRules:
     - 1:
         HostHeader: '*${EnvRole}.*'
   LoadBalancerApplicationStack: alb-a
-  ScalableTarget_DIS:
-    - Service:
-        MaxCapacity: get_endvalue('CapacityMax')
-        MinCapacity: get_endvalue('CapacityMin')
-        ResourceId: get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
-        RoleARN: get_expvalue('RoleEC2ContainerServiceAutoscale', '')
-        ScalableDimension: 'ecs:service:DesiredCount'
-        ServiceNamespace: ecs
   ApplicationAutoScalingScalingPolicy:
     - Cpu:
         Enabled: True
@@ -78,10 +58,9 @@ ecs:
         CapacityMax: k
         CapacityMin: k
         Schedule: 'cron(00 06 * * ? *)'
-  SchedulingStrategy: REPLICA
   Service:
     - Base:
-        LaunchType: get_endvalue('LaunchType')
+        IBOXENABLED: True
 
 dev: &cfg_dev
   Alarm:

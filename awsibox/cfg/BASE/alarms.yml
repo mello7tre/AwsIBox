@@ -1,37 +1,56 @@
-AlarmTarget5XX: &target5xx
+Base: &base
+  IBOXPARAMETER:
+    - IBOXRESNAMEEvaluationPeriods:
+        Description: 'Number of periods for alarm evaluation - 0 to disable - empty for mapped value'
+        AllowedValues: ['', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+#    - IBOXRESNAMEPeriod:
+#        Description: 'Period lenght in seconds (multiple of 60) - empty for mapped value'
+    - IBOXRESNAMEThreshold:
+        Description: 'Threshold for alarm triggering - empty for mapped value'
+        AllowedValues: ['', '10', '15', '20', '25', '30', '35', '40', '45', '50',
+                        '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
+  IBOXCONDITION:
+    - IBOXRESNAME:
+        get_condition('', 'not_equals', '0', f'{IBOXRESNAME}EvaluationPeriods')
+  IBOXOUTPUT:
+    - IBOXRESNAME:
+        Value: get_subvalue('Period=${1M},EvaluationPeriods=${2M},Threshold=${3M}',
+                            [
+                              f'{IBOXRESNAME}Period',
+                              f'{IBOXRESNAME}EvaluationPeriods',
+                              f'{IBOXRESNAME}Threshold'])
   IBOXENABLED: False
-  AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
+  Condition: IBOXRESNAME
   ActionsEnabled: True
+  Period: 60
+  Dimensions: []
+
+AlarmTarget5XX: &target5xx
+  <<: *base
+  AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
   EvaluationPeriods: 2
   MetricName: HTTPCode_Target_5XX_Count
   Statistic: Sum
-  Period: 60
   ComparisonOperator: 'GreaterThanThreshold'
   Threshold: '50'
   TreatMissingData: 'notBreaching'
   Namespace: 'AWS/ApplicationELB'
-  Dimensions: []
 
 AlarmBackend5XX: &backend5xx
-  IBOXENABLED: False
+  <<: *base
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
-  ActionsEnabled: True
   EvaluationPeriods: 2
   MetricName: HTTPCode_Backend_5XX
   Statistic: Sum
-  Period: 60
   ComparisonOperator: GreaterThanThreshold
   Threshold: '50'
   TreatMissingData: 'notBreaching'
   Namespace: 'AWS/ELB'
-  Dimensions: []
 
 AlarmASGSpot: &asgspot
-  IBOXENABLED: False
+  <<: *base
   Condition: SpotASG
   AlarmActions: [Ref('SNSTopicASGSpot')]
-  ActionsEnabled: True
-  Period: 60
   Metrics: &asgspotmetrics
     - Expression:
     - MinOnDemand:
@@ -88,12 +107,10 @@ AlarmASGSpot: &asgspot
           Period: 60
 
 AlarmDiskUsed: &diskused
-  IBOXENABLED: False
-  ActionsEnabled: True
+  <<: *base
   EvaluationPeriods: 3
   MetricName: 'root_disk_used_percent'
   Statistic: 'Maximum'
-  Period: 60
   Namespace: 'CWAgent'
   Unit: Percent
   Dimensions:
@@ -104,15 +121,12 @@ AlarmDiskUsed: &diskused
 
 global:
   AlarmCPUBase: &cpu
-    IBOXENABLED: False
-    ActionsEnabled: True
+    <<: *base
     EvaluationPeriods: 5
     MetricName: 'CPUUtilization'
     Statistic: 'Average'
-    Period: 60
     Namespace: ''
     Unit: Percent
-    Dimensions: []
   Alarm:
     - CPUHigh:
         <<: *cpu
