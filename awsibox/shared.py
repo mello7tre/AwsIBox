@@ -499,18 +499,17 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 value = get_endvalue(
                     f'{mapname}{propname}', resname=IBOXRESNAME)
 
-            # key value == 'IBOXIFNOVALUE' automatically add condition
-            # and wrap value in AWS If Condition
-            if key_value == 'IBOXIFNOVALUE':
+            if key_value == 'IBOXIFCONDVALUE':
+                # auto add condition and wrap value in AWS If Condition
                 add_obj(get_condition(f'{mapname}{propname}',
-                                      'not_equals', 'IBOXIFNOVALUE'))
+                                      'not_equals', 'IBOXIFCONDVALUE'))
                 value = If(
                     f'{mapname}{propname}',
                     value,
                     Ref('AWS::NoValue'))
-            # trick to wrapper value in If Condition
             elif (isinstance(key_value, str)
                     and key_value.startswith('IBOXIF')):
+                # trick to wrapper value in If Condition
                 if_list = key_value.split()
                 value = If(
                     if_list[1],
@@ -521,29 +520,24 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                         eval(if_list[3]) if if_list[3].startswith(
                             cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[3]),
                 )
+
             # trick to wrapper recursed returned value in If Condition
-            # TODO NEED TO CREATE A BETTER IF IN YAML CFG
             try:
                 if_wrapper = key_value['IBOXIF']
             except Exception:
                 pass
             else:
                 condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
-                try:
-                    if_wrapper[2]
-                except Exception:
-                    # short two element condition
+                if if_wrapper[1] == 'IBOXIFVALUE':
                     value1 = value
-                    value2 = (if_wrapper[1] if isinstance(if_wrapper[1], dict)
-                              else eval(if_wrapper[1]))
+                    value2 = (if_wrapper[2]
+                              if isinstance(if_wrapper[2], dict)
+                              else eval(if_wrapper[2]))
                 else:
-                    # full three element condition
-                    if if_wrapper[1] == 'IBOXVALUE':
-                        value1 = value
-                        value2 = eval(if_wrapper[2])
-                    else:
-                        value1 = eval(if_wrapper[1])
-                        value2 = value
+                    value1 = (if_wrapper[1]
+                              if isinstance(if_wrapper[1], dict)
+                              else eval(if_wrapper[1]))
+                    value2 = value
 
                 value = If(condname, value1, value2)
 

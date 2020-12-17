@@ -17,6 +17,7 @@ Base: &base
   AccessLoggingPolicy:
     IBOXIF:
       - LoadBalancerLog
+      - IBOXIFVALUE
       - Ref('AWS::NoValue')
     EmitInterval: get_endvalue('LoadBalancerLog')
     Enabled: True

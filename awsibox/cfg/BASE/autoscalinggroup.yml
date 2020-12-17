@@ -40,11 +40,13 @@ global:
           AutoScalingReplacingUpdate:
             IBOXIF:
               - WillReplace
+              - IBOXIFVALUE
               - Ref('AWS::NoValue')
             WillReplace: True
           AutoScalingRollingUpdate:
             IBOXIF:
               - RollingUpdate
+              - IBOXIFVALUE
               - Ref('AWS::NoValue')
             MaxBatchSize: 1
             MinInstancesInService: get_endvalue('CapacityDesired')

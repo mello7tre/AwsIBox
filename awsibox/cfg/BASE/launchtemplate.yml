@@ -113,6 +113,7 @@ global:
         InstanceMarketOptions:
           IBOXIF:
             - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice
+            - IBOXIFVALUE
             - Ref('AWS::NoValue')
           MarketType: spot
           SpotOptions:

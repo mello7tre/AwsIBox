@@ -4,6 +4,7 @@ Distribution: &distribution
   Logging:
     IBOXIF:
       - CloudFrontLogging
+      - IBOXIFVALUE
       - Ref('AWS::NoValue')
     Bucket: Sub(f'{cfg.BucketLogs}.s3.amazonaws.com')
     Prefix: Sub('${EnvRole}.${AWS::StackName}/')
