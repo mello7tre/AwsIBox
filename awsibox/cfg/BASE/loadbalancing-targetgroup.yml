@@ -14,6 +14,7 @@ Base: &base
     - CookieDuration:
         IBOXIF:
           - TargetGroupCookieSticky
+          - IBOXIFVALUE
           - Ref('AWS::NoValue')
         Key: 'stickiness.lb_cookie.duration_seconds'
         Value: get_endvalue('TargetGroupCookieSticky')

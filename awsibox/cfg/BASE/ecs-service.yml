@@ -25,7 +25,7 @@ Replica: &replica
     - IBOXIF:
         - LaunchTypeFarGate
         - Ref('AWS::NoValue')
-        - IBOXVALUE
+        - IBOXIFVALUE
     - Instance:
         Type: spread
         Field: instanceId

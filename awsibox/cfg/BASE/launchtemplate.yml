@@ -83,6 +83,7 @@ global:
           - AdditionalStorage:
               IBOXIF:
                 - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage
+                - IBOXIFVALUE
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdx
               Ebs:
@@ -92,24 +93,27 @@ global:
           - InstaceEphemeral0:
               IBOXIF:
                 - InstaceEphemeral0
+                - IBOXIFVALUE
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdb
               VirtualName: ephemeral0
           - InstaceEphemeral1:
               IBOXIF:
                 - InstaceEphemeral1
+                - IBOXIFVALUE
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdc
               VirtualName: ephemeral1
           - InstaceEphemeral2:
               IBOXIF:
                 - InstaceEphemeral2
+                - IBOXIFVALUE
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdd
               VirtualName: ephemeral2
         IamInstanceProfile:
           Arn: GetAtt('InstanceProfile', 'Arn')
-        ImageId: IBOXIF LaunchTemplateDataImageIdLatest Ref('LaunchTemplateDataImageIdLatest') ImageId
+        ImageId: IBOXIF LaunchTemplateDataImageIdLatest Ref('LaunchTemplateDataImageIdLatest') IBOXIFVALUE
         InstanceMarketOptions:
           IBOXIF:
             - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice

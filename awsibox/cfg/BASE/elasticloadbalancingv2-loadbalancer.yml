@@ -10,6 +10,7 @@ Base: &base
     - LogEnabled:
         IBOXIF:
           - LoadBalancerLog
+          - IBOXIFVALUE
           - 
             Key: access_logs.s3.enabled
             Value: 'false'
@@ -18,18 +19,21 @@ Base: &base
     - LogBucket:
         IBOXIF:
           - LoadBalancerLog
+          - IBOXIFVALUE
           - Ref('AWS::NoValue')
         Key: access_logs.s3.bucket
         Value: Sub(cfg.BucketLogs)
     - LogPrefix:
         IBOXIF:
           - LoadBalancerLog
+          - IBOXIFVALUE
           - Ref('AWS::NoValue')
         Key: access_logs.s3.prefix
         Value: Sub('${EnvRole}.${AWS::StackName}')
     - Http2:
         IBOXIF:
           - LoadBalancerHttp2
+          - IBOXIFVALUE
           - Ref('AWS::NoValue')
         Key: routing.http2.enabled
         Value: get_endvalue('LoadBalancerHttp2')

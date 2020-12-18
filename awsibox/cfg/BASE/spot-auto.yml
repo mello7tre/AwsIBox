@@ -31,6 +31,7 @@ global:
           - SpotAuto:
               IBOXIF:
                 - SpotAuto
+                - IBOXIFVALUE
                 - Ref('AWS::NoValue')
               Key: spot-enabled
               Value: 'true'
@@ -38,6 +39,7 @@ global:
           - SpotAutoMinOnDemandNumber:
               IBOXIF:
                 - SpotAutoMinOnDemandNumber
+                - IBOXIFVALUE
                 - Ref('AWS::NoValue')
               Key: autospotting_min_on_demand_number
               Value: get_endvalue('SpotAutoMinOnDemandNumber')
@@ -45,6 +47,7 @@ global:
           - SpotAutoAllowedInstances:
               IBOXIF:
                 - SpotAutoAllowedInstances
+                - IBOXIFVALUE
                 - Ref('AWS::NoValue')
               Key: autospotting_allowed_instance_types
               Value: get_endvalue('SpotAutoAllowedInstances')

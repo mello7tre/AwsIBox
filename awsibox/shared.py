@@ -340,6 +340,23 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     # IBOXRESNAME can be used in yaml
     IBOXRESNAME = obj.title
 
+    def _iboxif(if_wrapper, mapname, value):
+        condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
+        condvalues = []
+        for i in if_wrapper[1:3]:
+            if isinstance(i, str) and i.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+                v = eval(i)
+            else:
+                v = i
+            condvalues.append(v)
+
+        if condvalues[0] == 'IBOXIFVALUE':
+            value = If(condname, value, condvalues[1])
+        else:
+            value = If(condname, condvalues[0], value)
+
+        return value
+
     def _get_obj(obj, key, obj_propname, mapname):
         props = obj.props
         mapname_obj = f'{mapname}{obj_propname}'
@@ -379,9 +396,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     pass
                 else:
                     del v['IBOXIF']
-                    v = If(if_wrapper[0], v,
-                           if_wrapper[1] if isinstance(
-                               if_wrapper[1], dict) else eval(if_wrapper[1]))
+                    v = _iboxif(if_wrapper, mapname, v)
 
                 prop_obj.append(v)
 
@@ -411,11 +426,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 except Exception:
                     prop_list.append(prop_obj)
                 else:
-                    condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
-                    prop_list.append(If(
-                        condname, prop_obj,
-                        if_wrapper[1] if isinstance(
-                            if_wrapper[1], dict) else eval(if_wrapper[1])))
+                    prop_list.append(_iboxif(if_wrapper, mapname, prop_obj))
 
             return prop_list
 
@@ -510,16 +521,8 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             elif (isinstance(key_value, str)
                     and key_value.startswith('IBOXIF')):
                 # trick to wrapper value in If Condition
-                if_list = key_value.split()
-                value = If(
-                    if_list[1],
-                    value if propname == if_list[2] else (
-                        eval(if_list[2]) if if_list[2].startswith(
-                            cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[2]),
-                    value if propname == if_list[3] else (
-                        eval(if_list[3]) if if_list[3].startswith(
-                            cfg.EVAL_FUNCTIONS_IN_CFG) else if_list[3]),
-                )
+                if_list = key_value.split()[1:4]
+                value = _iboxif(if_list, mapname, value)
 
             # trick to wrapper recursed returned value in If Condition
             try:
@@ -527,19 +530,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             except Exception:
                 pass
             else:
-                condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
-                if if_wrapper[1] == 'IBOXIFVALUE':
-                    value1 = value
-                    value2 = (if_wrapper[2]
-                              if isinstance(if_wrapper[2], dict)
-                              else eval(if_wrapper[2]))
-                else:
-                    value1 = (if_wrapper[1]
-                              if isinstance(if_wrapper[1], dict)
-                              else eval(if_wrapper[1]))
-                    value2 = value
-
-                value = If(condname, value1, value2)
+                value = _iboxif(if_wrapper, mapname, value)
 
             if propname == 'Condition' and not isinstance(value, str):
                 # Avoid intercepting Template Condition as Resource Condition
