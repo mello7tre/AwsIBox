@@ -38,7 +38,7 @@ ecs:
   LoadBalancerApplicationStack: alb-a
   ApplicationAutoScalingScalingPolicy:
     - Cpu:
-        Enabled: True
+        IBOXENABLED: True
     - Custom:
         TargetTrackingScalingPolicyConfiguration:
           CustomizedMetricSpecification:

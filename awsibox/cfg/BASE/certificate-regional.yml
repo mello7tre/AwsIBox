@@ -1,7 +1,7 @@
 global:
   Certificate:
     - LoadBalancerExternal:
-        Enabled: False
+        IBOXENABLED: False
         DomainName: Sub('*.%s' % cfg.HostedZoneNameRegionEnv)
         DomainValidationOptions:
           - Region:

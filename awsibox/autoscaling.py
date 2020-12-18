@@ -518,7 +518,7 @@ class AS_ScalingPolicies(object):
         Out_String = []
         Out_Map = {}
         for n, v in getattr(cfg, key).items():
-            if not ('Enabled' in v and v['Enabled'] is True):
+            if not v['IBOXENABLED']:
                 continue
 
             resname = f'{key}{n}'

@@ -1,5 +1,5 @@
 Base: &base
-  Enabled: None
+  IBOXENABLED: False
   AutoScalingGroupName: Ref('AutoScalingGroup')
 
 Tracking: &tracking

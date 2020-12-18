@@ -89,7 +89,6 @@ cch:
         Condition: ReplicationGroup
         ## Internal
         SecurityGroupIds: [Ref('SecurityGroupCCH')]
-        Enabled: None
         AutomaticFailoverEnabled: 'False'
         NumCacheClusters: 1
         ReplicationGroupDescription: 'Redis ReplicaGroup'

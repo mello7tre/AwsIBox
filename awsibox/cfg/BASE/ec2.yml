@@ -76,9 +76,9 @@ ec2:
                   Name: AutoScalingGroupName
                   Value: Ref('AutoScalingGroup')
     - Down:
-        Enabled: True
+        IBOXENABLED: True
     - Up:
-        Enabled: True
+        IBOXENABLED: True
   ScheduledAction:
     - Down:
         DesiredSize: CapacityDesired

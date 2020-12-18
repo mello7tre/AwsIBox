@@ -22,6 +22,6 @@ reserve-cpu:
   ScalableTarget: IBOXSKIPCLASS
   Service:
     - Base:
-        IBOXENBALED: False
+        IBOXENABLED: False
     - Daemon:
-        IBOXENBALED: True
+        IBOXENABLED: True

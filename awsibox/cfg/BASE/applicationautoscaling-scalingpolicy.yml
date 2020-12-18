@@ -1,5 +1,5 @@
 Base: &base
-  Enabled: None
+  IBOXENABLED: False
   ScalingTargetId: Ref('ScalableTarget')
   PolicyName: IBOXRESNAME
 

@@ -12,7 +12,7 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
 class CRM_Certificate(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
-            if 'Enabled' in v and not v['Enabled']:
+            if not v['IBOXENABLED']:
                 continue
             # resources
             resname = f'{key}{n}'

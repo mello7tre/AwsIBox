@@ -66,7 +66,7 @@ ecs-cluster:
           - get_expvalue('IAMPolicyEcs')
   AutoScalingScalingPolicy:
     - Custom:
-        Enabled: True
+        IBOXENABLED: True
         EstimatedInstanceWarmup: 60
         TargetTrackingConfiguration:
           CustomizedMetricSpecification:
@@ -75,9 +75,9 @@ ecs-cluster:
             Unit: Percent
           TargetValue: 60
     - Down:
-        Enabled: None
+        IBOXENABLED: False
     - Up:
-        Enabled: None
+        IBOXENABLED: False
   ScheduledAction:
     - Rotate:
         DesiredSize: CapacityDesired
