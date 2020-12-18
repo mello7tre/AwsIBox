@@ -101,7 +101,7 @@ class AGW_Account(object):
 class AGW_DomainName(object):
     def __init__(self, key):
         for n, v in getattr(cfg, key).items():
-            if 'Enabled' in v and not v['Enabled']:
+            if not v['IBOXENABLED']:
                 continue
 
             if 'REGIONAL' in v['EndpointConfiguration']['Types']:
