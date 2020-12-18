@@ -303,16 +303,10 @@ class SG_SecurityGroupRES(object):
 
 
 class SG_SecurityGroupIngressesExtraService(object):
-    def __init__(self, key, service):  # Ex service=RDS
+    def __init__(self, key):
         Securitygroup_Rules = []
         for n, v in getattr(cfg, key).items():
             name = str(v['FromPort'])  # Ex 3306
-
-            # service name override needed for multiple RDS in same stack
-            try:
-                service = v['IBOXService']
-            except Exception:
-                pass
 
             for i in cfg.AllowedIp:
                 ipname = f'AllowedIp{i}'
@@ -325,7 +319,7 @@ class SG_SecurityGroupIngressesExtraService(object):
 
                 c_Access = {condnameprivate: And(
                     Condition(ipname),
-                    get_condition('', 'equals', 'Private', f'{service}Access')
+                    get_condition('', 'equals', 'Private', f'{n}Access')
                 )}
 
                 add_obj([
@@ -349,7 +343,7 @@ class SG_SecurityGroupIngressesExtraService(object):
 
             Securitygroup_Rules.append(
                 If(
-                    f'{service}Public',
+                    f'{n}Public',
                     SGRule,
                     Ref('AWS::NoValue'),
                 )
@@ -358,8 +352,8 @@ class SG_SecurityGroupIngressesExtraService(object):
         # Resources
         SG_SecurityGroupIngressesExtra(key=key)
 
-        R_SG = SecurityGroup(f'SecurityGroup{service}')
-        R_SG.GroupDescription = f'Enable access to {service}'
+        R_SG = SecurityGroup(f'SecurityGroup{n}')
+        R_SG.GroupDescription = f'Enable access to {n}'
         R_SG.SecurityGroupIngress = Securitygroup_Rules
 
         add_obj([
@@ -368,21 +362,22 @@ class SG_SecurityGroupIngressesExtraService(object):
 
         # Outputs
         O_SG = Output('SecurityGroup')
-        O_SG.Value = GetAtt(f'SecurityGroup{service}', 'GroupId')
+        O_SG.Value = GetAtt(f'SecurityGroup{n}', 'GroupId')
 
         add_obj([
             O_SG,
         ])
 
 
+
 class SG_SecurityGroupIngressesExtraRDS(SG_SecurityGroupIngressesExtraService):
     def __init__(self, **kwargs):
-        super().__init__(service='RDS', **kwargs)
+        super().__init__(**kwargs)
 
 
 class SG_SecurityGroupIngressesExtraCCH(SG_SecurityGroupIngressesExtraService):
     def __init__(self, **kwargs):
-        super().__init__(service='CCH', **kwargs)
+        super().__init__(**kwargs)
 
 
 class SG_SecurityGroupIngressesECS(object):
