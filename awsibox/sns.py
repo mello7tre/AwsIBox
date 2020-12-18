@@ -47,8 +47,6 @@ class SNS_Subscriptions(object):
     def __init__(self, key):
         # Resources
         for n, v in getattr(cfg, key).items():
-            if 'Enabled' in v and not v['Enabled']:
-                continue
             resname = f'{key}{n}'
             r_Subscription = SNSSubscription(resname, key=v)
 
