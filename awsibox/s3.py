@@ -238,8 +238,6 @@ class S3_Buckets(object):
         for n, v in getattr(cfg, key).items():
             resname = f'{key}{n}'
             name = n
-            if not ('Enabled' in v and v['Enabled'] is True):
-                continue
             bucket_name = getattr(cfg, resname)
 
             PolicyReadConditions = []

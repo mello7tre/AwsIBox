@@ -23,7 +23,6 @@ res-ccr-stack-replicator:
               Resource: '*'
   Lambda:
     - CCRStackReplicator:
-        Enabled: True
         Export: True
         Code:
           S3Bucket: Sub(cfg.BucketAppRepository)

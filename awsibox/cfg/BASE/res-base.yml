@@ -16,11 +16,9 @@ res-base:
         Export: Export('RoleLambdaECSRunTask')
   Bucket:
     - AppRepository:
-        Enabled: True
         OutputValueRegion: 'AWSRegion'
         Versioning: Enabled
     - Logs:
-        Enabled: True
         Create: True
         LifecycleConfiguration:
             Rules:
@@ -52,8 +50,6 @@ res-base:
               Resource:
                 - Sub('arn:aws:s3:::%s' % cfg.BucketAppRepository)
                 - Sub('arn:aws:s3:::%s/*' % cfg.BucketAppRepository)
-                - Sub('arn:aws:s3:::%s' % cfg.BucketAppData)
-                - Sub('arn:aws:s3:::%s/*' % cfg.BucketAppData)
                 - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}')
                 - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}/*')
           - 3:

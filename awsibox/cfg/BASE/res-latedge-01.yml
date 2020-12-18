@@ -3,7 +3,6 @@ res-latedge-01:
   StackName: r-latedge-01
   Lambda:
     - AtEdgeAddHeaders:
-        Enabled: True
         AtEdge: True
         Description: 'Lambda@Edge add Headers'
         MemorySize: 128

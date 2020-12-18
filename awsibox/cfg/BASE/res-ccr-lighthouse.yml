@@ -32,7 +32,6 @@ res-ccr-lighthouse:
               Resource: '*'
   Lambda:
     - CCRLightHouse:
-        Enabled: True
         Export: True
         Code:
           S3Bucket: Sub(cfg.BucketAppRepository)

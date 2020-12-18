@@ -114,8 +114,8 @@ res-event-01:
         MemorySize: 128
         Runtime: python3.7
         Timeout: 30
-        Variables:
-          - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+#        Variables:
+#          - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
   IAMPolicy:
     - LambdaServiceDiscovery:
         Roles:
