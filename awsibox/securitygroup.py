@@ -23,14 +23,6 @@ class SecurityGroup(ec2.SecurityGroup):
         self.VpcId = get_expvalue('VpcId')
 
 
-class SecurityGroupInstanceRules(SecurityGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.GroupDescription = (
-            'Enable Access from LoadBalancer to Instances '
-            'and between Instances')
-
-
 class SecurityGroupLoadBalancer(SecurityGroup):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -204,8 +196,11 @@ class SG_SecurityGroupsEC2(object):
         # Resources
         SG_Extra = SG_SecurityGroupsExtra(Out_String, Out_Map)
 
-        R_SGInstance = SecurityGroupInstanceRules(
+        R_SGInstance = SecurityGroup(
             'SecurityGroupInstancesRules')
+        R_SGInstance.GroupDescription = (
+            'Enable Access from LoadBalancer to Instances '
+            'and between Instances')
 
         add_obj([
             R_SGInstance,
