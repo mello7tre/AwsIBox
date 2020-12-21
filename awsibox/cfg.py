@@ -127,6 +127,7 @@ BASE_CFGS = {
     'CloudFrontOrigins': 'IBOXBASE',
     'DBInstance': 'IBOXBASE',
     'ScheduledAction': 'IBOXBASE',
+    'ContainerDefinitions': 'IBOXBASE',
 }
 
 INSTANCE_LIST = [
@@ -210,8 +211,8 @@ CFG_TO_CLASS = {
                          'class': 'AGW_ApiKeys'},
     'LogGroupName': {'module': 'logs',
                      'class': 'LGS_LogGroup'},
-    'ContainerDefinitions': {'module': 'ecs',
-                             'class': 'ECS_TaskDefinition'},
+    'TaskDefinition': {'module': 'ecs',
+                       'class': 'ECS_TaskDefinition'},
     'EFSFileSystem': {'module': 'efs',
                       'class': 'EFS_FileStorage'},
     'CacheSubnetGroup': {'module': 'elasticache',

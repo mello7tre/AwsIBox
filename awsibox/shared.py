@@ -54,6 +54,7 @@ def stack_add_res():
     cfg.Resources.clear()
 
     for n, v in cfg.Outputs.items():
+        add_objoutput(v)
         cfg.template.add_output(v)
     cfg.Outputs.clear()
 
@@ -70,6 +71,24 @@ def add_obj(obj):
         cfg.Outputs[obj.title] = obj
     else:
         cfg.Resources[obj.title] = obj
+
+
+def add_objoutput(res):
+    try:
+        iboxprops = res.IBOX
+    except Exception:
+        pass
+    else:
+        submap = {}
+        for n in res.Value.split(','):
+            tk = n.split('=')
+            if len(tk) > 1:
+                prop = tk[1].strip('${}')
+            else:
+                prop = n.strip('${}')
+            submap[prop] = getattr(iboxprops, prop)
+        res.Value = Sub(res.Value, **submap)
+        del res.properties['IBOX']
 
 
 def do_no_override(action):
@@ -338,10 +357,12 @@ def import_lambda(name):
 
 def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     # IBOXRESNAME can be used in yaml
+    IBOXOBJ = obj
     IBOXRESNAME = obj.title
 
     def _iboxif(if_wrapper, mapname, value):
         condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
+        condname = condname.replace('IBOXRESNAME', IBOXRESNAME)
         condvalues = []
         for i in if_wrapper[1:3]:
             if isinstance(i, str) and i.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
@@ -369,7 +390,8 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
         if (isinstance(prop_class, type) and
                 prop_class.__bases__[0].__name__ in ['AWSProperty',
-                                                     'AWSAttribute']):
+                                                     'AWSAttribute',
+                                                     'object']):
             # If object already have that props, object class is
             # the existing already defined object,
             # so extend its property with auto_get_props
@@ -378,7 +400,11 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             else:
                 prop_obj = prop_class()
 
-            _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
+            if isinstance(prop_obj, dict):
+                for k, v in key[obj_propname].items():
+                    prop_obj[k] = get_endvalue(f'{mapname_obj}{k}')
+            else:
+                _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
 
             return prop_obj
 
@@ -387,7 +413,11 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 and prop_class[1].__bases__[0].__name__ == 'object'):
             prop_obj = []
             for k, v in key[obj_propname].items():
-                if obj_propname == 'Tags':
+                try:
+                    v['Value']
+                except Exception:
+                    pass
+                else:
                     v['Value'] = get_endvalue(f'{mapname_obj}{k}Value')
 
                 try:
@@ -462,10 +492,23 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     _populate(output, rootdict=v)
                     add_obj(output)
 
+            def _objoutput(k):
+                for n, v in k.items():
+                    n = n.replace('IBOXRESNAME', IBOXRESNAME)
+                    output = Output(n)
+                    _populate(output, rootdict=v)
+                    # alter troposphere obj and add IBOX property
+                    output.props['IBOX'] = (object, False)
+                    output.propnames.append('IBOX')
+                    # assign auto_get_props populated obj to IBOX property
+                    output.IBOX = IBOXOBJ
+                    add_obj(output)
+
             func_map = {
                 'IBOXPARAMETER': _parameter,
                 'IBOXCONDITION': _condition,
                 'IBOXOUTPUT': _output,
+                'IBOXOBJOUTPUT': _objoutput,
             }
             for pco in list(func_map.keys()):
                 try:
@@ -492,9 +535,10 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             if isinstance(key_value, dict):
                 # key value is a dict, get populated object
                 value = _get_obj(obj, key, propname, mapname)
-            elif key_value == 'IBOXRESNAME':
-                # Force value to obj name
-                value = IBOXRESNAME
+            elif (isinstance(key_value, str)
+                    and key_value.startswith('IBOXRESNAME')):
+                # replace IBOXRESNAME string with IBOXRESNAME value
+                value = key_value.replace('IBOXRESNAME', IBOXRESNAME)
             elif rootdict:
                 # rootdict is needed for lib/efs.py EFS_FileStorage SGIExtra,
                 # is passed as a dictionary to parse for parameters

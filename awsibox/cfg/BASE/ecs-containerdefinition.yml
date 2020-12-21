@@ -1,0 +1,87 @@
+Base: &base
+  IBOXPARAMETER:
+    - IBOXRESNAMECpu:
+        Description: 'Cpu Share - empty for mapped value'
+    - IBOXRESNAMEMemory:
+        Description: 'Memory hard limit - empty for mapped value'
+    - IBOXRESNAMEMemoryReservation:
+        Description: 'Memory soft limit - empty for mapped value'
+    - IBOXRESNAMECommand:
+        Description: 'Command to execute'
+        Type: 'CommaDelimitedList'
+  IBOXCONDITION:
+    - IBOXRESNAMECommand: Not(
+        Equals("Ref('AWS::NoValue')", getattr(cfg, f'{IBOXRESNAME}Command')))
+    - IBOXRESNAMEContainerPort:
+        get_condition('', 'not_equals', 0, f'{IBOXRESNAME}ContainerPort')
+    - IBOXRESNAMEHostPort:
+        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}HostPort')
+  IBOXOUTPUT:
+    - IBOXRESNAMECommand:
+        Condition: IBOXRESNAMECommand
+        Value: Join(',', get_endvalue(f'{IBOXRESNAME}Command')) 
+  IBOXOBJOUTPUT:
+    - IBOXRESNAMEConstraints:
+        Value: 'Cpu=${Cpu},Memory=${Memory},MemoryReservation=${MemoryReservation}'
+  Essential: True
+  LogConfiguration:
+    IBOXIF:
+      - LogConfiguration
+      - IBOXIFVALUE
+      - Ref('AWS::NoValue')
+    LogDriver:
+      get_endvalue('LogDriver')
+    Options:
+      awslogs-group: Ref('LogsLogGroup')
+      awslogs-region: Ref('AWS::Region')
+      awslogs-stream-prefix: Ref('AWS::StackName')
+  Cpu: 16
+  ContainerPort: 0
+  HostPort: None
+  PortMappings:
+    - IBOXIF:
+      - IBOXRESNAMEContainerPort
+      - IBOXIFVALUE
+      - Ref('AWS::NoValue')
+    - 0:
+        ContainerPort: get_endvalue(f'{IBOXRESNAME}ContainerPort')
+        HostPort: If(
+          'NetworkModeAwsVpc',
+          get_endvalue(f'{IBOXRESNAME}ContainerPort'),
+          If(f'{IBOXRESNAME}HostPort', get_endvalue(f'{IBOXRESNAME}HostPort'), 0))
+        Protocol: tcp
+  Memory: 128
+  MemoryReservation: 64
+  Command: Ref('AWS::NoValue')
+  Environment:
+    - Env:
+        Name: Env
+        Value: Ref('Env')
+    - EnvAbbr:
+        Name: EnvAbbr
+        Value: Ref('EnvShort')
+    - EnvRole:
+        Name: EnvRole
+        Value: Ref('EnvRole')
+    - EnvStackName:
+        Name: EnvStackName
+        Value: Ref('AWS::StackName')
+    - EnvRegion:
+        Name: EnvRegion
+        Value: Ref('AWS::Region')
+    - EnvBrand:
+        Name: EnvBrand
+        Value: cfg.BrandDomain
+    - EnvClusterStackName:
+        Name: EnvClusterStackName
+        Value: get_endvalue('ClusterStack')
+    - EnvNode:
+        Name: NODE_ENV
+        Value: production
+  DockerLabels: 
+    LastUpdate: Ref('DockerLabelLastUpdate')
+
+
+global:
+  ContainerDefinitions:
+    - IBOXBASE: *base

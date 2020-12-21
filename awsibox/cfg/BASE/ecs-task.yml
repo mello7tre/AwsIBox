@@ -1,20 +1,14 @@
 IBoxLoader: !include [
+  ecs-taskdefinition.yml,
   parameterstore.yml,
   securitygroup.yml,
+  ecs-containerdefinition.yml,
 ]
 
 global:
   Parameter:
     - ClusterStack:
         Description: 'Cluster Stack Name used to launch service on - empty for default based on env/role'
-    - Cpu:
-        Description: 'Cpu used by task - empty for default based on env/role'
-        AllowedValues: [
-          '', 'None', '128', '256', '384', '512', '640', '768', '896', '1024',
-          '1152', '1280', '1408', '1536', '1664', '1792', '1920', '2048',
-          '2176', '2304', '2432', '2560', '2688', '2816', '2944', '3072',
-          '3200', '3328', '3456', '3584', '3712', '3840', '3968', '4096',
-        ]
     - DockerLabelLastUpdate:
         Description: 'Use to force redeploy - can use: $(date +%F_%T)'
     - LaunchType:
@@ -23,31 +17,12 @@ global:
     - LogDriver:
         Description: 'Log driver for task container - empty for default'
         AllowedValues: ['', 'None', 'awslogs', 'fluentd', 'gelf', 'journald', 'json-file', 'splunk', 'syslog']
-    - Memory:
-        Description: 'Memory used by task - empty for default based on env/role'
-    - NetworkMode:
-        Description: 'Task NetworkMode - empty for default based on env/role'
-        AllowedValues: ['', 'awsvpc', 'bridge']
   Condition:
-    - CpuTask:
-        get_condition('', 'not_equals', 'None', 'Cpu')
     - LaunchTypeFarGate:
         get_condition('', 'equals', 'FARGATE', 'LaunchType')
     - LogConfiguration:
         get_condition('', 'not_equals', 'None', 'LogDriver')
-    - NetworkModeAwsVpc:
-        get_condition('', 'equals', 'awsvpc', 'NetworkMode', OrExtend=[Condition('LaunchTypeFarGate')])
-    - NetworkModeStandard:
-        get_condition('', 'not_equals', 'awsvpc', 'NetworkMode')
   Output:
-    - Cpu:
-        Value: get_endvalue('Cpu')
-        Condition: CpuTask
-    - Memory:
-        Value: get_endvalue('Memory')
-        Condition: LaunchTypeFarGate
-    - NetworkMode:
-        Value: get_resvalue('TaskDefinition', 'NetworkMode')
     - LaunchType:
         Value: get_endvalue('LaunchType')
     - LogDriver:
@@ -56,23 +31,18 @@ global:
   ContainerDefinitions:
     - 1:
         Cpu: 16
-        Protocol: tcp
-  Cpu: None
   Log:
     Driver: awslogs
     GroupName: Sub('/aws/ecs/${AWS::StackName}')
     RetentionInDays: 30
-  Memory: 512
   IAMPolicy:
     - ParameterStore:
         Roles:
           - Ref('RoleTask')
   Image: None
-  NetworkMode: bridge
   RepoName: None
   Role:
     - Task:
         ManagedPolicyArns:
           - get_expvalue('IAMPolicyCloudWatchPutMetric')
         Principal: ecs-tasks.amazonaws.com
-  Volumes: []

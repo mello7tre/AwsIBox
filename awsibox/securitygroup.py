@@ -364,7 +364,6 @@ class SG_SecurityGroupIngressesExtraService(object):
         ])
 
 
-
 class SG_SecurityGroupIngressesExtraRDS(SG_SecurityGroupIngressesExtraService):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

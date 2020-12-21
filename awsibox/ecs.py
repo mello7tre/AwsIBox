@@ -7,56 +7,6 @@ from .securitygroup import (SecurityGroupEcsService,
                             SecurityGroupRuleEcsService, SG_SecurityGroupsECS)
 
 
-class ECSTaskDefinition(ecs.TaskDefinition):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.ExecutionRoleArn = If(
-            'LaunchTypeFarGate',
-            get_expvalue('RoleECSTaskExecution'),
-            Ref('AWS::NoValue')
-        )
-        self.TaskRoleArn = Ref('RoleTask')
-
-        self.Cpu = If(
-            'CpuTask',
-            get_endvalue('Cpu'),
-            Ref('AWS::NoValue')
-        )
-
-        self.Memory = If(
-            'LaunchTypeFarGate',
-            get_endvalue('Memory'),
-            Ref('AWS::NoValue')
-        )
-
-        self.NetworkMode = If(
-            'NetworkModeAwsVpc',
-            'awsvpc',
-            get_endvalue('NetworkMode'),
-        )
-
-        self.RequiresCompatibilities = If(
-            'LaunchTypeFarGate',
-            ['EC2', 'FARGATE'],
-            ['EC2']
-        )
-
-
-# ############################################
-# ### START STACK META CLASSES AND METHODS ###
-# ############################################
-
-
-class ECSEnvironment(ecs.Environment):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-        name = self.title
-        valuename = f'{name}Value'
-        self.Name = get_endvalue(f'{name}Name')
-        self.Value = get_endvalue(valuename)
-
-
 class ECSMountPoint(ecs.MountPoint):
     def __init__(self, title, key, **kwargs):
         super().__init__(title, **kwargs)
@@ -79,8 +29,6 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
 
         name = self.title  # Ex. ContainerDefinitions1
         auto_get_props(self)
-
-        self.Essential = True
 
         if len(cfg.ContainerDefinitions) == 1:
             self.Cpu = If(
@@ -110,21 +58,6 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
         elif cfg.Image != 'None':
             self.Image = get_endvalue('Image')
 
-        self.LogConfiguration = If(
-            'LogConfiguration',
-            ecs.LogConfiguration(
-                LogDriver=get_endvalue('LogDriver'),
-                Options={
-                    # 'awslogs-group': get_endvalue('AwsLogsGroup'),
-                    # 'awslogs-create-group': True,
-                    'awslogs-group': Ref('LogsLogGroup'),
-                    'awslogs-region': Ref('AWS::Region'),
-                    'awslogs-stream-prefix': Ref('AWS::StackName')
-                }
-            ),
-            Ref('AWS::NoValue')
-        )
-
         if 'MountPoints' in key:
             self.MountPoints = [
                 ECSMountPoint(n, key=k) for n, k in key['MountPoints'].items()
@@ -135,16 +68,16 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
         else:
             self.Name = Ref('EnvRole')
 
-        if 'ContainerPort' in key:
-            PortMapping = ecs.PortMapping(name)
-            auto_get_props(PortMapping)
-            if 'HostPort' not in key:
-                PortMapping.HostPort = If(
-                    'NetworkModeAwsVpc',
-                    get_endvalue(f'{name}ContainerPort'),
-                    0
-                )
-            self.PortMappings = [PortMapping]
+#        if 'ContainerPort' in key:
+#            PortMapping = ecs.PortMapping(name)
+#            auto_get_props(PortMapping)
+#            if 'HostPort' not in key:
+#                PortMapping.HostPort = If(
+#                    'NetworkModeAwsVpc',
+#                    get_endvalue(f'{name}ContainerPort'),
+#                    0
+#                )
+#            self.PortMappings = [PortMapping]
 
 
 class ECSVolume(ecs.Volume):
@@ -171,40 +104,8 @@ class ECSNetworkConfiguration(ecs.NetworkConfiguration):
 # ### END STACK META CLASSES AND METHODS ###
 # ##########################################
 
-
-class ECS_TaskDefinition(object):
-    def __init__(self, key):
-        Environments_Base = [
-            ecs.Environment(
-                Name='EnvRegion',
-                Value=Ref('AWS::Region')
-            ),
-            ecs.Environment(
-                Name='Env',
-                Value=Ref('Env')
-            ),
-            ecs.Environment(
-                Name='EnvAbbr',
-                Value=Ref('EnvShort')
-            ),
-            ecs.Environment(
-                Name='EnvBrand',
-                Value=cfg.BrandDomain
-            ),
-            ecs.Environment(
-                Name='EnvRole',
-                Value=Ref('EnvRole')
-            ),
-            ecs.Environment(
-                Name='EnvStackName',
-                Value=Ref('AWS::StackName')
-            ),
-            ecs.Environment(
-                Name='EnvClusterStackName',
-                Value=get_endvalue('ClusterStack')
-            ),
-        ]
-
+class ECS_ContainerDefinition(object):
+    def __init__(self):
         Containers = []
         for n, v in cfg.ContainerDefinitions.items():
             Environments = []
@@ -245,126 +146,59 @@ class ECS_TaskDefinition(object):
                     o_EnvAppOut,
                 ])
 
+            # resources
+            Container = ECSContainerDefinition(name, key=v, index=n)
+            Containers.append(Container)
+
             # outputs
             EnvValue_Out_String = []
             EnvValue_Out_Map = {}
-            if 'Envs' in v:
-                for m, w in v['Envs'].items():
-                    envname = f'{name}Envs{m}'
-                    envkeyname = w['Name']
-                    # parameters
-                    EnvValue = Parameter(f'{envname}Value')
-                    EnvValue.Description = (
-                        f'{envkeyname} - empty for default based on env/role')
+            for m, w in v['Environment'].items():
+                if m.startswith('Env'):
+                    continue
+                envname = f'{name}Environment{m}'
+                envkeyname = w['Name']
+                # parameters
+                p_EnvValue = Parameter(f'{envname}Value')
+                p_EnvValue.Description = (
+                    f'{envkeyname} - empty for default based on env/role')
 
-                    # If key NoParam is present skip adding Parameters
-                    # (usefull as they have a limited max number)
-                    if 'NoParam' not in w:
-                        add_obj(EnvValue)
+                # If key NoParam is present skip adding Parameters
+                # (usefull as they have a limited max number)
+                if 'NoParam' not in w:
+                    add_obj(p_EnvValue)
 
-                    Environment = ECSEnvironment(envname, key=w)
-                    Environments.append(Environment)
+                # outputs
+                EnvValue_Out_String.append(
+                    '%s=${%s}' % (envkeyname, envkeyname))
+                EnvValue_Out_Map.update({
+                    envkeyname: get_endvalue(f'{envname}Value')
+                })
 
-                    # outputs
-                    EnvValue_Out_String.append(
-                        '%s=${%s}' % (envkeyname, envkeyname))
-                    EnvValue_Out_Map.update({
-                        envkeyname: Environment.Value
-                    })
-
-            o_EnvValueOut = Output(f'{name}Envs')
+            o_EnvValueOut = Output(f'{name}Environment')
             o_EnvValueOut.Value = Sub(
                 ','.join(EnvValue_Out_String), **EnvValue_Out_Map)
 
             add_obj(o_EnvValueOut)
 
-            Environments.extend(Environments_Base)
-
-            # parameters
-            if 'Cpu' in v:
-                p_Cpu = Parameter(f'{name}Cpu')
-                p_Cpu.Description = (
-                    'Cpu Share for containers - '
-                    'empty for default based on env/role')
-
-                add_obj(p_Cpu)
-
-            if 'Memory' in v:
-                p_Memory = Parameter(f'{name}Memory')
-                p_Memory.Description = (
-                    'Memory hard limit for containers - '
-                    'empty for default based on env/role')
-
-                add_obj(p_Memory)
-
-            if 'MemoryReservation' in v:
-                p_MemoryReservation = Parameter(f'{name}MemoryReservation')
-                p_MemoryReservation.Description = (
-                    'Memory soft limit for containers - '
-                    'empty for default based on env/role')
-
-                add_obj(p_MemoryReservation)
-
-            if 'Command' in v:
-                p_Command = Parameter(f'{name}Command')
-                p_Command.Description = 'Command to execute'
-                p_Command.Type = 'CommaDelimitedList'
-
-                add_obj(p_Command)
-
-            Container = ECSContainerDefinition(name, key=v, index=n)
-            Container.Environment = Environments
-
-            # Trick to force reload of Service using parameter
-            Container.DockerLabels = If(
-                'DockerLabelLastUpdateOverride',
-                {'LastUpdate': Ref('DockerLabelLastUpdate')},
-                Ref('AWS::NoValue'),
-            )
-
-            Containers.append(Container)
-
             # outputs
-            Constraints_Out_String = []
-            Constraints_Out_Map = {}
-
-            if 'Cpu' in v:
-                Constraints_Out_String.append(
-                    'Cpu:${Cpu}')
-                Constraints_Out_Map.update({
-                    'Cpu': Container.Cpu
-                })
-
-            if 'Memory' in v:
-                Constraints_Out_String.append(
-                    'Memory:${Memory}')
-                Constraints_Out_Map.update({
-                    'Memory': Container.Memory
-                })
-
-            if 'MemoryReservation' in v:
-                Constraints_Out_String.append(
-                    'MemoryReservation:${MemoryReservation}')
-                Constraints_Out_Map.update({
-                    'MemoryReservation': Container.MemoryReservation
-                })
-
-            if Constraints_Out_String:
-                o_Constraints = Output(f'{name}Constraints')
-                o_Constraints.Value = Sub(
-                    ','.join(Constraints_Out_String), **Constraints_Out_Map)
-
-                add_obj(o_Constraints)
-
             if 'Command' in v:
                 o_Command = Output(f'{name}Command')
                 o_Command.Value = Join(',', get_endvalue(f'{name}Command'))
 
-                add_obj(o_Command)
+                #add_obj(o_Command)
 
+        self.Containers = Containers
+
+
+class ECS_TaskDefinition(object):
+    def __init__(self, key):
         # Resources
-        R_TaskDefinition = ECSTaskDefinition('TaskDefinition')
-        R_TaskDefinition.ContainerDefinitions = Containers
+        R_TaskDefinition = ecs.TaskDefinition('TaskDefinitionBase')
+        auto_get_props(R_TaskDefinition)
+        R_TaskDefinition.title = 'TaskDefinition'
+        R_TaskDefinition.ContainerDefinitions = ECS_ContainerDefinition(
+            ).Containers
 
         if cfg.Volumes:
             Volumes = []

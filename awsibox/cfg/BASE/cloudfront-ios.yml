@@ -44,9 +44,9 @@ global:
   CloudFrontOrigins:
     - Default:
         CustomOriginConfig:
-          HTTPSPort: If('CloudFrontOriginsDefaultCustomOriginConfigProtocolHTTPS',
+          HTTPSPort: If('CloudFrontOriginsDefaultProtocolHTTPS',
                         get_endvalue('ListenerLoadBalancerHttpsPort'), Ref('AWS::NoValue'))
-          HTTPPort:  If('CloudFrontOriginsDefaultCustomOriginConfigProtocolHTTP',
+          HTTPPort:  If('CloudFrontOriginsDefaultProtocolHTTP',
                         get_endvalue('ListenerLoadBalancerHttpPort'), Ref('AWS::NoValue'))
         DomainName: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
         Id: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
