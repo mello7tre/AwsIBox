@@ -113,13 +113,12 @@ class ECS_ContainerDefinition(object):
 
             name = f'ContainerDefinitions{n}'  # Ex. ContainerDefinitions1
 
-            # parameters
-
             # if ContainerDefinitions have RepoName
             # use different EnvApp version
             if n == 1 or 'RepoName' in v:
                 nameenvapp = f'EnvApp{n}Version'  # Ex. EnvApp1Version
 
+                # parameters
                 EnvApp = Parameter(nameenvapp)
                 EnvApp.Description = nameenvapp
                 EnvApp.AllowedPattern = '^[a-zA-Z0-9-_.]*$'
