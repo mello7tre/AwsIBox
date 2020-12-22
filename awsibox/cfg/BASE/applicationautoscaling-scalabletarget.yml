@@ -18,7 +18,7 @@ ScheduledAction: &scheduledaction
     - IBOXRESNAMESchedule:
         Description: 'empty for mapped value'
     - IBOXRESNAMEStartTime:
-        Description: 'empty for mapped value'
+        Description: ''
   IBOXCONDITION:
     - IBOXRESNAMEKeepMinSize:
         get_condition('', 'equals', 'k', f'{IBOXRESNAME}CapacityMin')
@@ -35,16 +35,11 @@ ScheduledAction: &scheduledaction
           And(
             Condition(f'{IBOXRESNAME}KeepMaxSize'),
             Condition(f'{IBOXRESNAME}KeepMinSize')))
-  IBOXOUTPUT:
+  IBOXOBJOUTPUT:
     - IBOXRESNAME:
-        Value:
-          get_subvalue(
-            'CapacityMin=${1M},CapacityMax=${2M},Schedule=${3M},StartTime=${4M}',
-            [
-              f'{IBOXRESNAME}CapacityMin',
-              f'{IBOXRESNAME}CapacityMax',
-              f'{IBOXRESNAME}Schedule',
-              f'{IBOXRESNAME}StartTime'])
+        Value: >-
+          CapacityMin=,${ScalableTargetAction.MinCapacity},CapacityMax=,${ScalableTargetAction.MaxCapacity},
+          Schedule=,${Schedule},StartTime=,${StartTime}
   ScalableTargetAction:
     MinCapacity: If(f'{IBOXRESNAME}CapacityMinSize',
                     get_endvalue('CapacityMin'),
@@ -55,6 +50,7 @@ ScheduledAction: &scheduledaction
   Schedule: get_endvalue(f'{IBOXRESNAME}Schedule')
   ScheduledActionName: IBOXRESNAME
   StartTime: Ref('AWS::NoValue')
+
 
 global:
   ScalableTarget:

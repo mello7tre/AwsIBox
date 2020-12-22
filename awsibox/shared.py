@@ -79,15 +79,14 @@ def add_objoutput(res):
     except Exception:
         pass
     else:
-        submap = {}
+        join_list = []
         for n in res.Value.split(','):
-            tk = n.split('=')
-            if len(tk) > 1:
-                prop = tk[1].strip('${}')
-            else:
-                prop = n.strip('${}')
-            submap[prop] = getattr(iboxprops, prop)
-        res.Value = Sub(res.Value, **submap)
+            if n.startswith('${'):
+                n = n.strip('${}')
+                n = eval(f'iboxprops.{n}')
+            join_list.append(n)
+
+        res.Value = Join('', join_list)
         del res.properties['IBOX']
 
 

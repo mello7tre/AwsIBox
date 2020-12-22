@@ -9,7 +9,7 @@ Base: &base
     - IBOXRESNAMERecurrence:
         Description: 'empty for mapped value'
     - IBOXRESNAMEStartTime:
-        Description: 'empty for mapped value'
+        Description: ''
   IBOXCONDITION:
     - IBOXRESNAMEKeepDesiredSize:
         get_condition('', 'equals', 'k', f'{IBOXRESNAME}DesiredSize')
@@ -25,17 +25,11 @@ Base: &base
         get_condition('', 'equals', 'CapacityMax', f'{IBOXRESNAME}MaxSize')
     - IBOXRESNAME:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}Recurrence')
-  IBOXOUTPUT:
+  IBOXOBJOUTPUT:
     - IBOXRESNAME:
-        Value:
-          get_subvalue(
-            'DesiredSize=${1M}MinSize=${2M},MaxSize=${3M},Recurrence=${4M},StartTime=${5M}',
-            [
-              f'{IBOXRESNAME}DesiredSize',
-              f'{IBOXRESNAME}MinSize',
-              f'{IBOXRESNAME}MaxSize',
-              f'{IBOXRESNAME}Recurrence',
-              f'{IBOXRESNAME}StartTime'])
+        Value: >-
+          DesiredSize=,${DesiredCapacity},MinSize=,${MinSize},MaxSize=,${MaxSize},
+          Recurrence=,${Recurrence},StartTime=,${StartTime}
   Condition: IBOXRESNAME
   AutoScalingGroupName: Ref('AutoScalingGroup')
   DesiredCapacity: If(
