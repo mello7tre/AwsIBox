@@ -80,7 +80,8 @@ def add_objoutput(res):
         pass
     else:
         join_list = []
-        for n in res.Value.split(','):
+        for n in res.Value.split():
+            n = n.strip()
             if n.startswith('${'):
                 n = n.strip('${}')
                 n = eval(f'iboxprops.{n}')

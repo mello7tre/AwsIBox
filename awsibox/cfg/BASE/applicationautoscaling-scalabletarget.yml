@@ -38,8 +38,8 @@ ScheduledAction: &scheduledaction
   IBOXOBJOUTPUT:
     - IBOXRESNAME:
         Value: >-
-          CapacityMin=,${ScalableTargetAction.MinCapacity},CapacityMax=,${ScalableTargetAction.MaxCapacity},
-          Schedule=,${Schedule},StartTime=,${StartTime}
+          CapacityMin= ${ScalableTargetAction.MinCapacity} ,CapacityMax= ${ScalableTargetAction.MaxCapacity}
+          ,Schedule= ${Schedule} ,StartTime= ${StartTime}
   ScalableTargetAction:
     MinCapacity: If(f'{IBOXRESNAME}CapacityMinSize',
                     get_endvalue('CapacityMin'),

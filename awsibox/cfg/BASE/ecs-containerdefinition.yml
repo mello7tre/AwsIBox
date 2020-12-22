@@ -22,7 +22,8 @@ Base: &base
         Value: Join(',', get_endvalue(f'{IBOXRESNAME}Command')) 
   IBOXOBJOUTPUT:
     - IBOXRESNAMEConstraints:
-        Value: 'Cpu=,${Cpu},Memory=,${Memory},MemoryReservation=,${MemoryReservation}'
+        Value: >-
+          Cpu= ${Cpu} ,Memory= ${Memory} ,MemoryReservation= ${MemoryReservation}
   Essential: True
   LogConfiguration:
     IBOXIF:

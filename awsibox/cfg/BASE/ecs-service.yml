@@ -2,7 +2,7 @@ Base: &base
   IBOXENABLED: False
   Cluster: get_expvalue('Cluster', 'ClusterStack')
   HealthCheckGracePeriodSeconds: 0
-  PlatformVersion: LATEST
+  PlatformVersion: If('LaunchTypeFarGate', 'LATEST', Ref('AWS::NoValue'))
   TaskDefinition: Ref('TaskDefinition')
 
 Replica: &replica

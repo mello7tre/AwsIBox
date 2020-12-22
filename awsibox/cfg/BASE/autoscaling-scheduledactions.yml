@@ -28,8 +28,8 @@ Base: &base
   IBOXOBJOUTPUT:
     - IBOXRESNAME:
         Value: >-
-          DesiredSize=,${DesiredCapacity},MinSize=,${MinSize},MaxSize=,${MaxSize},
-          Recurrence=,${Recurrence},StartTime=,${StartTime}
+          DesiredSize= ${DesiredCapacity} ,MinSize= ${MinSize} ,MaxSize= ${MaxSize}
+          ,Recurrence= ${Recurrence} ,StartTime= ${StartTime}
   Condition: IBOXRESNAME
   AutoScalingGroupName: Ref('AutoScalingGroup')
   DesiredCapacity: If(
