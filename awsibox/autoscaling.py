@@ -26,8 +26,8 @@ except ImportError:
 
 # S - AUTOSCALING #
 class ASLaunchTemplateData(ec2.LaunchTemplateData):
-    def __init__(self, UserDataApp, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, title, UserDataApp, **kwargs):
+        super().__init__(title, **kwargs)
         auto_get_props(self, 'LaunchTemplateData')
         self.UserData = Base64(Join('', [
             '#!/bin/bash\n',
@@ -694,14 +694,15 @@ class AS_LaunchTemplate(object):
         R_LaunchTemplate = ec2.LaunchTemplate(
             'LaunchTemplate',
             LaunchTemplateName=Sub('${AWS::StackName}-${EnvRole}'),
-            LaunchTemplateData=ASLaunchTemplateData(UserDataApp=UserDataApp))
+            LaunchTemplateData=ASLaunchTemplateData('LaunchTemplateData',
+                                                    UserDataApp=UserDataApp))
         R_LaunchTemplate.LaunchTemplateData.NetworkInterfaces[0].Groups.extend(
             SecurityGroups)
 
         R_InstanceProfile = IAMInstanceProfile('InstanceProfile')
 
         # Import role specific cfn definition
-        cfn_envrole = f'cfn_{cfg.classenvrole}'
+        cfn_envrole = f'cfn_{cfg.func_envrole}'
         if cfn_envrole in globals():  # Ex cfn_client_portal
             CfnRole = globals()[cfn_envrole]()
             CfmInitArgs.update(CfnRole)

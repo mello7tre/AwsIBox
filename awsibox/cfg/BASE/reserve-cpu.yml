@@ -10,7 +10,7 @@ IBoxLoader: !exclude [
 reserve-cpu:
   StackType: ecs
   StackName: rsc
-  ApplicationAutoScalingScalingPolicy: IBOXSKIPCLASS
+  ApplicationAutoScalingScalingPolicy: IBOXSKIPFUNC
   ContainerDefinitions:
     - 1:
         Command: ['tail', '-f', '.dockerenv']
@@ -19,7 +19,7 @@ reserve-cpu:
         MemoryReservation: 32
   LaunchType: EC2
   Image: 'amazonlinux:2'
-  ScalableTarget: IBOXSKIPCLASS
+  ScalableTarget: IBOXSKIPFUNC
   Service:
     - Base:
         IBOXENABLED: False

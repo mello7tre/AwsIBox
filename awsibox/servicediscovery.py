@@ -12,24 +12,22 @@ class ServiceDiscoveryPublicDnsNamespace(srvd.PublicDnsNamespace):
         self.Name = Sub(f'find.{cfg.HostedZoneNameEnv}')
 
 
-class SRVD_ServiceDiscoveryRES(object):
-    def __init__(self, key):
-        # Resources
-        R_PublicDnsNamespace = ServiceDiscoveryPublicDnsNamespace(
-            'PublicDnsNamespace')
+def SRVD_ServiceDiscoveryRES(key):
+    # Resources
+    R_PublicDnsNamespace = ServiceDiscoveryPublicDnsNamespace(
+        'PublicDnsNamespace')
 
-        add_obj([
-            R_PublicDnsNamespace,
-        ])
+    add_obj([
+        R_PublicDnsNamespace,
+    ])
 
-        # Outputs
-        O_PublicDnsNamespace = Output(
-            'ServiceDiscoveryPublicDnsNamespaceId')
-        O_PublicDnsNamespace.Value = Ref(
-            'PublicDnsNamespace')
-        O_PublicDnsNamespace.Export = Export(
-            'ServiceDiscoveryPublicDnsNamespaceId')
+    # Outputs
+    O_PublicDnsNamespace = Output(
+        'ServiceDiscoveryPublicDnsNamespaceId')
+    O_PublicDnsNamespace.Value = Ref(
+        'PublicDnsNamespace')
+    O_PublicDnsNamespace.Export = Export(
+        'ServiceDiscoveryPublicDnsNamespaceId')
 
-        add_obj([
-            O_PublicDnsNamespace,
-        ])
+    add_obj([
+        O_PublicDnsNamespace])

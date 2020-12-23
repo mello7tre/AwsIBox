@@ -116,152 +116,144 @@ def CFOrigins():
 # ##########################################
 
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
-
-
 # S - CLOUDFRONT #
-class CF_CloudFront(object):
-    def __init__(self, key):
-        # Resources
-        CloudFrontDistribution = clf.Distribution('CloudFrontDistribution')
+def CF_CloudFront(key):
+    # Resources
+    CloudFrontDistribution = clf.Distribution('CloudFrontDistribution')
 
-        DistributionConfig = clf.DistributionConfig(
-            'CloudFrontDistributionConfig')
-        auto_get_props(DistributionConfig, 'CloudFrontDistributionIBOXBASE')
-        DistributionConfig.DefaultCacheBehavior = CFDefaultCacheBehavior(
-            'CloudFrontCacheBehaviors0', key=cfg.CloudFrontCacheBehaviors[0])
+    DistributionConfig = clf.DistributionConfig(
+        'CloudFrontDistributionConfig')
+    auto_get_props(DistributionConfig, 'CloudFrontDistributionIBOXBASE')
+    DistributionConfig.DefaultCacheBehavior = CFDefaultCacheBehavior(
+        'CloudFrontCacheBehaviors0', key=cfg.CloudFrontCacheBehaviors[0])
 
-        cachebehaviors = []
-        # Skip DefaultBehaviour
-        itercachebehaviors = iter(cfg.CloudFrontCacheBehaviors.items())
-        next(itercachebehaviors)
+    cachebehaviors = []
+    # Skip DefaultBehaviour
+    itercachebehaviors = iter(cfg.CloudFrontCacheBehaviors.items())
+    next(itercachebehaviors)
 
-        # Automatically compute Behaviour Order based on PathPattern
-        cfg.dbg_clf_compute_order = {}
-        sortedcachebehaviors = sorted(
-            itercachebehaviors,
-            key=lambda x_y: clf_compute_order(x_y[1]['PathPattern']))
+    # Automatically compute Behaviour Order based on PathPattern
+    cfg.dbg_clf_compute_order = {}
+    sortedcachebehaviors = sorted(
+        itercachebehaviors,
+        key=lambda x_y: clf_compute_order(x_y[1]['PathPattern']))
 
-        if cfg.debug:
-            print('##########CLF_COMPUTE_ORDER#########START#######')
-            for n, v in iter(sorted(cfg.dbg_clf_compute_order.items(),
-                                    key=lambda x_y: x_y[1])):
-                print(f'{n} {v}\n')
-            print('##########CLF_COMPUTE_ORDER#########END#######')
+    if cfg.debug:
+        print('##########CLF_COMPUTE_ORDER#########START#######')
+        for n, v in iter(sorted(cfg.dbg_clf_compute_order.items(),
+                                key=lambda x_y: x_y[1])):
+            print(f'{n} {v}\n')
+        print('##########CLF_COMPUTE_ORDER#########END#######')
 
-        for n, v in sortedcachebehaviors:
-            if not v['PathPattern']:
-                continue
-            name = f'CloudFrontCacheBehaviors{n}'
+    for n, v in sortedcachebehaviors:
+        if not v['PathPattern']:
+            continue
+        name = f'CloudFrontCacheBehaviors{n}'
 
-            cachebehavior = CFCacheBehavior(name, key=v)
+        cachebehavior = CFCacheBehavior(name, key=v)
 
-            # Create and Use Condition
-            # only if PathPattern Value differ between envs
-            if f'{name}PathPattern' not in cfg.fixedvalues:
-                # conditions
-                add_obj(
-                    get_condition(
-                        name, 'not_equals', 'None', f'{name}PathPattern')
-                )
-
-                cachebehaviors.append(
-                    If(
-                        name,
-                        cachebehavior,
-                        Ref("AWS::NoValue")
-                    )
-                )
-            else:
-                cachebehaviors.append(cachebehavior)
-
-        DistributionConfig.CacheBehaviors = cachebehaviors
-
-        cloudfrontaliasextra = []
-        for n, v in cfg.CloudFrontAliasExtra.items():
-            name = f'CloudFrontAliasExtra{n}'
-
-            # skip parameter and condition for Cdn, Env, Zone
-            if v.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
-                cloudfrontaliasextra.append(get_endvalue(name))
-                continue
-
-            # parameters
-            p_Alias = Parameter(name)
-            p_Alias.Description = (
-                'Alias extra - ''empty for default based on env/role')
-
-            add_obj(p_Alias)
-
-            cloudfrontaliasextra.append(get_endvalue(name, condition=True))
-
+        # Create and Use Condition
+        # only if PathPattern Value differ between envs
+        if f'{name}PathPattern' not in cfg.fixedvalues:
             # conditions
-            add_obj(get_condition(name, 'not_equals', 'None'))
+            add_obj(
+                get_condition(
+                    name, 'not_equals', 'None', f'{name}PathPattern')
+            )
 
-        DistributionConfig.Aliases = cloudfrontaliasextra
-        DistributionConfig.CustomErrorResponses = CFCustomErrors()
-        CloudFrontDistribution.DistributionConfig = DistributionConfig
-
-        CloudFrontDistribution.DistributionConfig.Origins = CFOrigins()
-        CloudFrontDistribution.DistributionConfig.Comment = get_endvalue(
-            'CloudFrontComment')
-
-        try:
-            cfg.CloudFrontDistributionCondition
-        except Exception:
-            pass
+            cachebehaviors.append(
+                If(
+                    name,
+                    cachebehavior,
+                    Ref("AWS::NoValue")
+                )
+            )
         else:
-            CloudFrontDistribution.Condition = (
-                cfg.CloudFrontDistributionCondition)
+            cachebehaviors.append(cachebehavior)
 
-        R_CloudFrontDistribution = CloudFrontDistribution
+    DistributionConfig.CacheBehaviors = cachebehaviors
+
+    cloudfrontaliasextra = []
+    for n, v in cfg.CloudFrontAliasExtra.items():
+        name = f'CloudFrontAliasExtra{n}'
+
+        # skip parameter and condition for Cdn, Env, Zone
+        if v.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+            cloudfrontaliasextra.append(get_endvalue(name))
+            continue
+
+        # parameters
+        p_Alias = Parameter(name)
+        p_Alias.Description = (
+            'Alias extra - ''empty for default based on env/role')
+
+        add_obj(p_Alias)
+
+        cloudfrontaliasextra.append(get_endvalue(name, condition=True))
+
+        # conditions
+        add_obj(get_condition(name, 'not_equals', 'None'))
+
+    DistributionConfig.Aliases = cloudfrontaliasextra
+    DistributionConfig.CustomErrorResponses = CFCustomErrors()
+    CloudFrontDistribution.DistributionConfig = DistributionConfig
+
+    CloudFrontDistribution.DistributionConfig.Origins = CFOrigins()
+    CloudFrontDistribution.DistributionConfig.Comment = get_endvalue(
+        'CloudFrontComment')
+
+    try:
+        cfg.CloudFrontDistributionCondition
+    except Exception:
+        pass
+    else:
+        CloudFrontDistribution.Condition = (
+            cfg.CloudFrontDistributionCondition)
+
+    R_CloudFrontDistribution = CloudFrontDistribution
+
+    add_obj([
+        R_CloudFrontDistribution,
+    ])
+
+
+def CF_CachePolicy(key):
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+
+        # resources
+        r_CachePolicy = clf.CachePolicy(resname)
+        auto_get_props(r_CachePolicy)
+        r_CachePolicy.CachePolicyConfig.Name = n
+
+        # outputs
+        o_CachePolicy = Output(resname)
+        o_CachePolicy.Value = Ref(resname)
+        o_CachePolicy.Export = Export(resname)
 
         add_obj([
-            R_CloudFrontDistribution,
+            r_CachePolicy,
+            o_CachePolicy,
         ])
 
 
-class CF_CachePolicy(object):
-    def __init__(self, key):
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
+def CF_OriginRequestPolicy(key):
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
 
-            # resources
-            r_CachePolicy = clf.CachePolicy(resname)
-            auto_get_props(r_CachePolicy)
-            r_CachePolicy.CachePolicyConfig.Name = n
+        # resources
+        r_OriginRequestPolicy = clf.OriginRequestPolicy(resname)
+        auto_get_props(r_OriginRequestPolicy)
+        r_OriginRequestPolicy.OriginRequestPolicyConfig.Name = n
 
-            # outputs
-            o_CachePolicy = Output(resname)
-            o_CachePolicy.Value = Ref(resname)
-            o_CachePolicy.Export = Export(resname)
+        # outputs
+        o_OriginRequestPolicy = Output(resname)
+        o_OriginRequestPolicy.Value = Ref(resname)
+        o_OriginRequestPolicy.Export = Export(resname)
 
-            add_obj([
-                r_CachePolicy,
-                o_CachePolicy,
-            ])
-
-
-class CF_OriginRequestPolicy(object):
-    def __init__(self, key):
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-
-            # resources
-            r_OriginRequestPolicy = clf.OriginRequestPolicy(resname)
-            auto_get_props(r_OriginRequestPolicy)
-            r_OriginRequestPolicy.OriginRequestPolicyConfig.Name = n
-
-            # outputs
-            o_OriginRequestPolicy = Output(resname)
-            o_OriginRequestPolicy.Value = Ref(resname)
-            o_OriginRequestPolicy.Export = Export(resname)
-
-            add_obj([
-                r_OriginRequestPolicy,
-                o_OriginRequestPolicy,
-            ])
+        add_obj([
+            r_OriginRequestPolicy,
+            o_OriginRequestPolicy,
+        ])

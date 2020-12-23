@@ -49,426 +49,406 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
 # E - V2 LOAD BALANCING #
 
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
+def LB_Listeners():
+    # Conditions
+    for i in cfg.AllowedIp:
+        condname = f'AllowedIp{i}'  # Ex. AllowedIp1
 
-class LB_Listeners(object):
-    def __init__(self):
-        # Conditions
+        c_Enabled = get_condition(
+            condname, 'not_equals', 'None', f'{condname}Enabled')
+
+        add_obj(c_Enabled)
+
+
+def LB_ListenersEC2():
+    LB_Listeners()
+
+    # Resources
+    Listeners = []
+    Securitygroup_Rules = []
+    SecuritygroupIngress_InstanceRules = []
+    for n, v in cfg.Listeners.items():
+        mapname = f'Listeners{n}'  # Ex Listeners1
+
+        if cfg.LoadBalancerClassic:
+            Listener = elb.Listener(mapname)
+            auto_get_props(Listener)
+            auto_get_props(Listener, 'ListenerClassic')
+            Listeners.append(Listener)
+
         for i in cfg.AllowedIp:
-            condname = f'AllowedIp{i}'  # Ex. AllowedIp1
-
-            c_Enabled = get_condition(
-                condname, 'not_equals', 'None', f'{condname}Enabled')
-
-            add_obj(c_Enabled)
-
-
-class LB_ListenersEC2(LB_Listeners):
-    def __init__(self):
-        super().__init__()
-
-        # Resources
-        Listeners = []
-        Securitygroup_Rules = []
-        SecuritygroupIngress_InstanceRules = []
-        for n, v in cfg.Listeners.items():
-            mapname = f'Listeners{n}'  # Ex Listeners1
-
-            if cfg.LoadBalancerClassic:
-                Listener = elb.Listener(mapname)
-                auto_get_props(Listener)
-                auto_get_props(Listener, 'ListenerClassic')
-                Listeners.append(Listener)
-
-            for i in cfg.AllowedIp:
-                ipname = f'AllowedIp{i}'  # Ex. AllowedIp1
-                condnameprivate = f'SecurityGroupRulePrivate{mapname}{ipname}'
-                condnamepublic = f'SecurityGroupRulePublic{mapname}'
-
-                # conditions
-                c_LoadBalancerAccessAllowedIp = {condnameprivate: And(
-                    Condition(ipname),
-                    get_condition('', 'equals', 'Private',
-                                  f'{mapname}LoadBalancerAccess')
-                )}
-
-                add_obj(c_LoadBalancerAccessAllowedIp)
-
-                SGRule = SecurityGroupRuleELBPorts(mapname)
-                SGRule.CidrIp = get_endvalue(f'{ipname}Ip')
-
-                Securitygroup_Rules.append(
-                    If(
-                        condnameprivate,
-                        SGRule,
-                        Ref('AWS::NoValue'),
-                    )
-                )
+            ipname = f'AllowedIp{i}'  # Ex. AllowedIp1
+            condnameprivate = f'SecurityGroupRulePrivate{mapname}{ipname}'
+            condnamepublic = f'SecurityGroupRulePublic{mapname}'
 
             # conditions
-            c_LoadBalancerAccessPublic = get_condition(
-                condnamepublic,
-                'equals', 'Public', f'{mapname}LoadBalancerAccess')
-            add_obj(c_LoadBalancerAccessPublic)
+            c_LoadBalancerAccessAllowedIp = {condnameprivate: And(
+                Condition(ipname),
+                get_condition('', 'equals', 'Private',
+                              f'{mapname}LoadBalancerAccess')
+            )}
+
+            add_obj(c_LoadBalancerAccessAllowedIp)
 
             SGRule = SecurityGroupRuleELBPorts(mapname)
-            SGRule.CidrIp = '0.0.0.0/0'
+            SGRule.CidrIp = get_endvalue(f'{ipname}Ip')
 
             Securitygroup_Rules.append(
                 If(
-                    condnamepublic,
+                    condnameprivate,
                     SGRule,
                     Ref('AWS::NoValue'),
                 )
             )
 
-            # resources
-            r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
-                f'SecurityGroupIngress{mapname}', listener=mapname)
+        # conditions
+        c_LoadBalancerAccessPublic = get_condition(
+            condnamepublic,
+            'equals', 'Public', f'{mapname}LoadBalancerAccess')
+        add_obj(c_LoadBalancerAccessPublic)
 
-            add_obj(r_SGIInstance)
+        SGRule = SecurityGroupRuleELBPorts(mapname)
+        SGRule.CidrIp = '0.0.0.0/0'
 
-            # outputs
-            Listener_Output = Output(mapname)
-            Listener_Output.Value = Sub(
-                '${LoadBalancerPort}.${Protocol}.${LoadBalancerAccess}',
-                **{
-                    'LoadBalancerPort': get_endvalue(
-                        f'{mapname}LoadBalancerPort'),
-                    'Protocol': get_endvalue(
-                        f'{mapname}Protocol'),
-                    'LoadBalancerAccess': get_endvalue(
-                        f'{mapname}LoadBalancerAccess')
-                }
+        Securitygroup_Rules.append(
+            If(
+                condnamepublic,
+                SGRule,
+                Ref('AWS::NoValue'),
             )
-            add_obj(Listener_Output)
+        )
 
-        R_SG = SecurityGroupLoadBalancer('SecurityGroupLoadBalancer')
-        R_SG.SecurityGroupIngress = Securitygroup_Rules
-
-        add_obj([
-            R_SG,
-        ])
-
-        # Outputs
-        O_SG = Output('SecurityGroupLoadBalancer')
-        O_SG.Value = Ref('SecurityGroupLoadBalancer')
-
-        add_obj([
-            O_SG,
-        ])
-
-        self.Listeners = Listeners
-
-
-class LB_ListenerRulesExternalInternal(object):
-    def __init__(self, index, key, mapname, scheme):
         # resources
-        R_RuleHttp = ELBV2ListernerRuleECS(
-            f'ListenerHttp{scheme}Rules{index}',
-            key=key, index=index, mapname=mapname, scheme=scheme)
-        R_RuleHttp.ListenerArn = get_expvalue(
-            f'ListenerHttpDefault{scheme}', 'LoadBalancerApplicationStack')
-        R_RuleHttp.Condition = 'ListenerLoadBalancerHttpPort'
+        r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
+            f'SecurityGroupIngress{mapname}', listener=mapname)
 
-        R_RuleHttps = ELBV2ListernerRuleECS(
-            f'ListenerHttps{scheme}Rules{index}',
-            key=key, index=index, mapname=mapname, scheme=scheme)
-        R_RuleHttps.ListenerArn = get_expvalue(
-            f'ListenerHttpsDefault{scheme}', 'LoadBalancerApplicationStack')
-        R_RuleHttps.Condition = 'ListenerLoadBalancerHttpsPort'
+        add_obj(r_SGIInstance)
 
-        # Create ListenerRule only in stack's specific new Listener
-        ListenerHttpPort = cfg.ListenerLoadBalancerHttpPort
-        ListenerHttpsPort = cfg.ListenerLoadBalancerHttpsPort
+        # outputs
+        Listener_Output = Output(mapname)
+        Listener_Output.Value = Sub(
+            '${LoadBalancerPort}.${Protocol}.${LoadBalancerAccess}',
+            **{
+                'LoadBalancerPort': get_endvalue(
+                    f'{mapname}LoadBalancerPort'),
+                'Protocol': get_endvalue(
+                    f'{mapname}Protocol'),
+                'LoadBalancerAccess': get_endvalue(
+                    f'{mapname}LoadBalancerAccess')
+            }
+        )
+        add_obj(Listener_Output)
 
-        Protocol = key['Protocol'] if 'Protocol' in key else 'auto'
+    R_SG = SecurityGroupLoadBalancer('SecurityGroupLoadBalancer')
+    R_SG.SecurityGroupIngress = Securitygroup_Rules
 
-        RuleHttpAdd = None
-        RuleHttpsAdd = None
+    add_obj([
+        R_SG,
+    ])
 
-        if 'NoDefault' in key:
-            R_RuleHttp.ListenerArn = Ref(f'ListenerHttp{scheme}')
-            R_RuleHttps.ListenerArn = Ref(f'ListenerHttps{scheme}')
-            if ListenerHttpPort != 80:
+    # Outputs
+    O_SG = Output('SecurityGroupLoadBalancer')
+    O_SG.Value = Ref('SecurityGroupLoadBalancer')
+
+    add_obj([
+        O_SG,
+    ])
+
+    return Listeners
+
+
+def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
+    # resources
+    R_RuleHttp = ELBV2ListernerRuleECS(
+        f'ListenerHttp{scheme}Rules{index}',
+        key=key, index=index, mapname=mapname, scheme=scheme)
+    R_RuleHttp.ListenerArn = get_expvalue(
+        f'ListenerHttpDefault{scheme}', 'LoadBalancerApplicationStack')
+    R_RuleHttp.Condition = 'ListenerLoadBalancerHttpPort'
+
+    R_RuleHttps = ELBV2ListernerRuleECS(
+        f'ListenerHttps{scheme}Rules{index}',
+        key=key, index=index, mapname=mapname, scheme=scheme)
+    R_RuleHttps.ListenerArn = get_expvalue(
+        f'ListenerHttpsDefault{scheme}', 'LoadBalancerApplicationStack')
+    R_RuleHttps.Condition = 'ListenerLoadBalancerHttpsPort'
+
+    # Create ListenerRule only in stack's specific new Listener
+    ListenerHttpPort = cfg.ListenerLoadBalancerHttpPort
+    ListenerHttpsPort = cfg.ListenerLoadBalancerHttpsPort
+
+    Protocol = key['Protocol'] if 'Protocol' in key else 'auto'
+
+    RuleHttpAdd = None
+    RuleHttpsAdd = None
+
+    if 'NoDefault' in key:
+        R_RuleHttp.ListenerArn = Ref(f'ListenerHttp{scheme}')
+        R_RuleHttps.ListenerArn = Ref(f'ListenerHttps{scheme}')
+        if ListenerHttpPort != 80:
+            RuleHttpAdd = True
+        if ListenerHttpsPort != 443:
+            RuleHttpsAdd = True
+    else:
+        # by default create http rules on Internal LB
+        # and https rules on External one
+        if scheme == 'Internal':
+            RuleHttpAdd = True
+        if scheme == 'External':
+            RuleHttpsAdd = True
+            # on External can be forced or overriden by key http/https/any
+            if Protocol == 'http':
                 RuleHttpAdd = True
-            if ListenerHttpsPort != 443:
+                RuleHttpsAdd = None
+            if Protocol == 'https':
+                RuleHttpAdd = None
                 RuleHttpsAdd = True
-        else:
-            # by default create http rules on Internal LB
-            # and https rules on External one
-            if scheme == 'Internal':
+            if Protocol == 'any':
                 RuleHttpAdd = True
-            if scheme == 'External':
                 RuleHttpsAdd = True
-                # on External can be forced or overriden by key http/https/any
-                if Protocol == 'http':
-                    RuleHttpAdd = True
-                    RuleHttpsAdd = None
-                if Protocol == 'https':
-                    RuleHttpAdd = None
-                    RuleHttpsAdd = True
-                if Protocol == 'any':
-                    RuleHttpAdd = True
-                    RuleHttpsAdd = True
 
-        if RuleHttpAdd:
-            add_obj(R_RuleHttp)
-        if RuleHttpsAdd:
-            add_obj(R_RuleHttps)
+    if RuleHttpAdd:
+        add_obj(R_RuleHttp)
+    if RuleHttpsAdd:
+        add_obj(R_RuleHttps)
 
 
-class LB_ListenerRules(object):
-    def __init__(self):
-        for n, v in cfg.ListenerRules.items():
-            mapname = f'ListenerRules{n}'  # Ex. ListenerRules1
+def LB_ListenerRules():
+    for n, v in cfg.ListenerRules.items():
+        mapname = f'ListenerRules{n}'  # Ex. ListenerRules1
 
-            # parameters
-            p_Priority = Parameter(f'{mapname}Priority')
-            p_Priority.Description = (
-                'Listener Rule Priority, lesser value = high priority - '
+        # parameters
+        p_Priority = Parameter(f'{mapname}Priority')
+        p_Priority.Description = (
+            'Listener Rule Priority, lesser value = high priority - '
+            'empty for default based on env/role')
+
+        add_obj(p_Priority)
+
+        ListenerRule_Out_String = ['Priority=${Priority}']
+        ListenerRule_Out_Map = {'Priority': get_endvalue(
+            f'{mapname}Priority')}
+
+        if 'HostHeader' in v:
+            p_HostHeader = Parameter(f'{mapname}HostHeader')
+            p_HostHeader.Description = (
+                'Listener Rule HostHeader Condition - '
                 'empty for default based on env/role')
 
-            add_obj(p_Priority)
-
-            ListenerRule_Out_String = ['Priority=${Priority}']
-            ListenerRule_Out_Map = {'Priority': get_endvalue(
-                f'{mapname}Priority')}
-
-            if 'HostHeader' in v:
-                p_HostHeader = Parameter(f'{mapname}HostHeader')
-                p_HostHeader.Description = (
-                    'Listener Rule HostHeader Condition - '
-                    'empty for default based on env/role')
-
-                add_obj(p_HostHeader)
-
-                # outputs
-                ListenerRule_Out_String.append('HostHeader=${HostHeader}')
-                ListenerRule_Out_Map.update({
-                    'HostHeader': get_endvalue(
-                        f'{mapname}HostHeader', issub=True)
-                })
-
-            if 'PathPattern' in v:
-                p_PathPattern = Parameter(f'{mapname}PathPattern')
-                p_PathPattern.Description = (
-                    'Listener Rule PathPattern Condition - '
-                    'empty for default based on env/role')
-
-                add_obj(p_PathPattern)
-
-                # outputs
-                ListenerRule_Out_String.append('PathPattern=${PathPattern}')
-                ListenerRule_Out_Map.update({
-                    'PathPattern': get_endvalue(
-                        f'{mapname}PathPattern', issub=True)
-                })
-
-            # resources
-            if cfg.LoadBalancerApplicationExternal:
-                LB_ListenerRulesExternalInternal(
-                    index=str(n), key=v, mapname=mapname, scheme='External')
-
-            if cfg.LoadBalancerApplicationInternal:
-                LB_ListenerRulesExternalInternal(
-                    index=str(n), key=v, mapname=mapname, scheme='Internal')
+            add_obj(p_HostHeader)
 
             # outputs
-            o_ListenerRule = Output(mapname)
-            o_ListenerRule.Value = Sub(
-                ','.join(ListenerRule_Out_String), **ListenerRule_Out_Map)
+            ListenerRule_Out_String.append('HostHeader=${HostHeader}')
+            ListenerRule_Out_Map.update({
+                'HostHeader': get_endvalue(
+                    f'{mapname}HostHeader', issub=True)
+            })
 
-            add_obj(o_ListenerRule)
+        if 'PathPattern' in v:
+            p_PathPattern = Parameter(f'{mapname}PathPattern')
+            p_PathPattern.Description = (
+                'Listener Rule PathPattern Condition - '
+                'empty for default based on env/role')
+
+            add_obj(p_PathPattern)
+
+            # outputs
+            ListenerRule_Out_String.append('PathPattern=${PathPattern}')
+            ListenerRule_Out_Map.update({
+                'PathPattern': get_endvalue(
+                    f'{mapname}PathPattern', issub=True)
+            })
+
+        # resources
+        if cfg.LoadBalancerApplicationExternal:
+            LB_ListenerRulesExternalInternal(
+                index=str(n), key=v, mapname=mapname, scheme='External')
+
+        if cfg.LoadBalancerApplicationInternal:
+            LB_ListenerRulesExternalInternal(
+                index=str(n), key=v, mapname=mapname, scheme='Internal')
+
+        # outputs
+        o_ListenerRule = Output(mapname)
+        o_ListenerRule.Value = Sub(
+            ','.join(ListenerRule_Out_String), **ListenerRule_Out_Map)
+
+        add_obj(o_ListenerRule)
 
 
-class LB_ListenersV2EC2(LB_ListenersEC2):
-    def __init__(self):
-        super().__init__()
-        for n in ['External', 'Internal']:
-            # resources
-            if n not in cfg.LoadBalancerApplication:
-                continue
+def LB_ListenersV2EC2():
+    LB_ListenersEC2()
+    for n in ['External', 'Internal']:
+        # resources
+        if n not in cfg.LoadBalancerApplication:
+            continue
+        r_Http = elbv2.Listener(f'ListenerHttp{n}')
+        auto_get_props(r_Http, mapname=f'ListenerV2EC2Http{n}')
+        add_obj(r_Http)
+
+        if n == 'External':
+            r_Https = elbv2.Listener(f'ListenerHttps{n}')
+            auto_get_props(r_Https, mapname=f'ListenerV2EC2Https{n}')
+            add_obj(r_Https)
+
+    LB_TargetGroupsEC2()
+
+
+def LB_ListenersV2ECS():
+    LB_Listeners()
+    for n in ['External', 'Internal']:
+        # resources
+        if n not in cfg.LoadBalancerApplication:
+            continue
+        if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
             r_Http = elbv2.Listener(f'ListenerHttp{n}')
-            auto_get_props(r_Http, mapname=f'ListenerV2EC2Http{n}')
+            auto_get_props(r_Http, mapname=f'ListenerV2ECSHttp{n}')
             add_obj(r_Http)
+            SG_SecurityGroupIngressesECS(scheme=n, proto='Http')
 
-            if n == 'External':
-                r_Https = elbv2.Listener(f'ListenerHttps{n}')
-                auto_get_props(r_Https, mapname=f'ListenerV2EC2Https{n}')
-                add_obj(r_Https)
+        if (cfg.ListenerLoadBalancerHttpsPort not in ['None', 443]
+                and n == 'External'):
+            r_Https = elbv2.Listener(f'ListenerHttps{n}')
+            auto_get_props(r_Https, mapname=f'ListenerV2ECSHttps{n}')
+            add_obj(r_Https)
+            SG_SecurityGroupIngressesECS(scheme=n, proto='Https')
 
-        LB_TargetGroupsEC2()
-
-
-class LB_ListenersV2ECS(LB_Listeners):
-    def __init__(self):
-        super().__init__()
-        for n in ['External', 'Internal']:
-            # resources
-            if n not in cfg.LoadBalancerApplication:
-                continue
-            if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
-                r_Http = elbv2.Listener(f'ListenerHttp{n}')
-                auto_get_props(r_Http, mapname=f'ListenerV2ECSHttp{n}')
-                add_obj(r_Http)
-                SG_SecurityGroupIngressesECS(scheme=n, proto='Http')
-
-            if (cfg.ListenerLoadBalancerHttpsPort not in ['None', 443]
-                    and n == 'External'):
-                r_Https = elbv2.Listener(f'ListenerHttps{n}')
-                auto_get_props(r_Https, mapname=f'ListenerV2ECSHttps{n}')
-                add_obj(r_Https)
-                SG_SecurityGroupIngressesECS(scheme=n, proto='Https')
-
-        # Resources
-        LB_TargetGroupsECS()
-        LB_ListenerRules()
+    # Resources
+    LB_TargetGroupsECS()
+    LB_ListenerRules()
 
 
-class LB_TargetGroupsEC2(object):
-    def __init__(self):
-        for n in ['External', 'Internal']:
-            # resources
-            if n not in cfg.LoadBalancerApplication:
-                continue
-            r_TG = elbv2.TargetGroup(f'TargetGroup{n}')
-            auto_get_props(r_TG,
-                           mapname=f'ElasticLoadBalancingV2TargetGroupEC2')
-            add_obj(r_TG)
+def LB_TargetGroupsEC2():
+    for n in ['External', 'Internal']:
+        # resources
+        if n not in cfg.LoadBalancerApplication:
+            continue
+        r_TG = elbv2.TargetGroup(f'TargetGroup{n}')
+        auto_get_props(r_TG,
+                       mapname=f'ElasticLoadBalancingV2TargetGroupEC2')
+        add_obj(r_TG)
 
-            cfg.Alarm[f'TargetEC2{n}5XX']['IBOXENABLED'] = True
-
-
-class LB_TargetGroupsECS(object):
-    def __init__(self):
-        for n in ['External', 'Internal']:
-            # resources
-            if n not in cfg.LoadBalancerApplication:
-                continue
-            r_TG = elbv2.TargetGroup(f'TargetGroup{n}')
-            auto_get_props(r_TG,
-                           mapname=f'ElasticLoadBalancingV2TargetGroupECS')
-            add_obj(r_TG)
-
-            cfg.Alarm[f'Target{n}5XX']['IBOXENABLED'] = True
+        cfg.Alarm[f'TargetEC2{n}5XX']['IBOXENABLED'] = True
 
 
-class LB_TargetGroupsALB(object):
-    def __init__(self):
-        lambda_name = 'ServiceUnavailable'
-        lambda_arn = get_expvalue(f'Lambda{lambda_name}Arn')
-        perm_name = f'LambdaPermission{lambda_name}LoadBalancerApplication'
+def LB_TargetGroupsECS():
+    for n in ['External', 'Internal']:
+        # resources
+        if n not in cfg.LoadBalancerApplication:
+            continue
+        r_TG = elbv2.TargetGroup(f'TargetGroup{n}')
+        auto_get_props(r_TG,
+                       mapname=f'ElasticLoadBalancingV2TargetGroupECS')
+        add_obj(r_TG)
 
-        for n in ['External', 'Internal']:
-            # resources
-            if n not in cfg.LoadBalancerApplication:
-                continue
-            r_TG = elbv2.TargetGroup(f'TargetGroupServiceUnavailable{n}')
-            auto_get_props(r_TG,
-                           mapname=f'ElasticLoadBalancingV2TargetGroupALB')
-            r_TG.DependsOn = f'{perm_name}{n}'
-            r_TG.Condition = f'LoadBalancerApplication{n}'
-
-            r_LambdaPermission = LambdaPermissionLoadBalancing(
-                f'{perm_name}{n}', name=lambda_arn)
-            r_LambdaPermission.Condition = f'LoadBalancerApplication{n}'
-
-            o_TargetGroup = Output(f'TargetGroupServiceUnavailable{n}')
-            o_TargetGroup.Condition = f'LoadBalancerApplication{n}'
-            o_TargetGroup.Value = Ref(f'TargetGroupServiceUnavailable{n}')
-
-            add_obj([
-                r_TG,
-                r_LambdaPermission,
-                o_TargetGroup,
-            ])
+        cfg.Alarm[f'Target{n}5XX']['IBOXENABLED'] = True
 
 
-class LB_ElasticLoadBalancingClassicEC2(LB_ListenersEC2):
-    def __init__(self):
-        super().__init__()
-        for n, v in cfg.ElasticLoadBalancingLoadBalancer.items():
-            # resources
-            if n not in cfg.LoadBalancerClassic:
-                continue
-            r_LB = elb.LoadBalancer(f'LoadBalancerClassic{n}')
-            auto_get_props(r_LB,
-                           mapname=f'ElasticLoadBalancingLoadBalancer{n}')
-            r_LB.Listeners = self.Listeners
+def LB_TargetGroupsALB():
+    lambda_name = 'ServiceUnavailable'
+    lambda_arn = get_expvalue(f'Lambda{lambda_name}Arn')
+    perm_name = f'LambdaPermission{lambda_name}LoadBalancerApplication'
 
-            add_obj(r_LB)
-            cfg.Alarm[f'Backend{n}5XX']['IBOXENABLED'] = True
+    for n in ['External', 'Internal']:
+        # resources
+        if n not in cfg.LoadBalancerApplication:
+            continue
+        r_TG = elbv2.TargetGroup(f'TargetGroupServiceUnavailable{n}')
+        auto_get_props(r_TG,
+                       mapname=f'ElasticLoadBalancingV2TargetGroupALB')
+        r_TG.DependsOn = f'{perm_name}{n}'
+        r_TG.Condition = f'LoadBalancerApplication{n}'
 
+        r_LambdaPermission = LambdaPermissionLoadBalancing(
+            f'{perm_name}{n}', name=lambda_arn)
+        r_LambdaPermission.Condition = f'LoadBalancerApplication{n}'
 
-class LB_ElasticLoadBalancingApplicationEC2(object):
-    def __init__(self):
-        for n, v in cfg.ElasticLoadBalancingV2LoadBalancer.items():
-            # resources
-            if n not in cfg.LoadBalancerApplication:
-                continue
-            r_LB = elbv2.LoadBalancer(f'LoadBalancerApplication{n}')
-            auto_get_props(r_LB,
-                           mapname=f'ElasticLoadBalancingV2LoadBalancer{n}')
-            add_obj(r_LB)
+        o_TargetGroup = Output(f'TargetGroupServiceUnavailable{n}')
+        o_TargetGroup.Condition = f'LoadBalancerApplication{n}'
+        o_TargetGroup.Value = Ref(f'TargetGroupServiceUnavailable{n}')
 
-        LB_ListenersV2EC2()
-
-
-class LB_ElasticLoadBalancingEC2(object):
-    def __init__(self, key):
-        # Resources
-        R53_RecordSetEC2LoadBalancer()
-
-        if cfg.LoadBalancerClassic:
-            LB_ElasticLoadBalancingClassicEC2()
-
-        if cfg.LoadBalancerApplication:
-            LB_ElasticLoadBalancingApplicationEC2()
+        add_obj([
+            r_TG,
+            r_LambdaPermission,
+            o_TargetGroup])
 
 
-class LB_ElasticLoadBalancingALB(object):
-    def __init__(self, key):
-        for n, v in cfg.ElasticLoadBalancingV2LoadBalancerALB.items():
-            # resources
-            if n not in cfg.LoadBalancerApplication:
-                continue
-            r_LB = elbv2.LoadBalancer(f'LoadBalancerApplication{n}')
-            auto_get_props(r_LB,
-                           mapname=f'ElasticLoadBalancingV2LoadBalancerALB{n}')
+def LB_ElasticLoadBalancingClassicEC2():
+    Listeners = LB_ListenersEC2()
+    for n, v in cfg.ElasticLoadBalancingLoadBalancer.items():
+        # resources
+        if n not in cfg.LoadBalancerClassic:
+            continue
+        r_LB = elb.LoadBalancer(f'LoadBalancerClassic{n}')
+        auto_get_props(r_LB,
+                       mapname=f'ElasticLoadBalancingLoadBalancer{n}')
+        r_LB.Listeners = Listeners
 
-            r_ListenerHttp = elbv2.Listener(f'ListenerHttpDefault{n}')
-            auto_get_props(r_ListenerHttp, mapname=f'ListenerV2ALBHttp{n}')
-
-            if n == 'External':
-                r_ListenerHttps = elbv2.Listener(f'ListenerHttpsDefault{n}')
-                auto_get_props(r_ListenerHttps,
-                               mapname=f'ListenerV2ALBHttps{n}')
-                add_obj(r_ListenerHttps)
-
-            r_SG = SecurityGroup(f'SecurityGroupLoadBalancerApplication{n}')
-            auto_get_props(r_SG, mapname=f'SecurityGroupALB{n}')
-
-            add_obj([
-                r_LB,
-                r_ListenerHttp,
-                r_SG,
-            ])
-
-        # Resources
-        # Create TargetGroups pointing to LambdaServiceUnavailable
-        try:
-            cfg.ServiceUnavailable
-        except Exception:
-            pass
-        else:
-            LB_TargetGroupsALB()
+        add_obj(r_LB)
+        cfg.Alarm[f'Backend{n}5XX']['IBOXENABLED'] = True
 
 
-class LB_ElasticLoadBalancingECS(object):
-    def __init__(self, key):
-        # Resources
-        LB_ListenersV2ECS()
-        R53_RecordSetECSLoadBalancer()
+def LB_ElasticLoadBalancingApplicationEC2():
+    for n, v in cfg.ElasticLoadBalancingV2LoadBalancer.items():
+        # resources
+        if n not in cfg.LoadBalancerApplication:
+            continue
+        r_LB = elbv2.LoadBalancer(f'LoadBalancerApplication{n}')
+        auto_get_props(r_LB,
+                       mapname=f'ElasticLoadBalancingV2LoadBalancer{n}')
+        add_obj(r_LB)
+
+    LB_ListenersV2EC2()
+
+
+def LB_ElasticLoadBalancingEC2(key):
+    # Resources
+    R53_RecordSetEC2LoadBalancer()
+
+    if cfg.LoadBalancerClassic:
+        LB_ElasticLoadBalancingClassicEC2()
+
+    if cfg.LoadBalancerApplication:
+        LB_ElasticLoadBalancingApplicationEC2()
+
+
+def LB_ElasticLoadBalancingALB(key):
+    for n, v in cfg.ElasticLoadBalancingV2LoadBalancerALB.items():
+        # resources
+        if n not in cfg.LoadBalancerApplication:
+            continue
+        r_LB = elbv2.LoadBalancer(f'LoadBalancerApplication{n}')
+        auto_get_props(r_LB,
+                       mapname=f'ElasticLoadBalancingV2LoadBalancerALB{n}')
+
+        r_ListenerHttp = elbv2.Listener(f'ListenerHttpDefault{n}')
+        auto_get_props(r_ListenerHttp, mapname=f'ListenerV2ALBHttp{n}')
+
+        if n == 'External':
+            r_ListenerHttps = elbv2.Listener(f'ListenerHttpsDefault{n}')
+            auto_get_props(r_ListenerHttps,
+                           mapname=f'ListenerV2ALBHttps{n}')
+            add_obj(r_ListenerHttps)
+
+        r_SG = SecurityGroup(f'SecurityGroupLoadBalancerApplication{n}')
+        auto_get_props(r_SG, mapname=f'SecurityGroupALB{n}')
+
+        add_obj([
+            r_LB,
+            r_ListenerHttp,
+            r_SG])
+
+    # Resources
+    # Create TargetGroups pointing to LambdaServiceUnavailable
+    try:
+        cfg.ServiceUnavailable
+    except Exception:
+        pass
+    else:
+        LB_TargetGroupsALB()
+
+
+def LB_ElasticLoadBalancingECS(key):
+    # Resources
+    LB_ListenersV2ECS()
+    R53_RecordSetECSLoadBalancer()

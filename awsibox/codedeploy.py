@@ -56,35 +56,29 @@ class CDDeploymentGroup(cdd.DeploymentGroup):
         self.DeploymentGroupName = Sub('${AWS::StackName}.${EnvRole}')
         self.ServiceRoleArn = get_expvalue('RoleCodeDeploy', '')
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
+
+def CD_DeploymentGroup():
+    # Conditions
+    add_obj([
+        {'DeploymentGroup': And(
+            Condition('Apps1'),
+            get_condition('', 'equals', True, 'DeploymentGroup')
+        )},
+        {'DeployRevision': Equals(Ref('UpdateMode'), 'CodeDeploy')},
+    ])
+
+    # Resources
+    # FOR SINGLEAPP CODEDEPLOY
+    if len(cfg.Apps) == 1:
+        R_DeploymentGroup = CDDeploymentGroup('DeploymentGroup', index=1)
+
+        add_obj(R_DeploymentGroup)
 
 
-class CD_DeploymentGroup(object):
-    def __init__(self):
-        # Conditions
-        add_obj([
-            {'DeploymentGroup': And(
-                Condition('Apps1'),
-                get_condition('', 'equals', True, 'DeploymentGroup')
-            )},
-            {'DeployRevision': Equals(Ref('UpdateMode'), 'CodeDeploy')},
-        ])
+def CD_Applications(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+        App = cdd.Application(resname)
+        App.ApplicationName = get_endvalue(resname)
 
-        # Resources
-        # FOR SINGLEAPP CODEDEPLOY
-        if len(cfg.Apps) == 1:
-            R_DeploymentGroup = CDDeploymentGroup('DeploymentGroup', index=1)
-
-            add_obj(R_DeploymentGroup)
-
-
-class CD_Applications(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-            App = cdd.Application(resname)
-            App.ApplicationName = get_endvalue(resname)
-
-            add_obj(App)
+        add_obj(App)

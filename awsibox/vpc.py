@@ -116,166 +116,162 @@ class EC2SubnetRouteTableAssociationPublic(ec2.SubnetRouteTableAssociation):
 ##
 
 
-class VPC_Endpoint(object):
-    def __init__(self, key):
-        # Conditions
-        c_VPCEndpoint = get_condition(
-            'EC2VPCEndpointS3', 'not_equals', 'None', 'VPCEndpoint')
+def VPC_Endpoint(key):
+    # Conditions
+    c_VPCEndpoint = get_condition(
+        'EC2VPCEndpointS3', 'not_equals', 'None', 'VPCEndpoint')
 
-        add_obj(c_VPCEndpoint)
+    add_obj(c_VPCEndpoint)
 
-        # Resources
-        R_S3 = EC2VPCEndpointS3('EC2VPCEndpointS3')
-        R_S3.Condition = 'EC2VPCEndpointS3'
+    # Resources
+    R_S3 = EC2VPCEndpointS3('EC2VPCEndpointS3')
+    R_S3.Condition = 'EC2VPCEndpointS3'
 
-        add_obj([
-            R_S3,
-        ])
+    add_obj([
+        R_S3])
 
 
-class VPC_VPC(object):
-    def __init__(self, key):
-        vpc_net = '10.80'
-        o_subnetprivate = []
-        o_subnetpublic = []
+def VPC_VPC(key):
+    vpc_net = '10.80'
+    o_subnetprivate = []
+    o_subnetpublic = []
 
-        # Resources
-        R_VPC = ec2.VPC('VPC')
-        auto_get_props(R_VPC, f'{key}Base')
+    # Resources
+    R_VPC = ec2.VPC('VPC')
+    auto_get_props(R_VPC, f'{key}Base')
 
-        R_RouteTablePrivate = EC2RouteTable('RouteTablePrivate')
-        R_RouteTablePrivate.Tags = Tags(Name=Sub('${VPCName}-Private'))
+    R_RouteTablePrivate = EC2RouteTable('RouteTablePrivate')
+    R_RouteTablePrivate.Tags = Tags(Name=Sub('${VPCName}-Private'))
 
-        R_RouteTablePublic = EC2RouteTable('RouteTablePublic')
-        R_RouteTablePublic.Tags = Tags(Name=Sub('${VPCName}-Public'))
+    R_RouteTablePublic = EC2RouteTable('RouteTablePublic')
+    R_RouteTablePublic.Tags = Tags(Name=Sub('${VPCName}-Public'))
 
-        R_InternetGateway = ec2.InternetGateway('InternetGateway')
-        R_InternetGateway.Tags = Tags(Name=Ref('VPCName'))
+    R_InternetGateway = ec2.InternetGateway('InternetGateway')
+    R_InternetGateway.Tags = Tags(Name=Ref('VPCName'))
 
-        R_VPCGatewayAttachment = ec2.VPCGatewayAttachment(
-            'VPCGatewayAttachment')
-        R_VPCGatewayAttachment.InternetGatewayId = Ref('InternetGateway')
-        R_VPCGatewayAttachment.VpcId = Ref('VPC')
+    R_VPCGatewayAttachment = ec2.VPCGatewayAttachment(
+        'VPCGatewayAttachment')
+    R_VPCGatewayAttachment.InternetGatewayId = Ref('InternetGateway')
+    R_VPCGatewayAttachment.VpcId = Ref('VPC')
 
-        if cfg.NatGateway != 'None':
-            # resources
-            R_EIPNat = ec2.EIP('EIPNat')
-            R_EIPNat.Domain = 'vpc'
+    if cfg.NatGateway != 'None':
+        # resources
+        R_EIPNat = ec2.EIP('EIPNat')
+        R_EIPNat.Domain = 'vpc'
 
-            R_NatGateway = ec2.NatGateway('NatGateway')
-            R_NatGateway.AllocationId = GetAtt('EIPNat', 'AllocationId')
-            R_NatGateway.SubnetId = Ref('SubnetPublicA')
+        R_NatGateway = ec2.NatGateway('NatGateway')
+        R_NatGateway.AllocationId = GetAtt('EIPNat', 'AllocationId')
+        R_NatGateway.SubnetId = Ref('SubnetPublicA')
 
-            R_RouteNatGateway = EC2RouteNatGateway('RouteNatGateway')
+        R_RouteNatGateway = EC2RouteNatGateway('RouteNatGateway')
 
-            # outputs
-            O_EIPNat = Output('EIPNat')
-            O_EIPNat.Value = Ref('EIPNat')
-
-            add_obj([
-                R_NatGateway,
-                R_RouteNatGateway,
-                R_EIPNat,
-                O_EIPNat,
-            ])
-
-        R_RouteInternetGateway = EC2RouteInternetGateway(
-            'RouteInternetGateway')
+        # outputs
+        O_EIPNat = Output('EIPNat')
+        O_EIPNat.Value = Ref('EIPNat')
 
         add_obj([
-            R_VPC,
-            R_RouteTablePrivate,
-            R_RouteTablePublic,
-            R_InternetGateway,
-            R_VPCGatewayAttachment,
-            R_RouteInternetGateway,
+            R_NatGateway,
+            R_RouteNatGateway,
+            R_EIPNat,
+            O_EIPNat,
         ])
 
-        for i in range(cfg.AZones['MAX']):
-            zone_name = cfg.AZoneNames[i]
-            zone_cond = f'Zone{zone_name}'
+    R_RouteInternetGateway = EC2RouteInternetGateway(
+        'RouteInternetGateway')
 
-            # parameters
-            p_SubnetCidrBlockPrivate = Parameter(
-                f'SubnetCidrBlockPrivate{zone_name}')
-            p_SubnetCidrBlockPrivate.Description = (
-                f'Ip Class Range for Private Subnet in Zone {zone_name}')
-            p_SubnetCidrBlockPrivate.Default = f'{vpc_net}.{i * 16}.0/20'
+    add_obj([
+        R_VPC,
+        R_RouteTablePrivate,
+        R_RouteTablePublic,
+        R_InternetGateway,
+        R_VPCGatewayAttachment,
+        R_RouteInternetGateway,
+    ])
 
-            p_SubnetCidrBlockPublic = Parameter(
-                f'SubnetCidrBlockPublic{zone_name}')
-            p_SubnetCidrBlockPublic.Description = (
-                f'Ip Class Range for Public Subnet in zone {zone_name}')
-            p_SubnetCidrBlockPublic.Default = f'{vpc_net}.{i + 200}.0/24'
+    for i in range(cfg.AZones['MAX']):
+        zone_name = cfg.AZoneNames[i]
+        zone_cond = f'Zone{zone_name}'
 
-            add_obj([
-                p_SubnetCidrBlockPrivate,
-                p_SubnetCidrBlockPublic,
-            ])
+        # parameters
+        p_SubnetCidrBlockPrivate = Parameter(
+            f'SubnetCidrBlockPrivate{zone_name}')
+        p_SubnetCidrBlockPrivate.Description = (
+            f'Ip Class Range for Private Subnet in Zone {zone_name}')
+        p_SubnetCidrBlockPrivate.Default = f'{vpc_net}.{i * 16}.0/20'
 
-            # conditions
-            c_Zone = {zone_cond: Equals(
-                FindInMap(
-                    'AvabilityZones',
-                    Ref('AWS::Region'),
-                    f'Zone{i}'
-                ),
-                'True')}
-
-            add_obj(c_Zone)
-
-            # resources
-
-            r_SubnetPrivate = EC2SubnetPrivate(
-                f'SubnetPrivate{zone_name}', zone=zone_name)
-            r_SubnetPrivate.Condition = zone_cond
-
-            r_SubnetPublic = EC2SubnetPublic(
-                f'SubnetPublic{zone_name}', zone=zone_name)
-            r_SubnetPublic.Condition = zone_cond
-
-            r_SubnetRouteTableAssociationPrivate = (
-                EC2SubnetRouteTableAssociationPrivate(
-                    f'SubnetRouteTableAssociationPrivate{zone_name}',
-                    zone=zone_name))
-            r_SubnetRouteTableAssociationPrivate.Condition = zone_cond
-
-            r_SubnetRouteTableAssociationPublic = (
-                EC2SubnetRouteTableAssociationPublic(
-                    f'SubnetRouteTableAssociationPublic{zone_name}',
-                    zone=zone_name))
-            r_SubnetRouteTableAssociationPublic.Condition = zone_cond
-
-            add_obj([
-                r_SubnetPrivate,
-                r_SubnetPublic,
-                r_SubnetRouteTableAssociationPrivate,
-                r_SubnetRouteTableAssociationPublic,
-            ])
-
-            # outputs
-            o_subnetprivate.append(If(
-                zone_cond,
-                Ref(f'SubnetPrivate{zone_name}'),
-                Ref('AWS::NoValue')
-            ))
-
-            o_subnetpublic.append(If(
-                zone_cond,
-                Ref(f'SubnetPublic{zone_name}'),
-                Ref('AWS::NoValue')
-            ))
-
-        # Outputs
-        O_SubnetsPrivate = Output('SubnetsPrivate')
-        O_SubnetsPrivate.Value = Join(',', o_subnetprivate)
-        O_SubnetsPrivate.Export = Export('SubnetsPrivate')
-
-        O_SubnetsPublic = Output('SubnetsPublic')
-        O_SubnetsPublic.Value = Join(',', o_subnetpublic)
-        O_SubnetsPublic.Export = Export('SubnetsPublic')
+        p_SubnetCidrBlockPublic = Parameter(
+            f'SubnetCidrBlockPublic{zone_name}')
+        p_SubnetCidrBlockPublic.Description = (
+            f'Ip Class Range for Public Subnet in zone {zone_name}')
+        p_SubnetCidrBlockPublic.Default = f'{vpc_net}.{i + 200}.0/24'
 
         add_obj([
-            O_SubnetsPrivate,
-            O_SubnetsPublic,
+            p_SubnetCidrBlockPrivate,
+            p_SubnetCidrBlockPublic,
         ])
+
+        # conditions
+        c_Zone = {zone_cond: Equals(
+            FindInMap(
+                'AvabilityZones',
+                Ref('AWS::Region'),
+                f'Zone{i}'
+            ),
+            'True')}
+
+        add_obj(c_Zone)
+
+        # resources
+
+        r_SubnetPrivate = EC2SubnetPrivate(
+            f'SubnetPrivate{zone_name}', zone=zone_name)
+        r_SubnetPrivate.Condition = zone_cond
+
+        r_SubnetPublic = EC2SubnetPublic(
+            f'SubnetPublic{zone_name}', zone=zone_name)
+        r_SubnetPublic.Condition = zone_cond
+
+        r_SubnetRouteTableAssociationPrivate = (
+            EC2SubnetRouteTableAssociationPrivate(
+                f'SubnetRouteTableAssociationPrivate{zone_name}',
+                zone=zone_name))
+        r_SubnetRouteTableAssociationPrivate.Condition = zone_cond
+
+        r_SubnetRouteTableAssociationPublic = (
+            EC2SubnetRouteTableAssociationPublic(
+                f'SubnetRouteTableAssociationPublic{zone_name}',
+                zone=zone_name))
+        r_SubnetRouteTableAssociationPublic.Condition = zone_cond
+
+        add_obj([
+            r_SubnetPrivate,
+            r_SubnetPublic,
+            r_SubnetRouteTableAssociationPrivate,
+            r_SubnetRouteTableAssociationPublic,
+        ])
+
+        # outputs
+        o_subnetprivate.append(If(
+            zone_cond,
+            Ref(f'SubnetPrivate{zone_name}'),
+            Ref('AWS::NoValue')
+        ))
+
+        o_subnetpublic.append(If(
+            zone_cond,
+            Ref(f'SubnetPublic{zone_name}'),
+            Ref('AWS::NoValue')
+        ))
+
+    # Outputs
+    O_SubnetsPrivate = Output('SubnetsPrivate')
+    O_SubnetsPrivate.Value = Join(',', o_subnetprivate)
+    O_SubnetsPrivate.Export = Export('SubnetsPrivate')
+
+    O_SubnetsPublic = Output('SubnetsPublic')
+    O_SubnetsPublic.Value = Join(',', o_subnetpublic)
+    O_SubnetsPublic.Export = Export('SubnetsPublic')
+
+    add_obj([
+        O_SubnetsPrivate,
+        O_SubnetsPublic])

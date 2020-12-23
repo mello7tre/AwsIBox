@@ -209,250 +209,237 @@ class R53RecordApiGatewayDomainName(R53RecordSetZoneExternal):
         self.Type = 'A'
 
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
+def R53_RecordSetEC2LoadBalancer():
+    # Resources
+    # RecordSet External
+    if cfg.RecordSetExternal:
+        R_External = R53RecordSetEC2LoadBalancerExternal(
+            'RecordSetExternal')
+
+        # LoadBalancerClassic
+        if cfg.LoadBalancerClassicExternal:
+            R_External.AliasTarget.DNSName = Sub(
+                'dualstack.${LoadBalancerClassicExternal.DNSName}')
+        elif cfg.LoadBalancerClassicInternal:
+            R_External.AliasTarget.DNSName = Sub(
+                'dualstack.${LoadBalancerClassicInternal.DNSName}')
+
+        # LoadBalancerApplication
+        if cfg.LoadBalancerApplicationExternal:
+            R_External.AliasTarget.DNSName = Sub(
+                'dualstack.${LoadBalancerApplicationExternal.DNSName}')
+        elif cfg.LoadBalancerApplicationInternal:
+            R_External.AliasTarget.DNSName = Sub(
+                'dualstack.${LoadBalancerApplicationInternal.DNSName}')
+
+        add_obj(R_External)
+
+        # outputs
+        O_External = Output('RecordSetExternal')
+        O_External.Value = Ref('RecordSetExternal')
+
+        add_obj(O_External)
+
+    # RecordSet Internal
+    if cfg.RecordSetInternal:
+        R_Internal = R53RecordSetEC2LoadBalancerInternal(
+            'RecordSetInternal')
+
+        # LoadBalancerClassic
+        if cfg.LoadBalancerClassicInternal:
+            R_Internal.AliasTarget.DNSName = Sub(
+                'dualstack.${LoadBalancerClassicInternal.DNSName}')
+        elif cfg.LoadBalancerClassicExternal:
+            R_Internal.AliasTarget.DNSName = Sub(
+                'dualstack.${LoadBalancerClassicExternal.DNSName}')
+
+        # LoadBalancerApplication
+        if cfg.LoadBalancerApplicationInternal:
+            R_Internal.AliasTarget.DNSName = Sub(
+                'dualstack.${LoadBalancerApplicationInternal.DNSName}')
+        elif cfg.LoadBalancerApplicationExternal:
+            R_Internal.AliasTarget.DNSName = Sub(
+                'dualstack.${LoadBalancerApplicationExternal.DNSName}')
+
+        add_obj(R_Internal)
+
+        # outputs
+        O_Internal = Output('RecordSetInternal')
+        O_Internal.Value = Ref('RecordSetInternal')
+
+        add_obj(O_Internal)
 
 
-class R53_RecordSetEC2LoadBalancer(object):
-    def __init__(self):
-        # Resources
+def R53_RecordSetECSLoadBalancer():
+    # Resources
+    if cfg.RecordSetExternal:
+        if cfg.LoadBalancerApplicationExternal:
+            R_External = R53RecordSetECSLoadBalancerApplicationExternal(
+                'RecordSetExternal', scheme='External')
+        else:
+            R_External = R53RecordSetECSLoadBalancerApplicationExternal(
+                'RecordSetExternal', scheme='Internal')
 
-        # RecordSet External
-        if cfg.RecordSetExternal:
-            R_External = R53RecordSetEC2LoadBalancerExternal(
-                'RecordSetExternal')
+        add_obj(R_External)
 
-            # LoadBalancerClassic
-            if cfg.LoadBalancerClassicExternal:
-                R_External.AliasTarget.DNSName = Sub(
-                    'dualstack.${LoadBalancerClassicExternal.DNSName}')
-            elif cfg.LoadBalancerClassicInternal:
-                R_External.AliasTarget.DNSName = Sub(
-                    'dualstack.${LoadBalancerClassicInternal.DNSName}')
+        # outputs
+        O_External = Output('RecordSetExternal')
+        O_External.Value = Ref('RecordSetExternal')
 
-            # LoadBalancerApplication
-            if cfg.LoadBalancerApplicationExternal:
-                R_External.AliasTarget.DNSName = Sub(
-                    'dualstack.${LoadBalancerApplicationExternal.DNSName}')
-            elif cfg.LoadBalancerApplicationInternal:
-                R_External.AliasTarget.DNSName = Sub(
-                    'dualstack.${LoadBalancerApplicationInternal.DNSName}')
+        add_obj(O_External)
 
-            add_obj(R_External)
+    if cfg.RecordSetInternal:
 
-            # outputs
-            O_External = Output('RecordSetExternal')
-            O_External.Value = Ref('RecordSetExternal')
+        if cfg.LoadBalancerApplicationInternal:
+            R_Internal = R53RecordSetECSLoadBalancerApplicationInternal(
+                'RecordSetInternal', scheme='Internal')
+        else:
+            R_Internal = R53RecordSetECSLoadBalancerApplicationInternal(
+                'RecordSetInternal', scheme='External')
 
-            add_obj(O_External)
+        add_obj(R_Internal)
 
-        # RecordSet Internal
-        if cfg.RecordSetInternal:
-            R_Internal = R53RecordSetEC2LoadBalancerInternal(
-                'RecordSetInternal')
+        # outputs
+        O_Internal = Output('RecordSetInternal')
+        O_Internal.Value = Ref('RecordSetInternal')
 
-            # LoadBalancerClassic
-            if cfg.LoadBalancerClassicInternal:
-                R_Internal.AliasTarget.DNSName = Sub(
-                    'dualstack.${LoadBalancerClassicInternal.DNSName}')
-            elif cfg.LoadBalancerClassicExternal:
-                R_Internal.AliasTarget.DNSName = Sub(
-                    'dualstack.${LoadBalancerClassicExternal.DNSName}')
-
-            # LoadBalancerApplication
-            if cfg.LoadBalancerApplicationInternal:
-                R_Internal.AliasTarget.DNSName = Sub(
-                    'dualstack.${LoadBalancerApplicationInternal.DNSName}')
-            elif cfg.LoadBalancerApplicationExternal:
-                R_Internal.AliasTarget.DNSName = Sub(
-                    'dualstack.${LoadBalancerApplicationExternal.DNSName}')
-
-            add_obj(R_Internal)
-
-            # outputs
-            O_Internal = Output('RecordSetInternal')
-            O_Internal.Value = Ref('RecordSetInternal')
-
-            add_obj(O_Internal)
+        add_obj(O_Internal)
 
 
-class R53_RecordSetECSLoadBalancer(object):
-    def __init__(self):
-        # Resources
-        if cfg.RecordSetExternal:
-            if cfg.LoadBalancerApplicationExternal:
-                R_External = R53RecordSetECSLoadBalancerApplicationExternal(
-                    'RecordSetExternal', scheme='External')
-            else:
-                R_External = R53RecordSetECSLoadBalancerApplicationExternal(
-                    'RecordSetExternal', scheme='Internal')
+def R53_RecordSetRDS(rds_resname):
+    # Resources
+    if cfg.RecordSetExternal:
+        R_External = R53RecordSetRDSExternal('RecordSetExternal',
+                                             rds_resname)
+        add_obj(R_External)
 
-            add_obj(R_External)
+        # outputs
+        O_External = Output('RecordSetExternal')
+        O_External.Value = Ref('RecordSetExternal')
 
-            # outputs
-            O_External = Output('RecordSetExternal')
-            O_External.Value = Ref('RecordSetExternal')
+        add_obj(O_External)
 
-            add_obj(O_External)
+    if cfg.RecordSetInternal:
+        R_Internal = R53RecordSetRDSInternal('RecordSetInternal',
+                                             rds_resname)
+        add_obj(R_Internal)
 
-        if cfg.RecordSetInternal:
+        # outputs
+        O_Internal = Output('RecordSetInternal')
+        O_Internal.Value = Ref('RecordSetInternal')
 
-            if cfg.LoadBalancerApplicationInternal:
-                R_Internal = R53RecordSetECSLoadBalancerApplicationInternal(
-                    'RecordSetInternal', scheme='Internal')
-            else:
-                R_Internal = R53RecordSetECSLoadBalancerApplicationInternal(
-                    'RecordSetInternal', scheme='External')
-
-            add_obj(R_Internal)
-
-            # outputs
-            O_Internal = Output('RecordSetInternal')
-            O_Internal.Value = Ref('RecordSetInternal')
-
-            add_obj(O_Internal)
+        add_obj(O_Internal)
 
 
-class R53_RecordSetRDS(object):
-    def __init__(self, rds_resname):
-        # Resources
-        if cfg.RecordSetExternal:
-            R_External = R53RecordSetRDSExternal('RecordSetExternal',
-                                                 rds_resname)
-            add_obj(R_External)
+def R53_RecordSetCCH():
+    # Resources
+    if cfg.RecordSetExternal:
+        R_External = R53RecordSetCCHExternal('RecordSetExternal')
+        R_ExternalRO = R53RecordSetCCHExternalRO('RecordSetExternalRO')
+        add_obj([
+            R_External,
+            R_ExternalRO,
+        ])
 
-            # outputs
-            O_External = Output('RecordSetExternal')
-            O_External.Value = Ref('RecordSetExternal')
+        # outputs
+        O_External = Output('RecordSetExternal')
+        O_External.Value = Ref('RecordSetExternal')
+        O_External.Condition = 'CacheEnabled'
 
-            add_obj(O_External)
+        O_ExternalRO = Output('RecordSetExternalRO')
+        O_ExternalRO.Value = Ref('RecordSetExternalRO')
+        O_ExternalRO.Condition = 'ReplicationGroup'
 
-        if cfg.RecordSetInternal:
-            R_Internal = R53RecordSetRDSInternal('RecordSetInternal',
-                                                 rds_resname)
-            add_obj(R_Internal)
+        add_obj([
+            O_External,
+            O_ExternalRO,
+        ])
 
-            # outputs
-            O_Internal = Output('RecordSetInternal')
-            O_Internal.Value = Ref('RecordSetInternal')
+    if cfg.RecordSetInternal:
+        R_Internal = R53RecordSetCCHInternal('RecordSetInternal')
+        R_InternalRO = R53RecordSetCCHInternalRO('RecordSetInternalRO')
+        add_obj([
+            R_Internal,
+            R_InternalRO,
+        ])
 
-            add_obj(O_Internal)
+        # outputs
+        O_Internal = Output('RecordSetInternal')
+        O_Internal.Value = Ref('RecordSetInternal')
+        O_Internal.Condition = 'CacheEnabled'
 
+        O_InternalRO = Output('RecordSetInternalRO')
+        O_InternalRO.Value = Ref('RecordSetInternalRO')
+        O_InternalRO.Condition = 'ReplicationGroup'
 
-class R53_RecordSetCCH(object):
-    def __init__(self):
-        # Resources
-        if cfg.RecordSetExternal:
-            R_External = R53RecordSetCCHExternal('RecordSetExternal')
-            R_ExternalRO = R53RecordSetCCHExternalRO('RecordSetExternalRO')
-            add_obj([
-                R_External,
-                R_ExternalRO,
-            ])
-
-            # outputs
-            O_External = Output('RecordSetExternal')
-            O_External.Value = Ref('RecordSetExternal')
-            O_External.Condition = 'CacheEnabled'
-
-            O_ExternalRO = Output('RecordSetExternalRO')
-            O_ExternalRO.Value = Ref('RecordSetExternalRO')
-            O_ExternalRO.Condition = 'ReplicationGroup'
-
-            add_obj([
-                O_External,
-                O_ExternalRO,
-            ])
-
-        if cfg.RecordSetInternal:
-            R_Internal = R53RecordSetCCHInternal('RecordSetInternal')
-            R_InternalRO = R53RecordSetCCHInternalRO('RecordSetInternalRO')
-            add_obj([
-                R_Internal,
-                R_InternalRO,
-            ])
-
-            # outputs
-            O_Internal = Output('RecordSetInternal')
-            O_Internal.Value = Ref('RecordSetInternal')
-            O_Internal.Condition = 'CacheEnabled'
-
-            O_InternalRO = Output('RecordSetInternalRO')
-            O_InternalRO.Value = Ref('RecordSetInternalRO')
-            O_InternalRO.Condition = 'ReplicationGroup'
-
-            add_obj([
-                O_Internal,
-                O_InternalRO,
-            ])
+        add_obj([
+            O_Internal,
+            O_InternalRO,
+        ])
 
 
-class R53_HostedZones(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            mapname = f'{key}{n}'
-            resname = v['ResourceName']
-            output_zonename = resname.replace('HostedZone', 'HostedZoneName')
-            output_zoneidname = resname.replace('HostedZone', 'HostedZoneId')
-            # parameters
-            if n.startswith('Public'):
-                p_HostedZone = Parameter(f'{mapname}Enabled')
-                p_HostedZone.Description = (
-                    f'Create Public {resname} - can be created in only one '
-                    'Region - empty for default based on env/role')
+def R53_HostedZones(key):
+    for n, v in getattr(cfg, key).items():
+        mapname = f'{key}{n}'
+        resname = v['ResourceName']
+        output_zonename = resname.replace('HostedZone', 'HostedZoneName')
+        output_zoneidname = resname.replace('HostedZone', 'HostedZoneId')
+        # parameters
+        if n.startswith('Public'):
+            p_HostedZone = Parameter(f'{mapname}Enabled')
+            p_HostedZone.Description = (
+                f'Create Public {resname} - can be created in only one '
+                'Region - empty for default based on env/role')
 
-                p_HostedZoneId = Parameter(f'{mapname}Id')
-                p_HostedZoneId.Description = (
-                    f'Id of Public {resname} - required in all Regions where'
-                    ' HostedZonePublicEnv is not created - '
-                    'empty for default based on env/role')
-
-                add_obj([
-                    p_HostedZone,
-                    p_HostedZoneId,
-                ])
-
-                # conditions
-                c_Enabled = get_condition(
-                    resname, 'not_equals', 'None', f'{mapname}Enabled')
-
-                add_obj(c_Enabled)
-
-            # resources
-            r_HostedZone = r53.HostedZone(resname)
-            auto_get_props(r_HostedZone, mapname)
-
-            if n.startswith('Public'):
-                r_HostedZone.Condition = resname
-
-            add_obj(r_HostedZone)
-
-            # outputs
-            o_HostedZoneName = Output(output_zonename)
-            # o_HostedZoneName.Value = Sub(cfg.HostedZoneNamePrivate)
-            o_HostedZoneName.Value = get_endvalue(f'{mapname}Name')
-
-            o_HostedZoneId = Output(output_zoneidname)
-            o_HostedZoneId.Value = If(
-                resname,
-                Ref(resname),
-                get_endvalue(f'{mapname}Id')
-            ) if n.startswith('Public') else Ref(resname)
-            o_HostedZoneId.Export = Export(output_zoneidname)
+            p_HostedZoneId = Parameter(f'{mapname}Id')
+            p_HostedZoneId.Description = (
+                f'Id of Public {resname} - required in all Regions where'
+                ' HostedZonePublicEnv is not created - '
+                'empty for default based on env/role')
 
             add_obj([
-                o_HostedZoneName,
-                o_HostedZoneId,
+                p_HostedZone,
+                p_HostedZoneId,
             ])
 
+            # conditions
+            c_Enabled = get_condition(
+                resname, 'not_equals', 'None', f'{mapname}Enabled')
 
-class R53_RecordSets(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            if not v['IBOXENABLED']:
-                continue
-            resname = f'RecordSet{n}'
+            add_obj(c_Enabled)
 
-            r_Record = r53.RecordSetType(resname)
-            add_obj(auto_get_props(r_Record, f'R53{resname}'))
+        # resources
+        r_HostedZone = r53.HostedZone(resname)
+        auto_get_props(r_HostedZone, mapname)
+
+        if n.startswith('Public'):
+            r_HostedZone.Condition = resname
+
+        add_obj(r_HostedZone)
+
+        # outputs
+        o_HostedZoneName = Output(output_zonename)
+        # o_HostedZoneName.Value = Sub(cfg.HostedZoneNamePrivate)
+        o_HostedZoneName.Value = get_endvalue(f'{mapname}Name')
+
+        o_HostedZoneId = Output(output_zoneidname)
+        o_HostedZoneId.Value = If(
+            resname,
+            Ref(resname),
+            get_endvalue(f'{mapname}Id')
+        ) if n.startswith('Public') else Ref(resname)
+        o_HostedZoneId.Export = Export(output_zoneidname)
+
+        add_obj([
+            o_HostedZoneName,
+            o_HostedZoneId])
+
+
+def R53_RecordSets(key):
+    for n, v in getattr(cfg, key).items():
+        if not v['IBOXENABLED']:
+            continue
+        resname = f'RecordSet{n}'
+
+        r_Record = r53.RecordSetType(resname)
+        add_obj(auto_get_props(r_Record, f'R53{resname}'))

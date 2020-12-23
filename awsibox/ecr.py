@@ -115,42 +115,41 @@ def ECRRepositoryPolicyStatementAccountPush(name):
 # ### END STACK META CLASSES AND METHODS ###
 # ##########################################
 
-class ECR_Repositories(object):
-    def __init__(self, key):
-        PolicyStatementAccounts = []
-        for n, v in cfg.EcrAccount.items():
-            mapname = f'EcrAccount{n}Id'  # Ex. EcrAccountPrdId
-            # conditions
-            add_obj(get_condition(mapname, 'not_equals', 'None'))
+def ECR_Repositories(key):
+    PolicyStatementAccounts = []
+    for n, v in cfg.EcrAccount.items():
+        mapname = f'EcrAccount{n}Id'  # Ex. EcrAccountPrdId
+        # conditions
+        add_obj(get_condition(mapname, 'not_equals', 'None'))
 
-            if 'Pull' in v['Policy']:
-                PolicyStatementAccount = (
-                    ECRRepositoryPolicyStatementAccountPull(name=mapname))
-                PolicyStatementAccounts.append(
-                    If(
-                        mapname,
-                        PolicyStatementAccount,
-                        Ref('AWS::NoValue')
-                    )
+        if 'Pull' in v['Policy']:
+            PolicyStatementAccount = (
+                ECRRepositoryPolicyStatementAccountPull(name=mapname))
+            PolicyStatementAccounts.append(
+                If(
+                    mapname,
+                    PolicyStatementAccount,
+                    Ref('AWS::NoValue')
                 )
+            )
 
-            if 'Push' in v['Policy']:
-                PolicyStatementAccount = (
-                    ECRRepositoryPolicyStatementAccountPush(name=mapname))
-                PolicyStatementAccounts.append(
-                    If(
-                        mapname,
-                        PolicyStatementAccount,
-                        Ref('AWS::NoValue')
-                    )
+        if 'Push' in v['Policy']:
+            PolicyStatementAccount = (
+                ECRRepositoryPolicyStatementAccountPush(name=mapname))
+            PolicyStatementAccounts.append(
+                If(
+                    mapname,
+                    PolicyStatementAccount,
+                    Ref('AWS::NoValue')
                 )
+            )
 
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-            Repo = ECRRepositories(resname)
-            Repo.RepositoryPolicyText['Statement'].extend(
-                PolicyStatementAccounts)
-            Repo.LifecyclePolicy = ECRRepositoryLifecyclePolicy('')
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+        Repo = ECRRepositories(resname)
+        Repo.RepositoryPolicyText['Statement'].extend(
+            PolicyStatementAccounts)
+        Repo.LifecyclePolicy = ECRRepositoryLifecyclePolicy('')
 
-            add_obj(Repo)
+        add_obj(Repo)

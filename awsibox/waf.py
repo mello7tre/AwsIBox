@@ -134,160 +134,148 @@ def WAF_condition(condname, mapname, wtype):
 # ##########################################
 
 
-class WAF_IPSets(object):
-    def __init__(self, key, wtype=''):
-        for n, v in getattr(cfg, key).items():
-            name = key.replace('Waf', wtype)  # Ex. RegionalIPSet
-            resname = f'Waf{name}{n}'  # Ex. WafRegionalIPSetAwsNat
-            mapname = f'{key}{n}'  # Ex. WafIPSetAwsNat
+def WAF_IPSets(key, wtype=''):
+    for n, v in getattr(cfg, key).items():
+        name = key.replace('Waf', wtype)  # Ex. RegionalIPSet
+        resname = f'Waf{name}{n}'  # Ex. WafRegionalIPSetAwsNat
+        mapname = f'{key}{n}'  # Ex. WafIPSetAwsNat
 
-            # conditions
-            add_obj(WAF_condition(resname, mapname, wtype))
+        # conditions
+        add_obj(WAF_condition(resname, mapname, wtype))
 
-            # resources
-            IPSetDescriptors = []
-            for i, j in enumerate(v['Ips']):
-                IPSetDescriptor = WAFIPSetDescriptors(str(i), name=mapname)
-                IPSetDescriptors.append(IPSetDescriptor)
+        # resources
+        IPSetDescriptors = []
+        for i, j in enumerate(v['Ips']):
+            IPSetDescriptor = WAFIPSetDescriptors(str(i), name=mapname)
+            IPSetDescriptors.append(IPSetDescriptor)
 
-            IPSet = globals()[f'WAF{name}'](resname, name=n)
-            IPSet.IPSetDescriptors = IPSetDescriptors
+        IPSet = globals()[f'WAF{name}'](resname, name=n)
+        IPSet.IPSetDescriptors = IPSetDescriptors
 
-            add_obj(IPSet)
-
-
-class WAF_ByteMatchSets(object):
-    def __init__(self, key, wtype=''):
-        for n, v in getattr(cfg, key).items():
-            name = key.replace('Waf', wtype)  # Ex. RegionalByteMatchSet
-            resname = f'Waf{name}{n}'
-            mapname = f'{key}{n}'
-
-            # conditions
-            add_obj(WAF_condition(resname, mapname, wtype))
-
-            # resources
-            r_ByteMatchSet = globals()[f'WAF{name}'](resname, name=n)
-            auto_get_props(r_ByteMatchSet, mapname)
-
-            add_obj(r_ByteMatchSet)
+        add_obj(IPSet)
 
 
-class WAF_Rules(object):
-    def __init__(self, key, wtype=''):
-        for n, v in getattr(cfg, key).items():
-            name = key.replace('Waf', wtype)  # Ex. RegionalIPSet
-            resname = f'Waf{name}{n}'  # Ex. WafRegionalIPSetAwsNat
-            mapname = f'{key}{n}'  # Ex. WafIPSetAwsNat
+def WAF_ByteMatchSets(key, wtype=''):
+    for n, v in getattr(cfg, key).items():
+        name = key.replace('Waf', wtype)  # Ex. RegionalByteMatchSet
+        resname = f'Waf{name}{n}'
+        mapname = f'{key}{n}'
 
-            # conditions
-            add_obj(WAF_condition(resname, mapname, wtype))
+        # conditions
+        add_obj(WAF_condition(resname, mapname, wtype))
 
-            # resources
-            Predicates = []
-            O_Predicates = []
-            for m in v['Predicates']:
-                predmapname = f'{mapname}Predicates{m}'
-                predresname = m
-                ptype = v['Type']
-                Predicate = WAFPredicates(
-                    predresname, name=predmapname, ptype=ptype, wtype=wtype)
+        # resources
+        r_ByteMatchSet = globals()[f'WAF{name}'](resname, name=n)
+        auto_get_props(r_ByteMatchSet, mapname)
 
-                Predicates.append(
-                    If(
-                        Predicate.DataId.data['Ref'],
-                        Predicate,
-                        Ref('AWS::NoValue')
-                    )
+        add_obj(r_ByteMatchSet)
+
+
+def WAF_Rules(key, wtype=''):
+    for n, v in getattr(cfg, key).items():
+        name = key.replace('Waf', wtype)  # Ex. RegionalIPSet
+        resname = f'Waf{name}{n}'  # Ex. WafRegionalIPSetAwsNat
+        mapname = f'{key}{n}'  # Ex. WafIPSetAwsNat
+
+        # conditions
+        add_obj(WAF_condition(resname, mapname, wtype))
+
+        # resources
+        Predicates = []
+        O_Predicates = []
+        for m in v['Predicates']:
+            predmapname = f'{mapname}Predicates{m}'
+            predresname = m
+            ptype = v['Type']
+            Predicate = WAFPredicates(
+                predresname, name=predmapname, ptype=ptype, wtype=wtype)
+
+            Predicates.append(
+                If(
+                    Predicate.DataId.data['Ref'],
+                    Predicate,
+                    Ref('AWS::NoValue')
                 )
+            )
 
-                O_Predicates.append(m)
+            O_Predicates.append(m)
 
-            Rule = globals()[f'WAF{name}'](resname, name=n)
-            Rule.Predicates = Predicates
+        Rule = globals()[f'WAF{name}'](resname, name=n)
+        Rule.Predicates = Predicates
 
-            add_obj(Rule)
+        add_obj(Rule)
 
-            # outputs
-            O_Rule = Output(f'{mapname}{wtype}')
-            O_Rule.Condition = resname
-            O_Rule.Value = ','.join(O_Predicates)
+        # outputs
+        O_Rule = Output(f'{mapname}{wtype}')
+        O_Rule.Condition = resname
+        O_Rule.Value = ','.join(O_Predicates)
 
-            add_obj(O_Rule)
-
-
-class WAF_WebAcls(object):
-    def __init__(self, key, wtype=''):
-        for n, v in getattr(cfg, key).items():
-            name = key.replace('Waf', wtype)  # Ex. RegionalIPSet
-            resname = f'Waf{name}{n}'  # Ex. WafRegionalIPSetAwsNat
-            mapname = f'{key}{n}'  # Ex. WafIPSetAwsNat
-
-            # conditions
-            add_obj(WAF_condition(resname, mapname, wtype))
-
-            # resources
-            Rules = []
-            O_Rules = []
-            for w, m in enumerate(v['Rules'], start=1):
-                rulemapname = f'{mapname}Rules{m}'
-                ruleresname = m  # Ex. BlockIPsNotAllowed
-                Rule = WAFWebACLRule(
-                    ruleresname, name=rulemapname, index=w, wtype=wtype)
-
-                Rules.append(Rule)
-
-                O_Rules.append(m)
-
-            WebACL = globals()[f'WAF{name}'](resname, name=n)
-            WebACL.Rules = Rules
-            WebACL.DefaultAction = WAFAction(Type=v['DefaultAction'])
-
-            add_obj(WebACL)
-
-            # outputs
-            O_WebACL = Output(f'{mapname}{wtype}')
-            O_WebACL.Condition = resname
-            O_WebACL.Value = Sub('${%s} - %s' % (resname, ','.join(O_Rules)))
-
-            add_obj(O_WebACL)
+        add_obj(O_Rule)
 
 
-class WAF_GlobalByteMatchSets(object):
-    def __init__(self, key):
-        WAF_ByteMatchSets(key, wtype='Global')
+def WAF_WebAcls(key, wtype=''):
+    for n, v in getattr(cfg, key).items():
+        name = key.replace('Waf', wtype)  # Ex. RegionalIPSet
+        resname = f'Waf{name}{n}'  # Ex. WafRegionalIPSetAwsNat
+        mapname = f'{key}{n}'  # Ex. WafIPSetAwsNat
+
+        # conditions
+        add_obj(WAF_condition(resname, mapname, wtype))
+
+        # resources
+        Rules = []
+        O_Rules = []
+        for w, m in enumerate(v['Rules'], start=1):
+            rulemapname = f'{mapname}Rules{m}'
+            ruleresname = m  # Ex. BlockIPsNotAllowed
+            Rule = WAFWebACLRule(
+                ruleresname, name=rulemapname, index=w, wtype=wtype)
+
+            Rules.append(Rule)
+
+            O_Rules.append(m)
+
+        WebACL = globals()[f'WAF{name}'](resname, name=n)
+        WebACL.Rules = Rules
+        WebACL.DefaultAction = WAFAction(Type=v['DefaultAction'])
+
+        add_obj(WebACL)
+
+        # outputs
+        O_WebACL = Output(f'{mapname}{wtype}')
+        O_WebACL.Condition = resname
+        O_WebACL.Value = Sub('${%s} - %s' % (resname, ','.join(O_Rules)))
+
+        add_obj(O_WebACL)
 
 
-class WAF_GlobalIPSets(object):
-    def __init__(self, key):
-        WAF_IPSets(key, wtype='Global')
+def WAF_GlobalByteMatchSets(key):
+    WAF_ByteMatchSets(key, wtype='Global')
 
 
-class WAF_GlobalRules(WAF_Rules):
-    def __init__(self, key):
-        WAF_Rules(key, wtype='Global')
+def WAF_GlobalIPSets(key):
+    WAF_IPSets(key, wtype='Global')
 
 
-class WAF_GlobalWebAcls(WAF_WebAcls):
-    def __init__(self, key):
-        WAF_WebAcls(key, wtype='Global')
+def WAF_GlobalRules(key):
+    WAF_Rules(key, wtype='Global')
 
 
-class WAF_RegionalByteMatchSets(object):
-    def __init__(self, key):
-        WAF_ByteMatchSets(key, wtype='Regional')
+def WAF_GlobalWebAcls(key):
+    WAF_WebAcls(key, wtype='Global')
 
 
-class WAF_RegionalIPSets(object):
-    def __init__(self, key):
-        WAF_IPSets(key, wtype='Regional')
+def WAF_RegionalByteMatchSets(key):
+    WAF_ByteMatchSets(key, wtype='Regional')
 
 
-class WAF_RegionalRules(WAF_Rules):
-    def __init__(self, key):
-        WAF_Rules(key, wtype='Regional')
+def WAF_RegionalIPSets(key):
+    WAF_IPSets(key, wtype='Regional')
 
 
-class WAF_RegionalWebAcls(WAF_WebAcls):
-    def __init__(self, key):
-        WAF_WebAcls(key, wtype='Regional')
+def WAF_RegionalRules(key):
+    WAF_Rules(key, wtype='Regional')
+
+
+def WAF_RegionalWebAcls(key):
+    WAF_WebAcls(key, wtype='Regional')

@@ -106,81 +106,73 @@ class RDSDBSubnetGroupPublic(rds.DBSubnetGroup):
         self.DBSubnetGroupDescription = Sub('${EnvShort}-Public')
         self.SubnetIds = Split(',', get_expvalue('SubnetsPublic'))
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
 
+def RDS_DB(key):
+    for n, v in getattr(cfg, key).items():
+        mapname = f'{key}{n}'
 
-class RDS_DB(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            mapname = f'{key}{n}'
+        if not v['IBOXENABLED']:
+            continue
 
-            if not v['IBOXENABLED']:
-                continue
+        try:
+            resname = v['IBOXRESNAME']
+        except Exception:
+            resname = mapname
 
-            try:
-                resname = v['IBOXRESNAME']
-            except Exception:
-                resname = mapname
+        # resources
+        r_DB = RDSDBInstance(mapname)
+        auto_get_props(r_DB, mapname=mapname)
+        # trick to keep current in use resname obj.title - need to be
+        # executed after invoking auto_get_props
+        r_DB.title = resname
+        # trick - when providing DBSnapshotIdentifier
+        # or SourceDBInstanceIdentifier some props must not exists
+        for m in ['DBName',
+                  'MasterUsername',
+                  'MasterUserPassword']:
+            setattr(r_DB, m, If(
+                f'{mapname}DBInstanceSkipProperties',
+                Ref('AWS::NoValue'),
+                getattr(r_DB, m)))
+        for m in ['SourceDBInstanceIdentifier', 'DBSnapshotIdentifier']:
+            setattr(r_DB, m, If(
+                f'{mapname}{m}',
+                getattr(r_DB, m),
+                Ref('AWS::NoValue')))
 
-            # resources
-            r_DB = RDSDBInstance(mapname)
-            auto_get_props(r_DB, mapname=mapname)
-            # trick to keep current in use resname obj.title - need to be
-            # executed after invoking auto_get_props
-            r_DB.title = resname
-            # trick - when providing DBSnapshotIdentifier
-            # or SourceDBInstanceIdentifier some props must not exists
-            for m in ['DBName',
-                      'MasterUsername',
-                      'MasterUserPassword']:
-                setattr(r_DB, m, If(
-                    f'{mapname}DBInstanceSkipProperties',
-                    Ref('AWS::NoValue'),
-                    getattr(r_DB, m)))
-            for m in ['SourceDBInstanceIdentifier', 'DBSnapshotIdentifier']:
-                setattr(r_DB, m, If(
-                    f'{mapname}{m}',
-                    getattr(r_DB, m),
-                    Ref('AWS::NoValue')))
-
-            R53_RecordSetRDS(resname)
-            # trick fixed name to avoid reboot for now
-            # best way should be to use a name like DBParameterGroup{Engine}
-            r_PG = RDSDBParameterGroup('DBParameterGroup1', mapname)
-            r_PG.Parameters = cfg.DBParameterGroup1
-
-            add_obj([
-                r_DB,
-                r_PG,
-            ])
-
-
-class RDS_SubnetGroups(object):
-    def __init__(self, key):
-        # Resources
-        R_Private = RDSDBSubnetGroupPrivate('DBSubnetGroupPrivate')
-        R_Private.setup()
-
-        R_Public = RDSDBSubnetGroupPublic('DBSubnetGroupPublic')
-        R_Public.setup()
+        R53_RecordSetRDS(resname)
+        # trick fixed name to avoid reboot for now
+        # best way should be to use a name like DBParameterGroup{Engine}
+        r_PG = RDSDBParameterGroup('DBParameterGroup1', mapname)
+        r_PG.Parameters = cfg.DBParameterGroup1
 
         add_obj([
-            R_Private,
-            R_Public,
-        ])
+            r_DB,
+            r_PG])
 
-        # Outputs
-        O_Private = Output('DBSubnetGroupPrivate')
-        O_Private.Value = Ref('DBSubnetGroupPrivate')
-        O_Private.Export = Export('DBSubnetGroupPrivate')
 
-        O_Public = Output('DBSubnetGroupPublic')
-        O_Public.Value = Ref('DBSubnetGroupPublic')
-        O_Public.Export = Export('DBSubnetGroupPublic')
+def RDS_SubnetGroups(key):
+    # Resources
+    R_Private = RDSDBSubnetGroupPrivate('DBSubnetGroupPrivate')
+    R_Private.setup()
 
-        add_obj([
-            O_Private,
-            O_Public,
-        ])
+    R_Public = RDSDBSubnetGroupPublic('DBSubnetGroupPublic')
+    R_Public.setup()
+
+    add_obj([
+        R_Private,
+        R_Public,
+    ])
+
+    # Outputs
+    O_Private = Output('DBSubnetGroupPrivate')
+    O_Private.Value = Ref('DBSubnetGroupPrivate')
+    O_Private.Export = Export('DBSubnetGroupPrivate')
+
+    O_Public = Output('DBSubnetGroupPublic')
+    O_Public.Value = Ref('DBSubnetGroupPublic')
+    O_Public.Export = Export('DBSubnetGroupPublic')
+
+    add_obj([
+        O_Private,
+        O_Public])

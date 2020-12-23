@@ -127,215 +127,207 @@ def LambdaLayers(obj, resname, i):
 ##
 
 
-class LBD_Lambdas(object):
-    def __init__(self, key):
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
+def LBD_Lambdas(key):
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
 
-            try:
-                v['Code']['S3Key']
-            except Exception:
-                pass
-            else:
-                s3keyname = f'{resname}CodeS3Key'
-                # parameters
-                p_S3Key = Parameter(s3keyname)
-                p_S3Key.Description = f'S3Key Name for lambda {n} Code'
+        try:
+            v['Code']['S3Key']
+        except Exception:
+            pass
+        else:
+            s3keyname = f'{resname}CodeS3Key'
+            # parameters
+            p_S3Key = Parameter(s3keyname)
+            p_S3Key.Description = f'S3Key Name for lambda {n} Code'
 
-                add_obj(p_S3Key)
+            add_obj(p_S3Key)
 
-                # outputs
-                o_S3Key = Output(s3keyname)
-                o_S3Key.Value = get_endvalue(s3keyname)
+            # outputs
+            o_S3Key = Output(s3keyname)
+            o_S3Key.Value = get_endvalue(s3keyname)
 
-                add_obj(o_S3Key)
+            add_obj(o_S3Key)
 
-            # resources
-            r_Lambda = LambdaFunction(resname)
-            r_Lambda.setup(key=v, name=n)
+        # resources
+        r_Lambda = LambdaFunction(resname)
+        r_Lambda.setup(key=v, name=n)
 
-            if 'Enabled' in v:
-                # conditions
-                add_obj(get_condition(
-                    resname, 'not_equals', 'None', f'{resname}Enabled'))
+        if 'Enabled' in v:
+            # conditions
+            add_obj(get_condition(
+                resname, 'not_equals', 'None', f'{resname}Enabled'))
 
-                r_Lambda.Condition = resname
+            r_Lambda.Condition = resname
 
-            if 'Layers' in v:
-                r_Lambda.Layers = []
-                for i, j in enumerate(v['Layers']):
-                    r_Lambda.Layers.append(
-                        LambdaLayers(
-                            r_Lambda, '%s%s' % (resname, 'Layers'), i)
-                    )
-
-            if 'Version' in v:
-                versionname = f'{resname}Version'
-                versionnameA = f'{versionname}A'
-                versionnameB = f'{versionname}B'
-
-                # parameters
-                p_Version = Parameter(versionname)
-                p_Version.Description = (
-                    'LambdaVersion - change between A/B '
-                    'to force deploy new version')
-                p_Version.AllowedValues = ['', 'A', 'B']
-                p_Version.Default = ''
-
-                add_obj(p_Version)
-
-                # conditons
-                c_VersionA = {versionnameA: And(
-                    Condition(resname),
-                    get_condition(
-                        '', 'equals', 'A', versionname, nomap=True),
-                )}
-
-                c_VersionB = {versionnameB: And(
-                    Condition(resname),
-                    get_condition(
-                        '', 'equals', 'B', versionname, nomap=True),
-                )}
-
-                c_Version = {versionname: Or(
-                    Condition(versionnameA),
-                    Condition(versionnameB),
-                )}
-
-                add_obj([
-                    c_VersionA,
-                    c_VersionB,
-                    c_Version,
-                ])
-
-                # resources
-                r_VersionA = LambdaVersion(versionnameA, name=resname)
-                r_VersionA.Condition = versionnameA
-
-                r_VersionB = LambdaVersion(versionnameB, name=resname)
-                r_VersionB.Condition = versionnameB
-
-                add_obj([
-                    r_VersionA,
-                    r_VersionB,
-                ])
-
-                # outputs
-                o_Version = Output(versionname)
-                o_Version.Value = If(
-                    versionnameA,
-                    Ref(versionnameA),
-                    Ref(versionnameB)
+        if 'Layers' in v:
+            r_Lambda.Layers = []
+            for i, j in enumerate(v['Layers']):
+                r_Lambda.Layers.append(
+                    LambdaLayers(
+                        r_Lambda, '%s%s' % (resname, 'Layers'), i)
                 )
-                o_Version.Condition = versionname
 
-                add_obj([
-                    o_Version,
-                ])
+        if 'Version' in v:
+            versionname = f'{resname}Version'
+            versionnameA = f'{versionname}A'
+            versionnameB = f'{versionname}B'
 
-            # Automatically setup a lambda Role with base permissions.
-            r_Role = IAMRoleLambdaBase(f'Role{resname}', key=v)
-            if hasattr(r_Lambda, 'Condition'):
-                r_Role.Condition = r_Lambda.Condition
+            # parameters
+            p_Version = Parameter(versionname)
+            p_Version.Description = (
+                'LambdaVersion - change between A/B '
+                'to force deploy new version')
+            p_Version.AllowedValues = ['', 'A', 'B']
+            p_Version.Default = ''
+
+            add_obj(p_Version)
+
+            # conditons
+            c_VersionA = {versionnameA: And(
+                Condition(resname),
+                get_condition(
+                    '', 'equals', 'A', versionname, nomap=True),
+            )}
+
+            c_VersionB = {versionnameB: And(
+                Condition(resname),
+                get_condition(
+                    '', 'equals', 'B', versionname, nomap=True),
+            )}
+
+            c_Version = {versionname: Or(
+                Condition(versionnameA),
+                Condition(versionnameB),
+            )}
 
             add_obj([
-                r_Lambda,
-                r_Role,
+                c_VersionA,
+                c_VersionB,
+                c_Version,
             ])
-
-            if 'Export' in v and v['Export']:
-                O_Lambda = Output(resname)
-                O_Lambda.Value = GetAtt(resname, 'Arn')
-                O_Lambda.Export = Export(resname)
-
-                add_obj(O_Lambda)
-
-
-class LBD_LayerVersions(object):
-    def __init__(self, key):
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-
-            try:
-                v['Content']['S3Key']
-            except Exception:
-                pass
-            else:
-                s3keyname = f'{resname}ContentS3Key'
-                # parameters
-                p_S3Key = Parameter(s3keyname)
-                p_S3Key.Description = f'S3Key Name for lambda {n} Content'
-
-                add_obj(p_S3Key)
-
-                # outputs
-                o_S3Key = Output(s3keyname)
-                o_S3Key.Value = get_endvalue(s3keyname)
-
-                add_obj(o_S3Key)
 
             # resources
-            r_Layer = lbd.LayerVersion(resname)
-            auto_get_props(r_Layer)
-            r_LayerPermission = LambdaLayerVersionPermission(
-                f'LambdaLayerPermission{n}')
-            r_LayerPermission.LayerVersionArn = Ref(resname)
+            r_VersionA = LambdaVersion(versionnameA, name=resname)
+            r_VersionA.Condition = versionnameA
+
+            r_VersionB = LambdaVersion(versionnameB, name=resname)
+            r_VersionB.Condition = versionnameB
 
             add_obj([
-                r_Layer,
-                r_LayerPermission,
+                r_VersionA,
+                r_VersionB,
             ])
 
-            # output
-            o_Layer = Output(resname)
-            o_Layer.Value = Ref(resname)
-
-            add_obj(o_Layer)
-
-
-class LBD_Permissions(object):
-    def __init__(self, key):
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-
-            # resources
-            r_Permission = LambdaPermission(resname)
-            r_Permission.setup()
-            auto_get_props(r_Permission)
+            # outputs
+            o_Version = Output(versionname)
+            o_Version.Value = If(
+                versionnameA,
+                Ref(versionnameA),
+                Ref(versionnameB)
+            )
+            o_Version.Condition = versionname
 
             add_obj([
-                r_Permission,
+                o_Version,
             ])
 
+        # Automatically setup a lambda Role with base permissions.
+        r_Role = IAMRoleLambdaBase(f'Role{resname}', key=v)
+        if hasattr(r_Lambda, 'Condition'):
+            r_Role.Condition = r_Lambda.Condition
 
-class LBD_EventSourceMappings(object):
-    def __init__(self, key):
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
+        add_obj([
+            r_Lambda,
+            r_Role,
+        ])
 
-            # resources
-            r_EventSourceMapping = lbd.EventSourceMapping(resname)
-            auto_get_props(r_EventSourceMapping)
+        if 'Export' in v and v['Export']:
+            O_Lambda = Output(resname)
+            O_Lambda.Value = GetAtt(resname, 'Arn')
+            O_Lambda.Export = Export(resname)
 
-            add_obj([
-                r_EventSourceMapping,
-            ])
+            add_obj(O_Lambda)
 
 
-class LBD_EventInvokeConfig(object):
-    def __init__(self, key):
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
+def LBD_LayerVersions(key):
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
 
-            # resources
-            r_EventInvokeConfig = lbd.EventInvokeConfig(resname)
-            auto_get_props(r_EventInvokeConfig)
+        try:
+            v['Content']['S3Key']
+        except Exception:
+            pass
+        else:
+            s3keyname = f'{resname}ContentS3Key'
+            # parameters
+            p_S3Key = Parameter(s3keyname)
+            p_S3Key.Description = f'S3Key Name for lambda {n} Content'
 
-            add_obj([
-                r_EventInvokeConfig,
-            ])
+            add_obj(p_S3Key)
+
+            # outputs
+            o_S3Key = Output(s3keyname)
+            o_S3Key.Value = get_endvalue(s3keyname)
+
+            add_obj(o_S3Key)
+
+        # resources
+        r_Layer = lbd.LayerVersion(resname)
+        auto_get_props(r_Layer)
+        r_LayerPermission = LambdaLayerVersionPermission(
+            f'LambdaLayerPermission{n}')
+        r_LayerPermission.LayerVersionArn = Ref(resname)
+
+        add_obj([
+            r_Layer,
+            r_LayerPermission,
+        ])
+
+        # output
+        o_Layer = Output(resname)
+        o_Layer.Value = Ref(resname)
+
+        add_obj(o_Layer)
+
+
+def LBD_Permissions(key):
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+
+        # resources
+        r_Permission = LambdaPermission(resname)
+        r_Permission.setup()
+        auto_get_props(r_Permission)
+
+        add_obj([
+            r_Permission])
+
+
+def LBD_EventSourceMappings(key):
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+
+        # resources
+        r_EventSourceMapping = lbd.EventSourceMapping(resname)
+        auto_get_props(r_EventSourceMapping)
+
+        add_obj([
+            r_EventSourceMapping])
+
+
+def LBD_EventInvokeConfig(key):
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+
+        # resources
+        r_EventInvokeConfig = lbd.EventInvokeConfig(resname)
+        auto_get_props(r_EventInvokeConfig)
+
+        add_obj([
+            r_EventInvokeConfig])

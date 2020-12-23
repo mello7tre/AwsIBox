@@ -35,81 +35,80 @@ class EFSMountTarget(efs.MountTarget):
 # #################################
 
 
-class EFS_FileStorage(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'  # Ex. EFSFileSystemWordPress
-            recordname = f'RecordSetEFS{n}'
-            sgservername = f'SecurityGroupEFSServer{n}'
-            sgclientname = f'SecurityGroupEFS{n}'
-            sginame = f'SecurityGroupIngressEFS{n}'
-            for i in range(cfg.AZones['MAX']):
-                mountname = f'EFSMountTarget{n}{i}'
-                # conditions
-                add_obj(
-                    {mountname: And(
-                        Condition(resname),
-                        Equals(
-                            FindInMap(
-                                'AvabilityZones',
-                                Ref('AWS::Region'),
-                                f'Zone{i}'),
-                            'True')
-                    )}
-                )
-
-                # resources
-                r_Mount = EFSMountTarget(
-                    mountname, index=i,
-                    sgname=sgservername, efsresname=resname)
-
-                add_obj(r_Mount)
+def EFS_FileStorage(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'  # Ex. EFSFileSystemWordPress
+        recordname = f'RecordSetEFS{n}'
+        sgservername = f'SecurityGroupEFSServer{n}'
+        sgclientname = f'SecurityGroupEFS{n}'
+        sginame = f'SecurityGroupIngressEFS{n}'
+        for i in range(cfg.AZones['MAX']):
+            mountname = f'EFSMountTarget{n}{i}'
             # conditions
-            add_obj(get_condition(
-                resname, 'not_equals', 'None', f'{resname}Enabled'))
+            add_obj(
+                {mountname: And(
+                    Condition(resname),
+                    Equals(
+                        FindInMap(
+                            'AvabilityZones',
+                            Ref('AWS::Region'),
+                            f'Zone{i}'),
+                        'True')
+                )}
+            )
 
             # resources
-            r_File = EFSFileSystem(resname, key=v)
+            r_Mount = EFSMountTarget(
+                mountname, index=i,
+                sgname=sgservername, efsresname=resname)
 
-            if v['R53'] != 'None':
-                r_Record = R53RecordSetEFS(recordname, efsname=n)
+            add_obj(r_Mount)
+        # conditions
+        add_obj(get_condition(
+            resname, 'not_equals', 'None', f'{resname}Enabled'))
 
-                add_obj(r_Record)
+        # resources
+        r_File = EFSFileSystem(resname, key=v)
 
-            r_SGServer = SecurityGroup(sgservername)
-            r_SGServer.Condition = resname
-            r_SGServer.GroupDescription = (
-                f'Rule to access EFS FileSystem {n}')
+        if v['R53'] != 'None':
+            r_Record = R53RecordSetEFS(recordname, efsname=n)
 
-            r_SGClient = SecurityGroup(sgclientname)
-            r_SGClient.Condition = resname
-            r_SGClient.GroupDescription = (
-                f'Enable access to EFS FileSystem {n}')
+            add_obj(r_Record)
 
-            SGIExtra = {
-                'Name': sginame,
-                'Condition': resname,
-                'FromPort': 2049,
-                'GroupId': 'Sub(\'${%s.GroupId}\')' % sgservername,
-                'SourceSecurityGroupId': 'Ref(\'%s\')' % sgclientname,
-                'ToPort': 2049
-            }
+        r_SGServer = SecurityGroup(sgservername)
+        r_SGServer.Condition = resname
+        r_SGServer.GroupDescription = (
+            f'Rule to access EFS FileSystem {n}')
 
-            r_SGI = SecurityGroupIngress(sginame)
-            auto_get_props(r_SGI, rootdict=SGIExtra)
+        r_SGClient = SecurityGroup(sgclientname)
+        r_SGClient.Condition = resname
+        r_SGClient.GroupDescription = (
+            f'Enable access to EFS FileSystem {n}')
 
-            add_obj([
-                r_File,
-                r_SGServer,
-                r_SGClient,
-                r_SGI,
-            ])
+        SGIExtra = {
+            'Name': sginame,
+            'Condition': resname,
+            'FromPort': 2049,
+            'GroupId': 'Sub(\'${%s.GroupId}\')' % sgservername,
+            'SourceSecurityGroupId': 'Ref(\'%s\')' % sgclientname,
+            'ToPort': 2049
+        }
 
-            # outputs
+        r_SGI = SecurityGroupIngress(sginame)
+        auto_get_props(r_SGI, rootdict=SGIExtra)
 
-            o_SG = Output(sgclientname)
-            o_SG.Condition = resname
-            o_SG.Value = GetAtt(sgclientname, 'GroupId')
-            o_SG.Export = Export(sgclientname)
+        add_obj([
+            r_File,
+            r_SGServer,
+            r_SGClient,
+            r_SGI,
+        ])
 
-            add_obj(o_SG)
+        # outputs
+
+        o_SG = Output(sgclientname)
+        o_SG.Condition = resname
+        o_SG.Value = GetAtt(sgclientname, 'GroupId')
+        o_SG.Export = Export(sgclientname)
+
+        add_obj(o_SG)

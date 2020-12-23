@@ -265,198 +265,185 @@ def IAMPolicyApiGatewayPrivate():
     return policy
 
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
+def IAM_Users(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'  # Ex. IAMUserPincoPalla
 
+        # parameters
+        p_Password = Parameter(f'PasswordBase{n}')
+        p_Password.Description = (
+            'Base Password, must be changed at first login')
+        p_Password.Default = ''
+        p_Password.NoEcho = True
 
-class IAM_Users(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'  # Ex. IAMUserPincoPalla
+        add_obj(p_Password)
 
-            # parameters
-            p_Password = Parameter(f'PasswordBase{n}')
-            p_Password.Description = (
-                'Base Password, must be changed at first login')
-            p_Password.Default = ''
-            p_Password.NoEcho = True
+        # conditions
+        c_Enabled = get_condition(
+            resname, 'not_equals', 'None', f'{resname}Enabled')
 
-            add_obj(p_Password)
+        c_RoleAccount = get_condition(
+            f'{resname}RoleAccount', 'not_equals', 'None')
 
-            # conditions
-            c_Enabled = get_condition(
-                resname, 'not_equals', 'None', f'{resname}Enabled')
+        add_obj([
+            c_Enabled,
+            c_RoleAccount,
+        ])
 
-            c_RoleAccount = get_condition(
-                f'{resname}RoleAccount', 'not_equals', 'None')
-
-            add_obj([
-                c_Enabled,
-                c_RoleAccount,
-            ])
-
-            ManagedPolicyArns = []
-            RoleGroups = []
-            if 'RoleGroups' in v:
-                for m, w in v['RoleGroups'].items():
-                    condname = f'{resname}RoleGroups{m}'
-                    # conditions
-                    add_obj(get_condition(condname, 'not_equals', 'None'))
-
-                    # resources
-                    RoleGroups.append(
-                        If(
-                            condname,
-                            m,
-                            Ref('AWS::NoValue')
-                        )
-                    )
-
-                    try:
-                        policy_arns = cfg.IAMGroup[m]['ManagedPolicyArns']
-                    except Exception:
-                        pass
-                    else:
-                        for p in policy_arns:
-                            ManagedPolicyArns.append(
-                                If(
-                                    condname,
-                                    ImportValue(f'IAMPolicy{p}'),
-                                    Ref('AWS::NoValue')
-                                )
-                            )
-
-            # resources
-            r_Role = IAMRoleUser(f'IAMRole{n}', key=v, resnameuser=resname)
-            r_Role.ManagedPolicyArns = ManagedPolicyArns
-
-            r_User = IAMUser(resname, key=v, name=n)
-            r_User.Groups = RoleGroups
-
-            r_SSMParameter = SSMParameter(f'SSMParameterPassword{n}')
-            r_SSMParameter.Condition = resname
-            r_SSMParameter.Name = Sub(
-                '/iam/PasswordBase/${UserName}',
-                **{'UserName': get_endvalue(f'{resname}UserName')})
-            r_SSMParameter.Value = Ref(f'PasswordBase{n}')
-            r_SSMParameter.AllowedPattern = '^[^ ]{16,}$'
-
-            add_obj([
-                r_User,
-                r_Role,
-                r_SSMParameter,
-            ])
-
-
-class IAM_UserToGroupAdditions(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'  # Ex. IAMUserToGroupAdditionBase
-
-            Users = []
-            for m, w in v['User'].items():
-                condname = f'{resname}User{m}'
+        ManagedPolicyArns = []
+        RoleGroups = []
+        if 'RoleGroups' in v:
+            for m, w in v['RoleGroups'].items():
+                condname = f'{resname}RoleGroups{m}'
                 # conditions
                 add_obj(get_condition(condname, 'not_equals', 'None'))
 
-                Users.append(
+                # resources
+                RoleGroups.append(
                     If(
                         condname,
-                        # for user defined in the same yaml file
-                        # Ref(f'IAMUser{m}') if m in cfg.IAMUser
-                        # else get_endvalue(condname),
-                        get_endvalue(condname),
+                        m,
                         Ref('AWS::NoValue')
                     )
                 )
 
-            # resources
-            r_GroupAdd = IAMUserToGroupAddition(
-                f'IAMUserToGroupAddition{n}', key=v, name=n)
-            r_GroupAdd.Users = Users
-
-            add_obj([
-                r_GroupAdd,
-            ])
-
-
-class IAM_Groups(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'  # Ex. IAMGroupBase
-
-            # conditions
-            c_Enabled = get_condition(
-                resname, 'not_equals', 'None', f'{resname}Enabled')
-            add_obj(c_Enabled)
-
-            ManagedPolicyArns = []
-            for m in v['ManagedPolicyArns']:
-                if m.startswith('arn'):
-                    ManagedPolicyArns.append(m)
-                elif m.startswith('Ref('):
-                    ManagedPolicyArns.append(eval(m))
+                try:
+                    policy_arns = cfg.IAMGroup[m]['ManagedPolicyArns']
+                except Exception:
+                    pass
                 else:
-                    ManagedPolicyArns.append(ImportValue(f'IAMPolicy{m}'))
+                    for p in policy_arns:
+                        ManagedPolicyArns.append(
+                            If(
+                                condname,
+                                ImportValue(f'IAMPolicy{p}'),
+                                Ref('AWS::NoValue')
+                            )
+                        )
 
-            # resources
-            r_Group = IAMGroup(resname, key=v, name=n)
-            r_Group.ManagedPolicyArns = ManagedPolicyArns
+        # resources
+        r_Role = IAMRoleUser(f'IAMRole{n}', key=v, resnameuser=resname)
+        r_Role.ManagedPolicyArns = ManagedPolicyArns
 
-            add_obj([
-                r_Group,
-            ])
+        r_User = IAMUser(resname, key=v, name=n)
+        r_User.Groups = RoleGroups
+
+        r_SSMParameter = SSMParameter(f'SSMParameterPassword{n}')
+        r_SSMParameter.Condition = resname
+        r_SSMParameter.Name = Sub(
+            '/iam/PasswordBase/${UserName}',
+            **{'UserName': get_endvalue(f'{resname}UserName')})
+        r_SSMParameter.Value = Ref(f'PasswordBase{n}')
+        r_SSMParameter.AllowedPattern = '^[^ ]{16,}$'
+
+        add_obj([
+            r_User,
+            r_Role,
+            r_SSMParameter])
 
 
-class IAM_Policies(object):
-    def __init__(self, key):
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'  # Ex. IAMPolicyLambdaR53RecordInstanceId
-            Statement = []
-            for m, w in v['Statement'].items():
-                Statement.append(IAMPolicyStatement(w))
+def IAM_UserToGroupAdditions(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'  # Ex. IAMUserToGroupAdditionBase
 
-            if 'Type' in v and v['Type'] == 'Managed':
-                r_Policy = IAMManagedPolicy(resname, key=v, name=n)
+        Users = []
+        for m, w in v['User'].items():
+            condname = f'{resname}User{m}'
+            # conditions
+            add_obj(get_condition(condname, 'not_equals', 'None'))
+
+            Users.append(
+                If(
+                    condname,
+                    # for user defined in the same yaml file
+                    # Ref(f'IAMUser{m}') if m in cfg.IAMUser
+                    # else get_endvalue(condname),
+                    get_endvalue(condname),
+                    Ref('AWS::NoValue')
+                )
+            )
+
+        # resources
+        r_GroupAdd = IAMUserToGroupAddition(
+            f'IAMUserToGroupAddition{n}', key=v, name=n)
+        r_GroupAdd.Users = Users
+
+        add_obj([
+            r_GroupAdd])
+
+
+def IAM_Groups(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'  # Ex. IAMGroupBase
+
+        # conditions
+        c_Enabled = get_condition(
+            resname, 'not_equals', 'None', f'{resname}Enabled')
+        add_obj(c_Enabled)
+
+        ManagedPolicyArns = []
+        for m in v['ManagedPolicyArns']:
+            if m.startswith('arn'):
+                ManagedPolicyArns.append(m)
+            elif m.startswith('Ref('):
+                ManagedPolicyArns.append(eval(m))
             else:
-                r_Policy = IAMPolicy(resname, key=v, name=n)
-            r_Policy.PolicyDocument['Statement'] = Statement
+                ManagedPolicyArns.append(ImportValue(f'IAMPolicy{m}'))
 
-            add_obj(r_Policy)
+        # resources
+        r_Group = IAMGroup(resname, key=v, name=n)
+        r_Group.ManagedPolicyArns = ManagedPolicyArns
 
-            # outputs
-            if 'Export' in v:
-                o_Policy = Output(resname)
-                o_Policy.Value = Ref(resname)
-                o_Policy.Export = Export(resname)
-
-                add_obj(o_Policy)
+        add_obj([
+            r_Group])
 
 
-class IAM_Roles(object):
-    def __init__(self, key):
-        # Resources
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'  # Ex. RoleECSService
-            r_Role = IAMRole(resname, key=v)
+def IAM_Policies(key):
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'  # Ex. IAMPolicyLambdaR53RecordInstanceId
+        Statement = []
+        for m, w in v['Statement'].items():
+            Statement.append(IAMPolicyStatement(w))
 
-            # Add embedded policies if present
-            if 'Policies' in v:
-                Policies = []
-                for p, w in v['Policies'].items():
-                    Policies.append(IAMPolicyInRole(p, w))
-                r_Role.Policies = Policies
+        if 'Type' in v and v['Type'] == 'Managed':
+            r_Policy = IAMManagedPolicy(resname, key=v, name=n)
+        else:
+            r_Policy = IAMPolicy(resname, key=v, name=n)
+        r_Policy.PolicyDocument['Statement'] = Statement
 
-            add_obj(r_Role)
+        add_obj(r_Policy)
 
-            # outputs
-            if 'Export' in v:
-                o_Role = Output(resname)
-                o_Role.Value = GetAtt(resname, 'Arn')
-                o_Role.Export = Export(resname)
-                if 'Condition' in v:
-                    o_Role.Condition = v['Condition']
+        # outputs
+        if 'Export' in v:
+            o_Policy = Output(resname)
+            o_Policy.Value = Ref(resname)
+            o_Policy.Export = Export(resname)
 
-                add_obj(o_Role)
+            add_obj(o_Policy)
+
+
+def IAM_Roles(key):
+    # Resources
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'  # Ex. RoleECSService
+        r_Role = IAMRole(resname, key=v)
+
+        # Add embedded policies if present
+        if 'Policies' in v:
+            Policies = []
+            for p, w in v['Policies'].items():
+                Policies.append(IAMPolicyInRole(p, w))
+            r_Role.Policies = Policies
+
+        add_obj(r_Role)
+
+        # outputs
+        if 'Export' in v:
+            o_Role = Output(resname)
+            o_Role.Value = GetAtt(resname, 'Arn')
+            o_Role.Export = Export(resname)
+            if 'Condition' in v:
+                o_Role.Condition = v['Condition']
+
+            add_obj(o_Role)

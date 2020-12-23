@@ -12,14 +12,8 @@ class LogsLogGroup(lgs.LogGroup):
         self.RetentionInDays = get_endvalue('LogRetentionInDays')
 
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
+def LGS_LogGroup(key):
+    R_Group = LogsLogGroup('LogsLogGroup')
 
-class LGS_LogGroup(object):
-    def __init__(self, key):
-        R_Group = LogsLogGroup('LogsLogGroup')
-
-        add_obj([
-            R_Group,
-        ])
+    add_obj([
+        R_Group])

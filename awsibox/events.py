@@ -28,87 +28,80 @@ class EVEEcsParameters(eve.EcsParameters):
         self.TaskDefinitionArn = Ref('TaskDefinition')
 
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
+def EVE_EventRules(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+        # parameters
+        p_State = Parameter(f'{resname}State')
+        p_State.Description = (
+            'Events Rule State - empty for default based on env/role')
+        p_State.AllowedValues = ['', 'DISABLED', 'ENABLED']
 
+        if 'ScheduleExpression' in v:
+            p_ScheduleExpression = Parameter(
+                f'{resname}ScheduleExpression')
+            p_ScheduleExpression.Description = (
+                'Events Rule Schedule - '
+                'empty for default based on env/role')
 
-class EVE_EventRules(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-            # parameters
-            p_State = Parameter(f'{resname}State')
-            p_State.Description = (
-                'Events Rule State - empty for default based on env/role')
-            p_State.AllowedValues = ['', 'DISABLED', 'ENABLED']
+            add_obj(p_ScheduleExpression)
 
-            if 'ScheduleExpression' in v:
-                p_ScheduleExpression = Parameter(
-                    f'{resname}ScheduleExpression')
-                p_ScheduleExpression.Description = (
-                    'Events Rule Schedule - '
-                    'empty for default based on env/role')
+        add_obj([
+            p_State,
+        ])
 
-                add_obj(p_ScheduleExpression)
+        # resources
+        Targets = []
+        need_ecsEventsRole = None
+        for m, w in v['Targets'].items():
+            targetname = f'{resname}Targets{m}'
+            Target = eve.Target(targetname)
 
-            add_obj([
-                p_State,
-            ])
+            if m.startswith('Lambda'):
+                permname = '%s%s' % (
+                    m.replace('Lambda', 'LambdaPermission'), resname)
+                r_LambdaPermission = LambdaPermissionEvent(
+                    permname, key=w, source=resname)
+                if 'Condition' in v:
+                    r_LambdaPermission.Condition = v['Condition']
 
-            # resources
-            Targets = []
-            need_ecsEventsRole = None
-            for m, w in v['Targets'].items():
-                targetname = f'{resname}Targets{m}'
-                Target = eve.Target(targetname)
+                add_obj(r_LambdaPermission)
+            if m.startswith('ECSCluster'):
+                props = {
+                    'Arn': get_subvalue(
+                        'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:'
+                        'cluster/${1E}', 'Cluster', stack='ClusterStack'),
+                    'EcsParameters': EVEEcsParameters(''),
+                    'RoleArn': get_expvalue('RoleECSEvents'),
+                    'Id': f'Target{m}',
+                }
+                need_ecsEventsRole = True
 
-                if m.startswith('Lambda'):
-                    permname = '%s%s' % (
-                        m.replace('Lambda', 'LambdaPermission'), resname)
-                    r_LambdaPermission = LambdaPermissionEvent(
-                        permname, key=w, source=resname)
-                    if 'Condition' in v:
-                        r_LambdaPermission.Condition = v['Condition']
+                # add common "fixed" props
+                auto_get_props(Target, rootdict=props)
 
-                    add_obj(r_LambdaPermission)
-                if m.startswith('ECSCluster'):
-                    props = {
-                        'Arn': get_subvalue(
-                            'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:'
-                            'cluster/${1E}', 'Cluster', stack='ClusterStack'),
-                        'EcsParameters': EVEEcsParameters(''),
-                        'RoleArn': get_expvalue('RoleECSEvents'),
-                        'Id': f'Target{m}',
-                    }
-                    need_ecsEventsRole = True
+            # add props found in yaml cfg
+            auto_get_props(Target)
+            Targets.append(Target)
 
-                    # add common "fixed" props
-                    auto_get_props(Target, rootdict=props)
+        r_Rule = eve.Rule(resname)
+        auto_get_props(r_Rule)
+        r_Rule.Name = Sub('${AWS::StackName}-${EnvRole}-' f'Rule{n}')
+        r_Rule.Targets = Targets
 
-                # add props found in yaml cfg
-                auto_get_props(Target)
-                Targets.append(Target)
+        add_obj(r_Rule)
 
-            r_Rule = eve.Rule(resname)
-            auto_get_props(r_Rule)
-            r_Rule.Name = Sub('${AWS::StackName}-${EnvRole}-' f'Rule{n}')
-            r_Rule.Targets = Targets
+        # outputs
+        o_State = Output(f'{resname}State')
+        o_State.Value = get_endvalue(f'{resname}State')
 
-            add_obj(r_Rule)
+        if 'ScheduleExpression' in v:
+            o_ScheduleExpression = Output(
+                f'{resname}ScheduleExpression')
+            o_ScheduleExpression.Value = get_endvalue(
+                f'{resname}ScheduleExpression')
 
-            # outputs
-            o_State = Output(f'{resname}State')
-            o_State.Value = get_endvalue(f'{resname}State')
+            add_obj(o_ScheduleExpression)
 
-            if 'ScheduleExpression' in v:
-                o_ScheduleExpression = Output(
-                    f'{resname}ScheduleExpression')
-                o_ScheduleExpression.Value = get_endvalue(
-                    f'{resname}ScheduleExpression')
-
-                add_obj(o_ScheduleExpression)
-
-            add_obj([
-                o_State,
-            ])
+        add_obj([
+            o_State])

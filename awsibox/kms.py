@@ -31,29 +31,23 @@ class KMSAliasParameterStore(kms.Alias):
         self.AliasName = Sub('alias/parameter_store_key')
         self.TargetKeyId = Ref('KMSKeyParameterStore')
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
 
+def KMS_Keys(key):
+    # Resources
+    R_KeyParameterStore = KMSKey('KMSKeyParameterStore')
 
-class KMS_Keys(object):
-    def __init__(self, key):
-        # Resources
-        R_KeyParameterStore = KMSKey('KMSKeyParameterStore')
+    R_AliasParameterStore = KMSAliasParameterStore(
+        'KMSAliasParameterStore')
 
-        R_AliasParameterStore = KMSAliasParameterStore(
-            'KMSAliasParameterStore')
+    add_obj([
+        R_KeyParameterStore,
+        R_AliasParameterStore,
+    ])
 
-        add_obj([
-            R_KeyParameterStore,
-            R_AliasParameterStore,
-        ])
+    # Outputs
+    O_ParameterStore = Output('KeyParameterStore')
+    O_ParameterStore.Value = Sub('${KMSKeyParameterStore.Arn}')
+    O_ParameterStore.Export = Export('KeyParameterStore')
 
-        # Outputs
-        O_ParameterStore = Output('KeyParameterStore')
-        O_ParameterStore.Value = Sub('${KMSKeyParameterStore.Arn}')
-        O_ParameterStore.Export = Export('KeyParameterStore')
-
-        add_obj([
-            O_ParameterStore,
-        ])
+    add_obj([
+        O_ParameterStore])

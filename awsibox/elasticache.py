@@ -19,52 +19,44 @@ class CCHCacheSubnetGroupPublic(cch.SubnetGroup):
         self.Description = Sub('${EnvShort}-Public')
         self.SubnetIds = Split(',', get_expvalue('SubnetsPublic'))
 
-# #################################
-# ### START STACK INFRA CLASSES ###
-# #################################
+
+def CCH_Cache(key):
+    # Resources
+    R_Cache = cch.CacheCluster('ElastiCacheCacheCluster')
+    R_Group = cch.ReplicationGroup('ElastiCacheReplicationGroup')
+
+    auto_get_props(R_Cache, f'{key}Base')
+
+    auto_get_props(R_Group, f'{key}Base')
+    auto_get_props(R_Group, 'ReplicationGroupBase')
+
+    R53_RecordSetCCH()
+
+    add_obj([
+        R_Cache,
+        R_Group])
 
 
-class CCH_Cache(object):
-    def __init__(self, key):
-        # Resources
-        R_Cache = cch.CacheCluster('ElastiCacheCacheCluster')
-        R_Group = cch.ReplicationGroup('ElastiCacheReplicationGroup')
+def CCH_SubnetGroups(key):
+    # Resources
+    R_Private = CCHCacheSubnetGroupPrivate('CacheSubnetGroupPrivate')
 
-        auto_get_props(R_Cache, f'{key}Base')
+    R_Public = CCHCacheSubnetGroupPublic('CacheSubnetGroupPublic')
 
-        auto_get_props(R_Group, f'{key}Base')
-        auto_get_props(R_Group, 'ReplicationGroupBase')
+    add_obj([
+        R_Private,
+        R_Public,
+    ])
 
-        R53_RecordSetCCH()
+    # Outputs
+    O_Private = Output('CacheSubnetGroupPrivate')
+    O_Private.Value = Ref('CacheSubnetGroupPrivate')
+    O_Private.Export = Export('CacheSubnetGroupPrivate')
 
-        add_obj([
-            R_Cache,
-            R_Group,
-        ])
+    O_Public = Output('CacheSubnetGroupPublic')
+    O_Public.Value = Ref('CacheSubnetGroupPublic')
+    O_Public.Export = Export('CacheSubnetGroupPublic')
 
-
-class CCH_SubnetGroups(object):
-    def __init__(self, key):
-        # Resources
-        R_Private = CCHCacheSubnetGroupPrivate('CacheSubnetGroupPrivate')
-
-        R_Public = CCHCacheSubnetGroupPublic('CacheSubnetGroupPublic')
-
-        add_obj([
-            R_Private,
-            R_Public,
-        ])
-
-        # Outputs
-        O_Private = Output('CacheSubnetGroupPrivate')
-        O_Private.Value = Ref('CacheSubnetGroupPrivate')
-        O_Private.Export = Export('CacheSubnetGroupPrivate')
-
-        O_Public = Output('CacheSubnetGroupPublic')
-        O_Public.Value = Ref('CacheSubnetGroupPublic')
-        O_Public.Export = Export('CacheSubnetGroupPublic')
-
-        add_obj([
-            O_Private,
-            O_Public,
-        ])
+    add_obj([
+        O_Private,
+        O_Public])
