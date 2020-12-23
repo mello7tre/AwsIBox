@@ -688,7 +688,7 @@ class AS_LaunchTemplate(object):
             InitConfigELBInternal = ASInitConfigELBApplicationInternal()
             CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
-        SecurityGroups = SG_SecurityGroupsEC2().SecurityGroups
+        SecurityGroups = SG_SecurityGroupsEC2()
 
         # Resources
         R_LaunchTemplate = ec2.LaunchTemplate(

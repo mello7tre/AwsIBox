@@ -11,7 +11,7 @@ class EVENetworkConfiguration(eve.NetworkConfiguration):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.AwsVpcConfiguration = eve.AwsVpcConfiguration(
-            SecurityGroups=SG_SecurityGroupsTSK().SecurityGroups,
+            SecurityGroups=SG_SecurityGroupsTSK(),
             Subnets=Split(',', get_expvalue('SubnetsPrivate'))
         )
 

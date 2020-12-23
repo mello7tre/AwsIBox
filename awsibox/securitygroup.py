@@ -103,139 +103,120 @@ class SecurityGroupRuleEcsService(SecurityGroupRule):
 # ##########################################
 
 
-class SG_SecurityGroupsExtra(object):
-    def __init__(self, Out_String, Out_Map):
-        # if key SecurityGroups not present,
-        # set and empty SecurityGroups list and output (not added)
-        try:
-            cfg.SecurityGroups
-        except Exception:
-            self.SecurityGroups = []
-            self.O_SecurityGroups = Output('')
-            return
+def SG_SecurityGroupsExtra(Out_String, Out_Map):
+    # if key SecurityGroups not present,
+    # set and empty SecurityGroups list and output (not added)
+    try:
+        cfg.SecurityGroups
+    except Exception:
+        self.SecurityGroups = []
+        self.O_SecurityGroups = Output('')
+        return
 
-        # Parameters
-        P_SecurityGroups = Parameter('SecurityGroups')
-        P_SecurityGroups.Description = (
-            'SecurityGroups List Extra - '
-            f'{SECURITY_GROUPS_DEFAULT} for default based on env/role')
-        P_SecurityGroups.AllowedPattern = (
-            r'^(\w*,\w*){%s}$' % (MAX_SECURITY_GROUPS - 1))
-        P_SecurityGroups.Default = SECURITY_GROUPS_DEFAULT
+    # Parameters
+    P_SecurityGroups = Parameter('SecurityGroups')
+    P_SecurityGroups.Description = (
+        'SecurityGroups List Extra - '
+        f'{SECURITY_GROUPS_DEFAULT} for default based on env/role')
+    P_SecurityGroups.AllowedPattern = (
+        r'^(\w*,\w*){%s}$' % (MAX_SECURITY_GROUPS - 1))
+    P_SecurityGroups.Default = SECURITY_GROUPS_DEFAULT
 
-        add_obj([
-            P_SecurityGroups,
-        ])
+    add_obj([
+        P_SecurityGroups,
+    ])
 
-        SecurityGroups = []
+    SecurityGroups = []
 
-        for n in range(MAX_SECURITY_GROUPS):
-            name = f'SecurityGroup{n}'  # Ex SecurityGroup1
-            value = Select(
-                n, Split(',', get_endvalue('SecurityGroups')))
-            outnamename = f'SecurityGroupName{n}'
-            outvaluename = f'SecurityGroupValue{n}'
+    for n in range(MAX_SECURITY_GROUPS):
+        name = f'SecurityGroup{n}'  # Ex SecurityGroup1
+        value = Select(
+            n, Split(',', get_endvalue('SecurityGroups')))
+        outnamename = f'SecurityGroupName{n}'
+        outvaluename = f'SecurityGroupValue{n}'
 
-            # conditions
-            add_obj(
-                {name: Not(
-                    get_condition('', 'equals', 'None',
-                                  Select(n, Split(',', 'SecurityGroups')))
-                )}
-            )
+        # conditions
+        add_obj({name: Not(get_condition(
+            '', 'equals', 'None', Select(n, Split(',', 'SecurityGroups'))))})
 
-            SecurityGroups.append(If(
+        SecurityGroups.append(If(
+            name,
+            get_expvalue(value, prefix='SecurityGroup'),
+            Ref('AWS::NoValue')))
+
+        # outputs
+        Out_String.append('${%s}=${%s}' % (outnamename, outvaluename))
+        Out_Map.update({
+            outnamename: value,
+            outvaluename: If(
                 name,
                 get_expvalue(value, prefix='SecurityGroup'),
-                Ref('AWS::NoValue')
-            ))
+                'None')})
 
-            # outputs
-            Out_String.append('${%s}=${%s}' % (outnamename, outvaluename))
-            Out_Map.update({
-                outnamename: value,
-                outvaluename: If(
-                    name,
-                    get_expvalue(value, prefix='SecurityGroup'),
-                    'None'
-                )
-            })
+    # Outputs
+    O_SecurityGroups = Output('SecurityGroups')
+    O_SecurityGroups.Value = Sub(','.join(Out_String), **Out_Map)
 
-        # Outputs
-        O_SecurityGroups = Output('SecurityGroups')
-        O_SecurityGroups.Value = Sub(','.join(Out_String), **Out_Map)
+    add_obj([
+        O_SecurityGroups])
 
-        add_obj([
-            O_SecurityGroups,
-        ])
-
-        self.O_SecurityGroups = O_SecurityGroups
-
-        self.SecurityGroups = SecurityGroups
+    return SecurityGroups
 
 
-class SG_SecurityGroupIngressesExtra(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-            r_SGI = SecurityGroupIngress(resname)
-            auto_get_props(r_SGI)
+def SG_SecurityGroupIngressesExtra(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+        r_SGI = SecurityGroupIngress(resname)
+        auto_get_props(r_SGI)
 
-            add_obj(r_SGI)
-
-
-class SG_SecurityGroupsEC2(object):
-    def __init__(self):
-        Out_String = ['Rules=${SecurityGroupInstancesRules}']
-        Out_Map = {
-            'SecurityGroupInstancesRules': {
-                'Ref': 'SecurityGroupInstancesRules'
-            },
-        }
-
-        # Resources
-        SG_Extra = SG_SecurityGroupsExtra(Out_String, Out_Map)
-
-        R_SGInstance = SecurityGroup(
-            'SecurityGroupInstancesRules')
-        R_SGInstance.GroupDescription = (
-            'Enable Access from LoadBalancer to Instances '
-            'and between Instances')
-
-        add_obj([
-            R_SGInstance,
-        ])
-
-        self.SecurityGroups = SG_Extra.SecurityGroups
+        add_obj(r_SGI)
 
 
-class SG_SecurityGroupsECS(object):
-    def __init__(self):
-        Out_String = ['Service=${SecurityGroupEcsService}']
-        Out_Map = {
-            'SecurityGroupEcsService': {
-                'Ref': 'SecurityGroupEcsService'
-            },
-        }
-        # Resources
-        SG_Extra = SG_SecurityGroupsExtra(Out_String, Out_Map)
-        SG_Extra.O_SecurityGroups.Condition = 'NetworkModeAwsVpc'
+def SG_SecurityGroupsEC2():
+    Out_String = ['Rules=${SecurityGroupInstancesRules}']
+    Out_Map = {
+        'SecurityGroupInstancesRules': {
+            'Ref': 'SecurityGroupInstancesRules'}}
 
-        self.SecurityGroups = SG_Extra.SecurityGroups
+    # Resources
+    R_SGInstance = SecurityGroup(
+        'SecurityGroupInstancesRules')
+    R_SGInstance.GroupDescription = (
+        'Enable Access from LoadBalancer to Instances '
+        'and between Instances')
 
+    add_obj([
+        R_SGInstance,
+    ])
 
-class SG_SecurityGroupsTSK(object):
-    def __init__(self):
-        Out_String = []
-        Out_Map = {}
-        # Resources
-        SG_Extra = SG_SecurityGroupsExtra(Out_String, Out_Map)
-        SG_Extra.O_SecurityGroups.Condition = 'NetworkModeAwsVpc'
-
-        self.SecurityGroups = SG_Extra.SecurityGroups
+    return SG_SecurityGroupsExtra(Out_String, Out_Map)
 
 
-def SG_SecurityGroupIngressBaseInstance():
+def SG_SecurityGroupsECS():
+    Out_String = ['Service=${SecurityGroupEcsService}']
+    Out_Map = {
+        'SecurityGroupEcsService': {
+            'Ref': 'SecurityGroupEcsService'}}
+
+    SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
+    # add Condition to Output created by SG_SecurityGroupsExtra
+    cfg.Outputs['SecurityGroups'].Condition = 'NetworkModeAwsVpc'
+
+    return SecurityGroups
+
+
+def SG_SecurityGroupsTSK():
+    Out_String = []
+    Out_Map = {}
+
+    SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
+    # add Condition to Output created by SG_SecurityGroupsExtra
+    cfg.Outputs['SecurityGroups'].Condition = 'NetworkModeAwsVpc'
+
+    return SecurityGroups
+
+
+def SG_SecurityGroupRulesBaseInstance():
     Securitygroup_Rules = []
 
     for n, v in cfg.AllowedIp.items():
@@ -253,168 +234,149 @@ def SG_SecurityGroupIngressBaseInstance():
             If(
                 name,
                 Rule,
-                Ref('AWS::NoValue')
-            )
-        )
+                Ref('AWS::NoValue')))
 
     Securitygroup_Rules.append(
         ec2.SecurityGroupRule(
             CidrIp='0.0.0.0/0',
             FromPort='8',
             IpProtocol='icmp',
-            ToPort='-1'
-        )
-    )
+            ToPort='-1'))
 
     return Securitygroup_Rules
 
 
-class SG_SecurityGroupRES(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            name = f'SecurityGroup{n}'
-            # bad fix
-            if n != 'ElasticSearchClient':
-                outname = name
-            else:
-                outname = 'SecurityGroup%s' % n.replace('Client', '')
+def SG_SecurityGroupRES(key):
+    for n, v in getattr(cfg, key).items():
+        name = f'SecurityGroup{n}'
+        # bad fix
+        if n != 'ElasticSearchClient':
+            outname = name
+        else:
+            outname = 'SecurityGroup%s' % n.replace('Client', '')
 
-            # resources
-            r_Base = SecurityGroup(name)
-            r_Base.GroupDescription = get_endvalue(f'SecurityGroupBase{n}')
+        # resources
+        r_Base = SecurityGroup(name)
+        r_Base.GroupDescription = get_endvalue(f'SecurityGroupBase{n}')
 
-            if n == 'BaseInstance':
-                r_Base.SecurityGroupIngress = (
-                    SG_SecurityGroupIngressBaseInstance())
+        if n == 'BaseInstance':
+            r_Base.SecurityGroupIngress = SG_SecurityGroupRulesBaseInstance()
 
-            add_obj(r_Base)
+        add_obj(r_Base)
 
-            # outputs
-            o_Base = Output(outname)
-            o_Base.Value = GetAtt(name, 'GroupId')
-            o_Base.Export = Export(outname)
+        # outputs
+        o_Base = Output(outname)
+        o_Base.Value = GetAtt(name, 'GroupId')
+        o_Base.Export = Export(outname)
 
-            add_obj(o_Base)
+        add_obj(o_Base)
 
 
-class SG_SecurityGroupIngressesExtraService(object):
-    def __init__(self, key):
-        Securitygroup_Rules = []
-        for n, v in getattr(cfg, key).items():
-            name = str(v['FromPort'])  # Ex 3306
+def SG_SecurityGroupIngressesExtraService(key):
+    Securitygroup_Rules = []
+    for n, v in getattr(cfg, key).items():
+        name = str(v['FromPort'])  # Ex 3306
 
-            for i in cfg.AllowedIp:
-                ipname = f'AllowedIp{i}'
-                condnameprivate = (
-                    f'SecurityGroupRulePrivatePort{name}{ipname}')
+        for i in cfg.AllowedIp:
+            ipname = f'AllowedIp{i}'
+            condnameprivate = (
+                f'SecurityGroupRulePrivatePort{name}{ipname}')
 
-                # conditions
-                c_Enabled = get_condition(
-                    ipname, 'not_equals', 'None', f'{ipname}Enabled')
+            # conditions
+            c_Enabled = get_condition(
+                ipname, 'not_equals', 'None', f'{ipname}Enabled')
 
-                c_Access = {condnameprivate: And(
-                    Condition(ipname),
-                    get_condition('', 'equals', 'Private', f'{n}Access')
-                )}
+            c_Access = {condnameprivate: And(
+                Condition(ipname),
+                get_condition('', 'equals', 'Private', f'{n}Access')
+            )}
 
-                add_obj([
-                    c_Enabled,
-                    c_Access,
-                ])
-
-                SGRule = SecurityGroupRuleNamePorts(name)
-                SGRule.CidrIp = get_endvalue(f'{ipname}Ip')
-
-                Securitygroup_Rules.append(
-                    If(
-                        condnameprivate,
-                        SGRule,
-                        Ref('AWS::NoValue'),
-                    )
-                )
+            add_obj([
+                c_Enabled,
+                c_Access])
 
             SGRule = SecurityGroupRuleNamePorts(name)
-            SGRule.CidrIp = '0.0.0.0/0'
+            SGRule.CidrIp = get_endvalue(f'{ipname}Ip')
 
             Securitygroup_Rules.append(
                 If(
-                    f'{n}Public',
+                    condnameprivate,
                     SGRule,
-                    Ref('AWS::NoValue'),
-                )
-            )
+                    Ref('AWS::NoValue')))
 
-        # Resources
-        SG_SecurityGroupIngressesExtra(key=key)
+        SGRule = SecurityGroupRuleNamePorts(name)
+        SGRule.CidrIp = '0.0.0.0/0'
 
-        R_SG = SecurityGroup(f'SecurityGroup{n}')
-        R_SG.GroupDescription = f'Enable access to {n}'
-        R_SG.SecurityGroupIngress = Securitygroup_Rules
+        Securitygroup_Rules.append(
+            If(
+                f'{n}Public',
+                SGRule,
+                Ref('AWS::NoValue')))
 
-        add_obj([
-            R_SG,
-        ])
+    # Resources
+    SG_SecurityGroupIngressesExtra(key=key)
 
-        # Outputs
-        O_SG = Output('SecurityGroup')
-        O_SG.Value = GetAtt(f'SecurityGroup{n}', 'GroupId')
+    R_SG = SecurityGroup(f'SecurityGroup{n}')
+    R_SG.GroupDescription = f'Enable access to {n}'
+    R_SG.SecurityGroupIngress = Securitygroup_Rules
 
-        add_obj([
-            O_SG,
-        ])
+    # Outputs
+    O_SG = Output('SecurityGroup')
+    O_SG.Value = GetAtt(f'SecurityGroup{n}', 'GroupId')
 
-
-class SG_SecurityGroupIngressesExtraRDS(SG_SecurityGroupIngressesExtraService):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    add_obj([
+        R_SG,
+        O_SG])
 
 
-class SG_SecurityGroupIngressesExtraCCH(SG_SecurityGroupIngressesExtraService):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+def SG_SecurityGroupIngressesExtraRDS(key):
+    SG_SecurityGroupIngressesExtraService(key)
 
 
-class SG_SecurityGroupIngressesECS(object):
-    def __init__(self, scheme, proto):
-        resname_public = (
-            'SecurityGroupIngressLoadBalancerApplicationPublic'
-            f'{proto}{scheme}')
+def SG_SecurityGroupIngressesExtraCCH(key):
+    SG_SecurityGroupIngressesExtraService(key)
 
-        # Conditions
-        c_Public = {
-            resname_public: And(
-                Condition(f'ListenerLoadBalancer{proto}Port'),
-                Condition('LoadBalancerPublic'),
-            )
-        }
 
-        add_obj(c_Public)
+def SG_SecurityGroupIngressesECS(scheme, proto):
+    resname_public = (
+        'SecurityGroupIngressLoadBalancerApplicationPublic'
+        f'{proto}{scheme}')
 
-        # Resources
-        R_SGIPublic = SecurityGroupsIngressEcs(
-            resname_public, proto=proto, scheme=scheme)
-        R_SGIPublic.CidrIp = '0.0.0.0/0'
+    # Conditions
+    c_Public = {
+        resname_public: And(
+            Condition(f'ListenerLoadBalancer{proto}Port'),
+            Condition('LoadBalancerPublic'),
+        )
+    }
 
-        add_obj(R_SGIPublic)
+    add_obj(c_Public)
 
-        for i in cfg.AllowedIp:
-            ipname = f'AllowedIp{i}'  # Ex. AllowedIp1
-            resname_private = (
-                f'SecurityGroupIngressLoadBalancerApplicationPrivate{proto}'
-                f'{scheme}{ipname}')
+    # Resources
+    R_SGIPublic = SecurityGroupsIngressEcs(
+        resname_public, proto=proto, scheme=scheme)
+    R_SGIPublic.CidrIp = '0.0.0.0/0'
 
-            # conditions
-            c_AllowedIpPrivate = {resname_private: And(
-                Condition(ipname),
-                Not(Condition('LoadBalancerPublic')),
-                Condition(f'ListenerLoadBalancer{proto}Port')
-            )}
+    add_obj(R_SGIPublic)
 
-            add_obj(c_AllowedIpPrivate)
+    for i in cfg.AllowedIp:
+        ipname = f'AllowedIp{i}'  # Ex. AllowedIp1
+        resname_private = (
+            f'SecurityGroupIngressLoadBalancerApplicationPrivate{proto}'
+            f'{scheme}{ipname}')
 
-            # resources
-            r_SGIPrivate = SecurityGroupsIngressEcs(
-                resname_private, proto=proto, scheme=scheme)
-            r_SGIPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
+        # conditions
+        c_AllowedIpPrivate = {resname_private: And(
+            Condition(ipname),
+            Not(Condition('LoadBalancerPublic')),
+            Condition(f'ListenerLoadBalancer{proto}Port')
+        )}
 
-            add_obj(r_SGIPrivate)
+        add_obj(c_AllowedIpPrivate)
+
+        # resources
+        r_SGIPrivate = SecurityGroupsIngressEcs(
+            resname_private, proto=proto, scheme=scheme)
+        r_SGIPrivate.CidrIp = get_endvalue(f'{ipname}Ip')
+
+        add_obj(r_SGIPrivate)

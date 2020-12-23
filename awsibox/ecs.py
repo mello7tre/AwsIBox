@@ -95,7 +95,7 @@ class ECSNetworkConfiguration(ecs.NetworkConfiguration):
         self.AwsvpcConfiguration = ecs.AwsvpcConfiguration(
             SecurityGroups=[
                 GetAtt('SecurityGroupEcsService', 'GroupId')
-                ] + SG_SecurityGroupsECS().SecurityGroups,
+                ] + SG_SecurityGroupsECS(),
             Subnets=Split(',', get_expvalue('SubnetsPrivate'))
         )
 
