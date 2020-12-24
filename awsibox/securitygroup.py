@@ -97,9 +97,7 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
     try:
         cfg.SecurityGroups
     except Exception:
-        self.SecurityGroups = []
-        self.O_SecurityGroups = Output('')
-        return
+        return []
 
     # Parameters
     P_SecurityGroups = Parameter('SecurityGroups')
@@ -188,7 +186,10 @@ def SG_SecurityGroupsECS():
 
     SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
     # add Condition to Output created by SG_SecurityGroupsExtra
-    cfg.Outputs['SecurityGroups'].Condition = 'NetworkModeAwsVpc'
+    try:
+        cfg.Outputs['SecurityGroups'].Condition = 'NetworkModeAwsVpc'
+    except Exception:
+        pass
 
     return SecurityGroups
 
@@ -199,7 +200,10 @@ def SG_SecurityGroupsTSK():
 
     SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
     # add Condition to Output created by SG_SecurityGroupsExtra
-    cfg.Outputs['SecurityGroups'].Condition = 'NetworkModeAwsVpc'
+    try:
+        cfg.Outputs['SecurityGroups'].Condition = 'NetworkModeAwsVpc'
+    except Exception:
+        pass
 
     return SecurityGroups
 
