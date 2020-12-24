@@ -5,7 +5,6 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 
 
-# S - SECURITY GROUP #
 class SecurityGroup(ec2.SecurityGroup):
     # troposphere ec2 is quite old and SecurityGroupIngress is only a list
     # without the obj type, this break auto_get_props, fix it overriding
@@ -62,12 +61,6 @@ class SecurityGroupsIngressEcs(SecurityGroupIngress):
             f'ListenerLoadBalancer{proto}Port')
         self.ToPort = self.FromPort
 
-# E - SECURITY GROUP #
-
-
-# ############################################
-# ### START STACK META CLASSES AND METHODS ###
-# ############################################
 
 class SecurityGroupRule(ec2.SecurityGroupRule):
     IpProtocol = 'tcp'
@@ -96,11 +89,6 @@ class SecurityGroupRuleEcsService(SecurityGroupRule):
             f'SecurityGroupLoadBalancerApplication{scheme}')
         self.FromPort = get_endvalue('ContainerDefinitions1ContainerPort')
         self.ToPort = self.FromPort
-
-
-# ##########################################
-# ### END STACK META CLASSES AND METHODS ###
-# ##########################################
 
 
 def SG_SecurityGroupsExtra(Out_String, Out_Map):
@@ -246,6 +234,48 @@ def SG_SecurityGroupRulesBaseInstance():
     return Securitygroup_Rules
 
 
+def SG_SecurityGroupRulesService(port, name):
+    Securitygroup_Rules = []
+
+    for i in cfg.AllowedIp:
+        ipname = f'AllowedIp{i}'
+        condnameprivate = (
+            f'SecurityGroupRulePrivatePort{port}{ipname}')
+
+        # conditions
+        c_Enabled = get_condition(
+            ipname, 'not_equals', 'None', f'{ipname}Enabled')
+
+        c_Access = {condnameprivate: And(
+            Condition(ipname),
+            get_condition('', 'equals', 'Private', f'{name}Access')
+        )}
+
+        add_obj([
+            c_Enabled,
+            c_Access])
+
+        SGRule = SecurityGroupRuleNamePorts(port)
+        SGRule.CidrIp = get_endvalue(f'{ipname}Ip')
+
+        Securitygroup_Rules.append(
+            If(
+                condnameprivate,
+                SGRule,
+                Ref('AWS::NoValue')))
+
+    SGRule = SecurityGroupRuleNamePorts(port)
+    SGRule.CidrIp = '0.0.0.0/0'
+
+    Securitygroup_Rules.append(
+        If(
+            f'{name}Public',
+            SGRule,
+            Ref('AWS::NoValue')))
+
+    return Securitygroup_Rules
+
+
 def SG_SecurityGroupRES(key):
     for n, v in getattr(cfg, key).items():
         name = f'SecurityGroup{n}'
@@ -272,69 +302,23 @@ def SG_SecurityGroupRES(key):
         add_obj(o_Base)
 
 
-def SG_SecurityGroupIngressesExtraService(key):
+def SG_SecurityGroupService(name):
     Securitygroup_Rules = []
-    for n, v in getattr(cfg, key).items():
-        name = str(v['FromPort'])  # Ex 3306
+    for n, v in getattr(cfg, 'SecurityGroupIngress').items():
+        port = str(v['FromPort'])
+        Securitygroup_Rules.extend(SG_SecurityGroupRulesService(port, name))
 
-        for i in cfg.AllowedIp:
-            ipname = f'AllowedIp{i}'
-            condnameprivate = (
-                f'SecurityGroupRulePrivatePort{name}{ipname}')
-
-            # conditions
-            c_Enabled = get_condition(
-                ipname, 'not_equals', 'None', f'{ipname}Enabled')
-
-            c_Access = {condnameprivate: And(
-                Condition(ipname),
-                get_condition('', 'equals', 'Private', f'{n}Access')
-            )}
-
-            add_obj([
-                c_Enabled,
-                c_Access])
-
-            SGRule = SecurityGroupRuleNamePorts(name)
-            SGRule.CidrIp = get_endvalue(f'{ipname}Ip')
-
-            Securitygroup_Rules.append(
-                If(
-                    condnameprivate,
-                    SGRule,
-                    Ref('AWS::NoValue')))
-
-        SGRule = SecurityGroupRuleNamePorts(name)
-        SGRule.CidrIp = '0.0.0.0/0'
-
-        Securitygroup_Rules.append(
-            If(
-                f'{n}Public',
-                SGRule,
-                Ref('AWS::NoValue')))
-
-    # Resources
-    SG_SecurityGroupIngressesExtra(key=key)
-
-    R_SG = SecurityGroup(f'SecurityGroup{n}')
-    R_SG.GroupDescription = f'Enable access to {n}'
+    R_SG = SecurityGroup(f'SecurityGroup{name}')
+    R_SG.GroupDescription = f'Enable access to {name}'
     R_SG.SecurityGroupIngress = Securitygroup_Rules
 
     # Outputs
     O_SG = Output('SecurityGroup')
-    O_SG.Value = GetAtt(f'SecurityGroup{n}', 'GroupId')
+    O_SG.Value = GetAtt(f'SecurityGroup{name}', 'GroupId')
 
     add_obj([
         R_SG,
         O_SG])
-
-
-def SG_SecurityGroupIngressesExtraRDS(key):
-    SG_SecurityGroupIngressesExtraService(key)
-
-
-def SG_SecurityGroupIngressesExtraCCH(key):
-    SG_SecurityGroupIngressesExtraService(key)
 
 
 def SG_SecurityGroupIngressesECS(scheme, proto):
