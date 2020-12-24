@@ -4,7 +4,7 @@ AwsIBox - **AWS** **I**nfrastructure in a **Box**
 Work in progres...
 
 Guidelines:
-- Infrastructure as a code.
+- Infrastructure as code.
 - Same cloudformation template for all environments and regions (Ex. development and production).
 - Scalable as needed.
 
