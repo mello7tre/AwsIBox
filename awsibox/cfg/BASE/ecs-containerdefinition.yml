@@ -10,8 +10,9 @@ Base: &base
         Description: 'Command to execute'
         Type: 'CommaDelimitedList'
   IBOXCONDITION:
-    - IBOXRESNAMECommand: Not(
-        Equals("Ref('AWS::NoValue')", getattr(cfg, f'{IBOXRESNAME}Command')))
+    - IBOXRESNAMECommand: Or(
+        Condition(f'{IBOXRESNAME}CommandOverride'),
+        Equals('True', 'True' if isinstance(getattr(cfg, f'{IBOXRESNAME}Command'), list) else 'False'))
     - IBOXRESNAMEContainerPort:
         get_condition('', 'not_equals', 0, f'{IBOXRESNAME}ContainerPort')
     - IBOXRESNAMEHostPort:
