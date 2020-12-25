@@ -48,7 +48,7 @@ infra-info:
               DataTraceEnabled: False
               HttpMethod: '*'
               MetricsEnabled: True
-              ResourcePath: '/~1*'
+              ResourcePath: '/*'
               ThrottlingBurstLimit: 5000
               ThrottlingRateLimit: 10000
         TracingEnabled: False

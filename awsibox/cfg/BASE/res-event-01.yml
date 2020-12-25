@@ -28,7 +28,6 @@ res-event-01:
               Arn: GetAtt('LambdaR53RecordInstanceId', 'Arn')
               Id: 'TargetFunction-02'
     - ECSEventServiceAction:
-        Condition: LambdaECSEvents
         Description: 'ECSEvents Lambda Trigger'
         State: 'DISABLED'
         EventPattern: >
@@ -57,7 +56,6 @@ res-event-01:
               Arn: GetAtt('LambdaECSEvents', 'Arn')
               Id: TargetFunction-01
     - ECSEventTaskStateChange:
-        Condition: LambdaECSEvents
         Description: 'ECSEvents Lambda Trigger'
         State: 'DISABLED'
         EventPattern: >
@@ -149,7 +147,6 @@ res-event-01:
                 - 'route53:ListResourceRecordSets'
               Resource: 'arn:aws:route53:::*'
     - LambdaECSEvents:
-        Condition: LambdaECSEvents
         Roles:
           - Ref('RoleLambdaECSEvents')
         Statement:
