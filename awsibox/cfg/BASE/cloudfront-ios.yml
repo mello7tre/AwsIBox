@@ -57,7 +57,7 @@ global:
     - Zone: If('CloudFrontAliasZone',
               Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)), Ref('AWS::NoValue'))
   CloudFrontAliasZone: None
-  RecordSetCloudFront: None
+  RecordSetCloudFront: True
   R53RecordSet:
     - CloudFront:
         IBOXENABLED: True
