@@ -28,9 +28,6 @@ global:
     - LogDriver:
         Value: get_endvalue('LogDriver')
   ClusterStack: ecs-a
-  ContainerDefinitions:
-    - 1:
-        Cpu: 16
   Log:
     Driver: awslogs
     GroupName: Sub('/aws/ecs/${AWS::StackName}')
