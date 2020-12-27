@@ -160,11 +160,6 @@ def RDS_SubnetGroups(key):
     R_Public = RDSDBSubnetGroupPublic('DBSubnetGroupPublic')
     R_Public.setup()
 
-    add_obj([
-        R_Private,
-        R_Public,
-    ])
-
     # Outputs
     O_Private = Output('DBSubnetGroupPrivate')
     O_Private.Value = Ref('DBSubnetGroupPrivate')
@@ -175,5 +170,7 @@ def RDS_SubnetGroups(key):
     O_Public.Export = Export('DBSubnetGroupPublic')
 
     add_obj([
+        R_Private,
+        R_Public,
         O_Private,
         O_Public])

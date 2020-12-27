@@ -116,7 +116,6 @@ def CFOrigins():
 # ##########################################
 
 
-# S - CLOUDFRONT #
 def CF_CloudFront(key):
     # Resources
     CloudFrontDistribution = clf.Distribution('CloudFrontDistribution')
@@ -146,8 +145,6 @@ def CF_CloudFront(key):
         print('##########CLF_COMPUTE_ORDER#########END#######')
 
     for n, v in sortedcachebehaviors:
-        if not v['PathPattern']:
-            continue
         name = f'CloudFrontCacheBehaviors{n}'
 
         cachebehavior = CFCacheBehavior(name, key=v)
@@ -158,16 +155,13 @@ def CF_CloudFront(key):
             # conditions
             add_obj(
                 get_condition(
-                    name, 'not_equals', 'None', f'{name}PathPattern')
-            )
+                    name, 'not_equals', 'None', f'{name}PathPattern'))
 
             cachebehaviors.append(
                 If(
                     name,
                     cachebehavior,
-                    Ref("AWS::NoValue")
-                )
-            )
+                    Ref("AWS::NoValue")))
         else:
             cachebehaviors.append(cachebehavior)
 
@@ -213,8 +207,7 @@ def CF_CloudFront(key):
     R_CloudFrontDistribution = CloudFrontDistribution
 
     add_obj([
-        R_CloudFrontDistribution,
-    ])
+        R_CloudFrontDistribution])
 
 
 def CF_CachePolicy(key):
@@ -234,8 +227,7 @@ def CF_CachePolicy(key):
 
         add_obj([
             r_CachePolicy,
-            o_CachePolicy,
-        ])
+            o_CachePolicy])
 
 
 def CF_OriginRequestPolicy(key):
@@ -255,5 +247,4 @@ def CF_OriginRequestPolicy(key):
 
         add_obj([
             r_OriginRequestPolicy,
-            o_OriginRequestPolicy,
-        ])
+            o_OriginRequestPolicy])

@@ -17,10 +17,6 @@ def SRVD_ServiceDiscoveryRES(key):
     R_PublicDnsNamespace = ServiceDiscoveryPublicDnsNamespace(
         'PublicDnsNamespace')
 
-    add_obj([
-        R_PublicDnsNamespace,
-    ])
-
     # Outputs
     O_PublicDnsNamespace = Output(
         'ServiceDiscoveryPublicDnsNamespaceId')
@@ -30,4 +26,5 @@ def SRVD_ServiceDiscoveryRES(key):
         'ServiceDiscoveryPublicDnsNamespaceId')
 
     add_obj([
+        R_PublicDnsNamespace,
         O_PublicDnsNamespace])

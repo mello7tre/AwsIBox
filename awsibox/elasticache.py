@@ -6,6 +6,7 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
 from .route53 import R53_RecordSetCCH
 from .securitygroup import SG_SecurityGroupService
 
+
 class CCHCacheSubnetGroupPrivate(cch.SubnetGroup):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -44,11 +45,6 @@ def CCH_SubnetGroups(key):
 
     R_Public = CCHCacheSubnetGroupPublic('CacheSubnetGroupPublic')
 
-    add_obj([
-        R_Private,
-        R_Public,
-    ])
-
     # Outputs
     O_Private = Output('CacheSubnetGroupPrivate')
     O_Private.Value = Ref('CacheSubnetGroupPrivate')
@@ -59,5 +55,7 @@ def CCH_SubnetGroups(key):
     O_Public.Export = Export('CacheSubnetGroupPublic')
 
     add_obj([
+        R_Private,
+        R_Public,
         O_Private,
         O_Public])

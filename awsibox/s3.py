@@ -67,6 +67,7 @@ def S3BucketPolicyStatementBase(bucket):
         },
         'Sid': 'Base'
     })
+
     return statements
 
 
@@ -121,6 +122,7 @@ def S3BucketPolicyStatementAllowGetObject(bucket, principal, sid):
             'Sid': sid
         },
     )
+
     return statements
 
 
@@ -146,6 +148,7 @@ def S3BucketPolicyStatementSes(bucket):
             'Sid': 'AllowSES'
         },
     )
+
     return statements
 
 
@@ -311,8 +314,7 @@ def S3_Buckets(key):
             c_Versioning,
             c_Cors,
             c_Replica,
-            c_ReplicaPolicyStatement,
-        ])
+            c_ReplicaPolicyStatement])
 
         # resources
         BucketPolicyStatement = []
@@ -508,8 +510,7 @@ def S3_Buckets(key):
             r_Bucket,
             r_Policy,
             r_IAMPolicyReplica,
-            r_Role
-        ])
+            r_Role])
 
         # outputs
         outvaluebase = Sub(bucket_name)

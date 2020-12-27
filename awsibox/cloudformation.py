@@ -46,11 +46,9 @@ def CFM_CustomResourceReplicator(key):
 
     if 'LambdaCCRStackReplicator' in cfg.Resources:
         R_Replicator.DependsOn = 'IAMPolicyLambdaCCRStackReplicator'
-        R_Replicator.ServiceToken = GetAtt(
-            'LambdaCCRStackReplicator', 'Arn')
+        R_Replicator.ServiceToken = GetAtt('LambdaCCRStackReplicator', 'Arn')
     else:
-        R_Replicator.ServiceToken = get_expvalue(
-            'LambdaCCRStackReplicator')
+        R_Replicator.ServiceToken = get_expvalue('LambdaCCRStackReplicator')
 
     for p, v in cfg.Parameters.items():
         if not p.startswith('Env'):

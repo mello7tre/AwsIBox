@@ -142,17 +142,13 @@ def LB_ListenersEC2():
     R_SG = SecurityGroupLoadBalancer('SecurityGroupLoadBalancer')
     R_SG.SecurityGroupIngress = Securitygroup_Rules
 
-    add_obj([
-        R_SG,
-    ])
-
     # Outputs
     O_SG = Output('SecurityGroupLoadBalancer')
     O_SG.Value = Ref('SecurityGroupLoadBalancer')
 
     add_obj([
-        O_SG,
-    ])
+        R_SG,
+        O_SG])
 
     return Listeners
 
@@ -380,8 +376,7 @@ def LB_ElasticLoadBalancingClassicEC2():
         if n not in cfg.LoadBalancerClassic:
             continue
         r_LB = elb.LoadBalancer(f'LoadBalancerClassic{n}')
-        auto_get_props(r_LB,
-                       mapname=f'ElasticLoadBalancingLoadBalancer{n}')
+        auto_get_props(r_LB, mapname=f'ElasticLoadBalancingLoadBalancer{n}')
         r_LB.Listeners = Listeners
 
         add_obj(r_LB)
@@ -394,8 +389,7 @@ def LB_ElasticLoadBalancingApplicationEC2():
         if n not in cfg.LoadBalancerApplication:
             continue
         r_LB = elbv2.LoadBalancer(f'LoadBalancerApplication{n}')
-        auto_get_props(r_LB,
-                       mapname=f'ElasticLoadBalancingV2LoadBalancer{n}')
+        auto_get_props(r_LB, mapname=f'ElasticLoadBalancingV2LoadBalancer{n}')
         add_obj(r_LB)
 
     LB_ListenersV2EC2()
@@ -425,9 +419,9 @@ def LB_ElasticLoadBalancingALB(key):
         auto_get_props(r_ListenerHttp, mapname=f'ListenerV2ALBHttp{n}')
 
         if n == 'External':
+            # Https enabled only for External ELB
             r_ListenerHttps = elbv2.Listener(f'ListenerHttpsDefault{n}')
-            auto_get_props(r_ListenerHttps,
-                           mapname=f'ListenerV2ALBHttps{n}')
+            auto_get_props(r_ListenerHttps, mapname=f'ListenerV2ALBHttps{n}')
             add_obj(r_ListenerHttps)
 
         r_SG = SecurityGroup(f'SecurityGroupLoadBalancerApplication{n}')

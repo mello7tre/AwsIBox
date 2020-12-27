@@ -109,8 +109,7 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
     P_SecurityGroups.Default = SECURITY_GROUPS_DEFAULT
 
     add_obj([
-        P_SecurityGroups,
-    ])
+        P_SecurityGroups])
 
     SecurityGroups = []
 
@@ -172,8 +171,7 @@ def SG_SecurityGroupsEC2():
         'and between Instances')
 
     add_obj([
-        R_SGInstance,
-    ])
+        R_SGInstance])
 
     return SG_SecurityGroupsExtra(Out_String, Out_Map)
 
@@ -296,14 +294,14 @@ def SG_SecurityGroupRES(key):
         if n == 'BaseInstance':
             r_Base.SecurityGroupIngress = SG_SecurityGroupRulesBaseInstance()
 
-        add_obj(r_Base)
-
         # outputs
         o_Base = Output(outname)
         o_Base.Value = GetAtt(name, 'GroupId')
         o_Base.Export = Export(outname)
 
-        add_obj(o_Base)
+        add_obj([
+            r_Base,
+            o_Base])
 
 
 def SG_SecurityGroupService(name):

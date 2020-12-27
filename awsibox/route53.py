@@ -5,13 +5,7 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 
 
-class R53RecordSet(r53.RecordSetType):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        pass
-
-
-class R53RecordSetZoneExternal(R53RecordSet):
+class R53RecordSetZoneExternal(r53.RecordSetType):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.HostedZoneId = get_expvalue('HostedZoneIdEnv')
@@ -19,7 +13,7 @@ class R53RecordSetZoneExternal(R53RecordSet):
                         % cfg.HostedZoneNameRegionEnv)
 
 
-class R53RecordSetZoneInternal(R53RecordSet):
+class R53RecordSetZoneInternal(r53.RecordSetType):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.HostedZoneId = get_expvalue('HostedZoneIdPrivate')
@@ -27,7 +21,7 @@ class R53RecordSetZoneInternal(R53RecordSet):
                         % cfg.HostedZoneNamePrivate)
 
 
-class R53RecordSetLoadBalancer(R53RecordSet):
+class R53RecordSetLoadBalancer(r53.RecordSetType):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.AliasTarget = r53.AliasTarget(
@@ -66,7 +60,7 @@ class R53RecordSetECSLoadBalancerApplicationInternal(
     pass
 
 
-class R53RecordSetEFS(R53RecordSet):
+class R53RecordSetEFS(r53.RecordSetType):
     def __init__(self, title, efsname, **kwargs):
         super().__init__(title, **kwargs)
         condname = f'EFSFileSystem{efsname}'
@@ -80,7 +74,7 @@ class R53RecordSetEFS(R53RecordSet):
         self.TTL = '300'
 
 
-class R53RecordSetRDS(R53RecordSet):
+class R53RecordSetRDS(r53.RecordSetType):
     def __init__(self, title, rds_resname, **kwargs):
         super().__init__(title, **kwargs)
         self.Type = 'CNAME'
@@ -96,7 +90,7 @@ class R53RecordSetRDSInternal(R53RecordSetRDS, R53RecordSetZoneInternal):
     pass
 
 
-class R53RecordSetCCH(R53RecordSet):
+class R53RecordSetCCH(r53.RecordSetType):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.Condition = 'CacheEnabled'
@@ -188,7 +182,7 @@ class R53RecordSetCCHInternalRO(R53RecordSetCCHRO, R53RecordSetZoneInternal):
                         % cfg.HostedZoneNamePrivate)
 
 
-class R53RecordSetNSServiceDiscovery(R53RecordSet):
+class R53RecordSetNSServiceDiscovery(r53.RecordSetType):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.HostedZoneId = Ref('HostedZoneEnv')
@@ -232,13 +226,13 @@ def R53_RecordSetEC2LoadBalancer():
             R_External.AliasTarget.DNSName = Sub(
                 'dualstack.${LoadBalancerApplicationInternal.DNSName}')
 
-        add_obj(R_External)
-
         # outputs
         O_External = Output('RecordSetExternal')
         O_External.Value = Ref('RecordSetExternal')
 
-        add_obj(O_External)
+        add_obj([
+            R_External,
+            O_External])
 
     # RecordSet Internal
     if cfg.RecordSetInternal:
@@ -261,13 +255,13 @@ def R53_RecordSetEC2LoadBalancer():
             R_Internal.AliasTarget.DNSName = Sub(
                 'dualstack.${LoadBalancerApplicationExternal.DNSName}')
 
-        add_obj(R_Internal)
-
         # outputs
         O_Internal = Output('RecordSetInternal')
         O_Internal.Value = Ref('RecordSetInternal')
 
-        add_obj(O_Internal)
+        add_obj([
+            R_Internal,
+            O_Internal])
 
 
 def R53_RecordSetECSLoadBalancer():
@@ -280,13 +274,13 @@ def R53_RecordSetECSLoadBalancer():
             R_External = R53RecordSetECSLoadBalancerApplicationExternal(
                 'RecordSetExternal', scheme='Internal')
 
-        add_obj(R_External)
-
         # outputs
         O_External = Output('RecordSetExternal')
         O_External.Value = Ref('RecordSetExternal')
 
-        add_obj(O_External)
+        add_obj([
+            R_External,
+            O_External])
 
     if cfg.RecordSetInternal:
 
@@ -297,13 +291,13 @@ def R53_RecordSetECSLoadBalancer():
             R_Internal = R53RecordSetECSLoadBalancerApplicationInternal(
                 'RecordSetInternal', scheme='External')
 
-        add_obj(R_Internal)
-
         # outputs
         O_Internal = Output('RecordSetInternal')
         O_Internal.Value = Ref('RecordSetInternal')
 
-        add_obj(O_Internal)
+        add_obj([
+            R_Internal,
+            O_Internal])
 
 
 def R53_RecordSetRDS(rds_resname):
@@ -311,24 +305,24 @@ def R53_RecordSetRDS(rds_resname):
     if cfg.RecordSetExternal:
         R_External = R53RecordSetRDSExternal('RecordSetExternal',
                                              rds_resname)
-        add_obj(R_External)
-
         # outputs
         O_External = Output('RecordSetExternal')
         O_External.Value = Ref('RecordSetExternal')
 
-        add_obj(O_External)
+        add_obj([
+            R_External,
+            O_External])
 
     if cfg.RecordSetInternal:
         R_Internal = R53RecordSetRDSInternal('RecordSetInternal',
                                              rds_resname)
-        add_obj(R_Internal)
-
         # outputs
         O_Internal = Output('RecordSetInternal')
         O_Internal.Value = Ref('RecordSetInternal')
 
-        add_obj(O_Internal)
+        add_obj([
+            R_Internal,
+            O_Internal])
 
 
 def R53_RecordSetCCH():
@@ -336,10 +330,6 @@ def R53_RecordSetCCH():
     if cfg.RecordSetExternal:
         R_External = R53RecordSetCCHExternal('RecordSetExternal')
         R_ExternalRO = R53RecordSetCCHExternalRO('RecordSetExternalRO')
-        add_obj([
-            R_External,
-            R_ExternalRO,
-        ])
 
         # outputs
         O_External = Output('RecordSetExternal')
@@ -351,17 +341,14 @@ def R53_RecordSetCCH():
         O_ExternalRO.Condition = 'ReplicationGroup'
 
         add_obj([
+            R_External,
+            R_ExternalRO,
             O_External,
-            O_ExternalRO,
-        ])
+            O_ExternalRO])
 
     if cfg.RecordSetInternal:
         R_Internal = R53RecordSetCCHInternal('RecordSetInternal')
         R_InternalRO = R53RecordSetCCHInternalRO('RecordSetInternalRO')
-        add_obj([
-            R_Internal,
-            R_InternalRO,
-        ])
 
         # outputs
         O_Internal = Output('RecordSetInternal')
@@ -373,9 +360,10 @@ def R53_RecordSetCCH():
         O_InternalRO.Condition = 'ReplicationGroup'
 
         add_obj([
+            R_Internal,
+            R_InternalRO,
             O_Internal,
-            O_InternalRO,
-        ])
+            O_InternalRO])
 
 
 def R53_HostedZones(key):
@@ -399,8 +387,7 @@ def R53_HostedZones(key):
 
             add_obj([
                 p_HostedZone,
-                p_HostedZoneId,
-            ])
+                p_HostedZoneId])
 
             # conditions
             c_Enabled = get_condition(
@@ -414,8 +401,6 @@ def R53_HostedZones(key):
 
         if n.startswith('Public'):
             r_HostedZone.Condition = resname
-
-        add_obj(r_HostedZone)
 
         # outputs
         o_HostedZoneName = Output(output_zonename)
@@ -431,6 +416,7 @@ def R53_HostedZones(key):
         o_HostedZoneId.Export = Export(output_zoneidname)
 
         add_obj([
+            r_HostedZone,
             o_HostedZoneName,
             o_HostedZoneId])
 

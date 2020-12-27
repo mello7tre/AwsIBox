@@ -205,8 +205,7 @@ def LBD_Lambdas(key):
             add_obj([
                 c_VersionA,
                 c_VersionB,
-                c_Version,
-            ])
+                c_Version])
 
             # resources
             r_VersionA = LambdaVersion(versionnameA, name=resname)
@@ -214,11 +213,6 @@ def LBD_Lambdas(key):
 
             r_VersionB = LambdaVersion(versionnameB, name=resname)
             r_VersionB.Condition = versionnameB
-
-            add_obj([
-                r_VersionA,
-                r_VersionB,
-            ])
 
             # outputs
             o_Version = Output(versionname)
@@ -230,8 +224,9 @@ def LBD_Lambdas(key):
             o_Version.Condition = versionname
 
             add_obj([
-                o_Version,
-            ])
+                r_VersionA,
+                r_VersionB,
+                o_Version])
 
         # Automatically setup a lambda Role with base permissions.
         r_Role = IAMRoleLambdaBase(f'Role{resname}', key=v)
@@ -281,16 +276,14 @@ def LBD_LayerVersions(key):
             f'LambdaLayerPermission{n}')
         r_LayerPermission.LayerVersionArn = Ref(resname)
 
-        add_obj([
-            r_Layer,
-            r_LayerPermission,
-        ])
-
         # output
         o_Layer = Output(resname)
         o_Layer.Value = Ref(resname)
 
-        add_obj(o_Layer)
+        add_obj([
+            r_Layer,
+            r_LayerPermission,
+            o_Layer])
 
 
 def LBD_Permissions(key):

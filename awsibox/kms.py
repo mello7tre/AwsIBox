@@ -39,15 +39,12 @@ def KMS_Keys(key):
     R_AliasParameterStore = KMSAliasParameterStore(
         'KMSAliasParameterStore')
 
-    add_obj([
-        R_KeyParameterStore,
-        R_AliasParameterStore,
-    ])
-
     # Outputs
     O_ParameterStore = Output('KeyParameterStore')
     O_ParameterStore.Value = Sub('${KMSKeyParameterStore.Arn}')
     O_ParameterStore.Export = Export('KeyParameterStore')
 
     add_obj([
+        R_KeyParameterStore,
+        R_AliasParameterStore,
         O_ParameterStore])

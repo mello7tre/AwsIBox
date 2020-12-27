@@ -154,16 +154,13 @@ def AGW_UsagePlans(key):
         r_UsagePlan = agw.UsagePlan(resname)
         auto_get_props(r_UsagePlan)
 
-        add_obj([
-            r_UsagePlan,
-        ])
-
         # outputs
         o_UsagePlan = Output(resname)
         o_UsagePlan.Value = Ref(resname)
         o_UsagePlan.Export = Export(resname)
 
         add_obj([
+            r_UsagePlan,
             o_UsagePlan])
 
 
@@ -181,16 +178,11 @@ def AGW_ApiKeys(key):
 
         add_obj([
             p_Enabled,
-            p_UsagePlan,
-        ])
+            p_UsagePlan])
 
         # resources
         r_ApiKey = agw.ApiKey(resname)
         auto_get_props(r_ApiKey)
-
-        add_obj([
-            r_ApiKey,
-        ])
 
         if 'UsagePlan' in v:
             plankey_name = f'{resname}UsagePlan'
@@ -207,6 +199,10 @@ def AGW_ApiKeys(key):
         # outputs
         o_ApiKey = Output(resname)
         o_ApiKey.Value = Ref(resname)
+
+        add_obj([
+            r_ApiKey,
+            o_ApiKey])
 
 
 def AGW_Stages(key):
@@ -227,8 +223,7 @@ def AGW_Stages(key):
 
         add_obj([
             p_DeploymentDescription,
-            p_Deployment,
-        ])
+            p_Deployment])
 
         # conditons
         c_DeploymentA = get_condition(
@@ -239,8 +234,7 @@ def AGW_Stages(key):
 
         add_obj([
             c_DeploymentA,
-            c_DeploymentB,
-        ])
+            c_DeploymentB])
 
         # resources
         r_Stage = ApiGatewayStage(resname, name=n, key=v)
@@ -253,17 +247,15 @@ def AGW_Stages(key):
                                              name=n, key=v)
         r_DeploymentB.Condition = f'{depname}B'
 
-        add_obj([
-            r_Stage,
-            r_DeploymentA,
-            r_DeploymentB,
-        ])
-
         # output
         o_Deployment = Output(depname)
         o_Deployment.Value = Ref(depname)
 
-        add_obj(o_Deployment)
+        add_obj([
+            r_Stage,
+            r_DeploymentA,
+            r_DeploymentB,
+            o_Deployment])
 
 
 def AGW_RestApi(key):
@@ -294,8 +286,7 @@ def AGW_RestApi(key):
 
             add_obj([
                 r_Resource,
-                r_Method,
-            ])
+                r_Method])
 
     for n, v in cfg.Lambda.items():
         r_LambdaPermission = LambdaPermissionApiGateway(

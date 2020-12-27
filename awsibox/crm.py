@@ -15,10 +15,6 @@ def CRM_Certificate(key):
         auto_get_props(r_Certificate)
         r_Certificate.Tags = Tags(Name=n)
 
-        add_obj([
-            r_Certificate,
-        ])
-
         # outputs
         o_Certificate = Output(resname)
         o_Certificate.Value = Ref(resname)
@@ -27,6 +23,7 @@ def CRM_Certificate(key):
             o_Certificate.Condition = r_Certificate.Condition
 
         add_obj([
+            r_Certificate,
             o_Certificate])
 
 

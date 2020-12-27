@@ -228,9 +228,7 @@ class IAMRoleBucketReplica(iam.Role):
 def IAMPolicyInRole(name, key):
     Policy = iam.Policy('')
     Policy.PolicyName = name
-    Policy.PolicyDocument = {
-            'Version': '2012-10-17',
-            }
+    Policy.PolicyDocument = {'Version': '2012-10-17'}
     Statement = []
     for n, v in key['Statement'].items():
         Statement.append(IAMPolicyStatement(v))
@@ -287,8 +285,7 @@ def IAM_Users(key):
 
         add_obj([
             c_Enabled,
-            c_RoleAccount,
-        ])
+            c_RoleAccount])
 
         ManagedPolicyArns = []
         RoleGroups = []

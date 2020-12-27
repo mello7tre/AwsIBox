@@ -173,8 +173,7 @@ def VPC_VPC(key):
             R_NatGateway,
             R_RouteNatGateway,
             R_EIPNat,
-            O_EIPNat,
-        ])
+            O_EIPNat])
 
     R_RouteInternetGateway = EC2RouteInternetGateway(
         'RouteInternetGateway')
@@ -185,8 +184,7 @@ def VPC_VPC(key):
         R_RouteTablePublic,
         R_InternetGateway,
         R_VPCGatewayAttachment,
-        R_RouteInternetGateway,
-    ])
+        R_RouteInternetGateway])
 
     for i in range(cfg.AZones['MAX']):
         zone_name = cfg.AZoneNames[i]
@@ -207,8 +205,7 @@ def VPC_VPC(key):
 
         add_obj([
             p_SubnetCidrBlockPrivate,
-            p_SubnetCidrBlockPublic,
-        ])
+            p_SubnetCidrBlockPublic])
 
         # conditions
         c_Zone = {zone_cond: Equals(
@@ -247,8 +244,7 @@ def VPC_VPC(key):
             r_SubnetPrivate,
             r_SubnetPublic,
             r_SubnetRouteTableAssociationPrivate,
-            r_SubnetRouteTableAssociationPublic,
-        ])
+            r_SubnetRouteTableAssociationPublic])
 
         # outputs
         o_subnetprivate.append(If(

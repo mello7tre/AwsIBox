@@ -77,13 +77,11 @@ def EFS_FileStorage(key):
 
         r_SGServer = SecurityGroup(sgservername)
         r_SGServer.Condition = resname
-        r_SGServer.GroupDescription = (
-            f'Rule to access EFS FileSystem {n}')
+        r_SGServer.GroupDescription = f'Rule to access EFS FileSystem {n}'
 
         r_SGClient = SecurityGroup(sgclientname)
         r_SGClient.Condition = resname
-        r_SGClient.GroupDescription = (
-            f'Enable access to EFS FileSystem {n}')
+        r_SGClient.GroupDescription = f'Enable access to EFS FileSystem {n}'
 
         SGIExtra = {
             'Name': sginame,
@@ -97,18 +95,16 @@ def EFS_FileStorage(key):
         r_SGI = SecurityGroupIngress(sginame)
         auto_get_props(r_SGI, rootdict=SGIExtra)
 
+        # outputs
+
+        o_SGClient = Output(sgclientname)
+        o_SGClient.Condition = resname
+        o_SGClient.Value = GetAtt(sgclientname, 'GroupId')
+        o_SGClient.Export = Export(sgclientname)
+
         add_obj([
             r_File,
             r_SGServer,
             r_SGClient,
             r_SGI,
-        ])
-
-        # outputs
-
-        o_SG = Output(sgclientname)
-        o_SG.Condition = resname
-        o_SG.Value = GetAtt(sgclientname, 'GroupId')
-        o_SG.Export = Export(sgclientname)
-
-        add_obj(o_SG)
+            o_SGClient])

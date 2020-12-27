@@ -64,8 +64,7 @@ def CD_DeploymentGroup():
             Condition('Apps1'),
             get_condition('', 'equals', True, 'DeploymentGroup')
         )},
-        {'DeployRevision': Equals(Ref('UpdateMode'), 'CodeDeploy')},
-    ])
+        {'DeployRevision': Equals(Ref('UpdateMode'), 'CodeDeploy')}])
 
     # Resources
     # FOR SINGLEAPP CODEDEPLOY

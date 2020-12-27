@@ -16,4 +16,5 @@ def CW_Alarms(key):
         auto_get_props(r_Alarm)
         if hasattr(r_Alarm, 'Metrics'):
             r_Alarm.Period = Ref('AWS::NoValue')
+
         add_obj(r_Alarm)

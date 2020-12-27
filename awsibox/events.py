@@ -41,14 +41,12 @@ def EVE_EventRules(key):
             p_ScheduleExpression = Parameter(
                 f'{resname}ScheduleExpression')
             p_ScheduleExpression.Description = (
-                'Events Rule Schedule - '
-                'empty for default based on env/role')
+                'Events Rule Schedule - empty for default based on env/role')
 
             add_obj(p_ScheduleExpression)
 
         add_obj([
-            p_State,
-        ])
+            p_State])
 
         # resources
         Targets = []
@@ -89,8 +87,6 @@ def EVE_EventRules(key):
         r_Rule.Name = Sub('${AWS::StackName}-${EnvRole}-' f'Rule{n}')
         r_Rule.Targets = Targets
 
-        add_obj(r_Rule)
-
         # outputs
         o_State = Output(f'{resname}State')
         o_State.Value = get_endvalue(f'{resname}State')
@@ -104,4 +100,5 @@ def EVE_EventRules(key):
             add_obj(o_ScheduleExpression)
 
         add_obj([
+            r_Rule,
             o_State])

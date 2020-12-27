@@ -24,7 +24,6 @@ except ImportError:
     pass
 
 
-# S - AUTOSCALING #
 class ASLaunchTemplateData(ec2.LaunchTemplateData):
     def __init__(self, title, UserDataApp, **kwargs):
         super().__init__(title, **kwargs)
@@ -54,15 +53,12 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
             'rm /var/lib/cloud/instance/sem/config_scripts_user\n',
         ]))
 
-# E - AUTOSCALING #
-
 
 # ############################################
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################
 
 
-# S - AUTOSCALING #
 class ASInitConfigSets(cfm.InitConfigSets):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -73,8 +69,7 @@ class ASInitConfigSets(cfm.InitConfigSets):
         else:
             CODEDEPLOY = Ref('AWS::NoValue')
 
-        CWAGENT = If(
-            'CloudWatchAgent', 'CWAGENT', Ref('AWS::NoValue'))
+        CWAGENT = If('CloudWatchAgent', 'CWAGENT', Ref('AWS::NoValue'))
 
         if cfg.LoadBalancerClassic or cfg.LoadBalancerApplication:
             ELBWAITER = 'ELBWAITER'
@@ -487,321 +482,306 @@ class ASInitConfigELBApplicationInternal(cfm.InitConfig):
         }
 
 
-# E - AUTOSCALING #
-
 # ##########################################
 # ### END STACK META CLASSES AND METHODS ###
 # ##########################################
 
-class AS_ScheduledActionsEC2(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
+def AS_ScheduledActionsEC2(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
 
-            # trick - obj mapped props have same name/key of the one used for
-            # code, so i create a subpro named IBOXCODE and used that as
-            # rootdict
-            try:
-                rootdict = cfg.ScheduledAction[n]['IBOXCODE']
-            except Exception:
-                kwargs = {}
-            else:
-                kwargs = {'rootdict': rootdict}
+        # trick - obj mapped props have same name/key of the one used for
+        # code, so i create a subpro named IBOXCODE and used that as
+        # rootdict
+        try:
+            rootdict = cfg.ScheduledAction[n]['IBOXCODE']
+        except Exception:
+            kwargs = {}
+        else:
+            kwargs = {'rootdict': rootdict}
 
-            r_ScheduledActions = asg.ScheduledAction(resname)
-            auto_get_props(r_ScheduledActions, **kwargs)
-            add_obj(r_ScheduledActions)
-
-
-class AS_ScalingPolicies(object):
-    def __init__(self, key):
-        Out_String = []
-        Out_Map = {}
-        for n, v in getattr(cfg, key).items():
-            if not v['IBOXENABLED']:
-                continue
-
-            resname = f'{key}{n}'
-
-            # resources
-            if key == 'AutoScalingScalingPolicy':
-                r_Policy = asg.ScalingPolicy(resname)
-            else:
-                r_Policy = aas.ScalingPolicy(resname)
-
-            auto_get_props(r_Policy)
-            add_obj(r_Policy)
-
-            # for tracking create output
-            if v['PolicyType'] == 'TargetTrackingScaling':
-                # Autoscaling
-                if 'TargetTrackingConfiguration' in v:
-                    TargetTrackingConfigurationName = (
-                        'TargetTrackingConfiguration')
-                # Application Autoscaling
-                elif 'TargetTrackingScalingPolicyConfiguration' in v:
-                    TargetTrackingConfigurationName = (
-                        'TargetTrackingScalingPolicyConfiguration')
-
-                basename = f'{resname}{TargetTrackingConfigurationName}'
-
-                # outputs
-                if v['Type'] == 'Cpu' or (
-                        v['Type'] == 'Custom' and
-                        v[TargetTrackingConfigurationName]
-                        ['CustomizedMetricSpecification']
-                        ['MetricName'] == 'CPUUtilization'):
-                    # Use Cpu Metric
-                    Out_String.append('Cpu${Statistic}:${Cpu}')
-
-                    if v['Type'] == 'Custom':
-                        statistic = get_endvalue(
-                            f'{basename}'
-                            'CustomizedMetricSpecificationStatistic')
-                    else:
-                        statistic = ''
-
-                    Out_Map.update({
-                        'Statistic': statistic,
-                        'Cpu': get_endvalue(f'{basename}TargetValue'),
-                    })
-
-        if Out_String:
-            # Outputs
-            O_Policy = Output(key)
-            O_Policy.Value = Sub(','.join(Out_String), **Out_Map)
-
-            add_obj(O_Policy)
+        r_ScheduledActions = asg.ScheduledAction(resname)
+        auto_get_props(r_ScheduledActions, **kwargs)
+        add_obj(r_ScheduledActions)
 
 
-class AS_LaunchTemplate(object):
-    def __init__(self):
-        InitConfigSets = ASInitConfigSets()
+def AS_ScalingPolicies(key):
+    Out_String = []
+    Out_Map = {}
+    for n, v in getattr(cfg, key).items():
+        if not v['IBOXENABLED']:
+            continue
 
-        CfmInitArgs = {}
-        IBoxEnvApp = []
-        Tags = []
-        UserDataApp = []
+        resname = f'{key}{n}'
 
-        for n in cfg.Apps:
-            name = f'Apps{n}'              # Ex. Apps1
-            envname = f'EnvApp{n}Version'  # Ex EnvApp1Version
-            reponame = f'{name}RepoName'   # Ex Apps1RepoName
+        # resources
+        if key == 'AutoScalingScalingPolicy':
+            r_Policy = asg.ScalingPolicy(resname)
+        else:
+            r_Policy = aas.ScalingPolicy(resname)
 
-            UserDataApp.extend(['#${%s}\n' % envname])
+        auto_get_props(r_Policy)
+        add_obj(r_Policy)
 
-            p_EnvAppVersion = Parameter(envname)
-            p_EnvAppVersion.Description = f'Application {n} version'
-            p_EnvAppVersion.AllowedPattern = '^[a-zA-Z0-9-_.]*$'
+        # for tracking create output
+        if v['PolicyType'] == 'TargetTrackingScaling':
+            # Autoscaling
+            if 'TargetTrackingConfiguration' in v:
+                TargetTrackingConfigurationName = (
+                    'TargetTrackingConfiguration')
+            # Application Autoscaling
+            elif 'TargetTrackingScalingPolicyConfiguration' in v:
+                TargetTrackingConfigurationName = (
+                    'TargetTrackingScalingPolicyConfiguration')
 
-            p_AppsRepoName = Parameter(reponame)
-            p_AppsRepoName.Description = (
-                f'App {n} Repo Name - empty for default based on env/role')
-            p_AppsRepoName.AllowedPattern = '^[a-zA-Z0-9-_.]*$'
-
-            # parameters
-            add_obj([
-                p_EnvAppVersion,
-                p_AppsRepoName,
-            ])
-
-            # conditions
-            add_obj({
-                name: And(
-                    Not(Equals(Ref(envname), '')),
-                    Not(get_condition('', 'equals', 'None', reponame))
-                )
-            })
-
-            InitConfigApps = ASInitConfigApps(name)
-            CfmInitArgs[name] = InitConfigApps
-
-            InitConfigAppsBuilAmi = ASInitConfigAppsBuildAmi(name)
-            # AUTOSPOT - Let cfn-init always prepare instances on boot
-            # CfmInitArgs[name + 'BuildAmi'] = InitConfigAppsBuilAmi
-            CfmInitArgs[name] = InitConfigAppsBuilAmi
-
-            IBoxEnvApp.extend([
-                f'export EnvApp{n}Version=', Ref(envname), "\n",
-                f'export EnvRepo{n}Name=', get_endvalue(reponame), "\n",
-            ])
-
-            InitConfigSetsApp = If(name, name, Ref('AWS::NoValue'))
-            InitConfigSetsAppBuilAmi = If(
-                name, f'{name}BuildAmi', Ref('AWS::NoValue'))
-            IndexSERVICES = InitConfigSets.data['default'].index('SERVICES')
-            InitConfigSets.data['default'].insert(
-                IndexSERVICES, InitConfigSetsApp)
-            # AUTOSPOT - Let cfn-init always prepare instances on boot
-            # InitConfigSets.data['buildamifull'].append(
-            #    InitConfigSetsAppBuilAmi)
-            InitConfigSets.data['buildamifull'].append(InitConfigSetsApp)
-
-            Tags.append(asg.Tag(envname, Ref(envname), True))
-
-            # resources
-            # FOR MULTIAPP CODEDEPLOY
-            if len(cfg.Apps) > 1:
-                r_DeploymentGroup = CDDeploymentGroup(f'DeploymentGroup{name}')
-                r_DeploymentGroup.setup(index=n)
-
-                add_obj(r_DeploymentGroup)
+            basename = f'{resname}{TargetTrackingConfigurationName}'
 
             # outputs
-            Output_app = Output(envname)
-            Output_app.Value = Ref(envname)
-            add_obj(Output_app)
+            if v['Type'] == 'Cpu' or (
+                    v['Type'] == 'Custom' and
+                    v[TargetTrackingConfigurationName]
+                    ['CustomizedMetricSpecification']
+                    ['MetricName'] == 'CPUUtilization'):
+                # Use Cpu Metric
+                Out_String.append('Cpu${Statistic}:${Cpu}')
 
-            Output_repo = Output(reponame)
-            Output_repo.Value = get_endvalue(reponame)
-            add_obj(Output_repo)
+                if v['Type'] == 'Custom':
+                    statistic = get_endvalue(
+                        f'{basename}'
+                        'CustomizedMetricSpecificationStatistic')
+                else:
+                    statistic = ''
 
-        InitConfigSetup = ASInitConfigSetup()
-        InitConfigSetup.ibox_env_app = IBoxEnvApp
-        InitConfigSetup.setup()
+                Out_Map.update({
+                    'Statistic': statistic,
+                    'Cpu': get_endvalue(f'{basename}TargetValue'),
+                })
 
-        InitConfigCodeDeploy = ASInitConfigCodeDeploy()
+    if Out_String:
+        # Outputs
+        O_Policy = Output(key)
+        O_Policy.Value = Sub(','.join(Out_String), **Out_Map)
 
-        CfmInitArgs['SETUP'] = InitConfigSetup
-        CfmInitArgs['CWAGENT'] = ASInitConfigCloudWatchAgent('')
+        add_obj(O_Policy)
 
-        if cfg.Apps:
-            CfmInitArgs['CODEDEPLOY'] = InitConfigCodeDeploy
-            CD_DeploymentGroup()
 
-        # LoadBalancerClassic External
-        if cfg.LoadBalancerClassicExternal:
-            InitConfigELBExternal = ASInitConfigELBClassicExternal()
-            CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
+def AS_LaunchTemplate():
+    InitConfigSets = ASInitConfigSets()
 
-        # LoadBalancerClassic Internal
-        if cfg.LoadBalancerClassicInternal:
-            InitConfigELBInternal = ASInitConfigELBClassicInternal()
-            CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
+    CfmInitArgs = {}
+    IBoxEnvApp = []
+    Tags = []
+    UserDataApp = []
 
-        # LoadBalancerApplication External
-        if cfg.LoadBalancerApplicationExternal:
-            InitConfigELBExternal = ASInitConfigELBApplicationExternal()
-            CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
+    for n in cfg.Apps:
+        name = f'Apps{n}'              # Ex. Apps1
+        envname = f'EnvApp{n}Version'  # Ex EnvApp1Version
+        reponame = f'{name}RepoName'   # Ex Apps1RepoName
 
-        # LoadBalancerApplication Internal
-            InitConfigELBInternal = ASInitConfigELBApplicationInternal()
-            CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
+        UserDataApp.extend(['#${%s}\n' % envname])
 
-        SecurityGroups = SG_SecurityGroupsEC2()
+        p_EnvAppVersion = Parameter(envname)
+        p_EnvAppVersion.Description = f'Application {n} version'
+        p_EnvAppVersion.AllowedPattern = '^[a-zA-Z0-9-_.]*$'
 
-        # Resources
-        R_LaunchTemplate = ec2.LaunchTemplate(
-            'LaunchTemplate',
-            LaunchTemplateName=Sub('${AWS::StackName}-${EnvRole}'),
-            LaunchTemplateData=ASLaunchTemplateData('LaunchTemplateData',
-                                                    UserDataApp=UserDataApp))
-        R_LaunchTemplate.LaunchTemplateData.NetworkInterfaces[0].Groups.extend(
-            SecurityGroups)
+        p_AppsRepoName = Parameter(reponame)
+        p_AppsRepoName.Description = (
+            f'App {n} Repo Name - empty for default based on env/role')
+        p_AppsRepoName.AllowedPattern = '^[a-zA-Z0-9-_.]*$'
 
-        R_InstanceProfile = IAMInstanceProfile('InstanceProfile')
-
-        # Import role specific cfn definition
-        cfn_envrole = f'cfn_{cfg.func_envrole}'
-        if cfn_envrole in globals():  # Ex cfn_client_portal
-            CfnRole = globals()[cfn_envrole]()
-            CfmInitArgs.update(CfnRole)
-
-        R_LaunchTemplate.Metadata = cfm.Metadata(
-            {
-                'CloudFormationInitVersion': If(
-                    'CloudFormationInit',
-                    Ref('EnvStackVersion'),
-                    Ref('AWS::NoValue'),
-                )
-            },
-            cfm.Init(
-                InitConfigSets,
-                **CfmInitArgs
-            ),
-            cfm.Authentication({
-                'CfnS3Auth': cfm.AuthenticationBlock(
-                    type='S3',
-                    buckets=[
-                        Sub(cfg.BucketAppRepository),
-                        Sub(cfg.BucketAppData)
-                    ],
-                    roleName=Ref('RoleInstance')
-                )
-            })
-        )
-
+        # parameters
         add_obj([
-            R_LaunchTemplate,
-            R_InstanceProfile,
+            p_EnvAppVersion,
+            p_AppsRepoName,
         ])
 
-        self.Tags = Tags
+        # conditions
+        add_obj({
+            name: And(
+                Not(Equals(Ref(envname), '')),
+                Not(get_condition('', 'equals', 'None', reponame)))})
+
+        InitConfigApps = ASInitConfigApps(name)
+        CfmInitArgs[name] = InitConfigApps
+
+        InitConfigAppsBuilAmi = ASInitConfigAppsBuildAmi(name)
+        # AUTOSPOT - Let cfn-init always prepare instances on boot
+        # CfmInitArgs[name + 'BuildAmi'] = InitConfigAppsBuilAmi
+        CfmInitArgs[name] = InitConfigAppsBuilAmi
+
+        IBoxEnvApp.extend([
+            f'export EnvApp{n}Version=', Ref(envname), "\n",
+            f'export EnvRepo{n}Name=', get_endvalue(reponame), "\n"])
+
+        InitConfigSetsApp = If(name, name, Ref('AWS::NoValue'))
+        InitConfigSetsAppBuilAmi = If(
+            name, f'{name}BuildAmi', Ref('AWS::NoValue'))
+        IndexSERVICES = InitConfigSets.data['default'].index('SERVICES')
+        InitConfigSets.data['default'].insert(
+            IndexSERVICES, InitConfigSetsApp)
+        # AUTOSPOT - Let cfn-init always prepare instances on boot
+        # InitConfigSets.data['buildamifull'].append(
+        #    InitConfigSetsAppBuilAmi)
+        InitConfigSets.data['buildamifull'].append(InitConfigSetsApp)
+
+        Tags.append(asg.Tag(envname, Ref(envname), True))
+
+        # resources
+        # FOR MULTIAPP CODEDEPLOY
+        if len(cfg.Apps) > 1:
+            r_DeploymentGroup = CDDeploymentGroup(f'DeploymentGroup{name}')
+            r_DeploymentGroup.setup(index=n)
+
+            add_obj(r_DeploymentGroup)
+
+        # outputs
+        Output_app = Output(envname)
+        Output_app.Value = Ref(envname)
+        add_obj(Output_app)
+
+        Output_repo = Output(reponame)
+        Output_repo.Value = get_endvalue(reponame)
+        add_obj(Output_repo)
+
+    InitConfigSetup = ASInitConfigSetup()
+    InitConfigSetup.ibox_env_app = IBoxEnvApp
+    InitConfigSetup.setup()
+
+    InitConfigCodeDeploy = ASInitConfigCodeDeploy()
+
+    CfmInitArgs['SETUP'] = InitConfigSetup
+    CfmInitArgs['CWAGENT'] = ASInitConfigCloudWatchAgent('')
+
+    if cfg.Apps:
+        CfmInitArgs['CODEDEPLOY'] = InitConfigCodeDeploy
+        CD_DeploymentGroup()
+
+    # LoadBalancerClassic External
+    if cfg.LoadBalancerClassicExternal:
+        InitConfigELBExternal = ASInitConfigELBClassicExternal()
+        CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
+
+    # LoadBalancerClassic Internal
+    if cfg.LoadBalancerClassicInternal:
+        InitConfigELBInternal = ASInitConfigELBClassicInternal()
+        CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
+
+    # LoadBalancerApplication External
+    if cfg.LoadBalancerApplicationExternal:
+        InitConfigELBExternal = ASInitConfigELBApplicationExternal()
+        CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
+
+    # LoadBalancerApplication Internal
+        InitConfigELBInternal = ASInitConfigELBApplicationInternal()
+        CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
+
+    SecurityGroups = SG_SecurityGroupsEC2()
+
+    # Resources
+    R_LaunchTemplate = ec2.LaunchTemplate(
+        'LaunchTemplate',
+        LaunchTemplateName=Sub('${AWS::StackName}-${EnvRole}'),
+        LaunchTemplateData=ASLaunchTemplateData('LaunchTemplateData',
+                                                UserDataApp=UserDataApp))
+    R_LaunchTemplate.LaunchTemplateData.NetworkInterfaces[0].Groups.extend(
+        SecurityGroups)
+
+    R_InstanceProfile = IAMInstanceProfile('InstanceProfile')
+
+    # Import role specific cfn definition
+    cfn_envrole = f'cfn_{cfg.func_envrole}'
+    if cfn_envrole in globals():  # Ex cfn_client_portal
+        CfnRole = globals()[cfn_envrole]()
+        CfmInitArgs.update(CfnRole)
+
+    R_LaunchTemplate.Metadata = cfm.Metadata(
+        {
+            'CloudFormationInitVersion': If(
+                'CloudFormationInit',
+                Ref('EnvStackVersion'),
+                Ref('AWS::NoValue'),
+            )
+        },
+        cfm.Init(
+            InitConfigSets,
+            **CfmInitArgs
+        ),
+        cfm.Authentication({
+            'CfnS3Auth': cfm.AuthenticationBlock(
+                type='S3',
+                buckets=[
+                    Sub(cfg.BucketAppRepository),
+                    Sub(cfg.BucketAppData)
+                ],
+                roleName=Ref('RoleInstance')
+            )
+        })
+    )
+
+    add_obj([
+        R_LaunchTemplate,
+        R_InstanceProfile])
+
+    return Tags
 
 
-class AS_Autoscaling(object):
-    def __init__(self, key):
-        LoadBalancers = []
-        for n in cfg.LoadBalancerClassic:
-            LoadBalancers.append(Ref(f'LoadBalancerClassic{n}'))
+def AS_Autoscaling(key):
+    LoadBalancers = []
+    for n in cfg.LoadBalancerClassic:
+        LoadBalancers.append(Ref(f'LoadBalancerClassic{n}'))
 
-        TargetGroups = []
-        for n in cfg.LoadBalancerApplication:
-            TargetGroups.append(Ref(f'TargetGroup{n}'))
+    TargetGroups = []
+    for n in cfg.LoadBalancerApplication:
+        TargetGroups.append(Ref(f'TargetGroup{n}'))
 
-        # Resources
-        AS_ScheduledActionsEC2('ScheduledAction')
+    # Resources
+    AS_ScheduledActionsEC2('ScheduledAction')
 
-        LaunchTemplate = AS_LaunchTemplate()
+    LaunchTemplateTags = AS_LaunchTemplate()
 
-        R_ASG = asg.AutoScalingGroup('AutoScalingGroup')
-        auto_get_props(R_ASG, f'{key}Base')
+    R_ASG = asg.AutoScalingGroup('AutoScalingGroup')
+    auto_get_props(R_ASG, f'{key}Base')
 
-        R_ASG.LoadBalancerNames = LoadBalancers
-        R_ASG.TargetGroupARNs = TargetGroups
-        R_ASG.Tags.extend(LaunchTemplate.Tags)
+    R_ASG.LoadBalancerNames = LoadBalancers
+    R_ASG.TargetGroupARNs = TargetGroups
+    R_ASG.Tags.extend(LaunchTemplateTags)
+
+    add_obj([
+        R_ASG])
+
+
+def AS_ScalableTargetECS(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+
+        # resources
+        # trick - use fixed name ScalableTarget to avoid changin too much
+        # code for now
+        r_ScalableTarget = aas.ScalableTarget('ScalableTarget')
+        auto_get_props(r_ScalableTarget, f'{key}Service')
+
+        ScheduledActions = []
+        for m, w in cfg.ScheduledAction.items():
+            sc_name = f'ScheduledAction{m}'
+            r_ScheduledAction = aas.ScheduledAction(sc_name)
+            auto_get_props(r_ScheduledAction)
+            ScheduledActions.append(If(
+                f'{sc_name}Disable',
+                Ref('AWS::NoValue'),
+                r_ScheduledAction))
+        r_ScalableTarget.ScheduledActions = ScheduledActions
 
         add_obj([
-            R_ASG,
-        ])
+            r_ScalableTarget])
 
 
-class AS_ScalableTargetECS(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
+def AS_LifecycleHook(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
 
-            # resources
-            # trick - use fixed name ScalableTarget to avoid changin too much
-            # code for now
-            r_ScalableTarget = aas.ScalableTarget('ScalableTarget')
-            auto_get_props(r_ScalableTarget, f'{key}Service')
+        # resources
+        r_Hook = asg.LifecycleHook(resname)
+        auto_get_props(r_Hook)
 
-            ScheduledActions = []
-            for m, w in cfg.ScheduledAction.items():
-                sc_name = f'ScheduledAction{m}'
-                r_ScheduledAction = aas.ScheduledAction(sc_name)
-                auto_get_props(r_ScheduledAction)
-                ScheduledActions.append(If(
-                    f'{sc_name}Disable',
-                    Ref('AWS::NoValue'),
-                    r_ScheduledAction))
-            r_ScalableTarget.ScheduledActions = ScheduledActions
-
-            add_obj([
-                r_ScalableTarget
-            ])
-
-
-class AS_LifecycleHook(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            resname = f'{key}{n}'
-
-            # resources
-            r_Hook = asg.LifecycleHook(resname)
-            auto_get_props(r_Hook)
-
-            add_obj([
-                r_Hook,
-            ])
+        add_obj([
+            r_Hook])
