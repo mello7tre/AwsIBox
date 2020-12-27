@@ -21,45 +21,6 @@ class R53RecordSetZoneInternal(r53.RecordSetType):
                         % cfg.HostedZoneNamePrivate)
 
 
-class R53RecordSetLoadBalancer(r53.RecordSetType):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.AliasTarget = r53.AliasTarget(
-            HostedZoneId=get_endvalue('HostedZoneIdLB')
-        )
-        self.Type = 'A'
-
-
-class R53RecordSetEC2LoadBalancerExternal(
-        R53RecordSetLoadBalancer, R53RecordSetZoneExternal):
-    pass
-
-
-class R53RecordSetEC2LoadBalancerInternal(
-        R53RecordSetLoadBalancer, R53RecordSetZoneInternal):
-    pass
-
-
-class R53RecordSetECSLoadBalancer(R53RecordSetLoadBalancer):
-    def __init__(self, title, scheme, **kwargs):
-        super().__init__(title, **kwargs)
-        self.AliasTarget.DNSName = get_subvalue(
-            'dualstack.${1E}',
-            f'LoadBalancerApplication{scheme}DNS',
-            'LoadBalancerApplicationStack'
-        )
-
-
-class R53RecordSetECSLoadBalancerApplicationExternal(
-        R53RecordSetECSLoadBalancer, R53RecordSetZoneExternal):
-    pass
-
-
-class R53RecordSetECSLoadBalancerApplicationInternal(
-        R53RecordSetECSLoadBalancer, R53RecordSetZoneInternal):
-    pass
-
-
 class R53RecordSetEFS(r53.RecordSetType):
     def __init__(self, title, efsname, **kwargs):
         super().__init__(title, **kwargs)
@@ -99,8 +60,8 @@ def R53_RecordSetEC2LoadBalancer():
     # Resources
     # RecordSet External
     if cfg.RecordSetExternal:
-        R_External = R53RecordSetEC2LoadBalancerExternal(
-            'RecordSetExternal')
+        R_External = r53.RecordSetType('RecordSetExternal')
+        auto_get_props(R_External, 'R53RecordSetEC2LoadBalancerExternal')
 
         # LoadBalancerClassic
         if cfg.LoadBalancerClassicExternal:
@@ -128,8 +89,8 @@ def R53_RecordSetEC2LoadBalancer():
 
     # RecordSet Internal
     if cfg.RecordSetInternal:
-        R_Internal = R53RecordSetEC2LoadBalancerInternal(
-            'RecordSetInternal')
+        R_Internal = r53.RecordSetType('RecordSetInternal')
+        auto_get_props(R_Internal, 'R53RecordSetEC2LoadBalancerInternal')
 
         # LoadBalancerClassic
         if cfg.LoadBalancerClassicInternal:
@@ -159,12 +120,16 @@ def R53_RecordSetEC2LoadBalancer():
 def R53_RecordSetECSLoadBalancer():
     # Resources
     if cfg.RecordSetExternal:
+        R_External = r53.RecordSetType('RecordSetExternal')
+
         if cfg.LoadBalancerApplicationExternal:
-            R_External = R53RecordSetECSLoadBalancerApplicationExternal(
-                'RecordSetExternal', scheme='External')
+            auto_get_props(
+                R_External,
+                'R53RecordSetECSLoadBalancerTargetExternalExternal')
         else:
-            R_External = R53RecordSetECSLoadBalancerApplicationExternal(
-                'RecordSetExternal', scheme='Internal')
+            auto_get_props(
+                R_External,
+                'R53RecordSetECSLoadBalancerTargetInternalExternal')
 
         # outputs
         O_External = Output('RecordSetExternal')
@@ -175,13 +140,16 @@ def R53_RecordSetECSLoadBalancer():
             O_External])
 
     if cfg.RecordSetInternal:
+        R_Internal = r53.RecordSetType('RecordSetInternal')
 
         if cfg.LoadBalancerApplicationInternal:
-            R_Internal = R53RecordSetECSLoadBalancerApplicationInternal(
-                'RecordSetInternal', scheme='Internal')
+            auto_get_props(
+                R_Internal,
+                'R53RecordSetECSLoadBalancerTargetInternalInternal')
         else:
-            R_Internal = R53RecordSetECSLoadBalancerApplicationInternal(
-                'RecordSetInternal', scheme='External')
+            auto_get_props(
+                R_Internal,
+                'R53RecordSetECSLoadBalancerTargetExternalInternal')
 
         # outputs
         O_Internal = Output('RecordSetInternal')

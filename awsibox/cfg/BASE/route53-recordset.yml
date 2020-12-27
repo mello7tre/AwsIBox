@@ -1,10 +1,30 @@
+Base: &base
+  IBOXENABLED: False
+
 ZoneExternal: &zoneexternal
+  <<: *base
   HostedZoneId: get_expvalue('HostedZoneIdEnv')
   Name: Sub('${AWS::StackName}.${EnvRole}.%s' % cfg.HostedZoneNameRegionEnv)
 
 ZoneInternal: &zoneinternal
+  <<: *base
   HostedZoneId: get_expvalue('HostedZoneIdPrivate')
   Name: Sub('${AWS::StackName}.${EnvRole}.%s' % cfg.HostedZoneNamePrivate)
+
+LoadBalancer: &loadbalancer
+  AliasTarget: &loadbalanceraliastarget
+    HostedZoneId: get_endvalue('HostedZoneIdLB')
+  Type: A
+
+ECSLoadBalancerTargetExternal: &ecsloadbalancertargetexternal
+  AliasTarget:
+    <<: *loadbalanceraliastarget
+    DNSName: get_subvalue('dualstack.${1E}', f'LoadBalancerApplicationExternalDNS', 'LoadBalancerApplicationStack')
+
+ECSLoadBalancerTargetInternal: &ecsloadbalancertargetinternal
+  AliasTarget:
+    <<: *loadbalanceraliastarget
+    DNSName: get_subvalue('dualstack.${1E}', f'LoadBalancerApplicationInternalDNS', 'LoadBalancerApplicationStack')
 
 CloudFront: &cloudfront
   <<: *zoneexternal
@@ -55,26 +75,31 @@ CCHReadOnly: &cchreadonly
 
 global:
   R53RecordSet:
+    - EC2LoadBalancerExternal:
+        <<: [*zoneexternal, *loadbalancer]
+    - EC2LoadBalancerInternal:
+        <<: [*zoneinternal, *loadbalancer]
+    - ECSLoadBalancerTargetExternalExternal:
+        <<: [*zoneexternal, *ecsloadbalancertargetexternal, *loadbalancer]
+    - ECSLoadBalancerTargetInternalExternal:
+        <<: [*zoneexternal, *ecsloadbalancertargetinternal, *loadbalancer]
+    - ECSLoadBalancerTargetInternalInternal:
+        <<: [*zoneinternal, *ecsloadbalancertargetinternal, *loadbalancer]
+    - ECSLoadBalancerTargetExternalInternal:
+        <<: [*zoneinternal, *ecsloadbalancertargetexternal, *loadbalancer]
     - CloudFront:
         <<: *cloudfront
-        IBOXENABLED: False
     - RDSExternal:
         <<: [*zoneexternal, *rds]
-        IBOXENABLED: False
     - RDSInternal:
         <<: [*zoneinternal, *rds]
-        IBOXENABLED: False
     - CCHExternal:
         <<: [*zoneexternal, *cch]
-        IBOXENABLED: False
     - CCHInternal:
         <<: [*zoneinternal, *cch]
-        IBOXENABLED: False
     - CCHReadOnlyExternal:
         <<: [*zoneexternal, *cchreadonly]
-        IBOXENABLED: False
         Name: Sub('${AWS::StackName}.${EnvRole}_ro.%s' % cfg.HostedZoneNameRegionEnv)
     - CCHReadOnlyInternal:
         <<: [*zoneinternal, *cchreadonly]
-        IBOXENABLED: False
         Name: Sub('${AWS::StackName}.${EnvRole}_ro.%s' % cfg.HostedZoneNamePrivate)
