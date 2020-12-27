@@ -1,7 +1,7 @@
 Base: &base
   IBOXENABLED: False
   Cluster: get_expvalue('Cluster', 'ClusterStack')
-  HealthCheckGracePeriodSeconds: 0
+  HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancerApplication else Ref('AWS::NoValue')")
   PlatformVersion: If('LaunchTypeFarGate', 'LATEST', Ref('AWS::NoValue'))
   TaskDefinition: Ref('TaskDefinition')
 
