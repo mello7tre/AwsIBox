@@ -74,114 +74,6 @@ class R53RecordSetEFS(r53.RecordSetType):
         self.TTL = '300'
 
 
-class R53RecordSetRDS(r53.RecordSetType):
-    def __init__(self, title, rds_resname, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Type = 'CNAME'
-        self.ResourceRecords = [GetAtt(rds_resname, 'Endpoint.Address')]
-        self.TTL = '300'
-
-
-class R53RecordSetRDSExternal(R53RecordSetRDS, R53RecordSetZoneExternal):
-    pass
-
-
-class R53RecordSetRDSInternal(R53RecordSetRDS, R53RecordSetZoneInternal):
-    pass
-
-
-class R53RecordSetCCH(r53.RecordSetType):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Condition = 'CacheEnabled'
-        self.Type = 'CNAME'
-        self.ResourceRecords = If(
-                'EngineMemCached',
-                [GetAtt(
-                    'ElastiCacheCacheCluster',
-                    'ConfigurationEndpoint.Address')],
-                If(
-                    'ReplicationGroup',
-                    [GetAtt(
-                        'ElastiCacheReplicationGroup',
-                        'PrimaryEndPoint.Address')],
-                    [GetAtt(
-                        'ElastiCacheCacheCluster',
-                        'RedisEndpoint.Address')],
-                )
-            )
-        # if cfg.Engine == 'memcached':
-        #     self.ResourceRecords = [GetAtt(
-        #         'CacheCluster', 'ConfigurationEndpoint.Address')]
-        # if cfg.Engine == 'redis':
-        #     self.ResourceRecords = [GetAtt(
-        #         'CacheCluster', 'RedisEndpoint.Address')]
-        self.TTL = '300'
-
-
-class R53RecordSetCCHRO(R53RecordSetCCH):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Condition = 'ReplicationGroup'
-        self.ResourceRecords = [Sub(
-            '${RECORD0}-ro.'
-            '${RECORD1}.'
-            '${RECORD2}.'
-            '${RECORD3}.'
-            '${RECORD4}.'
-            '${RECORD5}.'
-            '${RECORD6}.'
-            '${RECORD7}', **{
-                'RECORD0': Select(0, Split('.', GetAtt(
-                    'ElastiCacheReplicationGroup',
-                    'PrimaryEndPoint.Address'))),
-                'RECORD1': Select(1, Split('.', GetAtt(
-                    'ElastiCacheReplicationGroup',
-                    'PrimaryEndPoint.Address'))),
-                'RECORD2': Select(2, Split('.', GetAtt(
-                    'ElastiCacheReplicationGroup',
-                    'PrimaryEndPoint.Address'))),
-                'RECORD3': Select(3, Split('.', GetAtt(
-                    'ElastiCacheReplicationGroup',
-                    'PrimaryEndPoint.Address'))),
-                'RECORD4': Select(4, Split('.', GetAtt(
-                    'ElastiCacheReplicationGroup',
-                    'PrimaryEndPoint.Address'))),
-                'RECORD5': Select(5, Split('.', GetAtt(
-                    'ElastiCacheReplicationGroup',
-                    'PrimaryEndPoint.Address'))),
-                'RECORD6': Select(6, Split('.', GetAtt(
-                    'ElastiCacheReplicationGroup',
-                    'PrimaryEndPoint.Address'))),
-                'RECORD7': Select(7, Split('.', GetAtt(
-                    'ElastiCacheReplicationGroup',
-                    'PrimaryEndPoint.Address'))),
-            }
-        )]
-
-
-class R53RecordSetCCHExternal(R53RecordSetCCH, R53RecordSetZoneExternal):
-    pass
-
-
-class R53RecordSetCCHInternal(R53RecordSetCCH, R53RecordSetZoneInternal):
-    pass
-
-
-class R53RecordSetCCHExternalRO(R53RecordSetCCHRO, R53RecordSetZoneExternal):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Name = Sub('${AWS::StackName}.${EnvRole}_ro.%s'
-                        % cfg.HostedZoneNameRegionEnv)
-
-
-class R53RecordSetCCHInternalRO(R53RecordSetCCHRO, R53RecordSetZoneInternal):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Name = Sub('${AWS::StackName}.${EnvRole}_ro.%s'
-                        % cfg.HostedZoneNamePrivate)
-
-
 class R53RecordSetNSServiceDiscovery(r53.RecordSetType):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -301,69 +193,48 @@ def R53_RecordSetECSLoadBalancer():
 
 
 def R53_RecordSetRDS(rds_resname):
-    # Resources
-    if cfg.RecordSetExternal:
-        R_External = R53RecordSetRDSExternal('RecordSetExternal',
-                                             rds_resname)
+    for n in ['External', 'Internal']:
+        if n not in cfg.RecordSet:
+            continue
+        # resources
+        r_Record = r53.RecordSetType(rds_resname)
+        auto_get_props(r_Record, f'R53RecordSetRDS{n}')
+        r_Record.title = f'RecordSet{n}'
+
         # outputs
-        O_External = Output('RecordSetExternal')
-        O_External.Value = Ref('RecordSetExternal')
+        o_Record = Output(f'RecordSet{n}')
+        o_Record.Value = Ref(f'RecordSet{n}')
 
         add_obj([
-            R_External,
-            O_External])
-
-    if cfg.RecordSetInternal:
-        R_Internal = R53RecordSetRDSInternal('RecordSetInternal',
-                                             rds_resname)
-        # outputs
-        O_Internal = Output('RecordSetInternal')
-        O_Internal.Value = Ref('RecordSetInternal')
-
-        add_obj([
-            R_Internal,
-            O_Internal])
+            r_Record,
+            o_Record])
 
 
 def R53_RecordSetCCH():
-    # Resources
-    if cfg.RecordSetExternal:
-        R_External = R53RecordSetCCHExternal('RecordSetExternal')
-        R_ExternalRO = R53RecordSetCCHExternalRO('RecordSetExternalRO')
+    for n in ['External', 'Internal']:
+        if n not in cfg.RecordSet:
+            continue
+        # resources
+        r_Record = r53.RecordSetType(f'RecordSet{n}')
+        auto_get_props(r_Record, f'R53RecordSetCCH{n}')
+
+        r_RecordReadOnly = r53.RecordSetType(f'RecordSet{n}RO')
+        auto_get_props(r_RecordReadOnly, f'R53RecordSetCCHReadOnly{n}')
 
         # outputs
-        O_External = Output('RecordSetExternal')
-        O_External.Value = Ref('RecordSetExternal')
-        O_External.Condition = 'CacheEnabled'
+        o_Record = Output(f'RecordSet{n}')
+        o_Record.Value = Ref(f'RecordSet{n}')
+        o_Record.Condition = 'CacheEnabled'
 
-        O_ExternalRO = Output('RecordSetExternalRO')
-        O_ExternalRO.Value = Ref('RecordSetExternalRO')
-        O_ExternalRO.Condition = 'ReplicationGroup'
-
-        add_obj([
-            R_External,
-            R_ExternalRO,
-            O_External,
-            O_ExternalRO])
-
-    if cfg.RecordSetInternal:
-        R_Internal = R53RecordSetCCHInternal('RecordSetInternal')
-        R_InternalRO = R53RecordSetCCHInternalRO('RecordSetInternalRO')
-
-        # outputs
-        O_Internal = Output('RecordSetInternal')
-        O_Internal.Value = Ref('RecordSetInternal')
-        O_Internal.Condition = 'CacheEnabled'
-
-        O_InternalRO = Output('RecordSetInternalRO')
-        O_InternalRO.Value = Ref('RecordSetInternalRO')
-        O_InternalRO.Condition = 'ReplicationGroup'
+        o_RecordReadOnly = Output(f'RecordSet{n}RO')
+        o_RecordReadOnly.Value = Ref(f'RecordSet{n}RO')
+        o_RecordReadOnly.Condition = 'ReplicationGroup'
 
         add_obj([
-            R_Internal,
-            R_InternalRO,
-            O_Internal,
-            O_InternalRO])
+            r_Record,
+            r_RecordReadOnly,
+            o_Record,
+            o_RecordReadOnly])
 
 
 def R53_HostedZones(key):

@@ -15,9 +15,66 @@ CloudFront: &cloudfront
   Name: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv)
   Type: A
 
+RDS: &rds
+  Type: CNAME
+  ResourceRecords:
+    - GetAtt(IBOXRESNAME, 'Endpoint.Address')
+  TTL: '300'
+
+CCH: &cch
+  Type: CNAME
+  Condition: CacheEnabled
+  ResourceRecords:
+    If(
+      'EngineMemCached',
+      [GetAtt('ElastiCacheCacheCluster', 'ConfigurationEndpoint.Address')],
+      If(
+        'ReplicationGroup',
+        [GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address')],
+        [GetAtt('ElastiCacheCacheCluster', 'RedisEndpoint.Address')]))
+  TTL: '300'
+
+CCHReadOnly: &cchreadonly
+  <<: *cch
+  Condition: ReplicationGroup
+  ResourceRecords:
+    - >
+      Sub(
+        '${RECORD0}-ro.${RECORD1}.${RECORD2}.${RECORD3}.${RECORD4}.${RECORD5}.${RECORD6}.${RECORD7}',
+        **{
+          'RECORD0': Select(0, Split('.', GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address'))),
+          'RECORD1': Select(1, Split('.', GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address'))),
+          'RECORD2': Select(2, Split('.', GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address'))),
+          'RECORD3': Select(3, Split('.', GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address'))),
+          'RECORD4': Select(4, Split('.', GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address'))),
+          'RECORD5': Select(5, Split('.', GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address'))),
+          'RECORD6': Select(6, Split('.', GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address'))),
+          'RECORD7': Select(7, Split('.', GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address'))),
+        })
+
 
 global:
   R53RecordSet:
     - CloudFront:
         <<: *cloudfront
-        IBOXENABLED: None
+        IBOXENABLED: False
+    - RDSExternal:
+        <<: [*zoneexternal, *rds]
+        IBOXENABLED: False
+    - RDSInternal:
+        <<: [*zoneinternal, *rds]
+        IBOXENABLED: False
+    - CCHExternal:
+        <<: [*zoneexternal, *cch]
+        IBOXENABLED: False
+    - CCHInternal:
+        <<: [*zoneinternal, *cch]
+        IBOXENABLED: False
+    - CCHReadOnlyExternal:
+        <<: [*zoneexternal, *cchreadonly]
+        IBOXENABLED: False
+        Name: Sub('${AWS::StackName}.${EnvRole}_ro.%s' % cfg.HostedZoneNameRegionEnv)
+    - CCHReadOnlyInternal:
+        <<: [*zoneinternal, *cchreadonly]
+        IBOXENABLED: False
+        Name: Sub('${AWS::StackName}.${EnvRole}_ro.%s' % cfg.HostedZoneNamePrivate)
