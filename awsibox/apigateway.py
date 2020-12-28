@@ -6,7 +6,6 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionApiGateway
 from .iam import IAMPolicyApiGatewayPrivate
-from .route53 import R53RecordApiGatewayDomainName
 
 
 class ApiGatewayAccount(agw.Account):
