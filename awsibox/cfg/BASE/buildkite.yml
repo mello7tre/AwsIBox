@@ -17,7 +17,7 @@ buildkite:
   ContainerDefinitions:
     - 1:
         Cpu: 128
-        Envs:
+        Environment:
           - AWSDEFAULTREGION:
               Name: AWS_DEFAULT_REGION
               Value: Ref('AWS::Region')
