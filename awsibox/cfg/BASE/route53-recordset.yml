@@ -72,6 +72,23 @@ CCHReadOnly: &cchreadonly
           'RECORD7': Select(7, Split('.', GetAtt('ElastiCacheReplicationGroup', 'PrimaryEndPoint.Address'))),
         })
 
+ApiGatewayDomainName: &apigatewaydomainname
+  <<: *zoneexternal
+  Type: A
+  Name: Ref(IBOXRESNAME)
+
+ApiGatewayDomainNameGlobal: &apigatewaydomainnameglobal
+  <<: *apigatewaydomainname
+  AliasTarget:
+    DNSName: GetAtt(IBOXRESNAME, 'DistributionDomainName')
+    HostedZoneId: GetAtt(IBOXRESNAME, 'DistributionHostedZoneId')
+
+ApiGatewayDomainNameRegional: &apigatewaydomainnameregional
+  <<: *apigatewaydomainname
+  AliasTarget:
+    DNSName: GetAtt(IBOXRESNAME, 'RegionalDomainName')
+    HostedZoneId: GetAtt(IBOXRESNAME, 'RegionalHostedZoneId')
+
 
 global:
   R53RecordSet:
@@ -103,3 +120,5 @@ global:
     - CCHReadOnlyInternal:
         <<: [*zoneinternal, *cchreadonly]
         Name: Sub('${AWS::StackName}.${EnvRole}_ro.%s' % cfg.HostedZoneNamePrivate)
+    - ApiGatewayDomainNameGlobal: *apigatewaydomainnameglobal
+    - ApiGatewayDomainNameRegional: *apigatewaydomainnameregional

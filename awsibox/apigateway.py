@@ -1,4 +1,5 @@
 import troposphere.apigateway as agw
+import troposphere.route53 as r53
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
@@ -101,21 +102,17 @@ def AGW_DomainName(key):
         if not v['IBOXENABLED']:
             continue
 
-        if 'REGIONAL' in v['EndpointConfiguration']['Types']:
-            MappedDomainName = 'RegionalDomainName'
-            HostedZoneId = 'RegionalHostedZoneId'
-        else:
-            MappedDomainName = 'DistributionDomainName'
-            HostedZoneId = 'DistributionHostedZoneId'
-
         resname = f'{key}{n}'
         # resources
         r_Domain = agw.DomainName(resname)
         auto_get_props(r_Domain)
 
-        r_r53 = R53RecordApiGatewayDomainName(
-            f'RecordSet{resname}', resname, MappedDomainName,
-            HostedZoneId)
+        r_r53 = r53.RecordSetType(resname)
+        if 'REGIONAL' in v['EndpointConfiguration']['Types']:
+            auto_get_props(r_r53, 'R53RecordSetApiGatewayDomainNameRegional')
+        else:
+            auto_get_props(r_r53, 'R53RecordSetApiGatewayDomainNameGlobal')
+        r_r53.title = f'RecordSet{resname}'
 
         # outputs
         o_Domain = Output(resname)

@@ -6,6 +6,7 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
 from .route53 import R53_RecordSetRDS
 from .securitygroup import SG_SecurityGroupService
 
+
 class RDSDBInstance(rds.DBInstance):
     def validate(self):
         if 'DBSnapshotIdentifier' not in self.properties:

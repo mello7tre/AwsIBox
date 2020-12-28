@@ -5,22 +5,6 @@ from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 
 
-class R53RecordSetZoneExternal(r53.RecordSetType):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.HostedZoneId = get_expvalue('HostedZoneIdEnv')
-        self.Name = Sub('${AWS::StackName}.${EnvRole}.%s'
-                        % cfg.HostedZoneNameRegionEnv)
-
-
-class R53RecordSetZoneInternal(r53.RecordSetType):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.HostedZoneId = get_expvalue('HostedZoneIdPrivate')
-        self.Name = Sub('${AWS::StackName}.${EnvRole}.%s'
-                        % cfg.HostedZoneNamePrivate)
-
-
 class R53RecordSetEFS(r53.RecordSetType):
     def __init__(self, title, efsname, **kwargs):
         super().__init__(title, **kwargs)
@@ -43,17 +27,6 @@ class R53RecordSetNSServiceDiscovery(r53.RecordSetType):
         self.ResourceRecords = GetAtt('PublicDnsNamespace', 'NameServers')
         self.Type = 'NS'
         self.TTL = '300'
-
-
-class R53RecordApiGatewayDomainName(R53RecordSetZoneExternal):
-    def __init__(self, title, name, domain_name, zoneid_name, **kwargs):
-        super().__init__(title, **kwargs)
-        self.AliasTarget = r53.AliasTarget(
-            DNSName=GetAtt(name, domain_name),
-            HostedZoneId=GetAtt(name, zoneid_name)
-        )
-        self.Name = Ref(name)
-        self.Type = 'A'
 
 
 def R53_RecordSetEC2LoadBalancer():
