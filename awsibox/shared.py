@@ -119,7 +119,7 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
 
     def _get_value():
         # Its not pythonic, but it's only way to avoid circular import problems
-        from .securitygroup import SG_SecurityGroupsTSK
+        from .securitygroup import (SG_SecurityGroupsTSK, SG_SecurityGroupsECS)
 
         if resname:
             IBOXRESNAME = resname
@@ -585,6 +585,12 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 setattr(obj, propname, value)
             except TypeError:
                 pass
+
+        # title override
+        try:
+            obj.title = key['IBOXTITLE']
+        except Exception:
+            pass
 
     _populate(obj, key, mapname, rootdict)
     return obj

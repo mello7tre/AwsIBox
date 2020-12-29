@@ -7,14 +7,6 @@ from .securitygroup import (SecurityGroupEcsService,
                             SecurityGroupRuleEcsService, SG_SecurityGroupsECS)
 
 
-class ECSMountPoint(ecs.MountPoint):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-        self.ReadOnly = False
-        self.SourceVolume = self.title
-        self.ContainerPath = key['ContainerPath']
-
-
 class ECSLoadBalancer(ecs.LoadBalancer):
     def __init__(self, title, scheme, **kwargs):
         super().__init__(title, **kwargs)
@@ -58,46 +50,10 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
         elif cfg.Image != 'None':
             self.Image = get_endvalue('Image')
 
-        if 'MountPoints' in key:
-            self.MountPoints = [
-                ECSMountPoint(n, key=k) for n, k in key['MountPoints'].items()
-            ]
-
         if 'Name' in key:
             self.Name = get_subvalue('${EnvRole}-${1M}', f'{name}Name')
         else:
             self.Name = Ref('EnvRole')
-
-#        if 'ContainerPort' in key:
-#            PortMapping = ecs.PortMapping(name)
-#            auto_get_props(PortMapping)
-#            if 'HostPort' not in key:
-#                PortMapping.HostPort = If(
-#                    'NetworkModeAwsVpc',
-#                    get_endvalue(f'{name}ContainerPort'),
-#                    0
-#                )
-#            self.PortMappings = [PortMapping]
-
-
-class ECSVolume(ecs.Volume):
-    def __init__(self, title, key, **kwargs):
-        super(ECSVolume, self).__init__(title, **kwargs)
-        self.Name = self.title
-        self.Host = ecs.Host(
-            SourcePath=key['SourcePath']
-        )
-
-
-class ECSNetworkConfiguration(ecs.NetworkConfiguration):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.AwsvpcConfiguration = ecs.AwsvpcConfiguration(
-            SecurityGroups=[
-                GetAtt('SecurityGroupEcsService', 'GroupId')
-                ] + SG_SecurityGroupsECS(),
-            Subnets=Split(',', get_expvalue('SubnetsPrivate'))
-        )
 
 
 # ##########################################
@@ -186,20 +142,10 @@ def ECS_TaskDefinition(key):
     # Resources
     R_TaskDefinition = ecs.TaskDefinition('TaskDefinitionBase')
     auto_get_props(R_TaskDefinition)
-    R_TaskDefinition.title = 'TaskDefinition'
     R_TaskDefinition.ContainerDefinitions = ECS_ContainerDefinition()
 
-    if cfg.Volumes:
-        Volumes = []
-        for n, v in cfg.Volumes.items():
-            Volume = ECSVolume(n, key=v)
-            Volumes.append(Volume)
-
-        R_TaskDefinition.Volumes = Volumes
-
     add_obj([
-        R_TaskDefinition,
-    ])
+        R_TaskDefinition])
 
 
 def ECS_Service(key):
@@ -252,11 +198,6 @@ def ECS_Service(key):
         if cfg.LoadBalancerApplicationInternal:
             r_Service.LoadBalancers.append(
                 ECSLoadBalancer('', scheme='Internal'))
-
-        r_Service.NetworkConfiguration = If(
-            'NetworkModeAwsVpc',
-            ECSNetworkConfiguration(''),
-            Ref('AWS::NoValue'))
 
         add_obj(r_Service)
 

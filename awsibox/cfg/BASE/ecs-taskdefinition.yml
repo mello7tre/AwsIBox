@@ -1,4 +1,5 @@
 Base: &base
+  IBOXTITLE: TaskDefinition
   ExecutionRoleArn: If('LaunchTypeFarGate', get_expvalue('RoleECSTaskExecution'), Ref('AWS::NoValue'))
   TaskRoleArn: Ref('RoleTask')
   Cpu: If('CpuTask', get_endvalue('Cpu'), Ref('AWS::NoValue'))

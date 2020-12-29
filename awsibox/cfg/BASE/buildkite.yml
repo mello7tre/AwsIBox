@@ -25,8 +25,14 @@ buildkite:
         MemoryReservation: 64
         MountPoints:
           - DockerSock:
+              ReadOnly: false
+              SourceVolume: DockerSock
               ContainerPath: /var/run/docker.sock
   RepoName: get_subvalue('${1M}.${2M}.services.buildkite', ['BrandRegion', 'Brand'])
-  Volumes:
-    - DockerSock:
-        SourcePath: '/var/run/docker.sock'
+  TaskDefinition:
+    - Base:
+        Volumes:
+          - DockerSock:
+              Name: DockerSock
+              Host:
+                SourcePath: '/var/run/docker.sock'

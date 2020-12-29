@@ -2,6 +2,14 @@ Base: &base
   IBOXENABLED: False
   Cluster: get_expvalue('Cluster', 'ClusterStack')
   HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancerApplication else Ref('AWS::NoValue')")
+  NetworkConfiguration:
+    IBOXIF:
+      - NetworkModeAwsVpc
+      - IBOXIFVALUE
+      - Ref('AWS::NoValue')
+    AwsvpcConfiguration:
+      SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + SG_SecurityGroupsECS()
+      Subnets: Split(',', get_expvalue('SubnetsPrivate'))
   PlatformVersion: If('LaunchTypeFarGate', 'LATEST', Ref('AWS::NoValue'))
   TaskDefinition: Ref('TaskDefinition')
 
