@@ -91,7 +91,7 @@ def LB_ListenersEC2():
             add_obj(c_LoadBalancerAccessAllowedIp)
 
             SGRule = SecurityGroupRuleELBPorts(mapname)
-            SGRule.CidrIp = get_endvalue(f'{ipname}Ip')
+            SGRule.CidrIp = get_endvalue(f'{ipname}CidrIp')
 
             Securitygroup_Rules.append(
                 If(

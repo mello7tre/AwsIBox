@@ -129,6 +129,7 @@ BASE_CFGS = {
     'DBInstance': 'IBOXBASE',
     'ScheduledAction': 'IBOXBASE',
     'ContainerDefinitions': 'IBOXBASE',
+    'AllowedIp': 'IBOXBASE',
 }
 
 INSTANCE_LIST = [
@@ -286,7 +287,7 @@ CFG_TO_FUNC = {
                          'func': 'SRVD_ServiceDiscovery'},
     'VPCEndpoint': {'module': 'vpc',
                     'func': 'VPC_Endpoint'},
-    'SecurityGroupBase': {'module': 'securitygroup',
+    'SecurityGroup': {'module': 'securitygroup',
                           'func': 'SG_SecurityGroup'},
     'SecurityGroupIngress': {'module': 'securitygroup',
                              'func': 'SG_SecurityGroupIngressesExtra'},

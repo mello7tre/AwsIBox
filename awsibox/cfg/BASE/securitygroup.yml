@@ -33,14 +33,19 @@ ALBInternal: &albinternal
   SecurityGroupIngress:
     - Http: *rulehttp
 
+AllowedIpBase: &allowedipbase
+  IBOXCONDITION:
+    - IBOXMAPNAME:
+        get_condition('', 'not_equals', 'None', f'{IBOXMAPNAME}Enabled')
+  Enabled: True
+  Description: ''
+  CidrIp: '127.0.0.1/32'
+
 
 global:
-  SecurityGroup:
-    - ALBExternal: *albexternal
-    - ALBInternal: *albinternal
+  SecurityGroupALB:
+    - External: *albexternal
+    - Internal: *albinternal
   AllowedIp:
-    - 1:
-        Enabled: True
-        Name: '1'
-        Ip: '127.0.0.1/32'
+    - IBOXBASE: *allowedipbase
   SecurityGroups: 'BaseInstance,None,None,None'

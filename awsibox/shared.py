@@ -359,6 +359,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     # IBOXRESNAME can be used in yaml
     IBOXOBJ = obj
     IBOXRESNAME = obj.title
+    IBOXMAPNAME = mapname
 
     def _iboxif(if_wrapper, mapname, value):
         condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
@@ -480,8 +481,11 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             def _condition(k):
                 # this is needed or eval do not find IBOXRESNAME??
                 IBOXRESNAME
+                IBOXMAPNAME
                 for n, v in k.items():
                     n = n.replace('IBOXRESNAME', IBOXRESNAME)
+                    if IBOXMAPNAME:
+                        n = n.replace('IBOXMAPNAME', IBOXMAPNAME)
                     condition = {n: eval(v)}
                     add_obj(condition)
 
