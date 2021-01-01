@@ -433,8 +433,8 @@ def set_cfg():
             cfg.LoadBalancerClassicInternal = True
 
     # LoadBalancerApplicationExternal LoadBalancerApplicationInternal
-    cfg.LoadBalancerApplicationExternal = None
-    cfg.LoadBalancerApplicationInternal = None
+    cfg.LoadBalancerApplicationExternal = False
+    cfg.LoadBalancerApplicationInternal = False
     try:
         cfg.LoadBalancerApplication
     except Exception:

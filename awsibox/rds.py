@@ -4,7 +4,6 @@ from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .route53 import R53_RecordSetRDS
-from .securitygroup import SG_SecurityGroupService
 
 
 class RDSDBInstance(rds.DBInstance):
@@ -142,7 +141,6 @@ def RDS_DB(key):
                 Ref('AWS::NoValue')))
 
         R53_RecordSetRDS(resname)
-        SG_SecurityGroupService(mapname)
         # trick fixed name to avoid reboot for now
         # best way should be to use a name like DBParameterGroup{Engine}
         r_PG = RDSDBParameterGroup('DBParameterGroup1', mapname)

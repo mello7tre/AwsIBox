@@ -25,5 +25,36 @@ ecs-alb:
   Output:
     - LoadBalancerApplication:
         Value: get_endvalue('LoadBalancerApplication', nolist=True)
+  SecurityGroup:
+    - LoadBalancerApplicationExternal:
+        IBOXOUTPUT:
+          - IBOXRESNAME:
+              Condition: LoadBalancerApplicationExternal
+              Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+        Condition: LoadBalancerApplicationExternal
+        GroupDescription: Sub('Access to LoadBalancerApplicationExternal ${AWS::StackName}')
+        SecurityGroupIngress:
+          - Http:
+              CidrIp: '0.0.0.0/0'
+              FromPort: 80
+              ToPort: 80
+          - Https:
+              CidrIp: '0.0.0.0/0'
+              FromPort: 443
+              ToPort: 443
+    - LoadBalancerApplicationInternal:
+        IBOXOUTPUT:
+          - IBOXRESNAME:
+              Condition: LoadBalancerApplicationInternal
+              Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+        Condition: LoadBalancerApplicationInternal
+        GroupDescription: Sub('Access to LoadBalancerApplicationInternal ${AWS::StackName}')
+        SecurityGroupIngress:
+          - Http:
+              CidrIp: '0.0.0.0/0'
+              FromPort: 80
+              ToPort: 80
   LoadBalancerApplication: ['External', 'Internal']
   RecordSet: []

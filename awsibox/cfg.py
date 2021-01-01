@@ -290,7 +290,7 @@ CFG_TO_FUNC = {
     'SecurityGroup': {'module': 'securitygroup',
                           'func': 'SG_SecurityGroup'},
     'SecurityGroupIngress': {'module': 'securitygroup',
-                             'func': 'SG_SecurityGroupIngressesExtra'},
+                             'func': 'SG_SecurityGroupIngresses'},
     'VPC': {'module': 'vpc',
             'func': 'VPC_VPC'},
     'CCRLightHouse': {'module': 'cloudformation',

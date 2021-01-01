@@ -6,10 +6,7 @@ from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .route53 import R53_RecordSetEC2LoadBalancer, R53_RecordSetECSLoadBalancer
-from .securitygroup import (
-    SecurityGroupRuleELBPorts, SecurityGroupIngressInstanceELBPorts,
-    SecurityGroupLoadBalancer, SecurityGroupsIngressEcs, SecurityGroup,
-    SG_SecurityGroupIngressesECS)
+from .securitygroup import SecurityGroupIngressInstanceELBPorts
 from .lambdas import LambdaPermissionLoadBalancing
 
 
@@ -65,8 +62,6 @@ def LB_ListenersEC2():
 
     # Resources
     Listeners = []
-    Securitygroup_Rules = []
-    SecuritygroupIngress_InstanceRules = []
     for n, v in cfg.Listeners.items():
         mapname = f'Listeners{n}'  # Ex Listeners1
 
@@ -75,48 +70,6 @@ def LB_ListenersEC2():
             auto_get_props(Listener)
             auto_get_props(Listener, 'ListenerClassic')
             Listeners.append(Listener)
-
-        for i in cfg.AllowedIp:
-            ipname = f'AllowedIp{i}'  # Ex. AllowedIp1
-            condnameprivate = f'SecurityGroupRulePrivate{mapname}{ipname}'
-            condnamepublic = f'SecurityGroupRulePublic{mapname}'
-
-            # conditions
-            c_LoadBalancerAccessAllowedIp = {condnameprivate: And(
-                Condition(ipname),
-                get_condition('', 'equals', 'Private',
-                              f'{mapname}LoadBalancerAccess')
-            )}
-
-            add_obj(c_LoadBalancerAccessAllowedIp)
-
-            SGRule = SecurityGroupRuleELBPorts(mapname)
-            SGRule.CidrIp = get_endvalue(f'{ipname}CidrIp')
-
-            Securitygroup_Rules.append(
-                If(
-                    condnameprivate,
-                    SGRule,
-                    Ref('AWS::NoValue'),
-                )
-            )
-
-        # conditions
-        c_LoadBalancerAccessPublic = get_condition(
-            condnamepublic,
-            'equals', 'Public', f'{mapname}LoadBalancerAccess')
-        add_obj(c_LoadBalancerAccessPublic)
-
-        SGRule = SecurityGroupRuleELBPorts(mapname)
-        SGRule.CidrIp = '0.0.0.0/0'
-
-        Securitygroup_Rules.append(
-            If(
-                condnamepublic,
-                SGRule,
-                Ref('AWS::NoValue'),
-            )
-        )
 
         # resources
         r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
@@ -138,17 +91,6 @@ def LB_ListenersEC2():
             }
         )
         add_obj(Listener_Output)
-
-    R_SG = SecurityGroupLoadBalancer('SecurityGroupLoadBalancer')
-    R_SG.SecurityGroupIngress = Securitygroup_Rules
-
-    # Outputs
-    O_SG = Output('SecurityGroupLoadBalancer')
-    O_SG.Value = Ref('SecurityGroupLoadBalancer')
-
-    add_obj([
-        R_SG,
-        O_SG])
 
     return Listeners
 
@@ -300,14 +242,12 @@ def LB_ListenersV2ECS():
             r_Http = elbv2.Listener(f'ListenerHttp{n}')
             auto_get_props(r_Http, mapname=f'ListenerV2ECSHttp{n}')
             add_obj(r_Http)
-            SG_SecurityGroupIngressesECS(scheme=n, proto='Http')
 
         if (cfg.ListenerLoadBalancerHttpsPort not in ['None', 443]
                 and n == 'External'):
             r_Https = elbv2.Listener(f'ListenerHttps{n}')
             auto_get_props(r_Https, mapname=f'ListenerV2ECSHttps{n}')
             add_obj(r_Https)
-            SG_SecurityGroupIngressesECS(scheme=n, proto='Https')
 
     # Resources
     LB_TargetGroupsECS()
@@ -424,13 +364,9 @@ def LB_ElasticLoadBalancingALB(key):
             auto_get_props(r_ListenerHttps, mapname=f'ListenerV2ALBHttps{n}')
             add_obj(r_ListenerHttps)
 
-        r_SG = SecurityGroup(f'SecurityGroupLoadBalancerApplication{n}')
-        auto_get_props(r_SG, mapname=f'SecurityGroupALB{n}')
-
         add_obj([
             r_LB,
-            r_ListenerHttp,
-            r_SG])
+            r_ListenerHttp])
 
     # Resources
     # Create TargetGroups pointing to LambdaServiceUnavailable

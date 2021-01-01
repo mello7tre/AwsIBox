@@ -35,17 +35,12 @@ Base: &base
     - IBOXRESNAMEMultiAZ:
         Description: 'Use multiple Availability Zone - empty for mapped value'
         AllowedValues: ['', 'True', 'False']
-    - IBOXRESNAMEAccess:
-        Description: 'Access type public or private - empty for mapped value'
-        AllowedValues: ['', 'Private', 'Public']
     - IBOXRESNAMEStorageType:
         Description: 'empty for mapped value'
         AllowedValues: ['', 'standard', 'gp2']
   IBOXCONDITION:
     - IBOXRESNAMEDBName:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}DBName')
-    - IBOXRESNAMEPublic:
-        get_condition('', 'equals', 'Public', f'{IBOXRESNAME}Access')
     - IBOXRESNAMEDBSnapshotIdentifier:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}DBSnapshotIdentifier')
     - IBOXRESNAMESourceDBInstanceIdentifier:
@@ -71,8 +66,6 @@ Base: &base
         Value: get_endvalue(f'{IBOXRESNAME}MasterUsername')
     - IBOXRESNAMEMultiAZ:
         Value: get_endvalue(f'{IBOXRESNAME}MultiAZ')
-    - IBOXRESNAMEAccess:
-        Value: get_endvalue(f'{IBOXRESNAME}Access')
     - IBOXRESNAMEScheme:
         Value: If(f'{IBOXRESNAME}Internal', 'Internal', 'External')
     - IBOXRESNAMESourceDBInstanceIdentifier:
@@ -88,7 +81,6 @@ Base: &base
   MasterUsername: masterusername
   MasterUserPassword: masteruserpassword
   MultiAZ: False
-  Access: Public
   SourceDBInstanceIdentifier: None
   StorageType: gp2
   VPCSecurityGroups:

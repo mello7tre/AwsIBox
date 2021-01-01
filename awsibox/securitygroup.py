@@ -22,21 +22,11 @@ class SecurityGroup(ec2.SecurityGroup):
         self.VpcId = get_expvalue('VpcId')
 
 
-class SecurityGroupLoadBalancer(SecurityGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.GroupDescription = 'Enable access to LoadBalancer'
-
-
-class SecurityGroupEcsService(SecurityGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Condition = 'NetworkModeAwsVpc'
-        self.GroupDescription = 'Enable access to Service'
-        self.SecurityGroupIngress = []
-
-
 class SecurityGroupIngress(ec2.SecurityGroupIngress):
+    IpProtocol = 'tcp'
+
+
+class SecurityGroupRule(ec2.SecurityGroupRule):
     IpProtocol = 'tcp'
 
 
@@ -50,36 +40,12 @@ class SecurityGroupIngressInstanceELBPorts(SecurityGroupIngress):
         self.GroupId = GetAtt('SecurityGroupInstancesRules', 'GroupId')
 
 
-class SecurityGroupsIngressEcs(SecurityGroupIngress):
-    def __init__(self, title, proto, scheme, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Condition = self.title
-        self.GroupId = get_expvalue(
-            f'SecurityGroupLoadBalancerApplication{scheme}',
-            'LoadBalancerApplicationStack')
-        self.FromPort = get_endvalue(
-            f'ListenerLoadBalancer{proto}Port')
-        self.ToPort = self.FromPort
-
-
-class SecurityGroupRule(ec2.SecurityGroupRule):
-    IpProtocol = 'tcp'
-
-
-class SecurityGroupRuleELBPorts(SecurityGroupRule):
+class SecurityGroupEcsService(SecurityGroup):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-        name = self.title  # Ex. Listeners1
-        self.FromPort = get_endvalue(f'{name}LoadBalancerPort')
-        self.ToPort = get_endvalue(f'{name}LoadBalancerPort')
-
-
-class SecurityGroupRuleNamePorts(SecurityGroupRule):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        name = self.title  # Ex. 3306
-        self.FromPort = name
-        self.ToPort = name
+        self.Condition = 'NetworkModeAwsVpc'
+        self.GroupDescription = 'Enable access to Service'
+        self.SecurityGroupIngress = []
 
 
 class SecurityGroupRuleEcsService(SecurityGroupRule):
@@ -148,28 +114,6 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
     return SecurityGroups
 
 
-def SG_SecurityGroupIngressesExtra(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f'{key}{n}'
-        try:
-            allowed_ip = (v['CidrIp'] == 'AllowedIp')
-        except Exception:
-            pass
-        else:
-            if allowed_ip:
-                for m, w in cfg.AllowedIp.items():
-                    r_SGI = SecurityGroupIngress(f'{resname}{m}')
-                    auto_get_props(r_SGI, resname)
-                    auto_get_props(r_SGI, f'AllowedIp{m}')
-                    r_SGI.Condition = f'AllowedIp{m}'
-                    add_obj(r_SGI)
-                continue
-                
-        r_SGI = SecurityGroupIngress(resname)
-        auto_get_props(r_SGI)
-        add_obj(r_SGI)
-
-
 def SG_SecurityGroupsEC2():
     Out_String = ['Rules=${SecurityGroupInstancesRules}']
     Out_Map = {
@@ -219,95 +163,36 @@ def SG_SecurityGroupsTSK():
     return SecurityGroups
 
 
-def SG_SecurityGroupRulesBaseInstance():
-    Securitygroup_Rules = []
-
-    for n, v in cfg.AllowedIp.items():
-        name = f'AllowedIp{n}'
-        # conditions
-        add_obj(get_condition(name, 'not_equals', 'None', f'{name}Enabled'))
-
-        # resources
-        Rule = SecurityGroupRule()
-        Rule.FromPort = '22'
-        Rule.ToPort = '22'
-        Rule.CidrIp = get_endvalue(f'{name}CidrIp')
-
-        Securitygroup_Rules.append(
-            If(
-                name,
-                Rule,
-                Ref('AWS::NoValue')))
-
-    Securitygroup_Rules.append(
-        ec2.SecurityGroupRule(
-            CidrIp='0.0.0.0/0',
-            FromPort='8',
-            IpProtocol='icmp',
-            ToPort='-1'))
-
-    return Securitygroup_Rules
-
-
-def SG_SecurityGroupRulesService(port, name):
-    Securitygroup_Rules = []
-
-    for i in cfg.AllowedIp:
-        ipname = f'AllowedIp{i}'
-        condnameprivate = (
-            f'SecurityGroupRulePrivatePort{port}{ipname}')
-
-        # conditions
-        c_Enabled = get_condition(
-            ipname, 'not_equals', 'None', f'{ipname}Enabled')
-
-        c_Access = {condnameprivate: And(
-            Condition(ipname),
-            get_condition('', 'equals', 'Private', f'{name}Access')
-        )}
-
-        add_obj([
-            c_Enabled,
-            c_Access])
-
-        SGRule = SecurityGroupRuleNamePorts(port)
-        SGRule.CidrIp = get_endvalue(f'{ipname}CidrIp')
-
-        Securitygroup_Rules.append(
-            If(
-                condnameprivate,
-                SGRule,
-                Ref('AWS::NoValue')))
-
-    SGRule = SecurityGroupRuleNamePorts(port)
-    SGRule.CidrIp = '0.0.0.0/0'
-
-    Securitygroup_Rules.append(
-        If(
-            f'{name}Public',
-            SGRule,
-            Ref('AWS::NoValue')))
-
-    return Securitygroup_Rules
-
-
-def SG_SecurityGroupRules(resname, ingresses):
+def SG_SecurityGroupRules(groupname, ingresses):
     SecurityGroup_Rules = []
-    resname = f'{resname}SecurityGroupIngress'
     for n, v in ingresses.items():
+        resname = f'{groupname}SecurityGroupIngress{n}'
         allowed_ip = v.get('CidrIp') == 'AllowedIp'
+        allowed_ip_conditional = v.get('AllowedIpConditional')
         if allowed_ip:
             for m, w in cfg.AllowedIp.items(): 
-                r_SGRule = SecurityGroupRule(f'{resname}{n}')
+                r_SGRule = SecurityGroupRule(resname)
                 auto_get_props(r_SGRule)
                 auto_get_props(r_SGRule, f'AllowedIp{m}')
                 SecurityGroup_Rules.append(If(
                     f'AllowedIp{m}',
                     r_SGRule,
                     Ref('AWS::NoValue')))
-        else:
-            r_SGRule = SecurityGroupRule(f'{resname}{n}')
+
+        if not allowed_ip or allowed_ip_conditional:
+            r_SGRule = SecurityGroupRule(resname)
             auto_get_props(r_SGRule)
+
+            if allowed_ip and allowed_ip_conditional:
+                r_SGRule.CidrIp = '0.0.0.0/0'
+                # condition
+                c_Public = get_condition(
+                    f'{resname}Public', 'not_equals', 'AllowedIp',
+                    f'{resname}CidrIp')
+                add_obj(c_Public)
+                r_SGRule = If(
+                    f'{resname}Public',r_SGRule, Ref('AWS::NoValue'))
+            
             SecurityGroup_Rules.append(r_SGRule)
 
     return SecurityGroup_Rules
@@ -316,92 +201,56 @@ def SG_SecurityGroupRules(resname, ingresses):
 def SG_SecurityGroup(key):
     for n, v in getattr(cfg, key).items():
         resname = f'{key}{n}'
-        # bad fix
-        if n != 'ElasticSearchClient':
-            outname = resname
-        else:
-            outname = 'SecurityGroup%s' % n.replace('Client', '')
 
         # resources
         r_SG = SecurityGroup(resname)
         auto_get_props(r_SG)
         try:
             ingresses = v['SecurityGroupIngress']
-        except Exception:
+        except:
             pass
         else:
             r_SG.SecurityGroupIngress = SG_SecurityGroupRules(
                 resname, ingresses)
 
+        try:
+            outname = v['OutputName']
+        except Exception:
+            outname = resname
+        else:
+            outname = f'{key}{outname}'
+
         # outputs
         o_SG = Output(outname)
         o_SG.Value = GetAtt(resname, 'GroupId')
-        o_SG.Export = Export(outname)
+        if v.get('Export'):
+            o_SG.Export = Export(outname)
 
-        add_obj([
-            r_SG,
-            o_SG])
-
-
-def SG_SecurityGroupService(name):
-    Securitygroup_Rules = []
-    for n, v in getattr(cfg, 'SecurityGroupIngress').items():
-        port = str(v['FromPort'])
-        Securitygroup_Rules.extend(SG_SecurityGroupRulesService(port, name))
-
-    R_SG = SecurityGroup(f'SecurityGroup{name}')
-    R_SG.GroupDescription = f'Enable access to {name}'
-    R_SG.SecurityGroupIngress = Securitygroup_Rules
-
-    # Outputs
-    O_SG = Output('SecurityGroup')
-    O_SG.Value = GetAtt(f'SecurityGroup{name}', 'GroupId')
-
-    add_obj([
-        R_SG,
-        O_SG])
+        add_obj(r_SG)
+        # add output only if not already present (can be created by IBOXOUTPUT)
+        try:
+            cfg.Resources[outname]
+        except:
+            add_obj(o_SG)
 
 
-def SG_SecurityGroupIngressesECS(scheme, proto):
-    resname_public = (
-        'SecurityGroupIngressLoadBalancerApplicationPublic'
-        f'{proto}{scheme}')
-
-    # Conditions
-    c_Public = {
-        resname_public: And(
-            Condition(f'ListenerLoadBalancer{proto}Port'),
-            Condition('LoadBalancerPublic'),
-        )
-    }
-
-    add_obj(c_Public)
-
-    # Resources
-    R_SGIPublic = SecurityGroupsIngressEcs(
-        resname_public, proto=proto, scheme=scheme)
-    R_SGIPublic.CidrIp = '0.0.0.0/0'
-
-    add_obj(R_SGIPublic)
-
-    for i in cfg.AllowedIp:
-        ipname = f'AllowedIp{i}'  # Ex. AllowedIp1
-        resname_private = (
-            f'SecurityGroupIngressLoadBalancerApplicationPrivate{proto}'
-            f'{scheme}{ipname}')
-
-        # conditions
-        c_AllowedIpPrivate = {resname_private: And(
-            Condition(ipname),
-            Not(Condition('LoadBalancerPublic')),
-            Condition(f'ListenerLoadBalancer{proto}Port')
-        )}
-
-        add_obj(c_AllowedIpPrivate)
-
-        # resources
-        r_SGIPrivate = SecurityGroupsIngressEcs(
-            resname_private, proto=proto, scheme=scheme)
-        r_SGIPrivate.CidrIp = get_endvalue(f'{ipname}CidrIp')
-
-        add_obj(r_SGIPrivate)
+def SG_SecurityGroupIngresses(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+        try:
+            allowed_ip = (v['CidrIp'] == 'AllowedIp')
+        except Exception:
+            pass
+        else:
+            if allowed_ip:
+                for m, w in cfg.AllowedIp.items():
+                    r_SGI = SecurityGroupIngress(f'{resname}{m}')
+                    auto_get_props(r_SGI, resname)
+                    auto_get_props(r_SGI, f'AllowedIp{m}')
+                    r_SGI.Condition = f'AllowedIp{m}'
+                    add_obj(r_SGI)
+                continue
+                
+        r_SGI = SecurityGroupIngress(resname)
+        auto_get_props(r_SGI)
+        add_obj(r_SGI)

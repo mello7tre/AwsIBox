@@ -4,7 +4,6 @@ from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
                      get_subvalue, auto_get_props, get_condition, add_obj)
 from .route53 import R53_RecordSetCCH
-from .securitygroup import SG_SecurityGroupService
 
 
 class CCHCacheSubnetGroupPrivate(cch.SubnetGroup):
@@ -32,7 +31,6 @@ def CCH_Cache(key):
     auto_get_props(R_Group, 'ReplicationGroupBase')
 
     R53_RecordSetCCH()
-    SG_SecurityGroupService('CCH')
 
     add_obj([
         R_Cache,

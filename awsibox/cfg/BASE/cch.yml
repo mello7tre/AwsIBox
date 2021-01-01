@@ -20,9 +20,6 @@ cch:
         Description: 'Enable or disable cache creation'
         AllowedValues: [ 'True', 'False']
         Default: 'True'
-    - CCHAccess:
-        Description: 'Access type public or private - empty for default based on env/role'
-        AllowedValues: ['', 'Private', 'Public']
     - CacheClusterBaseEngine:
         Description: 'Engine - empty for default based on env/role'
         AllowedValues: ['', 'memcached', 'redis']
@@ -36,7 +33,6 @@ cch:
         Description: 'Create a ElastiCache Redis Replication Group instead of a Cache Cluster - empty for default based on env/role'
         AllowedValues: ['', 'True', 'False']
   Condition:
-    - CCHPublic: get_condition('', 'equals', 'Public', 'CCHAccess')
     - CacheCluster:
         Or(
           And(
@@ -65,8 +61,6 @@ cch:
         Value: get_endvalue('CacheClusterBaseEngine')
     - EngineVersion: 
         Value: get_endvalue('CacheClusterBaseEngineVersion')
-    - CCHAccess:
-        Value: get_endvalue('CCHAccess')
     - NumCacheNodes:
         Condition: 'CacheCluster'
         Value: get_endvalue('CacheClusterBaseNumCacheNodes')
@@ -94,4 +88,3 @@ cch:
         AutomaticFailoverEnabled: 'False'
         NumCacheClusters: 1
         ReplicationGroupDescription: 'Redis ReplicaGroup'
-  CCHAccess: Public
