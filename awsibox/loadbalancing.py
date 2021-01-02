@@ -63,7 +63,7 @@ def LB_ListenersEC2():
     # Resources
     Listeners = []
     for n, v in cfg.Listeners.items():
-        mapname = f'Listeners{n}'  # Ex Listeners1
+        mapname = f'Listeners{n}'  # Ex ListenersPort5601
 
         if cfg.LoadBalancerClassic:
             Listener = elb.Listener(mapname)
@@ -80,14 +80,14 @@ def LB_ListenersEC2():
         # outputs
         Listener_Output = Output(mapname)
         Listener_Output.Value = Sub(
-            '${LoadBalancerPort}.${Protocol}.${LoadBalancerAccess}',
+            '${LoadBalancerPort}.${Protocol}.${AllowedIp}',
             **{
                 'LoadBalancerPort': get_endvalue(
                     f'{mapname}LoadBalancerPort'),
                 'Protocol': get_endvalue(
                     f'{mapname}Protocol'),
-                'LoadBalancerAccess': get_endvalue(
-                    f'{mapname}LoadBalancerAccess')
+                'AllowedIp': get_endvalue(
+                    f'SecurityGroupLoadBalancerSecurityGroupIngress{n}CidrIp')
             }
         )
         add_obj(Listener_Output)

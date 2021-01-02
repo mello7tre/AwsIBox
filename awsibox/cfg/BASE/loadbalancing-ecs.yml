@@ -3,9 +3,6 @@ IBoxLoader: !include [
 ]
 
 global:
-  Condition:
-    - LoadBalancerPublic:
-        get_condition('', 'equals', 'Public', 'LoadBalancerAccess')
   Output:
     - HealthCheck:
         Value:
@@ -19,10 +16,7 @@ global:
               'UnhealthyThresholdCount',
             ]
           )
-    - LoadBalancerAccess:
-        Value: get_endvalue('LoadBalancerAccess')
     - LoadBalancerApplication:
         Value: get_endvalue('LoadBalancerApplication', nolist=True)
     - ListenerLoadBalancer:
         Value: get_subvalue('HttpPort=${1M},HttpsPort=${2M}', ['ListenerLoadBalancerHttpPort', 'ListenerLoadBalancerHttpsPort'])
-  LoadBalancerAccess: Public

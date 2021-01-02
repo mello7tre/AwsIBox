@@ -3,7 +3,6 @@ AllowedIpBase: &allowedipbase
     - IBOXMAPNAME:
         get_condition('', 'not_equals', 'None', f'{IBOXMAPNAME}Enabled')
   Enabled: True
-  Description: ''
   CidrIp: '127.0.0.1/32'
 
 

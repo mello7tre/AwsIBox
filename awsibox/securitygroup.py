@@ -168,7 +168,7 @@ def SG_SecurityGroupRules(groupname, ingresses):
     for n, v in ingresses.items():
         resname = f'{groupname}SecurityGroupIngress{n}'
         allowed_ip = v.get('CidrIp') == 'AllowedIp'
-        allowed_ip_conditional = v.get('AllowedIpConditional')
+        allowed_ip_or_public = v.get('AllowedIpOrPublic')
         if allowed_ip:
             for m, w in cfg.AllowedIp.items(): 
                 r_SGRule = SecurityGroupRule(resname)
@@ -179,15 +179,15 @@ def SG_SecurityGroupRules(groupname, ingresses):
                     r_SGRule,
                     Ref('AWS::NoValue')))
 
-        if not allowed_ip or allowed_ip_conditional:
+        if not allowed_ip or allowed_ip_or_public:
             r_SGRule = SecurityGroupRule(resname)
             auto_get_props(r_SGRule)
 
-            if allowed_ip and allowed_ip_conditional:
+            if allowed_ip and allowed_ip_or_public:
                 r_SGRule.CidrIp = '0.0.0.0/0'
                 # condition
                 c_Public = get_condition(
-                    f'{resname}Public', 'not_equals', 'AllowedIp',
+                    f'{resname}Public', 'equals', '0.0.0.0/0',
                     f'{resname}CidrIp')
                 add_obj(c_Public)
                 r_SGRule = If(
@@ -229,7 +229,7 @@ def SG_SecurityGroup(key):
         add_obj(r_SG)
         # add output only if not already present (can be created by IBOXOUTPUT)
         try:
-            cfg.Resources[outname]
+            cfg.Outputs[outname]
         except:
             add_obj(o_SG)
 
