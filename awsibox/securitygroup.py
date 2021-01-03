@@ -258,6 +258,8 @@ def SG_SecurityGroup(key):
 
 def SG_SecurityGroupIngresses(key):
     for n, v in getattr(cfg, key).items():
+        if not v.get('IBOXENABLED', True):
+            continue
         resname = f'{key}{n}'
         try:
             allowed_ip = (v['CidrIp'] == 'AllowedIp')

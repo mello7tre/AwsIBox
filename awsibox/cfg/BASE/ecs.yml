@@ -15,34 +15,22 @@ ecs:
         Description: 'LoadBalancer Application Stack to use - empty for default based on env/role'
   SecurityGroupIngress:
     - LoadBalancerApplicationHttpExternal:
-        IBOXCONDITION:
-          - IBOXRESNAME: And(
-              Condition('ListenerLoadBalancerHttpPort'),
-              Not(Equals(cfg.ListenerLoadBalancerHttpPort, 80)),
-              Equals(cfg.LoadBalancerApplicationExternal, True))
-        Condition: IBOXRESNAME
+        IBOXENABLED: False
+        Condition: ListenerLoadBalancerHttpPort 
         CidrIp: '0.0.0.0/0'
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
         ToPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
     - LoadBalancerApplicationHttpInternal:
-        IBOXCONDITION:
-          - IBOXRESNAME: And(
-              Condition('ListenerLoadBalancerHttpPort'),
-              Not(Equals(cfg.ListenerLoadBalancerHttpPort, 80)),
-              Equals(cfg.LoadBalancerApplicationInternal, True))
-        Condition: IBOXRESNAME
+        IBOXENABLED: False
+        Condition: ListenerLoadBalancerHttpPort
         CidrIp: '0.0.0.0/0'
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
         ToPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
     - LoadBalancerApplicationHttpsExternal:
-        IBOXCONDITION:
-          - IBOXRESNAME: And(
-              Condition('ListenerLoadBalancerHttpsPort'),
-              Not(Equals(cfg.ListenerLoadBalancerHttpsPort, 443)),
-              Equals(cfg.LoadBalancerApplicationExternal, True))
-        Condition: IBOXRESNAME
+        IBOXENABLED: False
+        Condition: ListenerLoadBalancerHttpsPort
         CidrIp: '0.0.0.0/0'
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue(f'ListenerLoadBalancerHttpsPort')
