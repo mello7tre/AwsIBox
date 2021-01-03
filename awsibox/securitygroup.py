@@ -34,8 +34,8 @@ class SecurityGroupIngressInstanceELBPorts(SecurityGroupIngress):
     def __init__(self, title, listener, **kwargs):
         super().__init__(title, **kwargs)
         name = self.title  # Ex. SecurityGroupIngressListeners1
-        self.FromPort = get_endvalue(f'{listener}LoadBalancerPort')
-        self.ToPort = get_endvalue(f'{listener}LoadBalancerPort')
+        self.FromPort = get_endvalue(f'{listener}InstancePort')
+        self.ToPort = get_endvalue(f'{listener}InstancePort')
         self.SourceSecurityGroupId = Ref('SecurityGroupLoadBalancer')
         self.GroupId = GetAtt('SecurityGroupInstancesRules', 'GroupId')
 
@@ -165,14 +165,36 @@ def SG_SecurityGroupsTSK():
 
 def SG_SecurityGroupRules(groupname, ingresses):
     SecurityGroup_Rules = []
+    kwargs = {}
+
+    # Trick to populate SecurityGroupIngress using cfg.Listeners
+    if ingresses:
+        # use SecurityGroupIngress
+        prefix = f'{groupname}SecurityGroupIngress'
+        use_listener = False
+        cond_key = 'CidrIp'
+    else:
+        # use cfg.Listeners
+        prefix = 'Listeners'
+        ingresses = cfg.Listeners
+        use_listener = True
+        cond_key = 'Access'
+
     for n, v in ingresses.items():
-        resname = f'{groupname}SecurityGroupIngress{n}'
+        if use_listener:
+            # Trick to populate SecurityGroupIngress using cfg.Listeners
+            v['CidrIp'] = v['Access']
+            v['FromPort'] = v['LoadBalancerPort']
+            v['ToPort'] = v['LoadBalancerPort']
+            kwargs = {'rootdict': v}
+
+        resname = f'{prefix}{n}'
         allowed_ip = v.get('CidrIp') == 'AllowedIp'
         allowed_ip_or_public = v.get('AllowedIpOrPublic')
         if allowed_ip:
-            for m, w in cfg.AllowedIp.items(): 
+            for m, w in cfg.AllowedIp.items():
                 r_SGRule = SecurityGroupRule(resname)
-                auto_get_props(r_SGRule)
+                auto_get_props(r_SGRule, **kwargs)
                 auto_get_props(r_SGRule, f'AllowedIp{m}')
                 SecurityGroup_Rules.append(If(
                     f'AllowedIp{m}',
@@ -181,18 +203,18 @@ def SG_SecurityGroupRules(groupname, ingresses):
 
         if not allowed_ip or allowed_ip_or_public:
             r_SGRule = SecurityGroupRule(resname)
-            auto_get_props(r_SGRule)
+            auto_get_props(r_SGRule, **kwargs)
 
             if allowed_ip and allowed_ip_or_public:
                 r_SGRule.CidrIp = '0.0.0.0/0'
                 # condition
                 c_Public = get_condition(
                     f'{resname}Public', 'equals', '0.0.0.0/0',
-                    f'{resname}CidrIp')
+                    f'{resname}{cond_key}')
                 add_obj(c_Public)
                 r_SGRule = If(
-                    f'{resname}Public',r_SGRule, Ref('AWS::NoValue'))
-            
+                    f'{resname}Public', r_SGRule, Ref('AWS::NoValue'))
+
             SecurityGroup_Rules.append(r_SGRule)
 
     return SecurityGroup_Rules
@@ -207,7 +229,7 @@ def SG_SecurityGroup(key):
         auto_get_props(r_SG)
         try:
             ingresses = v['SecurityGroupIngress']
-        except:
+        except Exception:
             pass
         else:
             r_SG.SecurityGroupIngress = SG_SecurityGroupRules(
@@ -230,7 +252,7 @@ def SG_SecurityGroup(key):
         # add output only if not already present (can be created by IBOXOUTPUT)
         try:
             cfg.Outputs[outname]
-        except:
+        except Exception:
             add_obj(o_SG)
 
 
@@ -250,7 +272,7 @@ def SG_SecurityGroupIngresses(key):
                     r_SGI.Condition = f'AllowedIp{m}'
                     add_obj(r_SGI)
                 continue
-                
+
         r_SGI = SecurityGroupIngress(resname)
         auto_get_props(r_SGI)
         add_obj(r_SGI)

@@ -14,5 +14,9 @@ global:
   Output:
     - LoadBalancerLog:
         Value: get_endvalue('LoadBalancerLog')
+  SecurityGroup:
+    - LoadBalancer:
+        GroupDescription: 'Enable access to LoadBalancer'
+        SecurityGroupIngress: {}
 LoadBalancerLog: None
 LoadBalancerHttp2: True

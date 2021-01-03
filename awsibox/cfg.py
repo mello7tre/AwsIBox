@@ -166,6 +166,7 @@ INSTANCE_LIST = [
     't4g.xlarge', 't4g.2xlarge',
 ]
 
+# Order is VERY important do not CHANGE it!
 CFG_TO_FUNC = {
     'MappingClass': {'module': 'mappings',
                      'func': 'Mappings'},
@@ -288,7 +289,7 @@ CFG_TO_FUNC = {
     'VPCEndpoint': {'module': 'vpc',
                     'func': 'VPC_Endpoint'},
     'SecurityGroup': {'module': 'securitygroup',
-                          'func': 'SG_SecurityGroup'},
+                      'func': 'SG_SecurityGroup'},
     'SecurityGroupIngress': {'module': 'securitygroup',
                              'func': 'SG_SecurityGroupIngresses'},
     'VPC': {'module': 'vpc',

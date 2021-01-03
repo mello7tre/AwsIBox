@@ -46,20 +46,7 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
 # E - V2 LOAD BALANCING #
 
 
-def LB_Listeners():
-    # Conditions
-    for i in cfg.AllowedIp:
-        condname = f'AllowedIp{i}'  # Ex. AllowedIp1
-
-        c_Enabled = get_condition(
-            condname, 'not_equals', 'None', f'{condname}Enabled')
-
-        add_obj(c_Enabled)
-
-
 def LB_ListenersEC2():
-    LB_Listeners()
-
     # Resources
     Listeners = []
     for n, v in cfg.Listeners.items():
@@ -80,14 +67,12 @@ def LB_ListenersEC2():
         # outputs
         Listener_Output = Output(mapname)
         Listener_Output.Value = Sub(
-            '${LoadBalancerPort}.${Protocol}.${AllowedIp}',
+            'Protocol=${Protocol},Access=${Access}',
             **{
-                'LoadBalancerPort': get_endvalue(
-                    f'{mapname}LoadBalancerPort'),
                 'Protocol': get_endvalue(
                     f'{mapname}Protocol'),
-                'AllowedIp': get_endvalue(
-                    f'SecurityGroupLoadBalancerSecurityGroupIngress{n}CidrIp')
+                'Access': get_endvalue(
+                    f'{mapname}Access')
             }
         )
         add_obj(Listener_Output)
@@ -233,7 +218,6 @@ def LB_ListenersV2EC2():
 
 
 def LB_ListenersV2ECS():
-    LB_Listeners()
     for n in ['External', 'Internal']:
         # resources
         if n not in cfg.LoadBalancerApplication:
