@@ -20,7 +20,7 @@ global:
         IBOXENABLED: True
         Tags:
           - ServiceBase:
-              Key: IBOXServiceBase
+              Key: IBOXFARGATESPOTServiceBase
               Value: GetAtt('ServiceBase', 'Name')
   ScalableTarget:
     - Service:
@@ -29,7 +29,3 @@ global:
             get_subvalue('service/${1E}/${ServiceSpot.Name}', 'Cluster', 'ClusterStack'),
             get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
           )
-        Tags:
-          - ServiceSpot:
-              Key: IBOXServiceSpot
-              Value: GetAtt('ServiceSpot', 'Name')
