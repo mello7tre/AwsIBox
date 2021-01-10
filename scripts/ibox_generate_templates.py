@@ -11,7 +11,7 @@ from awsibox import args, cfg, RP, discover, generate
 args = args.get_args()
 
 
-def output_template(template, brand=None, role=None):
+def output_template(template, brand=None, envrole=None):
     if args.Output == 'json':
         output = template.to_json()
         extension = '.json'
@@ -30,9 +30,11 @@ def output_template(template, brand=None, role=None):
             os.makedirs(file_path)
         except Exception:
             pass
-        file_name = os.path.join(file_path, role + extension)
+        file_name = os.path.join(file_path, envrole + extension)
         with open(file_name, 'w') as f:
             f.write(output + '\n')
+
+        print(f'Brand: {brand} - EnvRole: {envrole}')
 
 
 def get_template():
@@ -41,20 +43,22 @@ def get_template():
 
     cfg.template = Template()
     RP.build_RP()
-    template = generate.generate()
 
-    # restore base cfg
-    cfg.__dict__.clear()
-    cfg.__dict__.update(cfg_base)
+    try:
+        template = generate.generate()
+    finally:
+        # restore base cfg
+        cfg.__dict__.clear()
+        cfg.__dict__.update(cfg_base)
 
     return template
 
 
-def do_write(role): 
-    cfg.envrole = role
+def do_process(stacktype, envrole):
+    cfg.envrole = envrole
+    cfg.stacktype = stacktype
     template = get_template()
-    output_template(template, brand, role)
-    print('Brand: %s - EnvRole: %s' % (brand, role))
+    output_template(template, cfg.brand, envrole)
 
 
 def concurrent_exec(roles, kwargs):
@@ -62,8 +66,10 @@ def concurrent_exec(roles, kwargs):
         data = {}
         future_to_role = {}
         for n in roles:
-            ex_sub = executor.submit(do_write, n)
-            future_to_role[ex_sub] = n
+            stacktype = n[0]
+            envrole = n[1]
+            ex_sub = executor.submit(do_process, stacktype, envrole)
+            future_to_role[ex_sub] = envrole
 
         for future in concurrent.futures.as_completed(future_to_role):
             role = future_to_role[future]
@@ -78,13 +84,16 @@ def concurrent_exec(roles, kwargs):
 
 
 if args.action == 'view':
-    cfg.envrole = args.EnvRole
+    discover_map = discover.discover(
+        [args.Brand], [args.EnvRole], [])
+
     cfg.brand = args.Brand
-
-    template = get_template()
-
-    output_template(template)
-
+    try:
+        role = discover_map[cfg.brand][0]
+    except Exception:
+        pass
+    else:
+        do_process(role[0], role[1])
 elif args.action == 'write':
     discover_map = discover.discover(
         args.Brands, args.EnvRoles, args.StackTypes)

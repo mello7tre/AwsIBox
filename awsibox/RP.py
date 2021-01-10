@@ -15,6 +15,7 @@ class Loader(yaml.Loader):
     def __init__(self, stream):
         # This way for include relative to file with include statement
         self._root_current = os.path.split(stream.name)[0]
+        self._root_current_home = os.path.dirname(self._root_current)
         # This way for include BASE relative on BASE dir
         self._root_base = os.path.join(CFG_FILE_INT, 'BASE')
         # This way for include relative on BASE EXT dir
@@ -57,6 +58,8 @@ class Loader(yaml.Loader):
                         self.extractFile(filename, self._root_base))
                 result.append(
                     self.extractFile(filename, self._root_current))
+                result.append(
+                    self.extractFile(filename, self._root_current_home))
                 # try to include BASE ext too
                 result.append(
                     self.extractFile(filename, self._root_base_ext))
@@ -229,8 +232,9 @@ def get_RP_for_envs(value):
     return RP
 
 
-def read_yaml(file_type, brand, base_dir):
-    cfg_file = os.path.join(base_dir, brand, f'{file_type}.yml')
+def read_yaml(file_type, brand, base_dir, stacktype=''):
+    cfg_file = os.path.join(
+        base_dir, brand, stacktype.upper(), f'{file_type}.yml')
 
     try:
         with open(cfg_file, 'r') as ymlfile:
@@ -371,15 +375,6 @@ def get_RP_base_keys():
     return RP_base_keys + [stacktype, envrole]
 
 
-def get_stack_type(cfgs):
-    for c in cfgs:
-        try:
-            if isinstance(c[envrole], dict) and 'StackType' in c[envrole]:
-                return c[envrole]['StackType']
-        except KeyError:
-            pass
-
-
 def set_cfg():
     def RP_to_cfg(key):
         if hasattr(key, 'items'):
@@ -453,8 +448,6 @@ def set_cfg():
     if 'Internal' in cfg.RecordSet:
         cfg.RecordSetInternal = True
 
-    cfg.stacktype = stacktype
-
 
 def build_RP():
     global envrole
@@ -479,6 +472,7 @@ def build_RP():
     CFG_FILE_EXT = os.path.normpath(CFG_FILE_EXT)
 
     envrole = cfg.envrole
+    stacktype = cfg.stacktype
     brand = cfg.brand
 
     RP_base = {
@@ -496,18 +490,10 @@ def build_RP():
     cfg.RP_base = RP_base
 
     cfg_role = [
-        read_yaml(envrole, 'BASE', CFG_FILE_INT),
-        read_yaml(envrole, 'BASE', CFG_FILE_EXT),
-        read_yaml(envrole, brand, CFG_FILE_EXT),
+        read_yaml(envrole, 'BASE', CFG_FILE_INT, stacktype),
+        read_yaml(envrole, 'BASE', CFG_FILE_EXT, stacktype),
+        read_yaml(envrole, brand, CFG_FILE_EXT, stacktype),
     ]
-
-    stacktype = get_stack_type(cfg_role)
-
-    if not stacktype:
-        logging.error(
-            f'StackType key not found for Role {envrole} '
-            f'in paths: {CFG_FILE_EXT}, {CFG_FILE_INT}')
-        exit(1)
 
     cfgs = {
         'common': [
@@ -516,9 +502,9 @@ def build_RP():
             read_yaml('common', brand, CFG_FILE_EXT),
         ],
         'type': [
-            read_yaml(stacktype, 'BASE', CFG_FILE_INT),
-            read_yaml(stacktype, 'BASE', CFG_FILE_EXT),
-            read_yaml(stacktype, brand, CFG_FILE_EXT),
+            read_yaml('TYPE', 'BASE', CFG_FILE_INT, stacktype),
+            read_yaml('TYPE', 'BASE', CFG_FILE_EXT, stacktype),
+            read_yaml('TYPE', brand, CFG_FILE_EXT, stacktype),
         ],
         'role': cfg_role,
     }
@@ -542,12 +528,6 @@ def build_RP():
         print('##########INCLUDED#######START#####')
         pprint(include_list)
         print('##########INCLUDED#######END#######')
-
-    try:
-        stacktype = RP['cmm']['cmm']['StackType']
-    except KeyError:
-        print('StackType key not found!')
-        exit(1)
 
     cfg.RP = RP
     cfg.RP_cmm = RP['cmm']['cmm']

@@ -15,6 +15,19 @@ PATH_INT = os.path.normpath(PATH_INT)
 PATH_EXT = os.path.join(os.getcwd(), 'cfg')
 PATH_EXT = os.path.normpath(PATH_EXT)
 
+STACK_TYPES = [
+    'agw',
+    'alb',
+    'cch',
+    'clf',
+    'ec2',
+    'ecr',
+    'ecs',
+    'rds',
+    'res',
+    'tsk',
+]
+
 MAX_SECURITY_GROUPS = 4
 # SECURITY_GROUPS_DEFAULT equals list of empty values
 # (Ex. for "MAX_SECURITY_GROUPS = 3" we have "SECURITY_GROUPS_DEFAULT = ',,'")

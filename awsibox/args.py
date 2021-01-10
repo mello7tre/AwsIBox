@@ -10,7 +10,8 @@ def get_args():
         description='Generate AWS CloudFormation Stack Templates')
 
     # subparser
-    subparsers = parser.add_subparsers(help='Desired Action', dest='action')
+    subparsers = parser.add_subparsers(help='Desired Action',
+                                       required=True, dest='action')
 
     # parent parser args
     parent_parser = argparse.ArgumentParser(add_help=False)
@@ -47,7 +48,8 @@ def get_args():
 
     parser_write.add_argument(
         '-r', '--EnvRoles',
-        help='Limit generation to specified EnvRoles', nargs='+')
+        help='Limit generation to specified EnvRoles',
+        nargs='+', default=[])
 
     parser_write.add_argument(
         '-t', '--StackTypes',

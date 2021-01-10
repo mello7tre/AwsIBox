@@ -16,8 +16,12 @@ def get_brands():
     return brands
 
 
-def get_files(brand):
-    files = []
+def build_discover_map(brand, stacktypes, envroles):
+    if not stacktypes and not envroles:
+        # include all roles in all stacktypes
+        stacktypes = cfg.STACK_TYPES
+
+    roles = []
 
     path_int = os.path.join(cfg.PATH_INT, brand)
     path_ext = os.path.join(cfg.PATH_EXT, brand)
@@ -29,28 +33,15 @@ def get_files(brand):
             except Exception:
                 pass
             for filename in filenames:
-                if not filename.startswith('.'):
-                    files.append(os.path.join(root, filename))
-
-    return files
-
-
-def build_discover_map(brand, files, stacktypes):
-    roles = []
-
-    for n in files:
-        try:
-            with open(n, 'r', encoding='utf-8') as f:
-                s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-
-                if any(
-                        s.find((f'{pattern}{t}').encode('utf-8')) != -1
-                        for t in stacktypes):
-                    base_name = os.path.basename(n)
-                    role = os.path.splitext(base_name)[0]
-                    roles.append(role)
-        except IOError:
-            pass
+                root_dir = os.path.basename(root)
+                stacktype = root_dir.lower()
+                role = os.path.splitext(os.path.basename(filename))[0]
+                if (root_dir.isupper()
+                        and not filename.startswith('.')
+                        and not filename == 'TYPE.yml'
+                        and (stacktype in stacktypes
+                             or role in envroles)):
+                    roles.append((stacktype, role))
 
     if brand == 'BASE':
         for n in ext_brands:
@@ -70,10 +61,7 @@ def add_to_map(brand, roles):
 
 def discover(brands, envroles, stacktypes):
     global discover_map
-    global pattern
     global ext_brands
-
-    pattern = ' StackType: '
 
     discover_map = {}
 
@@ -86,21 +74,6 @@ def discover(brands, envroles, stacktypes):
     brands.append('BASE')
 
     for brand in brands:
-        if envroles:
-            files = []
-            for role in envroles:
-                files.append(
-                    os.path.join(cfg.PATH_EXT, brand, role + '.yml'))
-                if brand == 'BASE':
-                    files.append(
-                        os.path.join(cfg.PATH_INT, brand, role + '.yml'))
-            build_discover_map(brand, files, stacktypes=[''])
-        if stacktypes:
-            files = get_files(brand)
-            build_discover_map(brand, files, stacktypes)
-        if not stacktypes and not envroles:
-            # match all
-            files = get_files(brand)
-            build_discover_map(brand, files, stacktypes=[''])
+        build_discover_map(brand, stacktypes, envroles)
 
     return discover_map
