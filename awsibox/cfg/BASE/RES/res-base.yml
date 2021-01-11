@@ -6,18 +6,13 @@ IBoxLoader: !include [
   res-base/iampolicy.yml,
   res-base/role.yml,
   res-base/securitygroup_base.yml,
+  res-base/ecs_draininstance.yml,
+  res-base/ecs_runtask.yml,
 ]
 
 res-base:
   StackType: res
   StackName: r-base
-  Output:
-    - LambdaECSRunTaskArn:
-        Value: GetAtt('LambdaECSRunTask', 'Arn')
-        Export: Export('LambdaECSRunTaskArn')
-    - RoleLambdaECSRunTask:
-        Value: Ref('RoleLambdaECSRunTask')
-        Export: Export('RoleLambdaECSRunTask')
   Bucket:
     - AppRepository:
         OutputValueRegion: 'AWSRegion'
@@ -36,72 +31,14 @@ res-base:
               Resource: Sub('arn:aws:s3:::${BucketLogs}/*')
               Principal: get_endvalue('LoadBalancerAccountID')
               Sid: AllowLBLogs
-  IAMPolicyInRole:
-    - LambdaECSDrainInstance:
-        Statement:
-          - 1:
-              Action: 'autoscaling:CompleteLifecycleAction'
-              Resource: '*'
-          - 2:
-              Action: 'ecs:ListContainerInstances'
-              Resource: '*'
-          - 3:
-              Action:
-                - 'ecs:DescribeContainerInstances'
-                - 'ecs:UpdateContainerInstancesState'
-              Resource: '*'
-          - 4:
-              Action: 'sns:Publish'
-              Resource: Ref('SNSTopicECSDrainInstance')
-          - 5:
-              Action: 'cloudformation:ListExports'
-              Resource: '*'
-    - LambdaECSRunTask:
-        Statement:
-          - 1:
-              Action:
-                - 'ecs:ListContainerInstances'
-                - 'ecs:DescribeContainerInstances'
-              Resource:
-                - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/*')
-                - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:container-instance/*')
   KMSKey: True
-  Lambda:
-    - ECSDrainInstance:
-        Description: 'Gracefully drain ECS tasks from EC2 instances before the instances are terminated by autoscaling.'
-        MemorySize: 128
-        Runtime: python3.6
-        Timeout: 60
-        Variables: []
-    - ECSRunTask:
-        Description: 'Run ECS Task'
-        MemorySize: 128
-        Runtime: python2.7
-        Timeout: 60
-        Variables: []
-  Role:
-    - ASGLifecycleHookECSDrainInstance:
-        Export: True
-        Principal: autoscaling.amazonaws.com
-        Policies:
-          - ASGLifecycleHookECSDrainInstance:
-              Statement:
-                - 1:
-                    Action: 'sns:Publish'
-                    Resource: Ref('SNSTopicECSDrainInstance')
   ServiceDiscovery: True
   SNSSubscription:
     - CloudWatchAlarm:
         TopicArn: Ref('SNSTopicCloudWatchAlarm')
         Endpoint: cfg.CloudWatchAlarmEndpoint
         Protocol: email
-    - ECSDrainInstanceLambdaECSDrainInstance:
-        TopicArn: Ref('SNSTopicECSDrainInstance')
-        Endpoint: GetAtt('LambdaECSDrainInstance', 'Arn')
-        Protocol: lambda
   SNSTopic:
     - CloudWatchAlarm:
-        Export: True
-    - ECSDrainInstance:
         Export: True
   VPCEndpoint: True

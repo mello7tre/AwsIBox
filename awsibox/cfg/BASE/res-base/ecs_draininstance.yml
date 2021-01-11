@@ -1,0 +1,46 @@
+global:
+  IAMPolicyInRole:
+    - LambdaECSDrainInstance:
+        Statement:
+          - 1:
+              Action: 'autoscaling:CompleteLifecycleAction'
+              Resource: '*'
+          - 2:
+              Action: 'ecs:ListContainerInstances'
+              Resource: '*'
+          - 3:
+              Action:
+                - 'ecs:DescribeContainerInstances'
+                - 'ecs:UpdateContainerInstancesState'
+              Resource: '*'
+          - 4:
+              Action: 'sns:Publish'
+              Resource: Ref('SNSTopicECSDrainInstance')
+          - 5:
+              Action: 'cloudformation:ListExports'
+              Resource: '*'
+  Lambda:
+    - ECSDrainInstance:
+        Description: 'Gracefully drain ECS tasks from EC2 instances before the instances are terminated by autoscaling.'
+        MemorySize: 128
+        Runtime: python3.6
+        Timeout: 60
+        Variables: []
+  Role:
+    - ASGLifecycleHookECSDrainInstance:
+        Export: True
+        Principal: autoscaling.amazonaws.com
+        Policies:
+          - ASGLifecycleHookECSDrainInstance:
+              Statement:
+                - 1:
+                    Action: 'sns:Publish'
+                    Resource: Ref('SNSTopicECSDrainInstance')
+  SNSSubscription:
+    - ECSDrainInstanceLambdaECSDrainInstance:
+        TopicArn: Ref('SNSTopicECSDrainInstance')
+        Endpoint: GetAtt('LambdaECSDrainInstance', 'Arn')
+        Protocol: lambda
+  SNSTopic:
+    - ECSDrainInstance:
+        Export: True

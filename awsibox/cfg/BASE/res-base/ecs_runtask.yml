@@ -1,0 +1,25 @@
+global:
+  Output:
+    - LambdaECSRunTaskArn:
+        Value: GetAtt('LambdaECSRunTask', 'Arn')
+        Export: Export('LambdaECSRunTaskArn')
+    - RoleLambdaECSRunTask:
+        Value: Ref('RoleLambdaECSRunTask')
+        Export: Export('RoleLambdaECSRunTask')
+  IAMPolicyInRole:
+    - LambdaECSRunTask:
+        Statement:
+          - 1:
+              Action:
+                - 'ecs:ListContainerInstances'
+                - 'ecs:DescribeContainerInstances'
+              Resource:
+                - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/*')
+                - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:container-instance/*')
+  Lambda:
+    - ECSRunTask:
+        Description: 'Run ECS Task'
+        MemorySize: 128
+        Runtime: python2.7
+        Timeout: 60
+        Variables: []

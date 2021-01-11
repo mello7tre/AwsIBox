@@ -2,19 +2,12 @@ IBoxLoader: !include [
   certificate-global.yml,
   certificate-regional.yml,
   cloudfront/cloudfront-policy.yml,
+  res-extra/cloudformation_stackset.yml,
 ]
 
 res-extra-01:
   StackType: res
   StackName: r-extra-01
-  Parameter:
-    - RegionAWSCloudFormationStackSetRoles:
-        Description: 'Region where create AWSCloudFormationStackSet Roles'
-        AllowedValues: cfg.regions
-        Default: cfg.regions[0]
-  Condition:
-    - RegionAWSCloudFormationStackSetRoles:
-        Equals(Ref('RegionAWSCloudFormationStackSetRoles'), Ref('AWS::Region'))
   MappingClass:
     - AZones:
   ApiGatewayAccount: True
@@ -27,31 +20,10 @@ res-extra-01:
         Name: EcsCluster
         Encrypted: False
         PerformanceMode: generalPurpose
-  IAMPolicy:
-    - AssumeRoleAWSCloudFormationStackSetExecutionRole:
-        Type: Managed
-        Description: 'Assume Role AWSCloudFormationStackSetExecutionRole'
-        Condition: 'RegionAWSCloudFormationStackSetRoles'
-        Statement:
-          - 1:
-              Action: 'sts:AssumeRole'
-              Resource: 'arn:aws:iam::*:role/AWSCloudFormationStackSetExecutionRole'
-  Role:
-    - AWSCloudFormationStackSetExecutionRole:
-        Condition: 'RegionAWSCloudFormationStackSetRoles'
-        ManagedPolicyArns:
-          - 'arn:aws:iam::aws:policy/AdministratorAccess'
-        Principal: GetAtt('RoleAWSCloudFormationStackSetAdministrationRole', 'Arn')
-        PrincipalType: AWS
-        RoleName: 'AWSCloudFormationStackSetExecutionRole'
-    - AWSCloudFormationStackSetAdministrationRole:
-        Condition: 'RegionAWSCloudFormationStackSetRoles'
-        ManagedPolicyArns:
-          - Ref('IAMPolicyAssumeRoleAWSCloudFormationStackSetExecutionRole')
-        Principal: cloudformation.amazonaws.com
-        RoleName: 'AWSCloudFormationStackSetAdministrationRole'
-  SecurityGroupBase:
-    - RDS: 'Assign to RDS Client'
+  SecurityGroup:
+    - RDS:
+        Export: True
+        GroupDescription: 'Assign to RDS Client'
   SNSTopic:
     - CloudFormationNotification:
         Export: True
