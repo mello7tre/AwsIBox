@@ -1,10 +1,10 @@
 IBoxLoader: !exclude [
-  applicationautoscaling-scalingpolicy.yml,
-  capacity.yml,
-  loadbalancing.yml,
+  autoscaling/applicationautoscaling-scalingpolicy.yml,
+  autoscaling/capacity.yml,
+  loadbalancing/loadbalancing.yml,
   securitygroup.yml,
   alarms.yml,
-  cloudfront-ios.yml,
+  cloudfront/cloudfront-ios.yml,
 ]
 
 reserve-cpu:

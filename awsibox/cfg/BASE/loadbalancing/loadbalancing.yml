@@ -4,7 +4,7 @@ IBoxLoader: !include [
   loadbalancing-targetgroup.yml,
   certificate-regional.yml,
   securitygroup.yml,
-  route53-recordset.yml,
+  route53/route53-recordset.yml,
 ]
 
 global:

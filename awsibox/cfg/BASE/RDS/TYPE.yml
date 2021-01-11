@@ -1,7 +1,7 @@
 IBoxLoader: !include [
   rds-dbinstance.yml,
   securitygroup.yml,
-  route53-recordset.yml,
+  route53/route53-recordset.yml,
 ]
 
 rds:

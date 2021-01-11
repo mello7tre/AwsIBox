@@ -1,10 +1,10 @@
 IBoxLoader:
   - !exclude
-    - cloudfront-ios.yml
-    - loadbalancing.yml
-    - applicationautoscaling-scalingpolicy.yml
+    - cloudfront/cloudfront-ios.yml
+    - loadbalancing/loadbalancing.yml
+    - autoscaling/applicationautoscaling-scalingpolicy.yml
   - !include
-    - iampolicy-update_stack.yml
+    - iam/iampolicy-update_stack.yml
 
 buildkite:
   StackType: ecs

@@ -15,13 +15,28 @@ class Loader(yaml.Loader):
     def __init__(self, stream):
         # This way for include relative to file with include statement
         self._root_current = os.path.split(stream.name)[0]
-        self._root_current_home = os.path.dirname(self._root_current)
         # This way for include BASE relative on BASE dir
         self._root_base = os.path.join(CFG_FILE_INT, 'BASE')
         # This way for include relative on BASE EXT dir
         self._root_base_ext = os.path.join(CFG_FILE_EXT, 'BASE')
         # This way for include relative on brand EXT dir
         self._root_brand_ext = os.path.join(CFG_FILE_EXT, brand)
+
+        # try to find out if source file is in a subfolder
+        if self._root_base in self._root_current:
+            suffix = self._root_current.replace(self._root_base, '')
+        elif self._root_base_ext in self._root_current:
+            suffix = self._root_current.replace(self._root_base_ext, '')
+        else:
+            suffix = self._root_current.replace(self._root_brand_ext, '')
+
+        # self.root_current_suffix will be empty if source file is in root
+        self.root_current_suffix = os.path.basename(suffix)
+        if self.root_current_suffix.upper() in cfg.STACK_TYPES:
+            # set to empty even if UPPERCASE subfolders is in cfg.STACK_TYPES
+            # so that they are not searched for include files
+            self.root_current_suffix = ''
+
         self.stream = stream
         super(Loader, self).__init__(stream)
         Loader.add_constructor('!include', Loader.include)
@@ -51,22 +66,41 @@ class Loader(yaml.Loader):
                 if filename in exclude_list + include_list:
                     continue
                 include_list.append(filename)
-                # if including Ext cfg
-                # try to include BASE file from CFG_FILE_INT too
-                if CFG_FILE_EXT in self.stream.name:
+
+                # always search for include in CFG_FILE_INT BASE root
+                result.append(self.extractFile(filename, self._root_base))
+
+                if self.root_current_suffix:
+                    # if source file is in subfolder
+                    # search in CFG_FILE_INT BASE subfolder
                     result.append(
-                        self.extractFile(filename, self._root_base))
-                result.append(
-                    self.extractFile(filename, self._root_current))
-                result.append(
-                    self.extractFile(filename, self._root_current_home))
-                # try to include BASE ext too
-                result.append(
-                    self.extractFile(filename, self._root_base_ext))
-                # try to include brand ext too
-                result.append(
-                    self.extractFile(filename, self._root_brand_ext))
-                # result += self.extractFile(filename)
+                        self.extractFile(filename, os.path.join(
+                            self._root_base, self.root_current_suffix)))
+
+                if self._root_base not in self._root_current:
+                    # if source file is not from CFG_FILE_INT
+                    # so that is not been processed by previous append
+                    if self.root_current_suffix: 
+                        # if source file is in subfolder
+                        result.append(
+                            self.extractFile(filename, self._root_current))
+                    if not self.root_current_suffix.upper() in cfg.STACK_TYPES:
+                            # source file is not in root but in subfolder
+                            # different from stacktype so look in root too
+                        result.append(
+                            self.extractFile(filename, os.path.dirname(
+                                self._root_current)))
+
+                for path in [self._root_base_ext, self._root_brand_ext]:
+                    if path not in self._root_current:
+                        # if not already processed by previous append
+                        result.append(self.extractFile(filename, path))
+                        if self.root_current_suffix:
+                            # search in subfolder too
+                            result.append(
+                                self.extractFile(filename, os.path.join(
+                                    path, self.root_current_suffix)))
+
             return result
 
         elif isinstance(node, yaml.MappingNode):

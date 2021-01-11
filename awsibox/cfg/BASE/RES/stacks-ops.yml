@@ -1,6 +1,6 @@
 IBoxLoader:
   - !include
-    - iampolicy-update_stack.yml
+    - iam/iampolicy-update_stack.yml
 
 stacks-ops:
   StackType: res

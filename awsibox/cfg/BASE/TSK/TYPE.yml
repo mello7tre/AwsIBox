@@ -1,5 +1,5 @@
 IBoxLoader: !include [
-  ecs-task.yml,
+  ecs/ecs-task.yml,
 ]
 
 tsk:

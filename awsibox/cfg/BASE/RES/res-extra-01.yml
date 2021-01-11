@@ -1,7 +1,7 @@
 IBoxLoader: !include [
   certificate-global.yml,
   certificate-regional.yml,
-  cloudfront-policy.yml,
+  cloudfront/cloudfront-policy.yml,
 ]
 
 res-extra-01:

@@ -1,10 +1,10 @@
 IBoxLoader: 
   - !include [
-      imageid-ecs.yml,
+      autoscaling/imageid-ecs.yml,
     ]
   - !exclude [
-      cloudfront-ios.yml,
-      loadbalancing-elb.yml,
+      cloudfront/cloudfront-ios.yml,
+      loadbalancing/loadbalancing-elb.yml,
     ]
 
 ecs-cluster:
