@@ -67,40 +67,16 @@ class Loader(yaml.Loader):
                     continue
                 include_list.append(filename)
 
-                # always search for include in CFG_FILE_INT BASE root
-                result.append(self.extractFile(filename, self._root_base))
-
-                if self.root_current_suffix:
-                    # if source file is in subfolder
-                    # search in CFG_FILE_INT BASE subfolder
-                    result.append(
-                        self.extractFile(filename, os.path.join(
-                            self._root_base, self.root_current_suffix)))
-
-                if self._root_base not in self._root_current:
-                    # if source file is not from CFG_FILE_INT
-                    # so that is not been processed by previous append
-                    if self.root_current_suffix: 
-                        # if source file is in subfolder
+                # search for include in files in roots
+                for path in [self._root_base,
+                             self._root_base_ext,
+                             self._root_brand_ext]:
+                    result.append(self.extractFile(filename, path))
+                    if self.root_current_suffix:
+                        # search in subfolder too
                         result.append(
-                            self.extractFile(filename, self._root_current))
-                    if not self.root_current_suffix.upper() in cfg.STACK_TYPES:
-                            # source file is not in root but in subfolder
-                            # different from stacktype so look in root too
-                        result.append(
-                            self.extractFile(filename, os.path.dirname(
-                                self._root_current)))
-
-                for path in [self._root_base_ext, self._root_brand_ext]:
-                    if path not in self._root_current:
-                        # if not already processed by previous append
-                        result.append(self.extractFile(filename, path))
-                        if self.root_current_suffix:
-                            # search in subfolder too
-                            result.append(
-                                self.extractFile(filename, os.path.join(
-                                    path, self.root_current_suffix)))
-
+                            self.extractFile(filename, os.path.join(
+                                path, self.root_current_suffix)))
             return result
 
         elif isinstance(node, yaml.MappingNode):
