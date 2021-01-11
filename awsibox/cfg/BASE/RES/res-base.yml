@@ -2,6 +2,8 @@ IBoxLoader: !include [
   loadbalancing/lb-accountid.yml,
   iam/ssm.yml,
   route53/hostedzones.yml,
+  res-base/iampolicy.yml,
+  res-base/role.yml,
 ]
 
 res-base:
@@ -32,63 +34,6 @@ res-base:
               Resource: Sub('arn:aws:s3:::${BucketLogs}/*')
               Principal: get_endvalue('LoadBalancerAccountID')
               Sid: AllowLBLogs
-  IAMPolicy:
-    - BaseInstance:
-        Type: Managed
-        Export: True
-        Description: 'Policy common to all instances'
-        Statement:
-          - 1:
-              Action:
-                - 's3:GetBucketLocation'
-                - 's3:ListAllMyBuckets'
-              Resource: 'arn:aws:s3:::*'
-          - 2:
-              Action:
-                - 's3:Get*'
-                - 's3:List*'
-              Resource:
-                - Sub('arn:aws:s3:::%s' % cfg.BucketAppRepository)
-                - Sub('arn:aws:s3:::%s/*' % cfg.BucketAppRepository)
-                - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}')
-                - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}/*')
-          - 3:
-              Action:
-                - 'elasticloadbalancing:DescribeInstanceHealth'
-                - 'elasticloadbalancing:DescribeTargetHealth'
-                - 'ec2:DescribeInstances'
-              Resource: '*'
-    - CloudWatchPutMetric:
-        Type: Managed
-        Export: True
-        Description: 'Policy for ecs-task to put CW metric data'
-        Statement:
-          - 1:
-              Action:
-                - 'cloudwatch:PutMetricData'
-              Resource: '*'
-    - Ecs:
-        Type: Managed
-        Export: True
-        Description: 'EcsCluster'
-        Statement:
-          - 1:
-              Action:
-                - 'ecs:CreateCluster'
-                - 'ecs:DeregisterContainerInstance'
-                - 'ecs:DiscoverPollEndpoint'
-                - 'ecs:Poll'
-                - 'ecs:RegisterContainerInstance'
-                - 'ecs:StartTelemetrySession'
-                - 'ecs:Submit*'
-                - 'ecs:UpdateContainerInstancesState'
-                - 'logs:CreateLogStream'
-                - 'logs:PutLogEvents'
-                - 'ecr:BatchCheckLayerAvailability'
-                - 'ecr:BatchGetImage'
-                - 'ecr:GetDownloadUrlForLayer'
-                - 'ecr:GetAuthorizationToken'
-              Resource: '*'
   IAMPolicyInRole:
     - LambdaECSDrainInstance:
         Statement:
@@ -133,36 +78,6 @@ res-base:
         Timeout: 60
         Variables: []
   Role:
-    - CodeDeploy:
-        Export: True
-        ManagedPolicyArns:
-          - 'arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole'
-        Principal: codedeploy.amazonaws.com
-    - ECSService:
-        Export: True
-        ManagedPolicyArns:
-          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
-        Principal: ecs.amazonaws.com
-    - EC2ContainerServiceAutoscale:
-        Export: True
-        ManagedPolicyArns:
-          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
-        Principal: application-autoscaling.amazonaws.com
-    - ECSTaskExecution:
-        Export: True
-        ManagedPolicyArns:
-          - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
-        Principal: ecs-tasks.amazonaws.com
-    - ECSEvents:
-        Export: True
-        ManagedPolicyArns:
-          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceEventsRole'
-        Principal: events.amazonaws.com
-    - ApiGatewayCloudWatch:
-        Export: True
-        ManagedPolicyArns:
-          - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
-        Principal: apigateway.amazonaws.com
     - ASGLifecycleHookECSDrainInstance:
         Export: True
         Principal: autoscaling.amazonaws.com
@@ -172,19 +87,6 @@ res-base:
                 - 1:
                     Action: 'sns:Publish'
                     Resource: Ref('SNSTopicECSDrainInstance')
-    - AWSCloudFormationStackSetExecutionRole:
-        Condition: 'RegionAWSCloudFormationStackSetRoles'
-        ManagedPolicyArns:
-          - 'arn:aws:iam::aws:policy/AdministratorAccess'
-        Principal: GetAtt('RoleAWSCloudFormationStackSetAdministrationRole', 'Arn')
-        PrincipalType: AWS
-        RoleName: 'AWSCloudFormationStackSetExecutionRole'
-    - AWSCloudFormationStackSetAdministrationRole:
-        Condition: 'RegionAWSCloudFormationStackSetRoles'
-        ManagedPolicyArns:
-          - Ref('IAMPolicyAssumeRoleAWSCloudFormationStackSetExecutionRole')
-        Principal: cloudformation.amazonaws.com
-        RoleName: 'AWSCloudFormationStackSetAdministrationRole'
   SecurityGroupBase:
     - BaseInstance: 'Enable ICMP Ping [ALL] and SSH on EC2 Instance'
     - LoadBalancerApplicationExternal: 'Assign to LoadBalancerApplicationExternal'

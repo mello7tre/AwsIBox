@@ -1,0 +1,33 @@
+global:
+
+  Role:
+    - CodeDeploy:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole'
+        Principal: codedeploy.amazonaws.com
+    - ECSService:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole'
+        Principal: ecs.amazonaws.com
+    - EC2ContainerServiceAutoscale:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
+        Principal: application-autoscaling.amazonaws.com
+    - ECSTaskExecution:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+        Principal: ecs-tasks.amazonaws.com
+    - ECSEvents:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceEventsRole'
+        Principal: events.amazonaws.com
+    - ApiGatewayCloudWatch:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
+        Principal: apigateway.amazonaws.com
