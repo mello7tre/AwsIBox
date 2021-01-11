@@ -71,18 +71,12 @@ class Loader(yaml.Loader):
                 for path in [self._root_base,
                              self._root_base_ext,
                              self._root_brand_ext]:
-                    ex_file = None
+                    result.append(self.extractFile(filename, path))
                     if self.root_current_suffix:
-                        # first search in subfolder
-                        ex_file = self.extractFile(filename, os.path.join(
-                            path, self.root_current_suffix))
-                        if ex_file:
-                            result.append(ex_file)
-                    if not ex_file:
-                        # if not found search in root
-                        ex_file = self.extractFile(filename, path)
-                        if ex_file:
-                            result.append(ex_file)
+                        # search in subfolder too
+                        result.append(
+                            self.extractFile(filename, os.path.join(
+                                path, self.root_current_suffix)))
             return result
 
         elif isinstance(node, yaml.MappingNode):
