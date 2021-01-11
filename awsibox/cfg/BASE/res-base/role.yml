@@ -1,5 +1,4 @@
 global:
-
   Role:
     - CodeDeploy:
         Export: True

@@ -1,5 +1,4 @@
 global:
-
   IAMPolicy:
     - BaseInstance:
         Type: Managed

@@ -1,5 +1,4 @@
 global:
-
   Parameter:
     - RegionAWSCloudFormationStackSetRoles:
         Description: 'Region where create AWSCloudFormationStackSet Roles'

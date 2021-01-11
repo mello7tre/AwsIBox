@@ -2,8 +2,10 @@ IBoxLoader: !include [
   loadbalancing/lb-accountid.yml,
   iam/ssm.yml,
   route53/hostedzones.yml,
+  securitygroup.yml,
   res-base/iampolicy.yml,
   res-base/role.yml,
+  res-base/securitygroup_base.yml,
 ]
 
 res-base:
@@ -87,10 +89,6 @@ res-base:
                 - 1:
                     Action: 'sns:Publish'
                     Resource: Ref('SNSTopicECSDrainInstance')
-  SecurityGroupBase:
-    - BaseInstance: 'Enable ICMP Ping [ALL] and SSH on EC2 Instance'
-    - LoadBalancerApplicationExternal: 'Assign to LoadBalancerApplicationExternal'
-    - LoadBalancerApplicationInternal: 'Assign to LoadBalancerApplicationInternal'
   ServiceDiscovery: True
   SNSSubscription:
     - CloudWatchAlarm:

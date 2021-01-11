@@ -1,0 +1,21 @@
+global:
+  SecurityGroup:
+    - BaseInstance:
+        Export: True
+        GroupDescription: 'Enable ICMP Ping [ALL] and SSH [192.168.36.0/23]'
+        SecurityGroupIngress:
+          - Port22:
+              CidrIp: AllowedIp
+              FromPort: 22
+              ToPort: 22
+          - Ping:
+              CidrIp: '0.0.0.0/0'
+              FromPort: 8
+              IpProtocol: icmp
+              ToPort: -1
+    - LoadBalancerApplicationExternal:
+        Export: True
+        GroupDescription: 'Assign to LoadBalancerApplicationExternal'
+    - LoadBalancerApplicationInternal:
+        Export: True
+        GroupDescription: 'Assign to LoadBalancerApplicationInternal'
