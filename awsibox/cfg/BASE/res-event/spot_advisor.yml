@@ -1,0 +1,29 @@
+global:
+  EventsRule:
+    - SpotAdvisor:
+       Description: 'Schedule LambdaSpotAdvisor'
+       State: 'DISABLED'
+       ScheduleExpression: 'cron(16 * * * ? *)'
+       Targets:
+         - LambdaSpotAdvisor:
+             Arn: GetAtt('LambdaSpotAdvisor', 'Arn')
+             Id: 'TargetFunction-01'
+  Lambda:
+    - SpotAdvisor:
+        Code:
+          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Key: ibox-tools/spot-advisor/spot-advisor.zip
+        Description: 'Advise if ASG is using a spot instance type with a high frequency of interruption'
+        MemorySize: 128
+        Runtime: python3.7
+        Timeout: 20
+        Variables:
+          - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+  IAMPolicy:
+    - LambdaSpotAdvisor:
+        Roles:
+          - Ref('RoleLambdaSpotAdvisor')
+        Statement:
+          - 1:
+              Action: 'sns:Publish'
+              Resource: get_expvalue('SNSTopicCloudWatchAlarm')
