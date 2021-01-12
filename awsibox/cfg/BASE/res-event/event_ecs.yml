@@ -3,27 +3,19 @@ global:
     - ECSEventServiceAction:
         Description: 'ECSEvents Lambda Trigger'
         State: 'DISABLED'
-        EventPattern: >
-            eval('{
-              "source": [
-                "aws.ecs"
-              ],
-              "detail-type": [
-                "ECS Service Action"
-              ],
-              "detail": { 
-                "eventType": [
-                  "ERROR"
-                ],
-                "eventName": [
-                  "SERVICE_TASK_PLACEMENT_FAILURE"
-                ],
-                "reason": [
-                  "RESOURCE:MEMORY",
-                  "RESOURCE:CPU"
-                ]
-              }
-            }')
+        EventPattern:
+          detail:
+            eventType:
+              - ERROR
+            eventName:
+              - SERVICE_TASK_PLACEMENT_FAILURE
+            reason:
+              - 'RESOURCE:MEMORY'
+              - 'RESOURCE:CPU'
+          detail-type:
+            - ECS Service Action
+          source:
+            - aws.ecs
         Targets:
           - LambdaECSEvents:
               Arn: GetAtt('LambdaECSEvents', 'Arn')
@@ -31,26 +23,18 @@ global:
     - ECSEventTaskStateChange:
         Description: 'ECSEvents Lambda Trigger'
         State: 'DISABLED'
-        EventPattern: >
-            eval('{
-              "source": [
-                "aws.ecs"
-              ],
-              "detail-type": [
-                "ECS Task State Change"
-              ],
-              "detail": {   
-                "lastStatus": [
-                  "STOPPED"
-                ],
-                "desiredStatus": [
-                  "STOPPED"
-                ],
-                "stopCode": [
-                  "EssentialContainerExited"
-                ]
-              }
-            }')
+        EventPattern:
+          detail:
+            lastStatus:
+              - STOPPED
+            desiredStatus:
+              - STOPPED
+            stopCode:
+              - EssentialContainerExited
+          detail-type:
+            - ECS Task State Change
+          source:
+            - aws.ecs
         Targets:
           - LambdaECSEvents:
               Arn: GetAtt('LambdaECSEvents', 'Arn')

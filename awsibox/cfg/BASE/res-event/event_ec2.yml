@@ -21,21 +21,15 @@ global:
     - EC2Notification:
         Description: 'EC2 Instance State-change Notification'
         State: 'ENABLED'
-        EventPattern: >
-            eval('{
-              "source": [
-                "aws.ec2"
-              ],
-              "detail-type": [
-                "EC2 Instance State-change Notification"
-              ],
-              "detail": {
-                "state": [
-                  "running",
-                  "shutting-down"
-                ]
-              }
-            }')
+        EventPattern:
+          detail:
+            state:
+              - running
+              - shutting-down
+          detail-type:
+            - EC2 Instance State-change Notification
+          source:
+            - aws.ec2
         Targets:
           - LambdaServiceDiscovery:
               Arn: GetAtt('LambdaServiceDiscovery', 'Arn')

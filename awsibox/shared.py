@@ -403,7 +403,10 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
             if isinstance(prop_obj, dict):
                 for k, v in key[obj_propname].items():
-                    prop_obj[k] = get_endvalue(f'{mapname_obj}{k}')
+                    if isinstance(v, dict):
+                        prop_obj[k] = getattr(cfg, f'{mapname_obj}{k}')
+                    else:
+                        prop_obj[k] = get_endvalue(f'{mapname_obj}{k}')
             else:
                 _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
 
