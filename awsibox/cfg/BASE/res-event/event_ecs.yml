@@ -1,0 +1,94 @@
+global:
+  EventsRule:
+    - ECSEventServiceAction:
+        Description: 'ECSEvents Lambda Trigger'
+        State: 'DISABLED'
+        EventPattern: >
+            eval('{
+              "source": [
+                "aws.ecs"
+              ],
+              "detail-type": [
+                "ECS Service Action"
+              ],
+              "detail": { 
+                "eventType": [
+                  "ERROR"
+                ],
+                "eventName": [
+                  "SERVICE_TASK_PLACEMENT_FAILURE"
+                ],
+                "reason": [
+                  "RESOURCE:MEMORY",
+                  "RESOURCE:CPU"
+                ]
+              }
+            }')
+        Targets:
+          - LambdaECSEvents:
+              Arn: GetAtt('LambdaECSEvents', 'Arn')
+              Id: TargetFunction-01
+    - ECSEventTaskStateChange:
+        Description: 'ECSEvents Lambda Trigger'
+        State: 'DISABLED'
+        EventPattern: >
+            eval('{
+              "source": [
+                "aws.ecs"
+              ],
+              "detail-type": [
+                "ECS Task State Change"
+              ],
+              "detail": {   
+                "lastStatus": [
+                  "STOPPED"
+                ],
+                "desiredStatus": [
+                  "STOPPED"
+                ],
+                "stopCode": [
+                  "EssentialContainerExited"
+                ]
+              }
+            }')
+        Targets:
+          - LambdaECSEvents:
+              Arn: GetAtt('LambdaECSEvents', 'Arn')
+              Id: TargetFunction-01
+  Lambda:
+    - ECSEvents:
+        Description: 'ECSEvents'
+        Code:
+          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Key: ibox-tools/ecs-events/master-444dd76.zip
+        Layers:
+          - ''
+        MemorySize: 128
+        Runtime: python3.7
+        Timeout: 30
+        Variables:
+          - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+  IAMPolicy:
+    - LambdaECSEvents:
+        Roles:
+          - Ref('RoleLambdaECSEvents')
+        Statement:
+          - 1:
+              Action:
+                - 'ecs:DescribeContainerInstances'
+                - 'cloudwatch:SetAlarmState'
+                - 'cloudwatch:DisableAlarmActions'
+                - 'cloudwatch:EnableAlarmActions'
+                - 'events:PutRule'
+                - 'events:DeleteRule'
+                - 'events:PutTargets'
+                - 'events:RemoveTargets'
+                - 'lambda:AddPermission'
+                - 'lambda:RemovePermission'
+              Resource: '*'
+          - 2:
+              Action: 'sns:Publish'
+              Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+    - ParameterStore:
+        Roles:
+          - Ref('RoleLambdaECSEvents')

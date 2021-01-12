@@ -1,0 +1,9 @@
+global:
+  SNSSubscription:
+    - CloudWatchAlarm:
+        TopicArn: Ref('SNSTopicCloudWatchAlarm')
+        Endpoint: cfg.CloudWatchAlarmEndpoint
+        Protocol: email
+  SNSTopic:
+    - CloudWatchAlarm:
+        Export: True
