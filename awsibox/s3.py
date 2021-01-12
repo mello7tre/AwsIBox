@@ -403,28 +403,27 @@ def S3_Buckets(key):
             key=v['Replication']['ConfigurationRules'])
 
         try:
-            lambda_arn = eval(
-                v['NotificationConfiguration']['LambdaConfigurations']
-                ['Trigger']['Function']
-            )
+            lbd_confs = v['NotificationConfiguration']['LambdaConfigurations']
         except Exception:
             pass
         else:
-            if 'Fn::GettAtt' in lambda_arn.data:
-                permname = '%s%s' % (
-                    lambda_arn.data['Fn::GettAtt'].replace(
-                        'Lambda', 'LambdaPermission'),
-                    resname)
-            else:
-                permname = 'LambdaPermission'
+            for lbd_n, lbd_v in lbd_confs.items():
+                lambda_arn = eval(lbd_v['Function'])
+                if 'Fn::GettAtt' in lambda_arn.data:
+                    permname = '%s%s' % (
+                        lambda_arn.data['Fn::GettAtt'].replace(
+                            'Lambda', 'LambdaPermission'),
+                        resname)
+                else:
+                    permname = 'LambdaPermission'
 
-            r_LambdaPermission = LambdaPermissionS3(
-                permname, key=lambda_arn, source=resname)
+                r_LambdaPermission = LambdaPermissionS3(
+                    permname, key=lambda_arn, source=resname)
 
-            add_obj(r_LambdaPermission)
+                add_obj(r_LambdaPermission)
 
-            BucketPolicyStatement.extend(
-                S3BucketPolicyStatementSes(resname))
+                BucketPolicyStatement.extend(
+                    S3BucketPolicyStatementSes(resname))
 
         if 'WebsiteConfiguration' in v:
             r_Bucket.WebsiteConfiguration = s3.WebsiteConfiguration(
