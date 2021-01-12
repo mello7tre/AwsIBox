@@ -293,7 +293,6 @@ def LBD_Permissions(key):
 
         # resources
         r_Permission = LambdaPermission(resname)
-        r_Permission.setup()
         auto_get_props(r_Permission)
 
         add_obj([
