@@ -238,7 +238,7 @@ def LBD_Lambdas(key):
             r_Role,
         ])
 
-        if 'Export' in v and v['Export']:
+        if v.get('Export'):
             O_Lambda = Output(resname)
             O_Lambda.Value = GetAtt(resname, 'Arn')
             O_Lambda.Export = Export(resname)

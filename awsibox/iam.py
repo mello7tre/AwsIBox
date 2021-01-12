@@ -412,7 +412,7 @@ def IAM_Policies(key):
         add_obj(r_Policy)
 
         # outputs
-        if 'Export' in v:
+        if v.get('Export'):
             o_Policy = Output(resname)
             o_Policy.Value = Ref(resname)
             o_Policy.Export = Export(resname)
@@ -436,7 +436,7 @@ def IAM_Roles(key):
         add_obj(r_Role)
 
         # outputs
-        if 'Export' in v:
+        if v.get('Export'):
             o_Role = Output(resname)
             o_Role.Value = GetAtt(resname, 'Arn')
             o_Role.Export = Export(resname)

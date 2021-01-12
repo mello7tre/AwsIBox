@@ -32,7 +32,7 @@ def SNS_Topics(key):
         add_obj(r_Topic)
 
         # outputs
-        if 'Export' in v:
+        if v.get('Export'):
             o_Topic = Output(resname)
             o_Topic.Value = Ref(resname)
             o_Topic.Export = Export(resname)
