@@ -247,6 +247,18 @@ def get_resvalue(resname, propname):
     return getattr(res, propname)
 
 
+def get_dictvalue(key):
+    if isinstance(key, list):
+        value = [get_dictvalue(k) for k in key]
+    elif isinstance(key, dict):
+        value = {i: get_dictvalue(k) for i, k in key.items()}
+    else:
+        value = eval(key) if key.startswith(
+            cfg.EVAL_FUNCTIONS_IN_CFG) else key
+
+    return value
+
+
 def get_condition(cond_name, cond, value2, key=None, OrExtend=[],
                   mapinlist=False, nomap=None):
     # record current state

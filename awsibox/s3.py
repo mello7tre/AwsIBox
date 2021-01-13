@@ -2,7 +2,8 @@ import troposphere.s3 as s3
 
 from .common import *
 from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-                     get_subvalue, auto_get_props, get_condition, add_obj)
+                     get_subvalue, auto_get_props, get_condition, add_obj,
+                     get_dictvalue)
 from .iam import (IAMRoleBucketReplica, IAMPolicyBucketReplica,
                   IAMPolicyStatement)
 from .cloudfront import CFOriginAccessIdentity
@@ -422,8 +423,13 @@ def S3_Buckets(key):
 
                 add_obj(r_LambdaPermission)
 
-                BucketPolicyStatement.extend(
-                    S3BucketPolicyStatementSes(resname))
+        try:
+            bucket_policies = getattr(cfg, 'BucketPolicy')
+        except Exception:
+            pass
+        else:
+            for policy_name, policy_value in bucket_policies.items():
+                BucketPolicyStatement.append(get_dictvalue(policy_value))
 
         if 'WebsiteConfiguration' in v:
             r_Bucket.WebsiteConfiguration = s3.WebsiteConfiguration(
