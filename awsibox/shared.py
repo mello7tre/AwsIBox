@@ -414,11 +414,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 prop_obj = prop_class()
 
             if isinstance(prop_obj, dict):
-                for k, v in key[obj_propname].items():
-                    if isinstance(v, dict):
-                        prop_obj[k] = getattr(cfg, f'{mapname_obj}{k}')
-                    else:
-                        prop_obj[k] = get_endvalue(f'{mapname_obj}{k}')
+                prop_obj = get_dictvalue(key[obj_propname])
             else:
                 _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
 

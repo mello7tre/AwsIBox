@@ -74,7 +74,10 @@ class LambdaFunction(lbd.Function):
         self.FunctionName = Sub('${AWS::StackName}-${EnvRole}-%s' % name)
         if 'Handler' not in key:
             self.Handler = 'index.lambda_handler'
-        self.Role = GetAtt(f'RoleLambda{name}', 'Arn')
+        try:
+            getattr(self, 'Role')
+        except Exception:
+            self.Role = GetAtt(f'RoleLambda{name}', 'Arn')
 
         if all(k in key for k in ['SecurityGroupIds', 'SubnetIds']):
             self.VpcConfig = lbd.VPCConfig('')
@@ -228,15 +231,14 @@ def LBD_Lambdas(key):
                 r_VersionB,
                 o_Version])
 
-        # Automatically setup a lambda Role with base permissions.
-        r_Role = IAMRoleLambdaBase(f'Role{resname}', key=v)
-        if hasattr(r_Lambda, 'Condition'):
-            r_Role.Condition = r_Lambda.Condition
+        if not v.get('SkipRole'):
+            # Automatically setup a lambda Role with base permissions.
+            r_Role = IAMRoleLambdaBase(f'Role{resname}', key=v)
+            if hasattr(r_Lambda, 'Condition'):
+                r_Role.Condition = r_Lambda.Condition
+            add_obj(r_Role)
 
-        add_obj([
-            r_Lambda,
-            r_Role,
-        ])
+        add_obj(r_Lambda)
 
         if v.get('Export'):
             O_Lambda = Output(resname)

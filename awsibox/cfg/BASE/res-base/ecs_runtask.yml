@@ -16,6 +16,12 @@ global:
               Resource:
                 - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/*')
                 - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:container-instance/*')
+          - 2:
+              Action:
+                - 'cloudformation:Describe*'
+                - 'cloudformation:List*'
+                - 'cloudformation:Get*'
+              Resource: '*'
   Lambda:
     - ECSRunTask:
         Description: 'Run ECS Task'
