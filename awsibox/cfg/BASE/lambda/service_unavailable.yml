@@ -1,0 +1,25 @@
+global:
+  Output:
+    - LambdaServiceUnavailableArn:
+        Value: GetAtt('LambdaServiceUnavailable', 'Arn')
+        Export: Export('LambdaServiceUnavailableArn')
+  Lambda:
+    - ServiceUnavailable:
+        Description: 'Lambda to serve resource-unavailable pages'
+        MemorySize: 128
+        Runtime: python3.7
+        Timeout: 65
+        Variables:
+          - RCode: 503
+          - Bucket: Sub(cfg.BucketAppData)
+  IAMPolicy:
+    - ServiceUnavailable:
+        Roles:
+          - Ref('RoleLambdaServiceUnavailable')
+        Statement:
+          - 1:
+              Action: 's3:ListBucket'
+              Resource: Sub('arn:aws:s3:::%s' % cfg.BucketAppData)
+          - 2:
+              Action: 's3:GetObject'
+              Resource: Sub('arn:aws:s3:::%s/service-unavailable/*' % cfg.BucketAppData)
