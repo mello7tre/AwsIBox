@@ -96,6 +96,9 @@ def EFS_FileStorage(key):
         auto_get_props(r_SGI, rootdict=SGIExtra)
 
         # outputs
+        o_File = Output(resname)
+        o_File.Value = Ref(resname)
+        o_File.Export = Export(resname)
 
         o_SGClient = Output(sgclientname)
         o_SGClient.Condition = resname
@@ -104,7 +107,19 @@ def EFS_FileStorage(key):
 
         add_obj([
             r_File,
+            o_File,
             r_SGServer,
             r_SGClient,
             r_SGI,
             o_SGClient])
+
+
+
+def EFS_AccessPoint(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+
+        r_APoint = efs.AccessPoint(resname)
+        auto_get_props(r_APoint)
+
+        add_obj(r_APoint)
