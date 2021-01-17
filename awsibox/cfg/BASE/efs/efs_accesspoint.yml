@@ -1,0 +1,14 @@
+global:
+  EFSAccessPoint:
+    - App:
+        ClientToken: Sub('${AWS::StackName}${EnvRole}')
+        FileSystemId: ImportValue('EFSFileSystemEcsCluster')
+        PosixUser:
+          Gid: '0'
+          Uid: '0'
+        RootDirectory:
+          CreationInfo:
+            OwnerGid: '0'
+            OwnerUid: '0'
+            Permissions: '0755'
+          Path: Sub('/${EnvRole}')
