@@ -395,35 +395,8 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
         props = obj.props
         mapname_obj = f'{mapname}{obj_propname}'
 
-        # trick (bad) to detect attributes as CreationPolicy and UpdatePolicy
-        if obj_propname in ['CreationPolicy', 'UpdatePolicy']:
-            prop_class = getattr(pol, obj_propname)
-        else:
-            prop_class = props[obj_propname][0]
-
-        if (isinstance(prop_class, type) and
-                prop_class.__bases__[0].__name__ in ['AWSProperty',
-                                                     'AWSAttribute',
-                                                     'object']):
-            # If object already have that props, object class is
-            # the existing already defined object,
-            # so extend its property with auto_get_props
-            if obj_propname in obj.properties:
-                prop_obj = obj.properties[obj_propname]
-            else:
-                prop_obj = prop_class()
-
-            if isinstance(prop_obj, dict):
-                prop_obj = get_dictvalue(key[obj_propname])
-            else:
-                _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
-
-            return prop_obj
-
-        # trick for multiple class type support (Ex ec2.TagSpecifications.Tags)
-        elif (isinstance(prop_class, tuple)
-                and prop_class[1].__bases__[0].__name__ == 'object'):
-            prop_obj = []
+        def _get_obj_tags():
+            prop_list = []
             for k, v in key[obj_propname].items():
                 try:
                     v['Value']
@@ -440,10 +413,42 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     del v['IBOXIF']
                     v = _iboxif(if_wrapper, mapname, v)
 
-                prop_obj.append(v)
+                prop_list.append(v)
 
-        # elif prop_class[0].__bases__[0].__name__ == 'AWSHelperFn':
-        #     prop_obj = prop_class[0](**key[obj_propname])
+            obj_tags = Tags()
+            obj_tags.tags = prop_list
+
+            return obj_tags
+
+        # trick (bad) to detect attributes as CreationPolicy and UpdatePolicy
+        if obj_propname in ['CreationPolicy', 'UpdatePolicy']:
+            prop_class = getattr(pol, obj_propname)
+        else:
+            prop_class = props[obj_propname][0]
+
+        if isinstance(prop_class, type):
+            # If object already have that props, object class is
+            # the existing already defined object,
+            # so extend its property with auto_get_props
+            if obj_propname in obj.properties:
+                prop_obj = obj.properties[obj_propname]
+            else:
+                prop_obj = prop_class()
+
+            if prop_class.__bases__[0].__name__ in ['AWSProperty',
+                                                    'AWSAttribute']:
+                _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
+            elif prop_class.__name__ == 'dict':
+                prop_obj = get_dictvalue(key[obj_propname])
+            elif prop_class.__name__ == 'Tags':
+                prop_obj = _get_obj_tags()
+
+            return prop_obj
+
+        elif isinstance(prop_class, tuple) and any(n in prop_class for n in [
+                Tags, asgTags]):
+            prop_obj = _get_obj_tags()
+
             return prop_obj
 
         elif (isinstance(prop_class, list) and

@@ -114,7 +114,6 @@ def EFS_FileStorage(key):
             o_SGClient])
 
 
-
 def EFS_AccessPoint(key):
     for n, v in getattr(cfg, key).items():
         resname = f'{key}{n}'

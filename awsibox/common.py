@@ -6,6 +6,7 @@ import copy
 import json
 import logging
 from pprint import pprint, pformat
+from troposphere.autoscaling import Tags as asgTags
 import troposphere.ssm as ssm
 
 from troposphere import (

@@ -570,7 +570,7 @@ def AS_LaunchTemplate():
 
     CfmInitArgs = {}
     IBoxEnvApp = []
-    Tags = []
+    Tags_List = []
     UserDataApp = []
 
     for n in cfg.Apps:
@@ -624,7 +624,7 @@ def AS_LaunchTemplate():
         #    InitConfigSetsAppBuilAmi)
         InitConfigSets.data['buildamifull'].append(InitConfigSetsApp)
 
-        Tags.append(asg.Tag(envname, Ref(envname), True))
+        Tags_List.append(asg.Tag(envname, Ref(envname), True))
 
         # resources
         # FOR MULTIAPP CODEDEPLOY
@@ -722,6 +722,8 @@ def AS_LaunchTemplate():
         R_LaunchTemplate,
         R_InstanceProfile])
 
+    Tags = asg.Tags()
+    Tags.tags = Tags_List
     return Tags
 
 
@@ -744,7 +746,7 @@ def AS_Autoscaling(key):
 
     R_ASG.LoadBalancerNames = LoadBalancers
     R_ASG.TargetGroupARNs = TargetGroups
-    R_ASG.Tags.extend(LaunchTemplateTags)
+    R_ASG.Tags += LaunchTemplateTags
 
     add_obj([
         R_ASG])
