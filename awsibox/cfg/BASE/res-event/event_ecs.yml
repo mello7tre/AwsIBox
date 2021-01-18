@@ -39,6 +39,27 @@ global:
           - LambdaECSEvents:
               Arn: GetAtt('LambdaECSEvents', 'Arn')
               Id: TargetFunction-01
+    - ECSEventTaskStateChangeSpot:
+        Description: 'ECSEvents Lambda Trigger for Spot'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            capacityProviderName:
+              - FARGATE_SPOT
+            desiredStatus:
+              - RUNNING
+            lastStatus:
+              - RUNNING
+            launchType:
+              - FARGATE
+          detail-type:
+            - ECS Task State Change
+          source:
+            - aws.ecs
+        Targets:
+          - LambdaECSEvents:
+              Arn: GetAtt('LambdaECSEvents', 'Arn')
+              Id: TargetFunction-01
   Lambda:
     - ECSEvents:
         Description: 'ECSEvents'

@@ -49,9 +49,10 @@ Daemon: &daemon
 Spot: &spot
   CapacityProviderStrategy:
     - FargateSpot:
-        Base: get_endvalue('CapacityDesired')
+        Base: 1
         CapacityProvider: FARGATE_SPOT
         Weight: 1
+  DesiredCount: get_endvalue('CapacityDesired')
 
 
 global:

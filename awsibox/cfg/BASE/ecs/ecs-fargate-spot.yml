@@ -19,6 +19,7 @@ global:
     - Spot:
         IBOXENABLED: True
         Condition: FargateSpot
+        DependsOn: Service
         Tags:
           - ServiceBase:
               Key: IBOXFARGATESPOTServiceBase
