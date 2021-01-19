@@ -60,6 +60,25 @@ global:
           - LambdaECSEvents:
               Arn: GetAtt('LambdaECSEvents', 'Arn')
               Id: TargetFunction-01
+    - ECSEventServiceActionSpot:
+        Description: 'ECSEvents Lambda Trigger for Spot'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            eventType:
+              - INFO
+            eventName:
+              - CAPACITY_PROVIDER_STEADY_STATE
+            capacityProviderArns:
+              - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:capacity-provider/FARGATE_SPOT')
+          detail-type:
+            - ECS Service Action
+          source:
+            - aws.ecs
+        Targets:
+          - LambdaECSEvents:
+              Arn: GetAtt('LambdaECSEvents', 'Arn')
+              Id: TargetFunction-01
   Lambda:
     - ECSEvents:
         Description: 'ECSEvents'
