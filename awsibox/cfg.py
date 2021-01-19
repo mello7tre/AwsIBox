@@ -312,6 +312,8 @@ CFG_TO_FUNC = {
             'func': 'VPC_VPC'},
     'CCRLightHouse': {'module': 'cloudformation',
                       'func': 'CFM_CustomResourceLightHouse'},
+    'CCRFargateSpot': {'module': 'cloudformation',
+                       'func': 'CFM_CustomResourceFargateSpot'},
     # ReplicateRegions need to stay here
     'CCRReplicateRegions': {'module': 'cloudformation',
                             'func': 'CFM_CustomResourceReplicator'},

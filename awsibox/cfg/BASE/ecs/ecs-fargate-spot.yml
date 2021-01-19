@@ -15,6 +15,7 @@ global:
           get_condition('', 'equals', 'None', 'FargateSpot')
         )
   FargateSpot: None
+  CCRFargateSpot: True
   Service:
     - Spot:
         IBOXENABLED: True
