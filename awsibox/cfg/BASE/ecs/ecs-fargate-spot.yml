@@ -23,7 +23,7 @@ global:
         Tags:
           - ServiceBase:
               Key: IBOXFARGATESPOTServiceBase
-              Value: GetAtt('ServiceBase', 'Name')
+              Value: GetAtt('Service', 'Name')
   ScalableTarget:
     - Service:
         ResourceId:

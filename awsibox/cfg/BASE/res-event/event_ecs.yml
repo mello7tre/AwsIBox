@@ -82,7 +82,7 @@ global:
               Action:
                 - 'ecs:DescribeContainerInstances'
                 - 'ecs:DescribeServices'
-                - 'ecs:UpdateServices'
+                - 'ecs:UpdateService'
                 - 'cloudwatch:SetAlarmState'
                 - 'cloudwatch:DisableAlarmActions'
                 - 'cloudwatch:EnableAlarmActions'
