@@ -1,7 +1,7 @@
 global:
   EventsRule:
-    - ECSEventServiceAction:
-        Description: 'ECSEvents Lambda Trigger'
+    - ECSEventServiceActionFailure:
+        Description: 'ECSEvents Lambda Trigger for Cpu and Memory Failure'
         State: 'DISABLED'
         EventPattern:
           detail:
@@ -60,8 +60,27 @@ global:
           - LambdaECSEvents:
               Arn: GetAtt('LambdaECSEvents', 'Arn')
               Id: TargetFunction-01
-    - ECSEventServiceActionSpot:
-        Description: 'ECSEvents Lambda Trigger for Spot'
+    - ECSEventServiceActionFailureSpot:
+        Description: 'ECSEvents Lambda Trigger for Spot Failure'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            eventType:
+              - ERROR
+            eventName:
+              - SERVICE_TASK_PLACEMENT_FAILURE
+            reason:
+              - 'RESOURCE:FARGATE'
+          detail-type:
+            - ECS Service Action
+          source:
+            - aws.ecs
+        Targets:
+          - LambdaECSEvents:
+              Arn: GetAtt('LambdaECSEvents', 'Arn')
+              Id: TargetFunction-01
+    - ECSEventServiceActionSteadySpot:
+        Description: 'ECSEvents Lambda Trigger for Spot Capacity Provider Steady State'
         State: 'DISABLED'
         EventPattern:
           detail:
