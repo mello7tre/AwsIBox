@@ -21,7 +21,7 @@ global:
               Arn: GetAtt('LambdaECSEvents', 'Arn')
               Id: TargetFunction-01
     - ECSEventTaskStateChange:
-        Description: 'ECSEvents Lambda Trigger'
+        Description: 'ECSEvents Lambda Trigger for Task STOPPED'
         State: 'DISABLED'
         EventPattern:
           detail:
@@ -40,7 +40,7 @@ global:
               Arn: GetAtt('LambdaECSEvents', 'Arn')
               Id: TargetFunction-01
     - ECSEventTaskStateChangeSpot:
-        Description: 'ECSEvents Lambda Trigger for Spot'
+        Description: 'ECSEvents Lambda Trigger for Task Spot RUNNING'
         State: 'DISABLED'
         EventPattern:
           detail:
