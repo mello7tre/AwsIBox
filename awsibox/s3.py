@@ -1,9 +1,8 @@
 import troposphere.s3 as s3
 
 from .common import *
-from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-                     get_subvalue, auto_get_props, get_condition, add_obj,
-                     get_dictvalue)
+from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
+                     auto_get_props, get_condition, add_obj, get_dictvalue)
 from .iam import (IAMRoleBucketReplica, IAMPolicyBucketReplica,
                   IAMPolicyStatement)
 from .cloudfront import CFOriginAccessIdentity

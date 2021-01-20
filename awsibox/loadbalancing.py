@@ -3,8 +3,8 @@ import troposphere.elasticloadbalancingv2 as elbv2
 import troposphere.ec2 as ec2
 
 from .common import *
-from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-                     get_subvalue, auto_get_props, get_condition, add_obj)
+from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
+                     auto_get_props, get_condition, add_obj)
 from .route53 import R53_RecordSetEC2LoadBalancer, R53_RecordSetECSLoadBalancer
 from .securitygroup import SecurityGroupIngressInstanceELBPorts
 from .lambdas import LambdaPermissionLoadBalancing

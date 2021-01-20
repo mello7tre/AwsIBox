@@ -1,6 +1,3 @@
-import os
-import sys
-
 import troposphere.autoscaling as asg
 import troposphere.ec2 as ec2
 import troposphere.cloudformation as cfm
@@ -8,19 +5,16 @@ import troposphere.policies as pol
 import troposphere.applicationautoscaling as aas
 
 from .common import *
-from .shared import (Parameter, do_no_override, get_endvalue, get_expvalue,
-                     get_subvalue, auto_get_props, get_condition, add_obj)
+from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
+                     auto_get_props, get_condition, add_obj)
 from .cfn import *
 from .codedeploy import CD_DeploymentGroup
 from .securitygroup import SG_SecurityGroupsEC2
 from .iam import IAMInstanceProfile
 
-parent_dir_name = os.getcwd()
-sys.path.append(parent_dir_name + '/lib')
-
 try:
     from cfnExt import *
-except ImportError:
+except ModuleNotFoundError:
     pass
 
 

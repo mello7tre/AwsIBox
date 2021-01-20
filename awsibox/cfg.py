@@ -1,5 +1,9 @@
 import os
+import sys
 from functools import reduce
+
+cwd = os.getcwd()
+sys.path.append(os.path.join(cwd, 'lib'))
 
 no_override = False
 
@@ -12,7 +16,7 @@ Outputs = {}
 PATH_INT = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'cfg')
 PATH_INT = os.path.normpath(PATH_INT)
 
-PATH_EXT = os.path.join(os.getcwd(), 'cfg')
+PATH_EXT = os.path.join(cwd, 'cfg')
 PATH_EXT = os.path.normpath(PATH_EXT)
 
 STACK_TYPES = [
@@ -179,6 +183,13 @@ INSTANCE_LIST = [
     't4g.nano', 't4g.micro', 't4g.small', 't4g.medium', 't4g.large',
     't4g.xlarge', 't4g.2xlarge',
 ]
+
+# override previous cfg with an External one
+try:
+    with open(os.path.join(cwd, 'lib', 'cfgExt.py')) as f:
+        exec(f.read())
+except FileNotFoundError:
+    pass
 
 # Order is VERY important do not CHANGE it!
 CFG_TO_FUNC = {
