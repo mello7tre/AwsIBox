@@ -1,6 +1,6 @@
 global:
   EventsRule:
-    - ECSEventServiceActionFailure:
+    - ECSEventServiceFailure:
         Description: 'ECSEvents Lambda Trigger for Cpu and Memory Failure'
         State: 'DISABLED'
         EventPattern:
@@ -60,7 +60,7 @@ global:
           - LambdaECSEvents:
               Arn: GetAtt('LambdaECSEvents', 'Arn')
               Id: TargetFunction-01
-    - ECSEventServiceActionFailureSpot:
+    - ECSEventServiceFailureSpot:
         Description: 'ECSEvents Lambda Trigger for Spot Failure'
         State: 'DISABLED'
         EventPattern:
@@ -79,7 +79,7 @@ global:
           - LambdaECSEvents:
               Arn: GetAtt('LambdaECSEvents', 'Arn')
               Id: TargetFunction-01
-    - ECSEventServiceActionSteadySpot:
+    - ECSEventServiceSteadySpot:
         Description: 'ECSEvents Lambda Trigger for Spot Capacity Provider Steady State'
         State: 'DISABLED'
         EventPattern:
