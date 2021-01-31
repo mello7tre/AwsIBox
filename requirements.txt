@@ -1,2 +1,1 @@
-troposphere
-PyYAML>=5,==5.*
+.
