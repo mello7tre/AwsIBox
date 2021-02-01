@@ -77,9 +77,6 @@ Base: &base
     - EnvClusterStackName:
         Name: EnvClusterStackName
         Value: get_endvalue('ClusterStack')
-    - EnvNode:
-        Name: NODE_ENV
-        Value: production
   DockerLabels: 
     LastUpdate: Ref('DockerLabelLastUpdate')
 

@@ -308,7 +308,12 @@ def prepend_base_cfgs(cfg_cmm):
                         else:
                             # use IBOXBASE (or other value in cfg.BASE_CFGS)
                             for j, w in base_value.items():
-                                base_cfgs[n][j] = w
+                                j_current = base_cfgs[n].get(j)
+                                if j_current and isinstance(j_current, list):
+                                    # if property is a list extend it
+                                    base_cfgs[n][j].extend(w)
+                                else:
+                                    base_cfgs[n][j] = w
                             v.remove(k)
                     if not c[n]:
                         del c[n]
