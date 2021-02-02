@@ -9,7 +9,7 @@ global:
         TargetOriginId: portal-static
   CloudFrontOrigins:
     - PortalStatic:
-        DomainName: Sub(cfg.BucketPortalStatic + '.s3.amazonaws.com')
+        DomainName: Sub(f'{cfg.BucketPortalStatic}.s3.amazonaws.com')
         Id: portal-static
         OriginCustomHeaders: []
   CloudFrontCustomErrorResponses:

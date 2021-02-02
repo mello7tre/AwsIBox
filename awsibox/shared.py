@@ -195,7 +195,7 @@ def get_expvalue(param, stack=False, prefix=''):
         )
     elif not isinstance(param, str):
         v = ImportValue(
-            Sub(prefix + '${ImportName}', **{'ImportName': param})
+            Sub('%s${ImportName}' % prefix, **{'ImportName': param})
         )
     else:
         v = ImportValue(param)

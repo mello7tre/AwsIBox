@@ -52,7 +52,7 @@ global:
         Timeout: 30
         Variables:
           - NameSpaceID: get_expvalue('ServiceDiscoveryPublicDnsNamespaceId')
-          - PublicDnsNamespaceName: Sub('find.' + cfg.HostedZoneNameEnv)
+          - PublicDnsNamespaceName: Sub(f'find.{cfg.HostedZoneNameEnv}')
           - HostedZoneId: get_expvalue('HostedZoneIdEnv')
     - R53RecordInstanceId:
         Description: 'R53 Record InstanceId Automatic Creation'
