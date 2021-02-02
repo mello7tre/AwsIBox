@@ -1,0 +1,6 @@
+res-ecr-01:
+  StackName: r-ecr-01
+  Repository:
+    - Secrets: secrets
+    - BuildKite: arda.aman.services.buildkite
+    - ClientPortal: arda.aman.client.portal

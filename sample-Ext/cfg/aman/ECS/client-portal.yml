@@ -1,0 +1,25 @@
+client-portal:
+  StackName: prt
+  CloudFront: None
+  CloudFrontAliasZone: client-portal
+  CloudFrontCacheBehaviors:
+    - 0:
+        AllowedMethods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT']
+        CookiesForward: all
+        ViewerProtocolPolicy: redirect-to-https
+  ContainerDefinitions:
+    - 1:
+        Memory: 256
+        MemoryReservation: 64
+        ContainerPort: 3000
+  HealthCheckPath: /healthcheck
+  ListenerRules:
+    - 1:
+        Priority: 2010
+  LoadBalancerApplication: ['External']
+  RepoName: arda.aman.client.portal
+  RecordSet: ['External']
+
+prd:
+  CloudFrontAliasExtra:
+    - 1: client-portal.numenor.arda

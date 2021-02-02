@@ -1,3 +1,0 @@
-res-extra-01:
-  SecurityGroupBase:
-    - ElasticSearchClient: 'Assign to ElasticSearch Clients'

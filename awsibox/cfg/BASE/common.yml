@@ -31,7 +31,7 @@ global:
   BaseRegion: eu-west-1
   MappingClass:
     - EnvRegion:
-  AllowedIp: []
+  AllowedIp: [{}]
   CloudWatchAlarmEndpoint: 'mello+aws@ankot.org'
   HostedZoneIdCF: Z2FDTNDATAQYW2
   RecordSet: ['Internal', 'External']

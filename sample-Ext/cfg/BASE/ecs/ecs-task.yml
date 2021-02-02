@@ -1,0 +1,13 @@
+global:
+  ContainerDefinitions:
+    - IBOXBASE:
+        Environment:
+          - EnvNode:
+              Name: NODE_ENV
+              Value: production
+        Cpu: 2
+
+prd:
+  ContainerDefinitions:
+    - 1:
+        Cpu: 256

@@ -3,7 +3,7 @@
 Templates are built starting from a yaml file named as the EnvRole of the Cloudformation Stack that will be created.\
 The EnvRole should be a short name with only alphanumeric characters and dash `[a-Z,-]`, it's name should describe the Main Role of the AWS Resources created by the Stack.
 
-Every EnvRole yaml file must have the root key named as the EnvRole (Ex. ecs-cluster) and a child key `StackType` having as value the StackType of the Role (Ex. ec2).
+The EnvRole yaml files are located in subdir named as the relative UPPERCASE StackType.
 
 Current StackTypes are:
 - agw - ApiGateway
@@ -16,6 +16,8 @@ Current StackTypes are:
 - rds - RDS
 - res - Generic AWS Resources
 - tsk - Scheduled Task (CloudWatch Events + ECS Task)
+
+Every EnvRole yaml file must have the root key named as the EnvRole (Ex. ecs-cluster)
  
 Configurations yaml files are read from multiple locations.
 - Base Internal (BaseInt)
@@ -33,10 +35,10 @@ Contains the files under path `cfg/{Brand}/` in the working directory where is e
 
 ### Types of file
 There are four types of file for yaml configurations:
-- EnvRole files - named as {EnvRole}.yml
-- StackType files - named as {StackType}.yml
+- EnvRole files - named as {STACKTYPE}/{EnvRole}.yml.
+- StackType files - named as {STACKTYPE}/TYPE.yml.
 - common files - named as common.yml
-- included files - named as you like but limited to only alphanumeric characters and dash. 
+- included files - named as you like but limited to only alphanumeric characters and dash. Can be found under the relative service lowercase dir (Ex. loadbalancing, autoscaling). 
 
 they have different yaml root key:
 - EnvRole - root key is the {EnvRole}
@@ -53,13 +55,13 @@ Every time a new template is generated yaml files are read and processed in the 
   - common.yml - BaseExt
   - common.yml - BrandExt
 - {StackType}
-  - {StackType}.yml - BaseInt
-  - {StackType}.yml - BaseExt
-  - {StackType}.yml - BrandExt
+  - {STACKTYPE}/TYPE.yml - BaseInt
+  - {STACKTYPE}/TYPE.yml - BaseExt
+  - {STACKTYPE}/TYPE.yml - BrandExt
 - {EnvRole}
-  - {EnvRole}.yml - BaseInt
-  - {EnvRole}.yml - BaseExt
-  - {EnvRole}.yml - BrandExt
+  - {STACKTYPE}/{EnvRole}.yml - BaseInt
+  - {STACKTYPE}/{EnvRole}.yml - BaseExt
+  - {STACKTYPE}/{EnvRole}.yml - BrandExt
 
 At least one EnvRole file must be present.\
 Even if it's processed as last, is the first to be read as it is the starting point of the whole process and its' needed to know the relative {StackType}.
@@ -275,28 +277,28 @@ So the full order would be:
 - Env
   - common.yml - BaseInt
   - common.yml - BaseExt
-  - {StackType}.yml - BaseInt
-  - {StackType}.yml - BaseExt
-  - {StackType}.yml - BrandExt
-  - {EnvRole}.yml - BaseInt
-  - {EnvRole}.yml - BaseExt
-  - {EnvRole}.yml - BrandExt
+  - {STACKTYPE}/TYPE.yml - BaseInt
+  - {STACKTYPE}/TYPE.yml - BaseExt
+  - {STACKTYPE}/TYPE.yml - BrandExt
+  - {STACKTYPE}/{EnvRole}.yml - BaseInt
+  - {STACKTYPE}/{EnvRole}.yml - BaseExt
+  - {STACKTYPE}/{EnvRole}.yml - BrandExt
 - Region
   - common.yml - BaseInt
   - common.yml - BaseExt
-  - {StackType}.yml - BaseInt
-  - {StackType}.yml - BaseExt
-  - {StackType}.yml - BrandExt
-  - {EnvRole}.yml - BaseInt
-  - {EnvRole}.yml - BaseExt
-  - {EnvRole}.yml - BrandExt
+  - {STACKTYPE}/TYPE.yml - BaseInt
+  - {STACKTYPE}/TYPE.yml - BaseExt
+  - {STACKTYPE}/TYPE.yml - BrandExt
+  - {STACKTYPE}/{EnvRole}.yml - BaseInt
+  - {STACKTYPE}/{EnvRole}.yml - BaseExt
+  - {STACKTYPE}/{EnvRole}.yml - BrandExt
 - Region/Env
   - common.yml - BaseInt
   - common.yml - BaseExt
-  - {StackType}.yml - BaseInt
-  - {StackType}.yml - BaseExt
-  - {StackType}.yml - BrandExt
-  - {EnvRole}.yml - BaseInt
-  - {EnvRole}.yml - BaseExt
-  - {EnvRole}.yml - BrandExt
+  - {STACKTYPE}/TYPE.yml - BaseInt
+  - {STACKTYPE}/TYPE.yml - BaseExt
+  - {STACKTYPE}/TYPE.yml - BrandExt
+  - {STACKTYPE}/{EnvRole}.yml - BaseInt
+  - {STACKTYPE}/{EnvRole}.yml - BaseExt
+  - {STACKTYPE}/{EnvRole}.yml - BrandExt
 

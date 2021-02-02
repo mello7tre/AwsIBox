@@ -1,6 +1,0 @@
-global:
-
-prd:
-  ContainerDefinitions:
-    - 1:
-        Cpu: 256
