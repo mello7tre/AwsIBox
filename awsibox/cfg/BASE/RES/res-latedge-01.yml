@@ -1,5 +1,4 @@
 res-latedge-01:
-  StackType: res
   StackName: r-latedge-01
   Lambda:
     - AtEdgeAddHeaders:

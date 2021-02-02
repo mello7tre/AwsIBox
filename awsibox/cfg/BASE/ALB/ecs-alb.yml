@@ -3,7 +3,6 @@ IBoxLoader: !include [
 ]
 
 ecs-alb:
-  StackType: alb
   StackName: alb
   Parameter:
     - LoadBalancerApplication:

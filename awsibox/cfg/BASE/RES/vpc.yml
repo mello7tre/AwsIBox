@@ -1,5 +1,4 @@
 vpc:
-  StackType: res
   StackName: vpc
   Parameter:
     - VPCCidrBlock:

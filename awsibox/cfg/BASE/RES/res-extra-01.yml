@@ -6,7 +6,6 @@ IBoxLoader: !include [
 ]
 
 res-extra-01:
-  StackType: res
   StackName: r-extra-01
   MappingClass:
     - AZones:

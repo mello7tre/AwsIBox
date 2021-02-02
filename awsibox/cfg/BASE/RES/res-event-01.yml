@@ -5,5 +5,4 @@ IBoxLoader: !include [
 ]
 
 res-event-01:
-  StackType: res
   StackName: r-event-01

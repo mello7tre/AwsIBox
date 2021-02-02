@@ -1,5 +1,4 @@
 res-ccr-lighthouse:
-  StackType: res
   StackName: r-ccr-lth
   Parameter:
     - EnvApp1Version:

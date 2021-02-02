@@ -7,7 +7,6 @@ IBoxLoader:
     - iam/iampolicy-update_stack.yml
 
 buildkite:
-  StackType: ecs
   StackName: bkt
   ApplicationAutoScalingScalingPolicy: IBOXSKIPFUNC
   Capacity:

@@ -1,5 +1,4 @@
 res-iam-policy-01:
-  StackType: res
   StackName: iam-p-01
   IAMPolicy:
     - IAMUserManageOwn:

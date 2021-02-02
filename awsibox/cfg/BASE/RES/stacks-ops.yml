@@ -3,7 +3,6 @@ IBoxLoader:
     - iam/iampolicy-update_stack.yml
 
 stacks-ops:
-  StackType: res
   StackName: sss
   IAMPolicy:
     - UpdateStack:

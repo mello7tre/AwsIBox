@@ -8,7 +8,6 @@ IBoxLoader: !exclude [
 ]
 
 reserve-cpu:
-  StackType: ecs
   StackName: rsc
   ApplicationAutoScalingScalingPolicy: IBOXSKIPFUNC
   ContainerDefinitions:

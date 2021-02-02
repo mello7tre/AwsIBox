@@ -3,7 +3,6 @@ IBoxLoader:
     - cloudfront/cloudfront-ios.yml
 
 infra-info:
-  StackType: agw
   StackName: iif
   ApiGatewayRestApi:
     - Base:

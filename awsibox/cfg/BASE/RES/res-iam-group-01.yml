@@ -1,5 +1,4 @@
 res-iam-group-01:
-  StackType: res
   StackName: iam-g-01
   IAMGroup:
     - Base:

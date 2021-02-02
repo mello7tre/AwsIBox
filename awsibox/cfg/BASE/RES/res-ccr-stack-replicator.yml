@@ -1,5 +1,4 @@
 res-ccr-stack-replicator:
-  StackType: res
   StackName: r-ccr-rpl
   Parameter:
     - Mytest:

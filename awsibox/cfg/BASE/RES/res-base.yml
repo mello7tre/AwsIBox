@@ -12,7 +12,6 @@ IBoxLoader: !include [
 ]
 
 res-base:
-  StackType: res
   StackName: r-base
   Bucket:
     - AppRepository:
