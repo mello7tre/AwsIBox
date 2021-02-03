@@ -2,7 +2,7 @@ global:
   SecurityGroup:
     - BaseInstance:
         Export: True
-        GroupDescription: 'Enable ICMP Ping [ALL] and SSH [192.168.36.0/23]'
+        GroupDescription: 'Enable ICMP Ping [ALL] and SSH on EC2 Instance'
         SecurityGroupIngress:
           - Port22:
               CidrIp: AllowedIp
