@@ -5,6 +5,7 @@ from boto3 import client
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 def change_desired_size(svc, service_arn, variation):
     service_arn_l = service_arn.split('/')
     cluster = service_arn_l[1]
@@ -12,8 +13,7 @@ def change_desired_size(svc, service_arn, variation):
 
     try:
         response = svc.describe_services(
-            services=[service],
-        )
+            services=[service])
 
         if not response['services']:
             raise Exception(f'Service {service} not found!')
@@ -28,19 +28,20 @@ def change_desired_size(svc, service_arn, variation):
         response = svc.update_service(
             cluster=cluster,
             service=service,
-            desiredCount=newSize,
-        )
+            desiredCount=newSize)
     except Exception as e:
         logger.error(f'Failed to change Service '
                      f'{service} desiredCount to {newSize}: {e}')
         return False
 
     logger.info(f'Service {service} desiredCount changed to {newSize}')
+
     return True
+
 
 def handler(event, context):
     svc = client('ecs')
     service_arn = event['service_arn']
     variation = event['variation']
-        
+
     return change_desired_size(svc, service_arn, variation)

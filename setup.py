@@ -12,6 +12,7 @@ setuptools.setup(
     install_requires=[
         'troposphere',
         'PyYAML>=5,==5.*',
+        'python_minifier',
     ],
     python_requires='>=3.7',
     scripts=[

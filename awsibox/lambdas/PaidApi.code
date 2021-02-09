@@ -5,6 +5,7 @@ import boto3
 import base64
 import os
 
+
 def send_response(code, body, headers, b64=True):
     return {
         'isBase64Encoded': b64,
@@ -17,10 +18,12 @@ def send_response(code, body, headers, b64=True):
 def lambda_handler(event, context):
     headers = {}
     headers['Content-Type'] = 'application/json'
+
     out = {
         'gatto': 'miao',
         'cane': 'bau',
     }
+
     outbody = json.dumps(out)
     outb64 = base64.b64encode(outbody)
 

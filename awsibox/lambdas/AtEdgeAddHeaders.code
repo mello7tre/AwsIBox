@@ -1,10 +1,8 @@
 # vim: ft=python
 
-CACHE_CONTROL = (
-STRING_EVAL_FUNCTIONS_IN_CFG
-get_endvalue('LambdaAtEdgeAddHeadersCacheControl')
-STRING_EVAL_FUNCTIONS_IN_CFG
-)
+CACHE_CONTROL = ("IBOX_CODE_IN_LAMBDA\
+get_endvalue('LambdaAtEdgeAddHeadersCacheControl')\
+IBOX_CODE_IN_LAMBDA")
 
 HEADER_CACHE_CONTROL = [{
     'key': 'cache-control',

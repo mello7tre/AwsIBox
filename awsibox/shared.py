@@ -1,3 +1,4 @@
+import python_minifier
 import troposphere.ssm as ssm
 import troposphere.policies as pol
 
@@ -343,18 +344,39 @@ def get_condition(cond_name, cond, value2, key=None, OrExtend=[],
 
 
 def import_lambda(name):
+    TK_IN_LBD = 'IBOX_CODE_IN_LAMBDA'
     parent_dir_name = os.path.dirname(os.path.realpath(__file__))
     lambda_file = os.path.join(os.getcwd(), 'lib/lambdas/%s.code' % name)
     if not os.path.exists(lambda_file):
         lambda_file = os.path.join(parent_dir_name, 'lambdas/%s.code' % name)
     try:
         with open(lambda_file, 'r') as f:
+            fdata = f.read()
+
+            try:
+                # try to minify using python_minifier
+                code = python_minifier.minify(fdata)
+            except Exception:
+                code = fdata
+
+            if len(code) > 4096:
+                logging.warning(f'Inline lambda {lambda_file} > 4096')
+
+            code_lines = code.splitlines(keepends=True)
+
             file_lines = []
-            for x in f.readlines():
+            # parse lambda code for Token IBOX CODE
+            for x in code_lines:
                 if x.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
                     value = eval(x)
-                elif x.startswith('STRING_EVAL_FUNCTIONS_IN_CFG'):
+                elif x.startswith(TK_IN_LBD):
                     value = '"'
+                elif TK_IN_LBD in x:
+                    # parse minified code
+                    tks = x.split(TK_IN_LBD)
+                    file_lines.extend([
+                        f'{tks[0]}', eval(tks[1]), tks[2]])
+                    continue
                 else:
                     value = ''.join(x)
 
