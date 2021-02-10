@@ -83,7 +83,7 @@ def findEcsCluster(asgName):
 
     if stackName:
         try:
-            return getClfExports()['Cluster-' + stackName]
+            return getClfExports()[f'Cluster-{stackName}']
         except Exception:
             pass
 

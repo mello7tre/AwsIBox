@@ -26,6 +26,6 @@ global:
     - ECSRunTask:
         Description: 'Run ECS Task'
         MemorySize: 128
-        Runtime: python2.7
+        Runtime: python3.7
         Timeout: 60
         Variables: []

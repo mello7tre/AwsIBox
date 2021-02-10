@@ -16,7 +16,7 @@ def lambda_handler(event, context):
     # instances = ec2.instances.filter(
     #    Filters=[{'Name': 'tag-key', 'Values':[TAGNAME]}])
     instances = ec2.instances.filter(
-        Filters=[{'Name': 'tag:' + TAGNAME, 'Values': ['1']}])
+        Filters=[{'Name': f'tag:{TAGNAME}', 'Values': ['1']}])
 
     for instance in instances:
         if action == 'start':
@@ -24,4 +24,4 @@ def lambda_handler(event, context):
         if action == 'stop':
             client.stop_instances(InstanceIds=[instance.id])
 
-        print(instance.id + ' ' + action)
+        print(f'{instance.id} {action}')
