@@ -188,13 +188,13 @@ def LBD_Lambdas(key):
 
             # conditons
             c_VersionA = {versionnameA: And(
-                Condition(resname),
+                Condition(resname) if 'Enabled' in v else Equals('1', '1'),
                 get_condition(
                     '', 'equals', 'A', versionname, nomap=True),
             )}
 
             c_VersionB = {versionnameB: And(
-                Condition(resname),
+                Condition(resname) if 'Enabled' in v else Equals('1', '1'),
                 get_condition(
                     '', 'equals', 'B', versionname, nomap=True),
             )}
