@@ -1,7 +1,7 @@
 global:
   EFSAccessPoint:
     - App:
-        ClientToken: Sub('${AWS::StackName}${EnvRole}')
+        #ClientToken: Sub('${AWS::StackName}${EnvRole}')
         FileSystemId: ImportValue('EFSFileSystemEcsCluster')
         PosixUser:
           Gid: '0'
