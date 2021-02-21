@@ -1,0 +1,41 @@
+global:
+  Parameter:
+    - AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides1InstanceType:
+        Description: 'InstanceType - default for mapped value'
+        ConstraintDescription: 'must be a valid EC2 instance type or None'
+        AllowedValues: cfg.INSTANCE_LIST + ['None']
+        Default: 'default'
+    - AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides2InstanceType:
+        Description: 'InstanceType - default for mapped value'
+        ConstraintDescription: 'must be a valid EC2 instance type or None'
+        AllowedValues: cfg.INSTANCE_LIST + ['None']
+        Default: 'default'
+  Condition:
+    - AutoScalingGroupBaseMixedInstancesPolicy:
+        And(
+          get_condition('', 'not_equals', 'None', 'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides1InstanceType'),
+          get_condition('', 'not_equals', 'None', 'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides2InstanceType'),
+        )
+  AutoScalingGroup:
+    - Base:
+        LaunchTemplate:
+          IBOXIF:
+            - AutoScalingGroupBaseMixedInstancesPolicy
+            - Ref('AWS::NoValue')
+            - IBOXIFVALUE
+          LaunchTemplateId: Ref('LaunchTemplate')
+          Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
+        MixedInstancesPolicy:
+          IBOXIF:
+            - AutoScalingGroupBaseMixedInstancesPolicy
+            - IBOXIFVALUE
+            - Ref('AWS::NoValue')
+          LaunchTemplate:
+            LaunchTemplateSpecification:
+              LaunchTemplateId: Ref('LaunchTemplate')
+              Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
+            Overrides:
+              - 1:
+                  InstanceType: None
+              - 2:
+                  InstanceType: None
