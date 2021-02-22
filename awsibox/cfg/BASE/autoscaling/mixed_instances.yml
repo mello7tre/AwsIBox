@@ -16,6 +16,17 @@ global:
           get_condition('', 'not_equals', 'None', 'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides1InstanceType'),
           get_condition('', 'not_equals', 'None', 'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides2InstanceType'),
         )
+  Output:
+    - LaunchTemplateDataInstanceType:
+        Value:
+          If(
+            'AutoScalingGroupBaseMixedInstancesPolicy',
+            get_subvalue('${1M},${2M}', [
+              'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides1InstanceType',
+              'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides2InstanceType',
+            ]),
+            get_endvalue('LaunchTemplateDataInstanceType')
+          )
   AutoScalingGroup:
     - Base:
         LaunchTemplate:
@@ -37,5 +48,7 @@ global:
             Overrides:
               - 1:
                   InstanceType: None
+                  WeightedCapacity: '1'
               - 2:
                   InstanceType: None
+                  WeightedCapacity: '1'
