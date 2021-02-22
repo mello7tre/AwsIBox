@@ -6,7 +6,7 @@ global:
     - SpotAutoMinOnDemandNumber:
         Description: 'ASG TAG for autospotting minimum on-demand instance to keep - empty for default based on env/role - None to disable'
     - SpotAutoAllowedInstances:
-        Description: 'ASG TAG for autospotting allowed instance types (space delimited) - current to use the same of ASG - empty for default based on env/role - None to disable'
+        Description: 'ASG TAG for autospotting allowed instance types (comma delimited) - current to use the same of ASG - empty for default based on env/role - None to disable'
   Condition:
     - Spot:
         Or(
