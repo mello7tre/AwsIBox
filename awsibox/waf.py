@@ -198,7 +198,12 @@ def WAF_Rules(key, wtype=''):
                 )
             )
 
-            O_Predicates.append(m)
+            O_Predicates.append(
+                If(
+                    Predicate.DataId.data['Ref'],
+                    m,
+                    Ref('AWS::NoValue')
+                ))
 
         Rule = globals()[f'WAF{name}'](resname, name=n)
         Rule.Predicates = Predicates
@@ -208,7 +213,7 @@ def WAF_Rules(key, wtype=''):
         # outputs
         O_Rule = Output(f'{mapname}{wtype}')
         O_Rule.Condition = resname
-        O_Rule.Value = ','.join(O_Predicates)
+        O_Rule.Value = Join(',', O_Predicates)
 
         add_obj(O_Rule)
 
