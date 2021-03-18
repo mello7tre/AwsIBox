@@ -30,3 +30,8 @@ global:
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs'
         Principal: apigateway.amazonaws.com
+    - RDSEnhancedMonitoring:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole'
+        Principal: monitoring.rds.amazonaws.com
