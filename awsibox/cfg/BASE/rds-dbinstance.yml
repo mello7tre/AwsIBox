@@ -97,7 +97,7 @@ Base: &base
   DBParameterGroupName: Ref('DBParameterGroup1')
   DBSnapshotIdentifier: None
   DeletionProtection: False
-  EnablePerformanceInsights: get_endvalue('PerformanceInsights')
+  EnablePerformanceInsights: get_endvalue(f'{IBOXRESNAME}PerformanceInsights')
   MasterUsername: masterusername
   MasterUserPassword: masteruserpassword
   MonitoringInterval: 0
@@ -105,7 +105,7 @@ Base: &base
   MultiAZ: False
   PerformanceInsights: False
   PerformanceInsightsRetentionPeriod:
-    If(f'{IBOXRESNAME}PerformanceInsights', get_endvalue('PerformanceInsights'), Ref('AWS::NoValue'))
+    If(f'{IBOXRESNAME}PerformanceInsights', get_endvalue(f'{IBOXRESNAME}PerformanceInsights'), Ref('AWS::NoValue'))
   SourceDBInstanceIdentifier: None
   StorageType: gp2
   VPCSecurityGroups:
