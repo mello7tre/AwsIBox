@@ -37,6 +37,7 @@ global:
                 - 'cloudfront:ListCloudFrontOriginAccessIdentities'
                 - 'lambda:*'
                 - 'events:*'
+                - 'elasticfilesystem:*'
                 - 'waf:GetWebACL'
                 - 'waf:ListWebACLs'
               Resource: '*'
