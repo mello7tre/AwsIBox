@@ -101,11 +101,11 @@ Base: &base
   MasterUsername: masterusername
   MasterUserPassword: masteruserpassword
   MonitoringInterval: 0
-  MonitoringRoleArn: If(f'{IBOXRESNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS:NoValue'))
+  MonitoringRoleArn: If(f'{IBOXRESNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
   MultiAZ: False
   PerformanceInsights: False
   PerformanceInsightsRetentionPeriod:
-    If(f'{IBOXRESNAME}PerformanceInsights', get_endvalue('PerformanceInsights'), Ref('AWS:NoValue'))
+    If(f'{IBOXRESNAME}PerformanceInsights', get_endvalue('PerformanceInsights'), Ref('AWS::NoValue'))
   SourceDBInstanceIdentifier: None
   StorageType: gp2
   VPCSecurityGroups:
