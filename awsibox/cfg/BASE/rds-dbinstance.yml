@@ -17,6 +17,9 @@ Base: &base
         Description: 'None for not creating one - empty for mapped value'
     - IBOXRESNAMEDBSnapshotIdentifier:
         Description: 'DB snapshot used to restore the DB instance - None for not using one - empty for mapped value'
+    - IBOXRESNAMEDeletionProtection:
+        Description: 'empty for mapped value'
+        AllowedValues: ['', 'True', 'False']
     - IBOXRESNAMESourceDBInstanceIdentifier:
         Description: 'ID of the source DB instance to create ReadReplica - None for not using one - empty for mapped value'
     - IBOXRESNAMEEngine:
@@ -32,9 +35,14 @@ Base: &base
     - IBOXRESNAMEMasterUserPassword:
         Description: 'Password - empty for mapped value'
         NoEcho: True
+    - IBOXRESNAMEMonitoringInterval:
+        Description: 'The interval, in seconds, for Enhanced Monitoring metrics - empty for mapped value - 0 to disable'
+        AllowedValues: ['', '0', '1', '5', '10', '15', '30', '60']
     - IBOXRESNAMEMultiAZ:
         Description: 'Use multiple Availability Zone - empty for mapped value'
         AllowedValues: ['', 'True', 'False']
+    - IBOXRESNAMEPerformanceInsights:
+        Description: 'The amount of time, in days, to retain Performance Insights data - empty for mapped value - False to disable'
     - IBOXRESNAMEStorageType:
         Description: 'empty for mapped value'
         AllowedValues: ['', 'standard', 'gp2']
@@ -49,6 +57,10 @@ Base: &base
         Or(Condition(f'{IBOXRESNAME}DBSnapshotIdentifier'), Condition(f'{IBOXRESNAME}SourceDBInstanceIdentifier'))
     - IBOXRESNAMEInternal:
         get_condition('', 'equals', 'false', f'{IBOXRESNAME}PubliclyAccessible')
+    - IBOXRESNAMEMonitoringInterval:
+        get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MonitoringInterval')
+    - IBOXRESNAMEPerformanceInsights:
+        get_condition('', 'not_equals', 'false', f'{IBOXRESNAME}PerformanceInsights')
   IBOXOUTPUT:
     - IBOXRESNAMEAllocatedStorage:
         Value: get_endvalue(f'{IBOXRESNAME}AllocatedStorage')
@@ -58,14 +70,20 @@ Base: &base
         Value: get_endvalue(f'{IBOXRESNAME}DBName')
     - IBOXRESNAMEDBSnapshotIdentifier:
         Value: get_endvalue(f'{IBOXRESNAME}DBSnapshotIdentifier')
+    - IBOXRESNAMEDeletionProtection:
+        Value: get_endvalue(f'{IBOXRESNAME}DeletionProtection')
     - IBOXRESNAMEEngine:
         Value: get_endvalue(f'{IBOXRESNAME}Engine')
     - IBOXRESNAMEEngineVersion:
         Value: get_endvalue(f'{IBOXRESNAME}EngineVersion')
     - IBOXRESNAMEMasterUsername:
         Value: get_endvalue(f'{IBOXRESNAME}MasterUsername')
+    - IBOXRESNAMEMonitoringInterval:
+        Value: get_endvalue(f'{IBOXRESNAME}MonitoringInterval')
     - IBOXRESNAMEMultiAZ:
         Value: get_endvalue(f'{IBOXRESNAME}MultiAZ')
+    - IBOXRESNAMEPerformanceInsights:
+        Value: get_endvalue(f'{IBOXRESNAME}PerformanceInsights')
     - IBOXRESNAMEScheme:
         Value: If(f'{IBOXRESNAME}Internal', 'Internal', 'External')
     - IBOXRESNAMESourceDBInstanceIdentifier:
@@ -78,9 +96,16 @@ Base: &base
   DBName: dbname
   DBParameterGroupName: Ref('DBParameterGroup1')
   DBSnapshotIdentifier: None
+  DeletionProtection: False
+  EnablePerformanceInsights: get_endvalue('PerformanceInsights')
   MasterUsername: masterusername
   MasterUserPassword: masteruserpassword
+  MonitoringInterval: 0
+  MonitoringRoleArn: If(f'{IBOXRESNAME}MonitoringInterval', get_expvalue('RDSMonitoringRoleArn'), Ref('AWS:NoValue'))
   MultiAZ: False
+  PerformanceInsights: False
+  PerformanceInsightsRetentionPeriod:
+    If(f'{IBOXRESNAME}PerformanceInsights', get_endvalue('PerformanceInsights'), Ref('AWS:NoValue'))
   SourceDBInstanceIdentifier: None
   StorageType: gp2
   VPCSecurityGroups:
