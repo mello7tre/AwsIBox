@@ -484,18 +484,8 @@ def AS_ScheduledActionsEC2(key):
     for n, v in getattr(cfg, key).items():
         resname = f'{key}{n}'
 
-        # trick - obj mapped props have same name/key of the one used for
-        # code, so i create a subpro named IBOXCODE and used that as
-        # rootdict
-        try:
-            rootdict = cfg.ScheduledAction[n]['IBOXCODE']
-        except Exception:
-            kwargs = {}
-        else:
-            kwargs = {'rootdict': rootdict}
-
         r_ScheduledActions = asg.ScheduledAction(resname)
-        auto_get_props(r_ScheduledActions, **kwargs)
+        auto_get_props(r_ScheduledActions)
         add_obj(r_ScheduledActions)
 
 

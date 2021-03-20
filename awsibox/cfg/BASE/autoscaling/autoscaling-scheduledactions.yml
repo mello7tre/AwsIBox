@@ -32,24 +32,22 @@ Base: &base
           ,Recurrence= ${Recurrence} ,StartTime= ${StartTime}
   Condition: IBOXRESNAME
   AutoScalingGroupName: Ref('AutoScalingGroup')
-  DesiredCapacity: If(
+  DesiredCapacity.IBOXCODE: If(
     f'{IBOXRESNAME}CapacityDesiredSize',
     get_endvalue('CapacityDesired'),
     get_endvalue(f'{IBOXRESNAME}DesiredSize', nocondition=f'{IBOXRESNAME}KeepDesiredSize'))
-  MinSize: If(
+  MinSize.IBOXCODE: If(
     f'{IBOXRESNAME}CapacityMinSize',
     get_endvalue('CapacityMin'),
     get_endvalue(f'{IBOXRESNAME}MinSize', nocondition=f'{IBOXRESNAME}KeepMinSize'))
-  MaxSize: If(
+  MaxSize.IBOXCODE: If(
     f'{IBOXRESNAME}CapacityMaxSize',
     get_endvalue('CapacityMax'),
     get_endvalue(f'{IBOXRESNAME}MaxSize', nocondition=f'{IBOXRESNAME}KeepMaxSize'))
-  Recurrence: get_endvalue(f'{IBOXRESNAME}Recurrence')
-  StartTime: get_endvalue(f'{IBOXRESNAME}StartTime')
 
 
 global:
   ScheduledAction:
     - IBOXBASE:
-        IBOXCODE: *base
+        <<: *base
         StartTime: Ref('AWS::NoValue')

@@ -568,59 +568,73 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
         _try_PCO_in_obj(key)
 
         for propname in key:
-            if propname not in props:
-                # NO match between propname and one of obj props
-                continue
-            key_value = key[propname]
+            if propname in props and f'{propname}.IBOXCODE' not in key:
+                # propname is an obj props and there is no propname key
+                # defining code (look down for processing IBOXCODE propname).
+                key_value = key[propname]
 
-            # set value
-            if isinstance(key_value, dict):
-                # key value is a dict, get populated object
-                value = _get_obj(obj, key, propname, mapname)
-            elif (isinstance(key_value, str)
-                    and key_value.startswith('IBOXRESNAME')):
-                # replace IBOXRESNAME string with IBOXRESNAME value
-                value = key_value.replace('IBOXRESNAME', IBOXRESNAME)
-            elif rootdict:
-                # rootdict is needed for lib/efs.py EFS_FileStorage SGIExtra,
-                # is passed as a dictionary to parse for parameters
-                value = get_endvalue(
-                    f'{mapname}{propname}', fixedvalues=rootdict,
-                    resname=IBOXRESNAME)
-            elif (isinstance(key_value, str)
-                    and key_value.startswith('get_endvalue(')):
-                # Usefull to migrate code in yaml using auto_get_props
-                # get_endvalue is used only when migrating code
-                value = eval(key_value)
+                # set value
+                if isinstance(key_value, dict):
+                    # key value is a dict, get populated object
+                    value = _get_obj(obj, key, propname, mapname)
+                elif (isinstance(key_value, str)
+                        and key_value.startswith('IBOXRESNAME')):
+                    # replace IBOXRESNAME string with IBOXRESNAME value
+                    value = key_value.replace('IBOXRESNAME', IBOXRESNAME)
+                elif rootdict:
+                    # rootdict is needed by lib/efs.py EFS_FileStorage SGIExtra
+                    # where is passed as a dictionary to parse for parameters
+                    value = get_endvalue(
+                        f'{mapname}{propname}', fixedvalues=rootdict,
+                        resname=IBOXRESNAME)
+                elif (isinstance(key_value, str)
+                        and key_value.startswith('get_endvalue(')):
+                    # Usefull to migrate code in yaml using auto_get_props
+                    # get_endvalue is used only when migrating code
+                    value = eval(key_value)
+                else:
+                    value = get_endvalue(
+                        f'{mapname}{propname}', resname=IBOXRESNAME)
+
+                if key_value == 'IBOXIFCONDVALUE':
+                    # auto add condition and wrap value in AWS If Condition
+                    add_obj(get_condition(f'{mapname}{propname}',
+                                          'not_equals', 'IBOXIFCONDVALUE'))
+                    value = If(
+                        f'{mapname}{propname}',
+                        value,
+                        Ref('AWS::NoValue'))
+                elif (isinstance(key_value, str)
+                        and key_value.startswith('IBOXIF')):
+                    # trick to wrapper value in If Condition
+                    if_list = key_value.split()[1:4]
+                    value = _iboxif(if_list, mapname, value)
+
+                # trick to wrapper recursed returned value in If Condition
+                try:
+                    if_wrapper = key_value['IBOXIF']
+                except Exception:
+                    pass
+                else:
+                    value = _iboxif(if_wrapper, mapname, value)
+
+                if propname == 'Condition' and not isinstance(value, str):
+                    # Avoid intercepting a Template Condition
+                    # as a Resource Condition
+                    continue
             else:
-                value = get_endvalue(
-                    f'{mapname}{propname}', resname=IBOXRESNAME)
-
-            if key_value == 'IBOXIFCONDVALUE':
-                # auto add condition and wrap value in AWS If Condition
-                add_obj(get_condition(f'{mapname}{propname}',
-                                      'not_equals', 'IBOXIFCONDVALUE'))
-                value = If(
-                    f'{mapname}{propname}',
-                    value,
-                    Ref('AWS::NoValue'))
-            elif (isinstance(key_value, str)
-                    and key_value.startswith('IBOXIF')):
-                # trick to wrapper value in If Condition
-                if_list = key_value.split()[1:4]
-                value = _iboxif(if_list, mapname, value)
-
-            # trick to wrapper recursed returned value in If Condition
-            try:
-                if_wrapper = key_value['IBOXIF']
-            except Exception:
-                pass
-            else:
-                value = _iboxif(if_wrapper, mapname, value)
-
-            if propname == 'Condition' and not isinstance(value, str):
-                # Avoid intercepting Template Condition as Resource Condition
-                continue
+                # If there is a key named as {proname}.IBOXCODE, eval it and
+                # use it as value.
+                # Usefull if a str value need to be processed by a code.
+                # (like in autoscaling-scheduledactions.yml)
+                propname_iboxcode = propname.replace('.IBOXCODE', '')
+                if (propname_iboxcode != propname
+                        and propname_iboxcode in props):
+                    value = eval(key[propname])
+                    propname = propname_iboxcode
+                else:
+                    # NO match between propname and one of obj props
+                    continue
 
             # Finally set obj property
             try:
