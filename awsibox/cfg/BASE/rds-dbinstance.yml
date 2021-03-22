@@ -42,7 +42,7 @@ Base: &base
         Description: 'Use multiple Availability Zone - empty for mapped value'
         AllowedValues: ['', 'True', 'False']
     - IBOXRESNAMEPerformanceInsights:
-        Description: 'The amount of time, in days, to retain Performance Insights data - empty for mapped value - False to disable'
+        Description: 'The amount of time, in days, to retain Performance Insights data - empty for mapped value - 0 to disable'
     - IBOXRESNAMEStorageType:
         Description: 'empty for mapped value'
         AllowedValues: ['', 'standard', 'gp2']
@@ -60,7 +60,7 @@ Base: &base
     - IBOXRESNAMEMonitoringInterval:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MonitoringInterval')
     - IBOXRESNAMEPerformanceInsights:
-        get_condition('', 'not_equals', 'false', f'{IBOXRESNAME}PerformanceInsights')
+        get_condition('', 'not_equals', '0', f'{IBOXRESNAME}PerformanceInsights')
   IBOXOUTPUT:
     - IBOXRESNAMEAllocatedStorage:
         Value: get_endvalue(f'{IBOXRESNAME}AllocatedStorage')
@@ -97,13 +97,14 @@ Base: &base
   DBParameterGroupName: Ref('DBParameterGroup1')
   DBSnapshotIdentifier: None
   DeletionProtection: False
-  EnablePerformanceInsights: get_endvalue(f'{IBOXRESNAME}PerformanceInsights')
+  EnablePerformanceInsights:
+    If(f'{IBOXRESNAME}PerformanceInsights', True, False)
   MasterUsername: masterusername
   MasterUserPassword: masteruserpassword
   MonitoringInterval: 0
   MonitoringRoleArn: If(f'{IBOXRESNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
   MultiAZ: False
-  PerformanceInsights: False
+  PerformanceInsights: 0
   PerformanceInsightsRetentionPeriod:
     If(f'{IBOXRESNAME}PerformanceInsights', get_endvalue(f'{IBOXRESNAME}PerformanceInsights'), Ref('AWS::NoValue'))
   SourceDBInstanceIdentifier: None
