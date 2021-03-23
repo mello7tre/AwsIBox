@@ -45,6 +45,8 @@ ecs-cluster:
         RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance') 
   Apps: []
   Cluster: True
+  ECSAgentCfg:
+    ECSImagePullBehavior: once
   Listeners: []
   RecordSet: []
   SecurityGroupIngress:
