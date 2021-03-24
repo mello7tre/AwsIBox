@@ -2,6 +2,7 @@ IBoxLoader: !include [
   ecs-taskdefinition.yml,
   ecs-containerdefinition.yml,
   iam/parameterstore.yml,
+  iam/ecs-exec.yml,
   securitygroup.yml,
 ]
 
