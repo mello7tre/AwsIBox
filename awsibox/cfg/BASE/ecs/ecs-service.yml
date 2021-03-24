@@ -20,7 +20,11 @@ Replica: &replica
     - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
         Description: 'empty for mapped value'
     - IBOXRESNAMEEnableExecuteCommand:
-        Description: 'empty for mapped value'
+        Description: 'empty for mapped value - Default to True for FARGATE'
+        AllowedValues: ['', 'True', 'False']
+  IBOXCONDITION:
+    - EnableExecuteCommand:
+        get_condition('', 'equals', True, f'{IBOXRESNAME}EnableExecuteCommand')
   IBOXOUTPUT:
     - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
         Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMaximumPercent')

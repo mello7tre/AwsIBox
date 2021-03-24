@@ -9,6 +9,9 @@ Base: &base
     - IBOXRESNAMECommand:
         Description: 'Command to execute'
         Type: 'CommaDelimitedList'
+    - IBOXRESNAMELinuxParametersInitProcessEnabled:
+        Description: 'empty for mapped value - True if EnableExecuteCommand'
+        AllowedValues: ['', 'True', 'False']
   IBOXCONDITION:
     - IBOXRESNAMECommand: Or(
         Condition(f'{IBOXRESNAME}CommandOverride'),
@@ -77,6 +80,10 @@ Base: &base
     - EnvClusterStackName:
         Name: EnvClusterStackName
         Value: get_endvalue('ClusterStack')
+  LinuxParameters:
+    InitProcessEnabled: False
+    InitProcessEnabled.IBOXCODE:
+      If(f'EnableExecuteCommand', True, get_endvalue(f'{IBOXRESNAME}LinuxParametersInitProcessEnabled'))
   DockerLabels: 
     LastUpdate: Ref('DockerLabelLastUpdate')
 

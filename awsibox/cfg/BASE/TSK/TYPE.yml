@@ -3,6 +3,8 @@ IBoxLoader: !include [
 ]
 
 tsk:
+  Condition:
+    - EnableExecuteCommand: Equals(True, False)
   EventsRule:
     - ECSRunTask:
         Description: 'Periodically invoke LambdaECSRunTask'
