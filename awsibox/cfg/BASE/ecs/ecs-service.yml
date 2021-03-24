@@ -19,6 +19,8 @@ Replica: &replica
         Description: 'empty for mapped value'
     - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
         Description: 'empty for mapped value'
+    - IBOXRESNAMEEnableExecuteCommand:
+        Description: 'empty for mapped value'
   IBOXOUTPUT:
     - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
         Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMaximumPercent')
@@ -28,6 +30,11 @@ Replica: &replica
   DeploymentConfiguration:
     MaximumPercent: 200
     MinimumHealthyPercent: 100
+  EnableExecuteCommand: False
+  EnableExecuteCommand.IBOXCODE: If(
+    'LaunchTypeFarGate',
+    If(f'{IBOXRESNAME}EnableExecuteCommandOverride', Ref(f'{IBOXRESNAME}EnableExecuteCommand'), True),
+    get_endvalue(f'{IBOXRESNAME}EnableExecuteCommand'))
   LaunchType: get_endvalue('LaunchType')
   PlacementStrategies:
     - IBOXIF:
