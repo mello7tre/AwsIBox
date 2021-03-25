@@ -570,13 +570,9 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
         for propname in key:
             key_value = key[propname]
 
-            # If there is a key named as {proname}.IBOXPCO, process it
-            try:
-                keypco_value = key[f'{propname}.IBOXPCO']
-            except Exception:
-                pass
-            else:
-                _try_PCO_in_obj(keypco_value)
+            # If there is a key ending with {prop}.IBOXPCO process it
+            if propname.endswith('.IBOXPCO'):
+                _try_PCO_in_obj(key_value)
 
             if propname in props and f'{propname}.IBOXCODE' not in key:
                 # propname is an obj props and there is no propname key
@@ -632,15 +628,13 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     # as a Resource Condition
                     continue
             else:
-                # If there is a key named as {proname}.IBOXCODE, eval it and
-                # use it as value.
+                # If there is a key ending with {prop}.IBOXCODE
+                # eval it and use it as prop value.
                 # Usefull if a str value need to be processed by a code.
                 # (like in autoscaling-scheduledactions.yml)
-                propname_iboxcode = propname.replace('.IBOXCODE', '')
-                if (propname_iboxcode != propname
-                        and propname_iboxcode in props):
+                if propname.endswith('.IBOXCODE'):
                     value = eval(key_value)
-                    propname = propname_iboxcode
+                    propname = propname.replace('.IBOXCODE', '')
                 else:
                     # NO match between propname and one of obj props
                     continue
