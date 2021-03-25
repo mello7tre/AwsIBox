@@ -1,19 +1,15 @@
 Base: &base
   IBOXENABLED: False
   Cluster: get_expvalue('Cluster', 'ClusterStack')
-  EnableExecuteCommand: False
   EnableExecuteCommand.IBOXCODE: If(
       'LaunchTypeFarGate',
       If(f'{IBOXRESNAME}EnableExecuteCommandOverride', Ref(f'{IBOXRESNAME}EnableExecuteCommand'), True),
-      get_endvalue(f'{IBOXRESNAME}EnableExecuteCommand'))
+      get_endvalue(f'EnableExecuteCommand'))
   EnableExecuteCommand.IBOXPCO:
     IBOXPARAMETER:
       - IBOXRESNAMEEnableExecuteCommand:
           Description: 'empty for mapped value - Default to True for FARGATE'
           AllowedValues: ['', 'True', 'False']
-    IBOXCONDITION:
-      - EnableExecuteCommand:
-          get_condition('', 'equals', True, f'{IBOXRESNAME}EnableExecuteCommand')
     IBOXOBJOUTPUT:
       - IBOXRESNAMEEnableExecuteCommand:
           Value: ${EnableExecuteCommand}
@@ -79,3 +75,8 @@ global:
         <<: [*base, *daemon]
     - Spot:
         <<: [*base, *spot]
+
+  Condition:
+    - EnableExecuteCommand:
+        get_condition('', 'equals', True, f'EnableExecuteCommand')
+  EnableExecuteCommand: False
