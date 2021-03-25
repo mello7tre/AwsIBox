@@ -1,6 +1,22 @@
 Base: &base
   IBOXENABLED: False
   Cluster: get_expvalue('Cluster', 'ClusterStack')
+  EnableExecuteCommand: False
+  EnableExecuteCommand.IBOXCODE: If(
+      'LaunchTypeFarGate',
+      If(f'{IBOXRESNAME}EnableExecuteCommandOverride', Ref(f'{IBOXRESNAME}EnableExecuteCommand'), True),
+      get_endvalue(f'{IBOXRESNAME}EnableExecuteCommand'))
+  EnableExecuteCommand.IBOXPCO:
+    IBOXPARAMETER:
+      - IBOXRESNAMEEnableExecuteCommand:
+          Description: 'empty for mapped value - Default to True for FARGATE'
+          AllowedValues: ['', 'True', 'False']
+    IBOXCONDITION:
+      - EnableExecuteCommand:
+          get_condition('', 'equals', True, f'{IBOXRESNAME}EnableExecuteCommand')
+    IBOXOBJOUTPUT:
+      - IBOXRESNAMEEnableExecuteCommand:
+          Value: ${EnableExecuteCommand}
   HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancerApplication else Ref('AWS::NoValue')")
   NetworkConfiguration:
     IBOXIF:
@@ -19,12 +35,6 @@ Replica: &replica
         Description: 'empty for mapped value'
     - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
         Description: 'empty for mapped value'
-    - IBOXRESNAMEEnableExecuteCommand:
-        Description: 'empty for mapped value - Default to True for FARGATE'
-        AllowedValues: ['', 'True', 'False']
-  IBOXCONDITION:
-    - EnableExecuteCommand:
-        get_condition('', 'equals', True, f'{IBOXRESNAME}EnableExecuteCommand')
   IBOXOUTPUT:
     - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
         Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMaximumPercent')
@@ -34,11 +44,6 @@ Replica: &replica
   DeploymentConfiguration:
     MaximumPercent: 200
     MinimumHealthyPercent: 100
-  EnableExecuteCommand: False
-  EnableExecuteCommand.IBOXCODE: If(
-    'LaunchTypeFarGate',
-    If(f'{IBOXRESNAME}EnableExecuteCommandOverride', Ref(f'{IBOXRESNAME}EnableExecuteCommand'), True),
-    get_endvalue(f'{IBOXRESNAME}EnableExecuteCommand'))
   LaunchType: get_endvalue('LaunchType')
   PlacementStrategies:
     - IBOXIF:
