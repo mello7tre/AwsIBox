@@ -573,6 +573,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             # If there is a key ending with {prop}.IBOXPCO process it
             if propname.endswith('.IBOXPCO'):
                 _try_PCO_in_obj(key_value)
+                continue
 
             if propname in props and f'{propname}.IBOXCODE' not in key:
                 # propname is an obj props and there is no propname key
@@ -627,17 +628,16 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     # Avoid intercepting a Template Condition
                     # as a Resource Condition
                     continue
-            else:
+            elif propname.endswith('.IBOXCODE'):
                 # If there is a key ending with {prop}.IBOXCODE
                 # eval it and use it as prop value.
                 # Usefull if a str value need to be processed by a code.
                 # (like in autoscaling-scheduledactions.yml)
-                if propname.endswith('.IBOXCODE'):
-                    value = eval(key_value)
-                    propname = propname.replace('.IBOXCODE', '')
-                else:
-                    # NO match between propname and one of obj props
-                    continue
+                value = eval(key_value)
+                propname = propname.replace('.IBOXCODE', '')
+            else:
+                # NO match between propname and one of obj props
+                continue
 
             # Finally set obj property
             try:
