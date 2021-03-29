@@ -1,7 +1,9 @@
-IBoxLoader: !include [
-  ecs/ecs-task.yml,
-  ecs/ecs-service.yml,
-]
+IBoxLoader:
+  - !exclude
+    - iam/ecs-exec.yml
+  - !include
+    - ecs/ecs-task.yml
+    - ecs/ecs-service.yml
 
 global:
   Parameter:
@@ -23,6 +25,9 @@ global:
         Image: 'busybox'
         Memory: 32
   LaunchType: EC2
+  Log:
+    Driver: None
+    GroupName: IBOXSKIPFUNC
   ScalableTarget: IBOXSKIPFUNC
   Service:
     - Base:

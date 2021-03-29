@@ -35,7 +35,8 @@ global:
             MinimumScalingStepSize: 1
             Status: ENABLED
             TargetCapacity: 75
+        Name: Sub('${AWS::StackName}-ECSCapacityProvider')
   ECSCluster:
     - Base:
         CapacityProviders:
-          - If('ECSCapacityProviderBase', Ref('ECSCapacityProviderBase'), Ref('AWS::NoValue'))
+          - If('ECSCapacityProviderBase', cfg.ECSCapacityProviderBaseName, Ref('AWS::NoValue'))
