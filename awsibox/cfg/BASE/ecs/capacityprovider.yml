@@ -1,0 +1,37 @@
+global:
+  ECSCapacityProvider:
+    - Base:
+        IBOXPARAMETER:
+          - IBOXRESNAMEEnabled:
+              Description: 'Empty for mapped value'
+              AllowedValues: ['', 'True', 'False']
+          - IBOXRESNAMEAutoScalingGroupProviderManagedTerminationProtection:
+              Description: 'Empty for mapped value'
+              AllowedValues: ['', 'DISABLED', 'ENABLED']
+          - IBOXRESNAMEAutoScalingGroupProviderManagedScalingMaximumScalingStepSize:
+              Description: 'Empty for mapped value'
+          - IBOXRESNAMEAutoScalingGroupProviderManagedScalingMinimumScalingStepSize:
+              Description: 'Empty for mapped value'
+          - IBOXRESNAMEAutoScalingGroupProviderManagedScalingTargetCapacity:
+              Description: 'Empty for mapped value'
+        IBOXCONDITION:
+          - IBOXRESNAME:
+              get_condition('', 'equals', 'True', f'{IBOXRESNAME}Enabled')
+        IBOXOBJOUTPUT:
+          - IBOXRESNAME:
+              Condition: IBOXRESNAME
+              Value: >-
+                TerminationProtection= ${AutoScalingGroupProvider.ManagedTerminationProtection}
+                ,MaximumScalingStepSize= ${AutoScalingGroupProvider.ManagedScaling.MaximumScalingStepSize}
+                ,MinimumScalingStepSize= ${AutoScalingGroupProvider.ManagedScaling.MinimumScalingStepSize}
+                ,TargetCapacity= ${AutoScalingGroupProvider.ManagedScaling.TargetCapacity}
+        Condition: IBOXRESNAME
+        Enabled: 'True'
+        AutoScalingGroupProvider:
+          AutoScalingGroupArn: Ref('AutoScalingGroup')
+          ManagedTerminationProtection: DISABLED
+          ManagedScaling:
+            MaximumScalingStepSize: 10000
+            MinimumScalingStepSize: 1
+            Status: ENABLED
+            TargetCapacity: 75

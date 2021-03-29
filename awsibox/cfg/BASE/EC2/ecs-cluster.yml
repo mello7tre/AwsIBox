@@ -1,6 +1,8 @@
 IBoxLoader: 
   - !include [
       autoscaling/imageid-ecs.yml,
+      ecs/capacityprovider.yml,
+      ecs/daemon-reserver-cpu.yml,
     ]
   - !exclude [
       cloudfront/cloudfront-ios.yml,

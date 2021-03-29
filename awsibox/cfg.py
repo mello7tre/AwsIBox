@@ -219,6 +219,8 @@ CFG_TO_FUNC = {
                    'func': 'ECR_Repositories'},
     'Cluster': {'module': 'ecs',
                 'func': 'ECS_Cluster'},
+    'ECSCapacityProvider': {'module': 'ecs',
+                            'func': 'ECS_CapacityProvider'},
     'Service': {'module': 'ecs',
                 'func': 'ECS_Service'},
     'ApiGatewayAccount': {'module': 'apigateway',

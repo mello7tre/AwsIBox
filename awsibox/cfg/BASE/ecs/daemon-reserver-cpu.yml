@@ -1,0 +1,34 @@
+IBoxLoader: !include [
+  ecs/ecs-task.yml,
+  ecs/ecs-service.yml,
+]
+
+global:
+  Parameter:
+    - DaemonReserveCpu:
+        Description: 'Empty for mapped value'
+        AllowedValues: ['', 'True', 'False']
+  Condition:
+    - DaemonReserveCpu:
+        get_condition('', 'equals', 'True', 'DaemonReserveCpu')
+  Output:
+    - DaemonReserveCpu:
+        Value: get_endvalue('DaemonReserveCpu')
+  DaemonReserveCpu: 'False'
+  ApplicationAutoScalingScalingPolicy: IBOXSKIPFUNC
+  ContainerDefinitions:
+    - 1:
+        Command: ['tail', '-f']
+        Cpu: 512
+        Image: 'busybox'
+        Memory: 32
+  LaunchType: EC2
+  ScalableTarget: IBOXSKIPFUNC
+  Service:
+    - Base:
+        IBOXENABLED: False
+    - Daemon:
+        IBOXENABLED: True
+        Condition: DaemonReserveCpu
+        Cluster: Ref('Cluster')
+        NetworkConfiguration: IBOXSKIPFUNC
