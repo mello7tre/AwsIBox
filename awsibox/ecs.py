@@ -203,12 +203,15 @@ def ECS_Service(key):
 
 
 def ECS_Cluster(key):
-    # Resources
-    R_Cluster = ecs.Cluster('Cluster')
+    for n, v in getattr(cfg, key).items():
+        mapname = f'{key}{n}'
+        r_Cluster = ecs.Cluster('Cluster')
+        auto_get_props(r_Cluster, mapname)
 
-    add_obj([
-        R_Cluster,
-    ])
+        add_obj([
+            r_Cluster,
+        ])
+
 
 def ECS_CapacityProvider(key):
     for n, v in getattr(cfg, key).items():

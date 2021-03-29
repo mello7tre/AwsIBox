@@ -17,7 +17,7 @@ global:
   DaemonReserveCpu: 'False'
   ApplicationAutoScalingScalingPolicy: IBOXSKIPFUNC
   ContainerDefinitions:
-    - 1:
+    - ReserveCpu:
         Command: ['tail', '-f']
         Cpu: 512
         Image: 'busybox'

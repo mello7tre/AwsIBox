@@ -46,9 +46,10 @@ ecs-cluster:
         NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
         RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance') 
   Apps: []
-  Cluster: True
-  ECSAgentCfg:
-    ECSImagePullBehavior: once
+  ECSCluster:
+    - Base:
+        AgentCfg:
+          ImagePullBehavior: once
   Listeners: []
   RecordSet: []
   SecurityGroupIngress:

@@ -35,3 +35,7 @@ global:
             MinimumScalingStepSize: 1
             Status: ENABLED
             TargetCapacity: 75
+  ECSCluster:
+    - Base:
+        CapacityProviders:
+          - If('ECSCapacityProviderBase', Ref('ECSCapacityProviderBase'), Ref('AWS::NoValue'))

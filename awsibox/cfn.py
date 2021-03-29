@@ -82,7 +82,7 @@ def cfn_ecs_cluster():
                         'ECS_ENABLE_SPOT_INSTANCE_DRAINING=true',
                         get_subvalue(
                             'ECS_IMAGE_PULL_BEHAVIOR=${1M}',
-                            'ECSAgentCfgECSImagePullBehavior'
+                            'ECSClusterBaseAgentCfgImagePullBehavior'
                         ),
                         If(
                             'GPUInstance',
