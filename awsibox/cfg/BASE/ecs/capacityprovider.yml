@@ -26,7 +26,7 @@ global:
                 ,MinimumScalingStepSize= ${AutoScalingGroupProvider.ManagedScaling.MinimumScalingStepSize}
                 ,TargetCapacity= ${AutoScalingGroupProvider.ManagedScaling.TargetCapacity}
         Condition: IBOXRESNAME
-        Enabled: 'True'
+        Enabled: 'False'
         AutoScalingGroupProvider:
           AutoScalingGroupArn: Ref('AutoScalingGroup')
           ManagedTerminationProtection: DISABLED
@@ -35,8 +35,15 @@ global:
             MinimumScalingStepSize: 1
             Status: ENABLED
             TargetCapacity: 75
-        Name: Sub('${AWS::StackName}-ECSCapacityProvider')
-  ECSCluster:
+        # Trick - Without Name, it's generated starting from StackName, if StackName start with ecs is a problem
+        Name: Sub('CP_${AWS::StackName}')
+  ECSClusterCapacityProviderAssociations:
     - Base:
+        Condition: ECSCapacityProviderBase
         CapacityProviders:
-          - If('ECSCapacityProviderBase', cfg.ECSCapacityProviderBaseName, Ref('AWS::NoValue'))
+          - Ref('ECSCapacityProviderBase')
+        Cluster: Ref('Cluster')
+        DefaultCapacityProviderStrategy:
+          - 0:
+              CapacityProvider: Ref('ECSCapacityProviderBase')
+              Weight: 1

@@ -17,18 +17,26 @@ global:
     - DaemonReserveCpu:
         Value: get_endvalue('DaemonReserveCpu')
   DaemonReserveCpu: 'False'
-  ApplicationAutoScalingScalingPolicy: IBOXSKIPFUNC
   ContainerDefinitions:
     - ReserveCpu:
         Command: ['tail', '-f']
-        Cpu: 512
         Image: 'busybox'
+        LogConfiguration: IBOXSKIPFUNC
         Memory: 32
+        MemoryReservation: 32
+  Cpu: 512
+  # Included yaml ecs/ecs-task.yml have changed ParameterStore Roles to RoleTask, need to restore it.
+  IAMPolicy:
+    - ParameterStore:
+        Roles:
+          - Ref('RoleInstance')
   LaunchType: EC2
   Log:
     Driver: None
     GroupName: IBOXSKIPFUNC
-  ScalableTarget: IBOXSKIPFUNC
+  Role:
+    - Task:
+        Condition: DaemonReserveCpu
   Service:
     - Base:
         IBOXENABLED: False
@@ -37,3 +45,6 @@ global:
         Condition: DaemonReserveCpu
         Cluster: Ref('Cluster')
         NetworkConfiguration: IBOXSKIPFUNC
+  TaskDefinition:
+    - Base:
+        Condition: DaemonReserveCpu

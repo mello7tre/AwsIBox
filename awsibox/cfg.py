@@ -221,6 +221,9 @@ CFG_TO_FUNC = {
                    'func': 'ECS_Cluster'},
     'ECSCapacityProvider': {'module': 'ecs',
                             'func': 'ECS_CapacityProvider'},
+    'ECSClusterCapacityProviderAssociations': {
+        'module': 'ecs',
+        'func': 'ECS_ClusterCapacityProviderAssociations'},
     'Service': {'module': 'ecs',
                 'func': 'ECS_Service'},
     'ApiGatewayAccount': {'module': 'apigateway',

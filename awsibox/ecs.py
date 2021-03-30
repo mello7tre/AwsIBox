@@ -220,3 +220,12 @@ def ECS_CapacityProvider(key):
         auto_get_props(r_CapacityProvider)
 
         add_obj(r_CapacityProvider)
+
+
+def ECS_ClusterCapacityProviderAssociations(key):
+    for n, v in getattr(cfg, key).items():
+        mapname = f'{key}{n}'
+        r_CapacityProviderAss = ecs.ClusterCapacityProviderAssociations(mapname)
+        auto_get_props(r_CapacityProviderAss)
+
+        add_obj(r_CapacityProviderAss)
