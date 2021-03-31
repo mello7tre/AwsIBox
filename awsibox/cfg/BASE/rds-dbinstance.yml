@@ -3,6 +3,8 @@ Base: &base
   IBOXPARAMETER:
     - IBOXRESNAMEAllocatedStorage:
         Description: 'Storage Size in GB - empty for mapped value'
+    - IBOXRESNAMEMaxAllocatedStorage:
+        Description: 'Max Storage Size in GB (Enable Storage Autoscaling)- empty for mapped value - 0 to disable'
     - IBOXRESNAMEDBInstanceClass:
         Description: 'Instance Type - empty for mapped value'
         AllowedValues: [
@@ -61,9 +63,13 @@ Base: &base
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MonitoringInterval')
     - IBOXRESNAMEPerformanceInsights:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}PerformanceInsights')
+    - IBOXRESNAMEStorageAutoScaling:
+        get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MaxAllocatedStorage')
   IBOXOUTPUT:
     - IBOXRESNAMEAllocatedStorage:
         Value: get_endvalue(f'{IBOXRESNAME}AllocatedStorage')
+    - IBOXRESNAMEMaxAllocatedStorage:
+        Value: get_endvalue(f'{IBOXRESNAME}MaxAllocatedStorage')
     - IBOXRESNAMEDBInstanceClass:
         Value: get_endvalue(f'{IBOXRESNAME}DBInstanceClass')
     - IBOXRESNAMEDBName:
@@ -101,6 +107,9 @@ Base: &base
     If(f'{IBOXRESNAME}PerformanceInsights', True, False)
   MasterUsername: masterusername
   MasterUserPassword: masteruserpassword
+  MaxAllocatedStorage: 0
+  MaxAllocatedStorage.IBOXCODE:
+    If(f'{IBOXRESNAME}StorageAutoScaling', get_endvalue(f'{IBOXRESNAME}MaxAllocatedStorage'), Ref('AWS::NoValue'))
   MonitoringInterval: 0
   MonitoringRoleArn: If(f'{IBOXRESNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
   MultiAZ: False
