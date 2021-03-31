@@ -14,6 +14,9 @@ global:
               Description: 'Empty for mapped value'
           - IBOXRESNAMEAutoScalingGroupProviderManagedScalingTargetCapacity:
               Description: 'Empty for mapped value'
+          - IBOXRESNAMEAutoScalingGroupProviderManagedScalingStatus:
+              Description: 'Empty for mapped value'
+              AllowedValues: ['', 'DISABLED', 'ENABLED']
         IBOXCONDITION:
           - IBOXRESNAME:
               get_condition('', 'equals', 'True', f'{IBOXRESNAME}Enabled')
@@ -25,6 +28,7 @@ global:
                 ,MaximumScalingStepSize= ${AutoScalingGroupProvider.ManagedScaling.MaximumScalingStepSize}
                 ,MinimumScalingStepSize= ${AutoScalingGroupProvider.ManagedScaling.MinimumScalingStepSize}
                 ,TargetCapacity= ${AutoScalingGroupProvider.ManagedScaling.TargetCapacity}
+                ,Status= ${AutoScalingGroupProvider.ManagedScaling.Status}
         Condition: IBOXRESNAME
         Enabled: 'False'
         AutoScalingGroupProvider:
@@ -36,7 +40,7 @@ global:
             Status: ENABLED
             TargetCapacity: 75
         # Trick - Without Name, it's generated starting from StackName, if StackName start with ecs is a problem
-        Name: Sub('CP_${AWS::StackName}')
+        Name: Sub('CapacityProvider-${AWS::StackName}')
   ECSClusterCapacityProviderAssociations:
     - Base:
         Condition: ECSCapacityProviderBase

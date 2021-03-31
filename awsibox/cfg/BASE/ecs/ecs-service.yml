@@ -40,7 +40,7 @@ Replica: &replica
   DeploymentConfiguration:
     MaximumPercent: 200
     MinimumHealthyPercent: 100
-  LaunchType: get_endvalue('LaunchType')
+  LaunchType: If('LaunchTypeFarGate', get_endvalue('LaunchType'), Ref('AWS::NoValue'))
   PlacementStrategies:
     - IBOXIF:
         - LaunchTypeFarGate
