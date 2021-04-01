@@ -20,7 +20,7 @@ Base: &base
       - IBOXIFVALUE
       - Ref('AWS::NoValue')
     AwsvpcConfiguration:
-      SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + SG_SecurityGroupsECS()
+      SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + cfg.SecurityGroupsImport
       Subnets: Split(',', get_expvalue('SubnetsPrivate'))
   PlatformVersion: If('LaunchTypeFarGate', 'LATEST', Ref('AWS::NoValue'))
   TaskDefinition: Ref('TaskDefinition')

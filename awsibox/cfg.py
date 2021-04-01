@@ -201,6 +201,10 @@ CFG_TO_FUNC = {
                   'func': 'CFM_Conditions'},
     'Mapping': {'module': 'cloudformation',
                 'func': 'CFM_Mappings'},
+    # SecurityGroups need to stay here because it populate a cfg value
+    # [cfg.SecurityGroupsImport] used later by other keys/modules
+    'SecurityGroups': {'module': 'securitygroup',
+                       'func': 'SG_SecurityGroups'},
     'AutoScalingGroup': {'module': 'autoscaling',
                          'func': 'AS_Autoscaling'},
     'ScalableTarget': {'module': 'autoscaling',

@@ -21,7 +21,7 @@ tsk:
                   If('NetworkModeAwsVpc', 'NetworkModeAwsVpc":"awsvpc",', Ref('AWS::NoValue')),
                   'TaskDefinition":', Ref('TaskDefinition'), ',',
                   'Subnets":', get_expvalue('SubnetsPrivate'), ',',
-                  'SecurityGroups":', Join(' ', SG_SecurityGroupsTSK()),
+                  'SecurityGroups":', Join(' ', cfg.SecurityGroupsImport),
                   '}',
                 ])
   LambdaDISABLEDUseCommonOneInResourcesLambda01:
@@ -37,7 +37,7 @@ tsk:
           - NetworkModeAwsVpc: If('NetworkModeAwsVpc','awsvpc',Ref('AWS::NoValue'))
           - TaskDefinition: Ref('TaskDefinition')
           - Subnets: get_expvalue('SubnetsPrivate')
-          - SecurityGroups: Join(' ', SG_SecurityGroupsTSK())
+          - SecurityGroups: Join(' ', cfg.SecurityGroupsImport)
   LaunchType: EC2
   NetworkMode: awsvpc
   IAMPolicy:

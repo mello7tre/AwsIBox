@@ -3,8 +3,6 @@ import troposphere.ecr as ecr
 from .common import *
 from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
                      auto_get_props, get_condition, add_obj)
-from .securitygroup import (SecurityGroupEcsService,
-                            SecurityGroupRuleEcsService, SG_SecurityGroupsECS)
 
 
 class ECRRepositories(ecr.Repository):

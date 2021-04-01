@@ -9,7 +9,6 @@ from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
                      auto_get_props, get_condition, add_obj)
 from .cfn import *
 from .codedeploy import CD_DeploymentGroup
-from .securitygroup import SG_SecurityGroupsEC2
 from .iam import IAMInstanceProfile
 
 try:
@@ -659,7 +658,7 @@ def AS_LaunchTemplate():
         InitConfigELBInternal = ASInitConfigELBApplicationInternal()
         CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
-    SecurityGroups = SG_SecurityGroupsEC2()
+    SecurityGroups = cfg.SecurityGroupsImport
 
     # Resources
     R_LaunchTemplate = ec2.LaunchTemplate(

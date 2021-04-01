@@ -4,14 +4,13 @@ from .common import *
 from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
                      auto_get_props, get_condition, add_obj)
 from .lambdas import LambdaPermissionEvent
-from .securitygroup import SG_SecurityGroupsTSK
 
 
 class EVENetworkConfiguration(eve.NetworkConfiguration):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.AwsVpcConfiguration = eve.AwsVpcConfiguration(
-            SecurityGroups=SG_SecurityGroupsTSK(),
+            SecurityGroups=cfg.SecurityGroupsImport,
             Subnets=Split(',', get_expvalue('SubnetsPrivate'))
         )
 

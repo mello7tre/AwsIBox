@@ -58,13 +58,6 @@ class SecurityGroupRuleEcsService(SecurityGroupRule):
 
 
 def SG_SecurityGroupsExtra(Out_String, Out_Map):
-    # if key SecurityGroups not present,
-    # set and empty SecurityGroups list and output (not added)
-    try:
-        cfg.SecurityGroups
-    except Exception:
-        return []
-
     # Parameters
     P_SecurityGroups = Parameter('SecurityGroups')
     P_SecurityGroups.Description = (
@@ -111,10 +104,10 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
     add_obj([
         O_SecurityGroups])
 
-    return SecurityGroups
+    cfg.SecurityGroupsImport =  SecurityGroups
 
 
-def SG_SecurityGroupsEC2():
+def SG_SecurityGroupsEC2(key):
     Out_String = ['Rules=${SecurityGroupInstancesRules}']
     Out_Map = {
         'SecurityGroupInstancesRules': {
@@ -130,10 +123,10 @@ def SG_SecurityGroupsEC2():
     add_obj([
         R_SGInstance])
 
-    return SG_SecurityGroupsExtra(Out_String, Out_Map)
+    SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
 
 
-def SG_SecurityGroupsECS():
+def SG_SecurityGroupsECS(key):
     Out_String = ['Service=${SecurityGroupEcsService}']
     Out_Map = {
         'SecurityGroupEcsService': {
@@ -146,10 +139,8 @@ def SG_SecurityGroupsECS():
     except Exception:
         pass
 
-    return SecurityGroups
 
-
-def SG_SecurityGroupsTSK():
+def SG_SecurityGroupsTSK(key):
     Out_String = []
     Out_Map = {}
 
@@ -159,8 +150,6 @@ def SG_SecurityGroupsTSK():
         cfg.Outputs['SecurityGroups'].Condition = 'NetworkModeAwsVpc'
     except Exception:
         pass
-
-    return SecurityGroups
 
 
 def SG_SecurityGroupRules(groupname, ingresses):

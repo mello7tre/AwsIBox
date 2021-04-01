@@ -119,9 +119,6 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
         return override_value
 
     def _get_value():
-        # Its not pythonic, but it's only way to avoid circular import problems
-        from .securitygroup import (SG_SecurityGroupsTSK, SG_SecurityGroupsECS)
-
         if resname:
             IBOXRESNAME = resname
         # if param in fixedvalues means its value do not changes
