@@ -97,6 +97,7 @@ def EFS_FileStorage(key):
 
         # outputs
         o_File = Output(resname)
+        o_File.Condition = resname
         o_File.Value = Ref(resname)
         o_File.Export = Export(resname)
 
@@ -107,10 +108,10 @@ def EFS_FileStorage(key):
 
         add_obj([
             r_File,
-            o_File,
             r_SGServer,
             r_SGClient,
             r_SGI,
+            o_File,
             o_SGClient])
 
 
