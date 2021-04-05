@@ -57,6 +57,7 @@ Replica: &replica
   
 Daemon: &daemon
   SchedulingStrategy: DAEMON
+  LaunchType: EC2
 
 Spot: &spot
   CapacityProviderStrategy:
