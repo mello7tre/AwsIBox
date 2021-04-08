@@ -24,11 +24,11 @@ global:
           LaunchTemplateId: Ref('LaunchTemplate')
           Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
         MaxInstanceLifetime.IBOXPCO:
-          - IBOXPARAMETER:
-              IBOXRESNAMEMaxInstanceLifetime:
+          IBOXPARAMETER:
+            - IBOXRESNAMEMaxInstanceLifetime:
                 Description: 'Empty for mapped value - 0 to disable'
-          - IBOXOBJOUTPUT:
-              IBOXRESNAMEMaxInstanceLifetime:
+          IBOXOBJOUTPUT:
+            - IBOXRESNAMEMaxInstanceLifetime:
                 Value: ${MaxInstanceLifetime}
         MaxInstanceLifetime: 0
         MaxSize: get_endvalue('CapacityMax')

@@ -104,7 +104,7 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
     add_obj([
         O_SecurityGroups])
 
-    cfg.SecurityGroupsImport =  SecurityGroups
+    cfg.SecurityGroupsImport = SecurityGroups
 
 
 def SG_SecurityGroupsEC2(key):
