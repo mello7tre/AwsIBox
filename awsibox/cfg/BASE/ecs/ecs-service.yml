@@ -46,7 +46,7 @@ Replica: &replica
         - LaunchTypeFarGate
         - Ref('AWS::NoValue')
         - IBOXIFVALUE
-    - Instance:
+    - 0:
         Type.IBOX_AUTO_PO:
           AllowedValues: ['', 'binpack', 'random', 'spread']
         Type: spread
