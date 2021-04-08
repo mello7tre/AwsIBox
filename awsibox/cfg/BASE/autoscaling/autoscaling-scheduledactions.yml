@@ -7,7 +7,7 @@ Base: &base
     - IBOXRESNAMEMaxSize:
         Description: 'k to keep current value - empty for mapped value'
     - IBOXRESNAMERecurrence:
-        Description: 'empty for mapped value'
+        Description: 'empty for mapped value - "false" to disable'
     - IBOXRESNAMEStartTime:
         Description: ''
   IBOXCONDITION:
@@ -24,7 +24,7 @@ Base: &base
     - IBOXRESNAMECapacityMaxSize:
         get_condition('', 'equals', 'CapacityMax', f'{IBOXRESNAME}MaxSize')
     - IBOXRESNAME:
-        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}Recurrence')
+        get_condition('', 'not_equals', False, f'{IBOXRESNAME}Recurrence')
   IBOXOBJOUTPUT:
     - IBOXRESNAME:
         Value: >-

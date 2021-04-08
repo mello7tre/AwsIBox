@@ -10,6 +10,7 @@ IBoxLoader: !include [
 global:
   AutoScalingGroup:
     - Base:
+        IBOXTITLE: AutoScalingGroup
         AvailabilityZones: GetAZs()
         DesiredCapacity: get_endvalue('CapacityDesired')
         MinSize: get_endvalue('CapacityMin')
@@ -22,6 +23,14 @@ global:
         LaunchTemplate:
           LaunchTemplateId: Ref('LaunchTemplate')
           Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
+        MaxInstanceLifetime.IBOXPCO:
+          - IBOXPARAMETER:
+              IBOXRESNAMEMaxInstanceLifetime:
+                Description: 'Empty for mapped value - 0 to disable'
+          - IBOXOBJOUTPUT:
+              IBOXRESNAMEMaxInstanceLifetime:
+                Value: ${MaxInstanceLifetime}
+        MaxInstanceLifetime: 0
         MaxSize: get_endvalue('CapacityMax')
         MetricsCollection:
           - 0:
