@@ -29,7 +29,7 @@ ScheduledAction: &scheduledaction
     - IBOXRESNAMECapacityMaxSize:
         get_condition('', 'equals', 'CapacityMax', f'{IBOXRESNAME}CapacityMax')
     - IBOXRESNAME:
-        get_condition('', 'not_equals', False, f'{IBOXRESNAME}Schedule')
+        get_condition('', 'not_equals', 'none', f'{IBOXRESNAME}Schedule')
     - IBOXRESNAMEDisable: Or(
           Not(Condition(IBOXRESNAME)),
           And(
