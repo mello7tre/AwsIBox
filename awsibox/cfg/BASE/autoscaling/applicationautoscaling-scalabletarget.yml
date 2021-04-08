@@ -16,7 +16,7 @@ ScheduledAction: &scheduledaction
     - IBOXRESNAMECapacityMax:
         Description: 'k to keep current value - empty for mapped value'
     - IBOXRESNAMESchedule:
-        Description: 'empty for mapped value - "false" to disable'
+        Description: 'empty for mapped value - "none" to disable'
     - IBOXRESNAMEStartTime:
         Description: ''
   IBOXCONDITION:

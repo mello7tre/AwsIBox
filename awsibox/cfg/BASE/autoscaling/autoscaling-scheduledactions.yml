@@ -7,7 +7,7 @@ Base: &base
     - IBOXRESNAMEMaxSize:
         Description: 'k to keep current value - empty for mapped value'
     - IBOXRESNAMERecurrence:
-        Description: 'empty for mapped value - "false" to disable'
+        Description: 'empty for mapped value - "none" to disable'
     - IBOXRESNAMEStartTime:
         Description: ''
   IBOXCONDITION:
