@@ -47,7 +47,10 @@ Replica: &replica
         - Ref('AWS::NoValue')
         - IBOXIFVALUE
     - Instance:
+        Type.IBOX_AUTO_PO:
+          AllowedValues: ['', 'binpack', 'random', 'spread']
         Type: spread
+        Field.IBOX_AUTO_PO: {}
         Field: instanceId
 
 #    If('LaunchTypeFarGate', Ref('AWS::NoValue'),

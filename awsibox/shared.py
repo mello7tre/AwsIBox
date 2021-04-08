@@ -557,6 +557,20 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 else:
                     func_map[pco](k)
 
+        def _auto_PO(name, conf, mode, value=''):
+            if mode == 'p':
+                parameter_base = {'Description': 'Empty for mapped value'}
+                parameter_base.update(conf)
+                parameter = {'IBOXPARAMETER': {
+                    f'{mapname}{name}': parameter_base}}
+                _try_PCO_in_obj(parameter)
+            if mode == 'o':
+                output_base = {'Value': value}
+                output_base.update(conf)
+                output = {'IBOXOUTPUT': {
+                    f'{mapname}{name}': output_base}}
+                _try_PCO_in_obj(output)
+
         # Allowed object properties
         props = vars(obj)['propnames']
         props.extend(vars(obj)['attributes'])
@@ -575,6 +589,10 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             if propname in props and f'{propname}.IBOXCODE' not in key:
                 # propname is an obj props and there is no propname key
                 # defining code (look down for processing IBOXCODE propname).
+
+                # Automatically create parameter
+                if f'{propname}.IBOX_AUTO_PO' in key:
+                    _auto_PO(propname, key[f'{propname}.IBOX_AUTO_PO'], 'p')
 
                 # set value
                 if isinstance(key_value, dict):
@@ -641,6 +659,11 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 setattr(obj, propname, value)
             except TypeError:
                 pass
+            else:
+                # Automatically create output
+                if f'{propname}.IBOX_AUTO_PO' in key:
+                    _auto_PO(propname, key[f'{propname}.IBOX_AUTO_PO'],
+                             'o', value)
 
         # title override
         try:
