@@ -53,6 +53,13 @@ Replica: &replica
         Type.IBOX_AUTO_P:
           AllowedValues: ['', 'binpack', 'random', 'spread']
         Type: spread
+        Field.IBOXPCO:
+          IBOXCONDITION:
+            - IBOXRESNAMEPlacementStrategies0TypeRandom:
+                get_condition('', 'equals', 'random', get_endvalue(f'{IBOXRESNAME}PlacementStrategies0Type'))
+        Field.IBOXCODE: If(
+          f'{IBOXRESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
+          get_endvalue(f'{IBOXRESNAME}PlacementStrategies0Field'))
         Field.IBOX_AUTO_P: {}
         Field: instanceId
 
