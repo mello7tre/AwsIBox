@@ -581,18 +581,19 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
         for propname in key:
             key_value = key[propname]
 
-            # If there is a key ending with {prop}.IBOXPCO process it
-            if propname.endswith('.IBOXPCO'):
-                _try_PCO_in_obj(key_value)
+            if propname.endswith(
+                    ('.IBOXPCO', '.IBOX_AUTO_PO', '.IBOX_AUTO_P')):
+                if propname.endswith('.IBOXPCO'):
+                    # If there is a key ending with {prop}.IBOXPCO process it
+                    _try_PCO_in_obj(key_value)
+                if propname.endswith(('.IBOX_AUTO_PO', '.IBOX_AUTO_P')):
+                    # Automatically create parameter
+                    _auto_PO(propname.split('.')[0], key_value, 'p')
                 continue
 
             if propname in props and f'{propname}.IBOXCODE' not in key:
                 # propname is an obj props and there is no propname key
                 # defining code (look down for processing IBOXCODE propname).
-
-                # Automatically create parameter
-                if f'{propname}.IBOX_AUTO_PO' in key:
-                    _auto_PO(propname, key[f'{propname}.IBOX_AUTO_PO'], 'p')
 
                 # set value
                 if isinstance(key_value, dict):
@@ -661,9 +662,10 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 pass
             else:
                 # Automatically create output
-                if f'{propname}.IBOX_AUTO_PO' in key:
-                    _auto_PO(propname, key[f'{propname}.IBOX_AUTO_PO'],
-                             'o', value)
+                for n in [f'{propname}.IBOX_AUTO_PO',
+                          f'{propname}.IBOX_AUTO_O']:
+                    if n in key:
+                        _auto_PO(propname, key[n], 'o', value)
 
         # title override
         try:
