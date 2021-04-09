@@ -24,11 +24,11 @@ global:
           - IBOXRESNAME:
               Condition: IBOXRESNAME
               Value: >-
-                TerminationProtection= ${AutoScalingGroupProvider.ManagedTerminationProtection}
-                ,MaximumScalingStepSize= ${AutoScalingGroupProvider.ManagedScaling.MaximumScalingStepSize}
-                ,MinimumScalingStepSize= ${AutoScalingGroupProvider.ManagedScaling.MinimumScalingStepSize}
-                ,TargetCapacity= ${AutoScalingGroupProvider.ManagedScaling.TargetCapacity}
-                ,Status= ${AutoScalingGroupProvider.ManagedScaling.Status}
+                TerminationProtection= ${AutoScalingGroupProviderManagedTerminationProtection}
+                ,MaximumScalingStepSize= ${AutoScalingGroupProviderManagedScalingMaximumScalingStepSize}
+                ,MinimumScalingStepSize= ${AutoScalingGroupProviderManagedScalingMinimumScalingStepSize}
+                ,TargetCapacity= ${AutoScalingGroupProviderManagedScalingTargetCapacity}
+                ,Status= ${AutoScalingGroupProviderManagedScalingStatus}
         Condition: IBOXRESNAME
         Enabled: 'False'
         AutoScalingGroupProvider:

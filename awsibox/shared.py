@@ -76,20 +76,23 @@ def add_obj(obj):
 
 def add_objoutput(res):
     try:
-        iboxprops = res.IBOX
+        iboxprops = res.IBOX_PROPS
     except Exception:
         pass
     else:
+        mapname = iboxprops['mapname']
         join_list = []
         for n in res.Value.split():
             n = n.strip()
             if n.startswith('${'):
                 n = n.strip('${}')
-                n = eval(f'iboxprops.{n}')
+                obj = iboxprops[f'{mapname}{n}'][0]
+                propname = iboxprops[f'{mapname}{n}'][1]
+                n = getattr(obj, propname)
             join_list.append(n)
 
         res.Value = Join('', join_list)
-        del res.properties['IBOX']
+        del res.properties['IBOX_PROPS']
 
 
 def do_no_override(action):
@@ -392,6 +395,13 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     IBOXRESNAME = obj.title
     IBOXMAPNAME = mapname
 
+
+    # create a dict where i will put all property with a flat hierarchy
+    # with the name equals to the mapname and the relative value.
+    # Later i will assign this dict to the relative output object using
+    # IBOXOBJOUTPUT
+    IBOX_PROPS = {}
+
     def _iboxif(if_wrapper, mapname, value):
         condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
         condname = condname.replace('IBOXRESNAME', IBOXRESNAME)
@@ -537,10 +547,11 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     output = Output(n)
                     _populate(output, rootdict=v)
                     # alter troposphere obj and add IBOX property
-                    output.props['IBOX'] = (object, False)
-                    output.propnames.append('IBOX')
+                    output.props['IBOX_PROPS'] = (dict, False)
+                    output.propnames.append('IBOX_PROPS')
                     # assign auto_get_props populated obj to IBOX property
-                    output.IBOX = IBOXOBJ
+                    output.IBOX_PROPS = IBOX_PROPS
+                    output.IBOX_PROPS['mapname'] = mapname
                     add_obj(output)
 
             func_map = {
@@ -661,6 +672,9 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             except TypeError:
                 pass
             else:
+                # populate IBOX_PROPS dict
+                IBOX_PROPS[f'{mapname}{propname}'] = (obj, propname)
+
                 # Automatically create output
                 for n in [f'{propname}.IBOX_AUTO_PO',
                           f'{propname}.IBOX_AUTO_O']:
