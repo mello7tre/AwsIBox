@@ -80,7 +80,7 @@ def add_objoutput(res):
     except Exception:
         pass
     else:
-        mapname = iboxprops['mapname']
+        mapname = iboxprops['MAP'][res.title]
         join_list = []
         for n in res.Value.split():
             n = n.strip()
@@ -395,12 +395,11 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     IBOXRESNAME = obj.title
     IBOXMAPNAME = mapname
 
-
     # create a dict where i will put all property with a flat hierarchy
     # with the name equals to the mapname and the relative value.
     # Later i will assign this dict to the relative output object using
     # IBOXOBJOUTPUT
-    IBOX_PROPS = {}
+    IBOX_PROPS = {'MAP': {}}
 
     def _iboxif(if_wrapper, mapname, value):
         condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
@@ -551,7 +550,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     output.propnames.append('IBOX_PROPS')
                     # assign auto_get_props populated obj to IBOX property
                     output.IBOX_PROPS = IBOX_PROPS
-                    output.IBOX_PROPS['mapname'] = mapname
+                    output.IBOX_PROPS['MAP'][n] = mapname
                     add_obj(output)
 
             func_map = {
