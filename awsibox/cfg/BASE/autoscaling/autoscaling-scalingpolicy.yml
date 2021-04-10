@@ -6,12 +6,12 @@ Tracking: &tracking
   <<: *base
   Condition: IBOXRESNAME
   IBOX_PARAMETER:
-    - IBOXRESNAMETargetTrackingConfigurationCustomizedMetricSpecificationStatistic:
+    - _TargetTrackingConfigurationCustomizedMetricSpecificationStatistic:
         Description: '0 to disable - empty for mapped value'
-    - IBOXRESNAMETargetTrackingConfigurationTargetValue:
+    - _TargetTrackingConfigurationTargetValue:
         Description: '0 to disable - empty for mapped value'
   IBOX_CONDITION:
-    - IBOXRESNAME:
+    - _:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}TargetTrackingConfigurationTargetValue')
   EstimatedInstanceWarmup: 120
   PolicyType: TargetTrackingScaling

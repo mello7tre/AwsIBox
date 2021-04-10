@@ -84,7 +84,7 @@ global:
     - HttpExternal:
         <<: [*alb, *httpexternal]
         IBOX_OUTPUT:
-          - IBOXRESNAME:
+          - _:
               Condition: LoadBalancerApplicationExternal
               Value: Ref(IBOXRESNAME)
               Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
@@ -92,7 +92,7 @@ global:
     - HttpInternal:
         <<: [*alb, *httpinternal]
         IBOX_OUTPUT:
-          - IBOXRESNAME:
+          - _:
               Condition: LoadBalancerApplicationInternal
               Value: Ref(IBOXRESNAME)
               Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
@@ -100,7 +100,7 @@ global:
     - HttpsExternal:
         <<: [*alb, *httpsexternal]
         IBOX_OUTPUT:
-          - IBOXRESNAME:
+          - _:
               Condition: LoadBalancerApplicationExternal
               Value: Ref(IBOXRESNAME)
               Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))

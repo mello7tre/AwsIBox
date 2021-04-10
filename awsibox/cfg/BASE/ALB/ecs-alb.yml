@@ -27,7 +27,7 @@ ecs-alb:
   SecurityGroup**:
     - LoadBalancerApplicationExternal:
         IBOX_OUTPUT:
-          - IBOXRESNAME:
+          - _:
               Condition: LoadBalancerApplicationExternal
               Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')
               Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
@@ -44,7 +44,7 @@ ecs-alb:
               ToPort: 443
     - LoadBalancerApplicationInternal:
         IBOX_OUTPUT:
-          - IBOXRESNAME:
+          - _:
               Condition: LoadBalancerApplicationInternal
               Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')
               Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))

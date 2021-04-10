@@ -404,7 +404,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
     def _iboxif(if_wrapper, mapname, value):
         condname = if_wrapper[0].replace('IBOX_MAPNAME_', mapname)
-        condname = condname.replace('IBOXRESNAME', IBOXRESNAME)
+        condname = condname.replace('_', IBOXRESNAME)
         condvalues = []
         for i in if_wrapper[1:3]:
             if isinstance(i, str) and i.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
@@ -518,7 +518,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
         def _try_PCO_in_obj(key):
             def _parameter(k):
                 for n, v in k.items():
-                    n = n.replace('IBOXRESNAME', IBOXRESNAME)
+                    n = n.replace('_', IBOXRESNAME)
                     parameter = Parameter(n)
                     _populate(parameter, rootdict=v)
                     add_obj(parameter)
@@ -528,22 +528,22 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 IBOXRESNAME
                 IBOX_MAPNAME
                 for n, v in k.items():
-                    n = n.replace('IBOXRESNAME', IBOXRESNAME)
                     if IBOX_MAPNAME:
                         n = n.replace('IBOX_MAPNAME', IBOX_MAPNAME)
+                    n = n.replace('_', IBOXRESNAME)
                     condition = {n: eval(v)}
                     add_obj(condition)
 
             def _output_no_more_used(k):
                 for n, v in k.items():
-                    n = n.replace('IBOXRESNAME', IBOXRESNAME)
+                    n = n.replace('_', IBOXRESNAME)
                     output = Output(n)
                     _populate(output, rootdict=v)
                     add_obj(output)
 
             def _output(k):
                 for n, v in k.items():
-                    n = n.replace('IBOXRESNAME', IBOXRESNAME)
+                    n = n.replace('_', IBOXRESNAME)
                     output = Output(n)
                     _populate(output, rootdict=v)
                     # alter troposphere obj and add IBOX property

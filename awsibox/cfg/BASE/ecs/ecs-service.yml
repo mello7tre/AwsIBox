@@ -7,11 +7,11 @@ Base: &base
       get_endvalue(f'EnableExecuteCommand'))
   EnableExecuteCommand.IBOX_PCO:
     IBOX_PARAMETER:
-      - IBOXRESNAMEEnableExecuteCommand:
+      - _EnableExecuteCommand:
           Description: 'empty for mapped value - Default to True for FARGATE'
           AllowedValues: ['', 'True', 'False']
     IBOX_OUTPUT:
-      - IBOXRESNAMEEnableExecuteCommand:
+      - _EnableExecuteCommand:
           Value: ${EnableExecuteCommand}
   HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancerApplication else Ref('AWS::NoValue')")
   NetworkConfiguration:
@@ -27,14 +27,14 @@ Base: &base
 
 Replica: &replica
   IBOX_PARAMETER:
-    - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
+    - _DeploymentConfigurationMaximumPercent:
         Description: 'empty for mapped value'
-    - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
+    - _DeploymentConfigurationMinimumHealthyPercent:
         Description: 'empty for mapped value'
   IBOX_OUTPUT:
-    - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
+    - _DeploymentConfigurationMaximumPercent:
         Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMaximumPercent')
-    - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
+    - _DeploymentConfigurationMinimumHealthyPercent:
         Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMinimumHealthyPercent')
   DesiredCount: get_endvalue('CapacityDesired')
   DeploymentConfiguration:
@@ -48,14 +48,14 @@ Replica: &replica
         - IBOX_IFVALUE
     - 0:
         IBOX_OUTPUT:
-          - IBOXRESNAMEPlacementStrategies0:
+          - _PlacementStrategies0:
               Value: Type= ${Type} ,Field= ${Field}
         Type.IBOX_AUTO_P:
           AllowedValues: ['', 'binpack', 'random', 'spread']
         Type: spread
         Field.IBOX_PCO:
           IBOX_CONDITION:
-            - IBOXRESNAMEPlacementStrategies0TypeRandom:
+            - _PlacementStrategies0TypeRandom:
                 get_condition('', 'equals', 'random', get_endvalue(f'{IBOXRESNAME}PlacementStrategies0Type'))
         Field.IBOX_CODE: If(
           f'{IBOXRESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),

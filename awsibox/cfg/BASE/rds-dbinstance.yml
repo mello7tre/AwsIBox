@@ -1,11 +1,11 @@
 Base: &base
   IBOX_ENABLED: False
   IBOX_PARAMETER:
-    - IBOXRESNAMEAllocatedStorage:
+    - _AllocatedStorage:
         Description: 'Storage Size in GB - empty for mapped value'
-    - IBOXRESNAMEMaxAllocatedStorage:
+    - _MaxAllocatedStorage:
         Description: 'Max Storage Size in GB (Enable Storage Autoscaling)- empty for mapped value - 0 to disable'
-    - IBOXRESNAMEDBInstanceClass:
+    - _DBInstanceClass:
         Description: 'Instance Type - empty for mapped value'
         AllowedValues: [
           '', 'db.m3.medium', 'db.m3.large', 'db.m3.xlarge', 'db.m3.2xlarge',
@@ -15,84 +15,84 @@ Base: &base
           'db.r5.large', 'db.r5.xlarge', 'db.r5.2xlarge', 'db.r5.4xlarge', 'db.r5.12xlarge',
           'db.t2.micro', 'db.t2.small', 'db.t2.medium', 'db.t2.large',
           'db.t3.micro', 'db.t3.small', 'db.t3.medium', 'db.t3.large']
-    - IBOXRESNAMEDBName:
+    - _DBName:
         Description: 'None for not creating one - empty for mapped value'
-    - IBOXRESNAMEDBSnapshotIdentifier:
+    - _DBSnapshotIdentifier:
         Description: 'DB snapshot used to restore the DB instance - None for not using one - empty for mapped value'
-    - IBOXRESNAMEDeletionProtection:
+    - _DeletionProtection:
         Description: 'empty for mapped value'
         AllowedValues: ['', 'True', 'False']
-    - IBOXRESNAMESourceDBInstanceIdentifier:
+    - _SourceDBInstanceIdentifier:
         Description: 'ID of the source DB instance to create ReadReplica - None for not using one - empty for mapped value'
-    - IBOXRESNAMEEngine:
+    - _Engine:
         Description: 'Engine - empty for mapped value'
         AllowedValues: [
           '', 'mysql', 'mariadb', 'oracle-se1', 'oracle-se2', 'oracle-se', 'oracle-ee',
           'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web', 'postgres', 'aurora'
         ]
-    - IBOXRESNAMEEngineVersion:
+    - _EngineVersion:
         Description: 'Engine Version - empty for mapped value'
-    - IBOXRESNAMEMasterUsername:
+    - _MasterUsername:
         Description: 'Username - empty for mapped value'
-    - IBOXRESNAMEMasterUserPassword:
+    - _MasterUserPassword:
         Description: 'Password - empty for mapped value'
         NoEcho: True
-    - IBOXRESNAMEMonitoringInterval:
+    - _MonitoringInterval:
         Description: 'The interval, in seconds, for Enhanced Monitoring metrics - empty for mapped value - 0 to disable'
         AllowedValues: ['', '0', '1', '5', '10', '15', '30', '60']
-    - IBOXRESNAMEMultiAZ:
+    - _MultiAZ:
         Description: 'Use multiple Availability Zone - empty for mapped value'
         AllowedValues: ['', 'True', 'False']
-    - IBOXRESNAMEPerformanceInsights:
+    - _PerformanceInsights:
         Description: 'The amount of time, in days, to retain Performance Insights data - empty for mapped value - 0 to disable'
-    - IBOXRESNAMEStorageType:
+    - _StorageType:
         Description: 'empty for mapped value'
         AllowedValues: ['', 'standard', 'gp2']
   IBOX_CONDITION:
-    - IBOXRESNAMEDBName:
+    - _DBName:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}DBName')
-    - IBOXRESNAMEDBSnapshotIdentifier:
+    - _DBSnapshotIdentifier:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}DBSnapshotIdentifier')
-    - IBOXRESNAMESourceDBInstanceIdentifier:
+    - _SourceDBInstanceIdentifier:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}SourceDBInstanceIdentifier')
-    - IBOXRESNAMEDBInstanceSkipProperties:
+    - _DBInstanceSkipProperties:
         Or(Condition(f'{IBOXRESNAME}DBSnapshotIdentifier'), Condition(f'{IBOXRESNAME}SourceDBInstanceIdentifier'))
-    - IBOXRESNAMEMonitoringInterval:
+    - _MonitoringInterval:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MonitoringInterval')
-    - IBOXRESNAMEPerformanceInsights:
+    - _PerformanceInsights:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}PerformanceInsights')
-    - IBOXRESNAMEStorageAutoScaling:
+    - _StorageAutoScaling:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MaxAllocatedStorage')
   IBOX_OUTPUT:
-    - IBOXRESNAMEAllocatedStorage:
+    - _AllocatedStorage:
         Value: ${AllocatedStorage}
-    - IBOXRESNAMEMaxAllocatedStorage:
+    - _MaxAllocatedStorage:
         Value: ${MaxAllocatedStorage}
-    - IBOXRESNAMEDBInstanceClass:
+    - _DBInstanceClass:
         Value: ${DBInstanceClass}
-    - IBOXRESNAMEDBName:
+    - _DBName:
         Value: ${DBName}
-    - IBOXRESNAMEDBSnapshotIdentifier:
+    - _DBSnapshotIdentifier:
         Value: ${DBSnapshotIdentifier}
-    - IBOXRESNAMEDeletionProtection:
+    - _DeletionProtection:
         Value: ${DeletionProtection}
-    - IBOXRESNAMEEngine:
+    - _Engine:
         Value: ${Engine}
-    - IBOXRESNAMEEngineVersion:
+    - _EngineVersion:
         Value: ${EngineVersion}
-    - IBOXRESNAMEMasterUsername:
+    - _MasterUsername:
         Value: ${MasterUsername}
-    - IBOXRESNAMEMonitoringInterval:
+    - _MonitoringInterval:
         Value: ${MonitoringInterval}
-    - IBOXRESNAMEMultiAZ:
+    - _MultiAZ:
         Value: ${MultiAZ}
-    - IBOXRESNAMEPerformanceInsightsRetentionPeriod:
+    - _PerformanceInsightsRetentionPeriod:
         Value: ${PerformanceInsightsRetentionPeriod}
-    - IBOXRESNAMEPubliclyAccessible:
+    - _PubliclyAccessible:
         Value: ${PubliclyAccessible}
-    - IBOXRESNAMESourceDBInstanceIdentifier:
+    - _SourceDBInstanceIdentifier:
         Value: ${SourceDBInstanceIdentifier}
-    - IBOXRESNAMEStorageType:
+    - _StorageType:
         Value: ${StorageType}
   AllocatedStorage: 50
   AllowMajorVersionUpgrade: True

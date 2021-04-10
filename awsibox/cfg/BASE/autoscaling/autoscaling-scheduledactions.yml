@@ -1,32 +1,32 @@
 Base: &base
   IBOX_PARAMETER:
-    - IBOXRESNAMEDesiredSize:
+    - _DesiredSize:
         Description: 'k to keep current value - empty for mapped value'
-    - IBOXRESNAMEMinSize:
+    - _MinSize:
         Description: 'k to keep current value - empty for mapped value'
-    - IBOXRESNAMEMaxSize:
+    - _MaxSize:
         Description: 'k to keep current value - empty for mapped value'
-    - IBOXRESNAMERecurrence:
+    - _Recurrence:
         Description: 'empty for mapped value - "none" to disable'
-    - IBOXRESNAMEStartTime:
+    - _StartTime:
         Description: ''
   IBOX_CONDITION:
-    - IBOXRESNAMEKeepDesiredSize:
+    - _KeepDesiredSize:
         get_condition('', 'equals', 'k', f'{IBOXRESNAME}DesiredSize')
-    - IBOXRESNAMEKeepMinSize:
+    - _KeepMinSize:
         get_condition('', 'equals', 'k', f'{IBOXRESNAME}MinSize')
-    - IBOXRESNAMEKeepMaxSize:
+    - _KeepMaxSize:
         get_condition('', 'equals', 'k', f'{IBOXRESNAME}MaxSize')
-    - IBOXRESNAMECapacityDesiredSize:
+    - _CapacityDesiredSize:
         get_condition('', 'equals', 'CapacityDesired', f'{IBOXRESNAME}DesiredSize')
-    - IBOXRESNAMECapacityMinSize:
+    - _CapacityMinSize:
         get_condition('', 'equals', 'CapacityMin', f'{IBOXRESNAME}MinSize')
-    - IBOXRESNAMECapacityMaxSize:
+    - _CapacityMaxSize:
         get_condition('', 'equals', 'CapacityMax', f'{IBOXRESNAME}MaxSize')
-    - IBOXRESNAME:
+    - _:
         get_condition('', 'not_equals', 'none', f'{IBOXRESNAME}Recurrence')
   IBOX_OUTPUT:
-    - IBOXRESNAME:
+    - _:
         Value: >-
           DesiredSize= ${DesiredCapacity} ,MinSize= ${MinSize} ,MaxSize= ${MaxSize}
           ,Recurrence= ${Recurrence} ,StartTime= ${StartTime}

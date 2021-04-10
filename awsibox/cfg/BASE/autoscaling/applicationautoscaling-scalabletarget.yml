@@ -11,32 +11,32 @@ ECS: &ecs
 
 ScheduledAction: &scheduledaction
   IBOX_PARAMETER:
-    - IBOXRESNAMECapacityMin:
+    - _CapacityMin:
         Description: 'k to keep current value - empty for mapped value'
-    - IBOXRESNAMECapacityMax:
+    - _CapacityMax:
         Description: 'k to keep current value - empty for mapped value'
-    - IBOXRESNAMESchedule:
+    - _Schedule:
         Description: 'empty for mapped value - "none" to disable'
-    - IBOXRESNAMEStartTime:
+    - _StartTime:
         Description: ''
   IBOX_CONDITION:
-    - IBOXRESNAMEKeepMinSize:
+    - _KeepMinSize:
         get_condition('', 'equals', 'k', f'{IBOXRESNAME}CapacityMin')
-    - IBOXRESNAMEKeepMaxSize:
+    - _KeepMaxSize:
         get_condition('', 'equals', 'k', f'{IBOXRESNAME}CapacityMax')
-    - IBOXRESNAMECapacityMinSize:
+    - _CapacityMinSize:
         get_condition('', 'equals', 'CapacityMin', f'{IBOXRESNAME}CapacityMin')
-    - IBOXRESNAMECapacityMaxSize:
+    - _CapacityMaxSize:
         get_condition('', 'equals', 'CapacityMax', f'{IBOXRESNAME}CapacityMax')
-    - IBOXRESNAME:
+    - _:
         get_condition('', 'not_equals', 'none', f'{IBOXRESNAME}Schedule')
-    - IBOXRESNAMEDisable: Or(
+    - _Disable: Or(
           Not(Condition(IBOXRESNAME)),
           And(
             Condition(f'{IBOXRESNAME}KeepMaxSize'),
             Condition(f'{IBOXRESNAME}KeepMinSize')))
   IBOX_OUTPUT:
-    - IBOXRESNAME:
+    - _:
         Value: >-
           CapacityMin= ${ScalableTargetActionMinCapacity} ,CapacityMax= ${ScalableTargetActionMaxCapacity}
           ,Schedule= ${Schedule} ,StartTime= ${StartTime}

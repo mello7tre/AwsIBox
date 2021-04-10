@@ -103,7 +103,7 @@ class Loader(yaml.Loader):
 
 def replace_not_allowed_char(s):
     key = str(s)
-    if not key.startswith('IBOX_'):
+    if not key.startswith(('IBOX_', '_')):
         for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
             key = key.replace(s, w)
 

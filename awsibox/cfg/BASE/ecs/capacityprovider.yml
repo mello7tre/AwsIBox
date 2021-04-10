@@ -2,26 +2,26 @@ global:
   ECSCapacityProvider:
     - Base:
         IBOX_PARAMETER:
-          - IBOXRESNAMEEnabled:
+          - _Enabled:
               Description: 'Empty for mapped value'
               AllowedValues: ['', 'True', 'False']
-          - IBOXRESNAMEAutoScalingGroupProviderManagedTerminationProtection:
+          - _AutoScalingGroupProviderManagedTerminationProtection:
               Description: 'Empty for mapped value'
               AllowedValues: ['', 'DISABLED', 'ENABLED']
-          - IBOXRESNAMEAutoScalingGroupProviderManagedScalingMaximumScalingStepSize:
+          - _AutoScalingGroupProviderManagedScalingMaximumScalingStepSize:
               Description: 'Empty for mapped value'
-          - IBOXRESNAMEAutoScalingGroupProviderManagedScalingMinimumScalingStepSize:
+          - _AutoScalingGroupProviderManagedScalingMinimumScalingStepSize:
               Description: 'Empty for mapped value'
-          - IBOXRESNAMEAutoScalingGroupProviderManagedScalingTargetCapacity:
+          - _AutoScalingGroupProviderManagedScalingTargetCapacity:
               Description: 'Empty for mapped value'
-          - IBOXRESNAMEAutoScalingGroupProviderManagedScalingStatus:
+          - _AutoScalingGroupProviderManagedScalingStatus:
               Description: 'Empty for mapped value'
               AllowedValues: ['', 'DISABLED', 'ENABLED']
         IBOX_CONDITION:
-          - IBOXRESNAME:
+          - _:
               get_condition('', 'equals', 'True', f'{IBOXRESNAME}Enabled')
         IBOX_OUTPUT:
-          - IBOXRESNAME:
+          - _:
               Condition: IBOXRESNAME
               Value: >-
                 TerminationProtection= ${AutoScalingGroupProviderManagedTerminationProtection}

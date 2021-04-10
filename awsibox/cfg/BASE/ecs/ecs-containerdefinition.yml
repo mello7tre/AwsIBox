@@ -1,30 +1,30 @@
 Base: &base
   IBOX_PARAMETER:
-    - IBOXRESNAMECpu:
+    - _Cpu:
         Description: 'Cpu Share - empty for mapped value'
-    - IBOXRESNAMEMemory:
+    - _Memory:
         Description: 'Memory hard limit - empty for mapped value'
-    - IBOXRESNAMEMemoryReservation:
+    - _MemoryReservation:
         Description: 'Memory soft limit - empty for mapped value'
-    - IBOXRESNAMECommand:
+    - _Command:
         Description: 'Command to execute'
         Type: 'CommaDelimitedList'
-    - IBOXRESNAMELinuxParametersInitProcessEnabled:
+    - _LinuxParametersInitProcessEnabled:
         Description: 'empty for mapped value - True if EnableExecuteCommand'
         AllowedValues: ['', 'True', 'False']
   IBOX_CONDITION:
-    - IBOXRESNAMECommand: Or(
+    - _Command: Or(
         Condition(f'{IBOXRESNAME}CommandOverride'),
         Equals('True', 'True' if isinstance(getattr(cfg, f'{IBOXRESNAME}Command'), list) else 'False'))
-    - IBOXRESNAMEContainerPort:
+    - _ContainerPort:
         get_condition('', 'not_equals', 0, f'{IBOXRESNAME}ContainerPort')
-    - IBOXRESNAMEHostPort:
+    - _HostPort:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}HostPort')
   IBOX_OUTPUT:
-    - IBOXRESNAMECommand:
+    - _Command:
         Condition: IBOXRESNAMECommand
         Value: Join(',', get_endvalue(f'{IBOXRESNAME}Command')) 
-    - IBOXRESNAMEConstraints:
+    - _Constraints:
         Value: >-
           Cpu= ${Cpu} ,Memory= ${Memory} ,MemoryReservation= ${MemoryReservation}
   Essential: True
@@ -44,7 +44,7 @@ Base: &base
   HostPort: None
   PortMappings:
     - IBOX_IF:
-      - IBOXRESNAMEContainerPort
+      - _ContainerPort
       - IBOX_IFVALUE
       - Ref('AWS::NoValue')
     - 0:

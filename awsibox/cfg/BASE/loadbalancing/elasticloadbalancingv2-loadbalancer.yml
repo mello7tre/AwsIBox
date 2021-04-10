@@ -43,15 +43,15 @@ Base: &base
 ALB: &alb
   <<: *base
   IBOX_OUTPUT:
-    - IBOXRESNAME:
+    - _:
         Condition: IBOXRESNAME
         Value: Ref(IBOXRESNAME)
         Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
-    - IBOXRESNAMEDNS:
+    - _DNS:
         Condition: IBOXRESNAME
         Value: GetAtt(IBOXRESNAME, 'DNSName')
         Export: Export(Sub('%sDNS-${AWS::StackName}' % IBOXRESNAME))
-    - IBOXRESNAMEFullName:
+    - _FullName:
         Condition: IBOXRESNAME
         Value: GetAtt(IBOXRESNAME, 'LoadBalancerFullName')
         Export: Export(Sub('%sFullName-${AWS::StackName}' % IBOXRESNAME))

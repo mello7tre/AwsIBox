@@ -18,17 +18,17 @@ Distribution: &distribution
 
 Origin: &origin
   IBOX_PARAMETER:
-    - IBOXRESNAMEDomainName:
+    - _DomainName:
         Description: 'empty for mapped value'
   CustomOriginConfig:
     IBOX_PARAMETER:
-      - IBOXRESNAMECustomOriginConfigHTTPSPort:
+      - _CustomOriginConfigHTTPSPort:
           Description: 'empty for mapped value'
     OriginProtocolPolicy: https-only
   OriginPath: ''
   S3OriginConfig:
     IBOX_PARAMETER:
-      - IBOXRESNAMES3OriginConfigOriginAccessIdentity:
+      - _S3OriginConfigOriginAccessIdentity:
           Description: 'empty for mapped value'
 
 global:
