@@ -19,17 +19,17 @@ global:
               AllowedValues: ['', 'DISABLED', 'ENABLED']
         IBOX_CONDITION:
           - _:
-              get_condition('', 'equals', 'True', f'{IBOXRESNAME}Enabled')
+              get_condition('', 'equals', 'True', f'{IBOX_RESNAME}Enabled')
         IBOX_OUTPUT:
           - _:
-              Condition: IBOXRESNAME
+              Condition: IBOX_RESNAME
               Value: >-
                 TerminationProtection= ${AutoScalingGroupProviderManagedTerminationProtection}
                 ,MaximumScalingStepSize= ${AutoScalingGroupProviderManagedScalingMaximumScalingStepSize}
                 ,MinimumScalingStepSize= ${AutoScalingGroupProviderManagedScalingMinimumScalingStepSize}
                 ,TargetCapacity= ${AutoScalingGroupProviderManagedScalingTargetCapacity}
                 ,Status= ${AutoScalingGroupProviderManagedScalingStatus}
-        Condition: IBOXRESNAME
+        Condition: IBOX_RESNAME
         Enabled: 'False'
         AutoScalingGroupProvider:
           AutoScalingGroupArn: Ref('AutoScalingGroup')

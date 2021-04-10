@@ -12,38 +12,38 @@ Base: &base
         Description: ''
   IBOX_CONDITION:
     - _KeepDesiredSize:
-        get_condition('', 'equals', 'k', f'{IBOXRESNAME}DesiredSize')
+        get_condition('', 'equals', 'k', f'{IBOX_RESNAME}DesiredSize')
     - _KeepMinSize:
-        get_condition('', 'equals', 'k', f'{IBOXRESNAME}MinSize')
+        get_condition('', 'equals', 'k', f'{IBOX_RESNAME}MinSize')
     - _KeepMaxSize:
-        get_condition('', 'equals', 'k', f'{IBOXRESNAME}MaxSize')
+        get_condition('', 'equals', 'k', f'{IBOX_RESNAME}MaxSize')
     - _CapacityDesiredSize:
-        get_condition('', 'equals', 'CapacityDesired', f'{IBOXRESNAME}DesiredSize')
+        get_condition('', 'equals', 'CapacityDesired', f'{IBOX_RESNAME}DesiredSize')
     - _CapacityMinSize:
-        get_condition('', 'equals', 'CapacityMin', f'{IBOXRESNAME}MinSize')
+        get_condition('', 'equals', 'CapacityMin', f'{IBOX_RESNAME}MinSize')
     - _CapacityMaxSize:
-        get_condition('', 'equals', 'CapacityMax', f'{IBOXRESNAME}MaxSize')
+        get_condition('', 'equals', 'CapacityMax', f'{IBOX_RESNAME}MaxSize')
     - _:
-        get_condition('', 'not_equals', 'none', f'{IBOXRESNAME}Recurrence')
+        get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}Recurrence')
   IBOX_OUTPUT:
     - _:
         Value: >-
           DesiredSize= ${DesiredCapacity} ,MinSize= ${MinSize} ,MaxSize= ${MaxSize}
           ,Recurrence= ${Recurrence} ,StartTime= ${StartTime}
-  Condition: IBOXRESNAME
+  Condition: IBOX_RESNAME
   AutoScalingGroupName: Ref('AutoScalingGroup')
   DesiredCapacity.IBOX_CODE: If(
-    f'{IBOXRESNAME}CapacityDesiredSize',
+    f'{IBOX_RESNAME}CapacityDesiredSize',
     get_endvalue('CapacityDesired'),
-    get_endvalue(f'{IBOXRESNAME}DesiredSize', nocondition=f'{IBOXRESNAME}KeepDesiredSize'))
+    get_endvalue(f'{IBOX_RESNAME}DesiredSize', nocondition=f'{IBOX_RESNAME}KeepDesiredSize'))
   MinSize.IBOX_CODE: If(
-    f'{IBOXRESNAME}CapacityMinSize',
+    f'{IBOX_RESNAME}CapacityMinSize',
     get_endvalue('CapacityMin'),
-    get_endvalue(f'{IBOXRESNAME}MinSize', nocondition=f'{IBOXRESNAME}KeepMinSize'))
+    get_endvalue(f'{IBOX_RESNAME}MinSize', nocondition=f'{IBOX_RESNAME}KeepMinSize'))
   MaxSize.IBOX_CODE: If(
-    f'{IBOXRESNAME}CapacityMaxSize',
+    f'{IBOX_RESNAME}CapacityMaxSize',
     get_endvalue('CapacityMax'),
-    get_endvalue(f'{IBOXRESNAME}MaxSize', nocondition=f'{IBOXRESNAME}KeepMaxSize'))
+    get_endvalue(f'{IBOX_RESNAME}MaxSize', nocondition=f'{IBOX_RESNAME}KeepMaxSize'))
 
 
 global:

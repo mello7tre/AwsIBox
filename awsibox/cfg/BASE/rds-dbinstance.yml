@@ -50,19 +50,19 @@ Base: &base
         AllowedValues: ['', 'standard', 'gp2']
   IBOX_CONDITION:
     - _DBName:
-        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}DBName')
+        get_condition('', 'not_equals', 'None', f'{IBOX_RESNAME}DBName')
     - _DBSnapshotIdentifier:
-        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}DBSnapshotIdentifier')
+        get_condition('', 'not_equals', 'None', f'{IBOX_RESNAME}DBSnapshotIdentifier')
     - _SourceDBInstanceIdentifier:
-        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}SourceDBInstanceIdentifier')
+        get_condition('', 'not_equals', 'None', f'{IBOX_RESNAME}SourceDBInstanceIdentifier')
     - _DBInstanceSkipProperties:
-        Or(Condition(f'{IBOXRESNAME}DBSnapshotIdentifier'), Condition(f'{IBOXRESNAME}SourceDBInstanceIdentifier'))
+        Or(Condition(f'{IBOX_RESNAME}DBSnapshotIdentifier'), Condition(f'{IBOX_RESNAME}SourceDBInstanceIdentifier'))
     - _MonitoringInterval:
-        get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MonitoringInterval')
+        get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}MonitoringInterval')
     - _PerformanceInsights:
-        get_condition('', 'not_equals', '0', f'{IBOXRESNAME}PerformanceInsights')
+        get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}PerformanceInsights')
     - _StorageAutoScaling:
-        get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MaxAllocatedStorage')
+        get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}MaxAllocatedStorage')
   IBOX_OUTPUT:
     - _AllocatedStorage:
         Value: ${AllocatedStorage}
@@ -102,22 +102,22 @@ Base: &base
   DBSnapshotIdentifier: None
   DeletionProtection: False
   EnablePerformanceInsights:
-    If(f'{IBOXRESNAME}PerformanceInsights', True, False)
+    If(f'{IBOX_RESNAME}PerformanceInsights', True, False)
   MasterUsername: masterusername
   MasterUserPassword: masteruserpassword
   MaxAllocatedStorage: 0
   MaxAllocatedStorage.IBOX_CODE:
-    If(f'{IBOXRESNAME}StorageAutoScaling', get_endvalue(f'{IBOXRESNAME}MaxAllocatedStorage'), Ref('AWS::NoValue'))
+    If(f'{IBOX_RESNAME}StorageAutoScaling', get_endvalue(f'{IBOX_RESNAME}MaxAllocatedStorage'), Ref('AWS::NoValue'))
   MonitoringInterval: 0
-  MonitoringRoleArn: If(f'{IBOXRESNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
+  MonitoringRoleArn: If(f'{IBOX_RESNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
   MultiAZ: False
   PerformanceInsights: 0
   PerformanceInsightsRetentionPeriod:
-    If(f'{IBOXRESNAME}PerformanceInsights', get_endvalue(f'{IBOXRESNAME}PerformanceInsights'), Ref('AWS::NoValue'))
+    If(f'{IBOX_RESNAME}PerformanceInsights', get_endvalue(f'{IBOX_RESNAME}PerformanceInsights'), Ref('AWS::NoValue'))
   SourceDBInstanceIdentifier: None
   StorageType: gp2
   VPCSecurityGroups:
-    - Ref(f'SecurityGroup{IBOXRESNAME}')
+    - Ref(f'SecurityGroup{IBOX_RESNAME}')
 
 Mysql: &mysql
   <<: *base

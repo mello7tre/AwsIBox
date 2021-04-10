@@ -125,7 +125,7 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
 
     def _get_value():
         if resname:
-            IBOXRESNAME = resname
+            IBOX_RESNAME = resname
         # if param in fixedvalues means its value do not changes
         # based on Env/Region so hardcode the value in json, ...
         if param in fixedvalues:
@@ -392,8 +392,8 @@ def import_lambda(name):
 
 
 def auto_get_props(obj, mapname=None, key=None, rootdict=None):
-    # IBOXRESNAME can be used in yaml
-    IBOXRESNAME = obj.title
+    # IBOX_RESNAME can be used in yaml
+    IBOX_RESNAME = obj.title
     IBOX_MAPNAME = mapname
 
     # create a dict where i will put all property with a flat hierarchy
@@ -404,7 +404,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
     def _iboxif(if_wrapper, mapname, value):
         condname = if_wrapper[0].replace('IBOX_MAPNAME_', mapname)
-        condname = condname.replace('_', IBOXRESNAME)
+        condname = condname.replace('_', IBOX_RESNAME)
         condvalues = []
         for i in if_wrapper[1:3]:
             if isinstance(i, str) and i.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
@@ -518,32 +518,32 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
         def _try_PCO_in_obj(key):
             def _parameter(k):
                 for n, v in k.items():
-                    n = n.replace('_', IBOXRESNAME)
+                    n = n.replace('_', IBOX_RESNAME)
                     parameter = Parameter(n)
                     _populate(parameter, rootdict=v)
                     add_obj(parameter)
 
             def _condition(k):
-                # this is needed or eval do not find IBOXRESNAME??
-                IBOXRESNAME
+                # this is needed or eval do not find IBOX_RESNAME??
+                IBOX_RESNAME
                 IBOX_MAPNAME
                 for n, v in k.items():
                     if IBOX_MAPNAME:
                         n = n.replace('IBOX_MAPNAME', IBOX_MAPNAME)
-                    n = n.replace('_', IBOXRESNAME)
+                    n = n.replace('_', IBOX_RESNAME)
                     condition = {n: eval(v)}
                     add_obj(condition)
 
             def _output_no_more_used(k):
                 for n, v in k.items():
-                    n = n.replace('_', IBOXRESNAME)
+                    n = n.replace('_', IBOX_RESNAME)
                     output = Output(n)
                     _populate(output, rootdict=v)
                     add_obj(output)
 
             def _output(k):
                 for n, v in k.items():
-                    n = n.replace('_', IBOXRESNAME)
+                    n = n.replace('_', IBOX_RESNAME)
                     output = Output(n)
                     _populate(output, rootdict=v)
                     # alter troposphere obj and add IBOX property
@@ -610,15 +610,15 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)
                 elif (isinstance(key_value, str)
-                        and key_value.startswith('IBOXRESNAME')):
-                    # replace IBOXRESNAME string with IBOXRESNAME value
-                    value = key_value.replace('IBOXRESNAME', IBOXRESNAME)
+                        and key_value.startswith('IBOX_RESNAME')):
+                    # replace IBOX_RESNAME string with IBOX_RESNAME value
+                    value = key_value.replace('IBOX_RESNAME', IBOX_RESNAME)
                 elif rootdict:
                     # rootdict is needed by lib/efs.py EFS_FileStorage SGIExtra
                     # where is passed as a dictionary to parse for parameters
                     value = get_endvalue(
                         f'{mapname}{propname}', fixedvalues=rootdict,
-                        resname=IBOXRESNAME)
+                        resname=IBOX_RESNAME)
                 elif (isinstance(key_value, str)
                         and key_value.startswith('get_endvalue(')):
                     # Usefull to migrate code in yaml using auto_get_props
@@ -626,7 +626,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     value = eval(key_value)
                 else:
                     value = get_endvalue(
-                        f'{mapname}{propname}', resname=IBOXRESNAME)
+                        f'{mapname}{propname}', resname=IBOX_RESNAME)
 
                 if key_value == 'IBOX_IFCONDVALUE':
                     # auto add condition and wrap value in AWS If Condition

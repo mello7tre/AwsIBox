@@ -3,7 +3,7 @@ Base: &base
   Cluster: get_expvalue('Cluster', 'ClusterStack')
   EnableExecuteCommand.IBOX_CODE: If(
       'LaunchTypeFarGate',
-      If(f'{IBOXRESNAME}EnableExecuteCommandOverride', Ref(f'{IBOXRESNAME}EnableExecuteCommand'), True),
+      If(f'{IBOX_RESNAME}EnableExecuteCommandOverride', Ref(f'{IBOX_RESNAME}EnableExecuteCommand'), True),
       get_endvalue(f'EnableExecuteCommand'))
   EnableExecuteCommand.IBOX_PCO:
     IBOX_PARAMETER:
@@ -33,9 +33,9 @@ Replica: &replica
         Description: 'empty for mapped value'
   IBOX_OUTPUT:
     - _DeploymentConfigurationMaximumPercent:
-        Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMaximumPercent')
+        Value: get_endvalue(f'{IBOX_RESNAME}DeploymentConfigurationMaximumPercent')
     - _DeploymentConfigurationMinimumHealthyPercent:
-        Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMinimumHealthyPercent')
+        Value: get_endvalue(f'{IBOX_RESNAME}DeploymentConfigurationMinimumHealthyPercent')
   DesiredCount: get_endvalue('CapacityDesired')
   DeploymentConfiguration:
     MaximumPercent: 200
@@ -56,10 +56,10 @@ Replica: &replica
         Field.IBOX_PCO:
           IBOX_CONDITION:
             - _PlacementStrategies0TypeRandom:
-                get_condition('', 'equals', 'random', get_endvalue(f'{IBOXRESNAME}PlacementStrategies0Type'))
+                get_condition('', 'equals', 'random', get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Type'))
         Field.IBOX_CODE: If(
-          f'{IBOXRESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
-          get_endvalue(f'{IBOXRESNAME}PlacementStrategies0Field'))
+          f'{IBOX_RESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
+          get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Field'))
         Field.IBOX_AUTO_P: {}
         Field: instanceId
 

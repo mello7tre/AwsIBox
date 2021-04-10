@@ -44,21 +44,21 @@ ALB: &alb
   <<: *base
   IBOX_OUTPUT:
     - _:
-        Condition: IBOXRESNAME
-        Value: Ref(IBOXRESNAME)
-        Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+        Condition: IBOX_RESNAME
+        Value: Ref(IBOX_RESNAME)
+        Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
     - _DNS:
-        Condition: IBOXRESNAME
-        Value: GetAtt(IBOXRESNAME, 'DNSName')
-        Export: Export(Sub('%sDNS-${AWS::StackName}' % IBOXRESNAME))
+        Condition: IBOX_RESNAME
+        Value: GetAtt(IBOX_RESNAME, 'DNSName')
+        Export: Export(Sub('%sDNS-${AWS::StackName}' % IBOX_RESNAME))
     - _FullName:
-        Condition: IBOXRESNAME
-        Value: GetAtt(IBOXRESNAME, 'LoadBalancerFullName')
-        Export: Export(Sub('%sFullName-${AWS::StackName}' % IBOXRESNAME))
-  Condition: IBOXRESNAME
+        Condition: IBOX_RESNAME
+        Value: GetAtt(IBOX_RESNAME, 'LoadBalancerFullName')
+        Export: Export(Sub('%sFullName-${AWS::StackName}' % IBOX_RESNAME))
+  Condition: IBOX_RESNAME
   SecurityGroups:
-    - get_expvalue(f'SecurityGroup{IBOXRESNAME}')
-    - GetAtt(f'SecurityGroup{IBOXRESNAME}', 'GroupId')
+    - get_expvalue(f'SecurityGroup{IBOX_RESNAME}')
+    - GetAtt(f'SecurityGroup{IBOX_RESNAME}', 'GroupId')
 
 
 global:

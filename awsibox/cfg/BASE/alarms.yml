@@ -11,16 +11,16 @@ Base: &base
                         '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
   IBOX_CONDITION:
     - _:
-        get_condition('', 'not_equals', '0', f'{IBOXRESNAME}EvaluationPeriods')
+        get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}EvaluationPeriods')
   IBOX_OUTPUT:
     - _:
         Value: get_subvalue('Period=${1M},EvaluationPeriods=${2M},Threshold=${3M}',
                             [
-                              f'{IBOXRESNAME}Period',
-                              f'{IBOXRESNAME}EvaluationPeriods',
-                              f'{IBOXRESNAME}Threshold'])
+                              f'{IBOX_RESNAME}Period',
+                              f'{IBOX_RESNAME}EvaluationPeriods',
+                              f'{IBOX_RESNAME}Threshold'])
   IBOX_ENABLED: False
-  Condition: IBOXRESNAME
+  Condition: IBOX_RESNAME
   ActionsEnabled: True
   Period: 60
   Dimensions: []

@@ -86,24 +86,24 @@ global:
         IBOX_OUTPUT:
           - _:
               Condition: LoadBalancerApplicationExternal
-              Value: Ref(IBOXRESNAME)
-              Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
         Condition: LoadBalancerApplicationExternal
     - HttpInternal:
         <<: [*alb, *httpinternal]
         IBOX_OUTPUT:
           - _:
               Condition: LoadBalancerApplicationInternal
-              Value: Ref(IBOXRESNAME)
-              Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
         Condition: LoadBalancerApplicationInternal
     - HttpsExternal:
         <<: [*alb, *httpsexternal]
         IBOX_OUTPUT:
           - _:
               Condition: LoadBalancerApplicationExternal
-              Value: Ref(IBOXRESNAME)
-              Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
         Condition: LoadBalancerApplicationExternal
   ListenerLoadBalancerHttpPort: 80
   ListenerLoadBalancerHttpsPort: 443

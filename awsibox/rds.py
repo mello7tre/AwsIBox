@@ -115,7 +115,7 @@ def RDS_DB(key):
             continue
 
         try:
-            resname = v['IBOXRESNAME']
+            resname = v['IBOX_RESNAME']
         except Exception:
             resname = mapname
 

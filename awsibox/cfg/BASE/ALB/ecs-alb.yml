@@ -29,8 +29,8 @@ ecs-alb:
         IBOX_OUTPUT:
           - _:
               Condition: LoadBalancerApplicationExternal
-              Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')
-              Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+              Value:  GetAtt(f'{IBOX_RESNAME}', 'GroupId')
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
         Condition: LoadBalancerApplicationExternal
         GroupDescription: Sub('Access to LoadBalancerApplicationExternal ${AWS::StackName}')
         SecurityGroupIngress:
@@ -46,8 +46,8 @@ ecs-alb:
         IBOX_OUTPUT:
           - _:
               Condition: LoadBalancerApplicationInternal
-              Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')
-              Export: Export(Sub('%s-${AWS::StackName}' % IBOXRESNAME))
+              Value:  GetAtt(f'{IBOX_RESNAME}', 'GroupId')
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
         Condition: LoadBalancerApplicationInternal
         GroupDescription: Sub('Access to LoadBalancerApplicationInternal ${AWS::StackName}')
         SecurityGroupIngress:

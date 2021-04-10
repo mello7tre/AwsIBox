@@ -38,7 +38,7 @@ CloudFront: &cloudfront
 RDS: &rds
   Type: CNAME
   ResourceRecords:
-    - GetAtt(IBOXRESNAME, 'Endpoint.Address')
+    - GetAtt(IBOX_RESNAME, 'Endpoint.Address')
   TTL: '300'
 
 CCH: &cch
@@ -75,19 +75,19 @@ CCHReadOnly: &cchreadonly
 ApiGatewayDomainName: &apigatewaydomainname
   <<: *zoneexternal
   Type: A
-  Name: Ref(IBOXRESNAME)
+  Name: Ref(IBOX_RESNAME)
 
 ApiGatewayDomainNameGlobal: &apigatewaydomainnameglobal
   <<: *apigatewaydomainname
   AliasTarget:
-    DNSName: GetAtt(IBOXRESNAME, 'DistributionDomainName')
-    HostedZoneId: GetAtt(IBOXRESNAME, 'DistributionHostedZoneId')
+    DNSName: GetAtt(IBOX_RESNAME, 'DistributionDomainName')
+    HostedZoneId: GetAtt(IBOX_RESNAME, 'DistributionHostedZoneId')
 
 ApiGatewayDomainNameRegional: &apigatewaydomainnameregional
   <<: *apigatewaydomainname
   AliasTarget:
-    DNSName: GetAtt(IBOXRESNAME, 'RegionalDomainName')
-    HostedZoneId: GetAtt(IBOXRESNAME, 'RegionalHostedZoneId')
+    DNSName: GetAtt(IBOX_RESNAME, 'RegionalDomainName')
+    HostedZoneId: GetAtt(IBOX_RESNAME, 'RegionalHostedZoneId')
 
 
 global:

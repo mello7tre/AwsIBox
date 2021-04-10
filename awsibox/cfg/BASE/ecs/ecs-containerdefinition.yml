@@ -14,16 +14,16 @@ Base: &base
         AllowedValues: ['', 'True', 'False']
   IBOX_CONDITION:
     - _Command: Or(
-        Condition(f'{IBOXRESNAME}CommandOverride'),
-        Equals('True', 'True' if isinstance(getattr(cfg, f'{IBOXRESNAME}Command'), list) else 'False'))
+        Condition(f'{IBOX_RESNAME}CommandOverride'),
+        Equals('True', 'True' if isinstance(getattr(cfg, f'{IBOX_RESNAME}Command'), list) else 'False'))
     - _ContainerPort:
-        get_condition('', 'not_equals', 0, f'{IBOXRESNAME}ContainerPort')
+        get_condition('', 'not_equals', 0, f'{IBOX_RESNAME}ContainerPort')
     - _HostPort:
-        get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}HostPort')
+        get_condition('', 'not_equals', 'None', f'{IBOX_RESNAME}HostPort')
   IBOX_OUTPUT:
     - _Command:
-        Condition: IBOXRESNAMECommand
-        Value: Join(',', get_endvalue(f'{IBOXRESNAME}Command')) 
+        Condition: IBOX_RESNAMECommand
+        Value: Join(',', get_endvalue(f'{IBOX_RESNAME}Command')) 
     - _Constraints:
         Value: >-
           Cpu= ${Cpu} ,Memory= ${Memory} ,MemoryReservation= ${MemoryReservation}
@@ -48,11 +48,11 @@ Base: &base
       - IBOX_IFVALUE
       - Ref('AWS::NoValue')
     - 0:
-        ContainerPort: get_endvalue(f'{IBOXRESNAME}ContainerPort')
+        ContainerPort: get_endvalue(f'{IBOX_RESNAME}ContainerPort')
         HostPort: If(
           'NetworkModeAwsVpc',
-          get_endvalue(f'{IBOXRESNAME}ContainerPort'),
-          If(f'{IBOXRESNAME}HostPort', get_endvalue(f'{IBOXRESNAME}HostPort'), 0))
+          get_endvalue(f'{IBOX_RESNAME}ContainerPort'),
+          If(f'{IBOX_RESNAME}HostPort', get_endvalue(f'{IBOX_RESNAME}HostPort'), 0))
         Protocol: tcp
   Memory: 128
   MemoryReservation: 64
@@ -82,7 +82,7 @@ Base: &base
   LinuxParameters:
     InitProcessEnabled: False
     InitProcessEnabled.IBOX_CODE:
-      If(f'EnableExecuteCommand', True, get_endvalue(f'{IBOXRESNAME}LinuxParametersInitProcessEnabled'))
+      If(f'EnableExecuteCommand', True, get_endvalue(f'{IBOX_RESNAME}LinuxParametersInitProcessEnabled'))
   DockerLabels: 
     LastUpdate: Ref('DockerLabelLastUpdate')
 
