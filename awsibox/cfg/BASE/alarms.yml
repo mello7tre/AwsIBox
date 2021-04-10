@@ -1,5 +1,5 @@
 Base: &base
-  IBOXPARAMETER:
+  IBOX_PARAMETER:
     - IBOXRESNAMEEvaluationPeriods:
         Description: 'Number of periods for alarm evaluation - 0 to disable - empty for mapped value'
         AllowedValues: ['', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -9,17 +9,17 @@ Base: &base
         Description: 'Threshold for alarm triggering - empty for mapped value'
         AllowedValues: ['', '10', '15', '20', '25', '30', '35', '40', '45', '50',
                         '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
-  IBOXCONDITION:
+  IBOX_CONDITION:
     - IBOXRESNAME:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}EvaluationPeriods')
-  IBOXOBJOUTPUT:
+  IBOX_OUTPUT:
     - IBOXRESNAME:
         Value: get_subvalue('Period=${1M},EvaluationPeriods=${2M},Threshold=${3M}',
                             [
                               f'{IBOXRESNAME}Period',
                               f'{IBOXRESNAME}EvaluationPeriods',
                               f'{IBOXRESNAME}Threshold'])
-  IBOXENABLED: False
+  IBOX_ENABLED: False
   Condition: IBOXRESNAME
   ActionsEnabled: True
   Period: 60

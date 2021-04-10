@@ -34,9 +34,9 @@ ecs-cluster:
         Export: Export(Sub('Cluster-${AWS::StackName}'))
   Alarm:
     - CPUHigh:
-        IBOXENABLED: False
+        IBOX_ENABLED: False
     - CPULow:
-        IBOXENABLED: False
+        IBOX_ENABLED: False
   ASGLifecycleHook:
     - ECSDrainInstance:
         AutoScalingGroupName: Ref('AutoScalingGroup')
@@ -66,11 +66,11 @@ ecs-cluster:
   Role:
     - Instance:
         ManagedPolicyArns:
-          - IBOXADDTOLIST
+          - IBOX_ADD_TO_LIST
           - get_expvalue('IAMPolicyEcs')
   AutoScalingScalingPolicy:
     - Custom:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
         EstimatedInstanceWarmup: 60
         TargetTrackingConfiguration:
           CustomizedMetricSpecification:
@@ -79,9 +79,9 @@ ecs-cluster:
             Unit: Percent
           TargetValue: 60
     - Down:
-        IBOXENABLED: False
+        IBOX_ENABLED: False
     - Up:
-        IBOXENABLED: False
+        IBOX_ENABLED: False
   ScheduledAction:
     - Rotate:
         DesiredSize: CapacityDesired

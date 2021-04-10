@@ -60,7 +60,7 @@ global:
   RecordSetCloudFront: True
   R53RecordSet:
     - CloudFront:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
 
 
 IBoxLoaderAfter: !include [

@@ -162,7 +162,7 @@ def ECS_Service(key):
     add_obj(R_SG)
 
     for n, v in getattr(cfg, key).items():
-        if not v['IBOXENABLED']:
+        if not v['IBOX_ENABLED']:
             continue
         mapname = f'{key}{n}'
 

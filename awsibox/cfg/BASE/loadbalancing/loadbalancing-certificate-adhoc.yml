@@ -13,7 +13,7 @@ global:
         Value: get_endvalue('LoadBalancerSslCertificateAdHoc')
   Certificate:
     - LoadBalancerAdHocExternal:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
         Condition: LoadBalancerSslCertificateAdHoc
         DomainName: Sub('${AWS::StackName}.${EnvRole}%s' % cfg.HostedZoneNameRegionEnv)
         DomainValidationOptions:

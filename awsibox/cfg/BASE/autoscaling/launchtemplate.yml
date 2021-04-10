@@ -81,9 +81,9 @@ global:
                 VolumeSize: 8
                 VolumeType: gp2
           - AdditionalStorage:
-              IBOXIF:
+              IBOX_IF:
                 - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage
-                - IBOXIFVALUE
+                - IBOX_IFVALUE
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdx
               Ebs:
@@ -91,33 +91,33 @@ global:
                 VolumeType: gp2
               Mount: True
           - InstaceEphemeral0:
-              IBOXIF:
+              IBOX_IF:
                 - InstaceEphemeral0
-                - IBOXIFVALUE
+                - IBOX_IFVALUE
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdb
               VirtualName: ephemeral0
           - InstaceEphemeral1:
-              IBOXIF:
+              IBOX_IF:
                 - InstaceEphemeral1
-                - IBOXIFVALUE
+                - IBOX_IFVALUE
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdc
               VirtualName: ephemeral1
           - InstaceEphemeral2:
-              IBOXIF:
+              IBOX_IF:
                 - InstaceEphemeral2
-                - IBOXIFVALUE
+                - IBOX_IFVALUE
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdd
               VirtualName: ephemeral2
         IamInstanceProfile:
           Arn: GetAtt('InstanceProfile', 'Arn')
-        ImageId: IBOXIF LaunchTemplateDataImageIdLatest Ref('LaunchTemplateDataImageIdLatest') IBOXIFVALUE
+        ImageId: IBOX_IF LaunchTemplateDataImageIdLatest Ref('LaunchTemplateDataImageIdLatest') IBOX_IFVALUE
         InstanceMarketOptions:
-          IBOXIF:
+          IBOX_IF:
             - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice
-            - IBOXIFVALUE
+            - IBOX_IFVALUE
             - Ref('AWS::NoValue')
           MarketType: spot
           SpotOptions:

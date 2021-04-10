@@ -10,7 +10,7 @@ infra-info:
         Name: 'InfraInfo'
         Stage: v1
         BinaryMediaTypes: ['*/*']
-  CloudFront: IBOXSKIPFUNC
+  CloudFront: IBOX_SKIP_FUNC
   ApiGatewayResource:
     - 01Root:
         ParentId: GetAtt('ApiGatewayRestApi', 'RootResourceId')

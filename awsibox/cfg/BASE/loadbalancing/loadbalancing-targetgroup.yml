@@ -12,9 +12,9 @@ Base: &base
         Key: 'stickiness.enabled'
         Value: If('TargetGroupCookieSticky', 'true', 'false')
     - CookieDuration:
-        IBOXIF:
+        IBOX_IF:
           - TargetGroupCookieSticky
-          - IBOXIFVALUE
+          - IBOX_IFVALUE
           - Ref('AWS::NoValue')
         Key: 'stickiness.lb_cookie.duration_seconds'
         Value: get_endvalue('TargetGroupCookieSticky')
@@ -23,7 +23,7 @@ Base: &base
 
 EC2: &ec2
   <<: *base
-  IBOXOBJOUTPUT:
+  IBOX_OUTPUT:
     - HealthCheck:
         Value:
           get_subvalue(
@@ -39,7 +39,7 @@ EC2: &ec2
 
 ECS: &ecs
   <<: *base
-  IBOXOBJOUTPUT:
+  IBOX_OUTPUT:
     - HealthCheck:
         Value:
           get_subvalue(

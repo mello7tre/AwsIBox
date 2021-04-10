@@ -22,7 +22,7 @@ global:
         Command: ['tail', '-f']
         Cpu: 512
         Image: 'busybox'
-        LogConfiguration: IBOXSKIPFUNC
+        LogConfiguration: IBOX_SKIP_FUNC
         Memory: 32
         MemoryReservation: 32
   # Included yaml ecs/ecs-task.yml have changed ParameterStore Roles to RoleTask, need to restore it.
@@ -33,18 +33,18 @@ global:
   LaunchType: EC2
   Log:
     Driver: None
-    GroupName: IBOXSKIPFUNC
+    GroupName: IBOX_SKIP_FUNC
   Role:
     - Task:
         Condition: DaemonReserveCpu
   Service:
     - Base:
-        IBOXENABLED: False
+        IBOX_ENABLED: False
     - Daemon:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
         Condition: DaemonReserveCpu
         Cluster: Ref('Cluster')
-        NetworkConfiguration: IBOXSKIPFUNC
+        NetworkConfiguration: IBOX_SKIP_FUNC
   TaskDefinition:
     - Base:
         Condition: DaemonReserveCpu

@@ -26,7 +26,7 @@ ecs-alb:
         Value: get_endvalue('LoadBalancerApplication', nolist=True)
   SecurityGroup**:
     - LoadBalancerApplicationExternal:
-        IBOXOBJOUTPUT:
+        IBOX_OUTPUT:
           - IBOXRESNAME:
               Condition: LoadBalancerApplicationExternal
               Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')
@@ -43,7 +43,7 @@ ecs-alb:
               FromPort: 443
               ToPort: 443
     - LoadBalancerApplicationInternal:
-        IBOXOBJOUTPUT:
+        IBOX_OUTPUT:
           - IBOXRESNAME:
               Condition: LoadBalancerApplicationInternal
               Value:  GetAtt(f'{IBOXRESNAME}', 'GroupId')

@@ -10,5 +10,5 @@ global:
   Role:
     - Instance:
         ManagedPolicyArns:
-          - IBOXADDTOLIST
+          - IBOX_ADD_TO_LIST
           - If('CloudWatchAgent', 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy', Ref('AWS::NoValue'))

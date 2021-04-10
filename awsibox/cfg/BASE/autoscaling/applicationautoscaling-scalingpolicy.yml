@@ -1,17 +1,17 @@
 Base: &base
-  IBOXENABLED: False
+  IBOX_ENABLED: False
   ScalingTargetId: Ref('ScalableTarget')
   PolicyName: IBOXRESNAME
 
 Tracking: &tracking
   <<: *base
   Condition: IBOXRESNAME
-  IBOXPARAMETER:
+  IBOX_PARAMETER:
     - IBOXRESNAMETargetTrackingScalingPolicyConfigurationCustomizedMetricSpecificationStatistic:
         Description: '0 to disable - empty for mapped value'
     - IBOXRESNAMETargetTrackingScalingPolicyConfigurationTargetValue:
         Description: '0 to disable - empty for mapped value'
-  IBOXCONDITION:
+  IBOX_CONDITION:
     - IBOXRESNAME:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}TargetTrackingScalingPolicyConfigurationTargetValue')
   PolicyType: TargetTrackingScaling

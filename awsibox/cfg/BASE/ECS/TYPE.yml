@@ -15,21 +15,21 @@ ecs:
         Description: 'LoadBalancer Application Stack to use - empty for default based on env/role'
   SecurityGroupIngress:
     - LoadBalancerApplicationHttpExternal:
-        IBOXENABLED: False
+        IBOX_ENABLED: False
         Condition: ListenerLoadBalancerHttpPort 
         CidrIp: '0.0.0.0/0'
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
         ToPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
     - LoadBalancerApplicationHttpInternal:
-        IBOXENABLED: False
+        IBOX_ENABLED: False
         Condition: ListenerLoadBalancerHttpPort
         CidrIp: '0.0.0.0/0'
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
         ToPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
     - LoadBalancerApplicationHttpsExternal:
-        IBOXENABLED: False
+        IBOX_ENABLED: False
         Condition: ListenerLoadBalancerHttpsPort
         CidrIp: '0.0.0.0/0'
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
@@ -38,7 +38,7 @@ ecs:
   AllowedIp**: {}
   LaunchType: EC2
   AlarmCPUBase: &cpu
-    IBOXENABLED: False
+    IBOX_ENABLED: False
     Dimensions:
       - Cluster:
           Name: ClusterName
@@ -60,7 +60,7 @@ ecs:
   LoadBalancerApplicationStack: alb-a
   ApplicationAutoScalingScalingPolicy:
     - Cpu:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
     - Custom:
         TargetTrackingScalingPolicyConfiguration:
           CustomizedMetricSpecification:
@@ -82,7 +82,7 @@ ecs:
         Schedule: 'cron(00 06 * * ? *)'
   Service:
     - Base:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
 
 dev: &cfg_dev
   Alarm:

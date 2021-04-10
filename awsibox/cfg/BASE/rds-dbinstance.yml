@@ -1,6 +1,6 @@
 Base: &base
-  IBOXENABLED: False
-  IBOXPARAMETER:
+  IBOX_ENABLED: False
+  IBOX_PARAMETER:
     - IBOXRESNAMEAllocatedStorage:
         Description: 'Storage Size in GB - empty for mapped value'
     - IBOXRESNAMEMaxAllocatedStorage:
@@ -48,7 +48,7 @@ Base: &base
     - IBOXRESNAMEStorageType:
         Description: 'empty for mapped value'
         AllowedValues: ['', 'standard', 'gp2']
-  IBOXCONDITION:
+  IBOX_CONDITION:
     - IBOXRESNAMEDBName:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}DBName')
     - IBOXRESNAMEDBSnapshotIdentifier:
@@ -63,7 +63,7 @@ Base: &base
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}PerformanceInsights')
     - IBOXRESNAMEStorageAutoScaling:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MaxAllocatedStorage')
-  IBOXOBJOUTPUT:
+  IBOX_OUTPUT:
     - IBOXRESNAMEAllocatedStorage:
         Value: ${AllocatedStorage}
     - IBOXRESNAMEMaxAllocatedStorage:
@@ -106,7 +106,7 @@ Base: &base
   MasterUsername: masterusername
   MasterUserPassword: masteruserpassword
   MaxAllocatedStorage: 0
-  MaxAllocatedStorage.IBOXCODE:
+  MaxAllocatedStorage.IBOX_CODE:
     If(f'{IBOXRESNAME}StorageAutoScaling', get_endvalue(f'{IBOXRESNAME}MaxAllocatedStorage'), Ref('AWS::NoValue'))
   MonitoringInterval: 0
   MonitoringRoleArn: If(f'{IBOXRESNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
@@ -135,4 +135,4 @@ MysqlExternal:
 
 global:
   DBInstance:
-    - IBOXBASE: *base
+    - IBOX_BASE: *base

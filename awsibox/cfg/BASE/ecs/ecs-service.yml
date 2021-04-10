@@ -1,23 +1,23 @@
 Base: &base
-  IBOXENABLED: False
+  IBOX_ENABLED: False
   Cluster: get_expvalue('Cluster', 'ClusterStack')
-  EnableExecuteCommand.IBOXCODE: If(
+  EnableExecuteCommand.IBOX_CODE: If(
       'LaunchTypeFarGate',
       If(f'{IBOXRESNAME}EnableExecuteCommandOverride', Ref(f'{IBOXRESNAME}EnableExecuteCommand'), True),
       get_endvalue(f'EnableExecuteCommand'))
-  EnableExecuteCommand.IBOXPCO:
-    IBOXPARAMETER:
+  EnableExecuteCommand.IBOX_PCO:
+    IBOX_PARAMETER:
       - IBOXRESNAMEEnableExecuteCommand:
           Description: 'empty for mapped value - Default to True for FARGATE'
           AllowedValues: ['', 'True', 'False']
-    IBOXOBJOUTPUT:
+    IBOX_OUTPUT:
       - IBOXRESNAMEEnableExecuteCommand:
           Value: ${EnableExecuteCommand}
   HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancerApplication else Ref('AWS::NoValue')")
   NetworkConfiguration:
-    IBOXIF:
+    IBOX_IF:
       - NetworkModeAwsVpc
-      - IBOXIFVALUE
+      - IBOX_IFVALUE
       - Ref('AWS::NoValue')
     AwsvpcConfiguration:
       SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + cfg.SecurityGroupsImport
@@ -26,12 +26,12 @@ Base: &base
   TaskDefinition: Ref('TaskDefinition')
 
 Replica: &replica
-  IBOXPARAMETER:
+  IBOX_PARAMETER:
     - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
         Description: 'empty for mapped value'
     - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
         Description: 'empty for mapped value'
-  IBOXOBJOUTPUT:
+  IBOX_OUTPUT:
     - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
         Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMaximumPercent')
     - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
@@ -42,22 +42,22 @@ Replica: &replica
     MinimumHealthyPercent: 100
   LaunchType: If('LaunchTypeFarGate', get_endvalue('LaunchType'), Ref('AWS::NoValue'))
   PlacementStrategies:
-    - IBOXIF:
+    - IBOX_IF:
         - LaunchTypeFarGate
         - Ref('AWS::NoValue')
-        - IBOXIFVALUE
+        - IBOX_IFVALUE
     - 0:
-        IBOXOBJOUTPUT:
+        IBOX_OUTPUT:
           - IBOXRESNAMEPlacementStrategies0:
               Value: Type= ${Type} ,Field= ${Field}
         Type.IBOX_AUTO_P:
           AllowedValues: ['', 'binpack', 'random', 'spread']
         Type: spread
-        Field.IBOXPCO:
-          IBOXCONDITION:
+        Field.IBOX_PCO:
+          IBOX_CONDITION:
             - IBOXRESNAMEPlacementStrategies0TypeRandom:
                 get_condition('', 'equals', 'random', get_endvalue(f'{IBOXRESNAME}PlacementStrategies0Type'))
-        Field.IBOXCODE: If(
+        Field.IBOX_CODE: If(
           f'{IBOXRESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
           get_endvalue(f'{IBOXRESNAME}PlacementStrategies0Field'))
         Field.IBOX_AUTO_P: {}

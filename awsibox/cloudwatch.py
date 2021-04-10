@@ -8,7 +8,7 @@ from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
 def CW_Alarms(key):
     for n, v in getattr(cfg, key).items():
         # be carefull that value is enabled in loadbalancing too
-        if not v['IBOXENABLED']:
+        if not v['IBOX_ENABLED']:
             continue
         resname = f'{key}{n}'
         # resources

@@ -10,7 +10,7 @@ ECS: &ecs
   ServiceNamespace: ecs
 
 ScheduledAction: &scheduledaction
-  IBOXPARAMETER:
+  IBOX_PARAMETER:
     - IBOXRESNAMECapacityMin:
         Description: 'k to keep current value - empty for mapped value'
     - IBOXRESNAMECapacityMax:
@@ -19,7 +19,7 @@ ScheduledAction: &scheduledaction
         Description: 'empty for mapped value - "none" to disable'
     - IBOXRESNAMEStartTime:
         Description: ''
-  IBOXCONDITION:
+  IBOX_CONDITION:
     - IBOXRESNAMEKeepMinSize:
         get_condition('', 'equals', 'k', f'{IBOXRESNAME}CapacityMin')
     - IBOXRESNAMEKeepMaxSize:
@@ -35,7 +35,7 @@ ScheduledAction: &scheduledaction
           And(
             Condition(f'{IBOXRESNAME}KeepMaxSize'),
             Condition(f'{IBOXRESNAME}KeepMinSize')))
-  IBOXOBJOUTPUT:
+  IBOX_OUTPUT:
     - IBOXRESNAME:
         Value: >-
           CapacityMin= ${ScalableTargetActionMinCapacity} ,CapacityMax= ${ScalableTargetActionMaxCapacity}

@@ -122,7 +122,7 @@ def CF_CloudFront(key):
 
     DistributionConfig = clf.DistributionConfig(
         'CloudFrontDistributionConfig')
-    auto_get_props(DistributionConfig, 'CloudFrontDistributionIBOXBASE')
+    auto_get_props(DistributionConfig, 'CloudFrontDistributionIBOX_BASE')
     DistributionConfig.DefaultCacheBehavior = CFDefaultCacheBehavior(
         'CloudFrontCacheBehaviors0', key=cfg.CloudFrontCacheBehaviors[0])
 

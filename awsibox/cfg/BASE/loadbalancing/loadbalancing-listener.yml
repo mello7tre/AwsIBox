@@ -83,7 +83,7 @@ global:
   ListenerV2ALB:
     - HttpExternal:
         <<: [*alb, *httpexternal]
-        IBOXOBJOUTPUT:
+        IBOX_OUTPUT:
           - IBOXRESNAME:
               Condition: LoadBalancerApplicationExternal
               Value: Ref(IBOXRESNAME)
@@ -91,7 +91,7 @@ global:
         Condition: LoadBalancerApplicationExternal
     - HttpInternal:
         <<: [*alb, *httpinternal]
-        IBOXOBJOUTPUT:
+        IBOX_OUTPUT:
           - IBOXRESNAME:
               Condition: LoadBalancerApplicationInternal
               Value: Ref(IBOXRESNAME)
@@ -99,7 +99,7 @@ global:
         Condition: LoadBalancerApplicationInternal
     - HttpsExternal:
         <<: [*alb, *httpsexternal]
-        IBOXOBJOUTPUT:
+        IBOX_OUTPUT:
           - IBOXRESNAME:
               Condition: LoadBalancerApplicationExternal
               Value: Ref(IBOXRESNAME)

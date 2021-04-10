@@ -1,5 +1,5 @@
 Base: &base
-  IBOXENABLED: False
+  IBOX_ENABLED: False
 
 ZoneExternal: &zoneexternal
   <<: *base

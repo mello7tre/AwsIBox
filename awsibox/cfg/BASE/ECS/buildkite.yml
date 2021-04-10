@@ -8,7 +8,7 @@ IBoxLoader:
 
 buildkite:
   StackName: bkt
-  ApplicationAutoScalingScalingPolicy: IBOXSKIPFUNC
+  ApplicationAutoScalingScalingPolicy: IBOX_SKIP_FUNC
   Capacity:
     Desired: 3
     Max: 4

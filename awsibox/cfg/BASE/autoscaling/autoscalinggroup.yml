@@ -10,7 +10,7 @@ IBoxLoader: !include [
 global:
   AutoScalingGroup:
     - Base:
-        IBOXTITLE: AutoScalingGroup
+        IBOX_TITLE: AutoScalingGroup
         AvailabilityZones: GetAZs()
         DesiredCapacity: get_endvalue('CapacityDesired')
         MinSize: get_endvalue('CapacityMin')
@@ -23,11 +23,11 @@ global:
         LaunchTemplate:
           LaunchTemplateId: Ref('LaunchTemplate')
           Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
-        MaxInstanceLifetime.IBOXPCO:
-          IBOXPARAMETER:
+        MaxInstanceLifetime.IBOX_PCO:
+          IBOX_PARAMETER:
             - IBOXRESNAMEMaxInstanceLifetime:
                 Description: 'Empty for mapped value - 0 to disable'
-          IBOXOBJOUTPUT:
+          IBOX_OUTPUT:
             - IBOXRESNAMEMaxInstanceLifetime:
                 Value: ${MaxInstanceLifetime}
         MaxInstanceLifetime: 0
@@ -47,15 +47,15 @@ global:
         TerminationPolicies: ['OldestInstance']
         UpdatePolicy:
           AutoScalingReplacingUpdate:
-            IBOXIF:
+            IBOX_IF:
               - WillReplace
-              - IBOXIFVALUE
+              - IBOX_IFVALUE
               - Ref('AWS::NoValue')
             WillReplace: True
           AutoScalingRollingUpdate:
-            IBOXIF:
+            IBOX_IF:
               - RollingUpdate
-              - IBOXIFVALUE
+              - IBOX_IFVALUE
               - Ref('AWS::NoValue')
             MaxBatchSize: 1
             MinInstancesInService: get_endvalue('CapacityDesired')

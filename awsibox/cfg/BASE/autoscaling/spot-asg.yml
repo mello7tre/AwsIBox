@@ -33,9 +33,9 @@ global:
         )
   Alarm:
     - ASGSpotNotAvailable:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
     - ASGOnDemandInExcess:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
   IAMPolicy:
     - SNSTopicASGSpot:
         Condition: SpotASG

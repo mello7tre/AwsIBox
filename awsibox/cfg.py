@@ -143,11 +143,11 @@ BASE_CFGS = {
         },
         'ViewerProtocolPolicy': 'redirect-to-https'
     },
-    'CloudFrontOrigins': 'IBOXBASE',
-    'DBInstance': 'IBOXBASE',
-    'ScheduledAction': 'IBOXBASE',
-    'ContainerDefinitions': 'IBOXBASE',
-    'AllowedIp': 'IBOXBASE',
+    'CloudFrontOrigins': 'IBOX_BASE',
+    'DBInstance': 'IBOX_BASE',
+    'ScheduledAction': 'IBOX_BASE',
+    'ContainerDefinitions': 'IBOX_BASE',
+    'AllowedIp': 'IBOX_BASE',
 }
 
 INSTANCE_LIST = [

@@ -225,7 +225,7 @@ def LB_ListenersV2ECS():
         if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
             # Enable the relative LB SecurityGroupIngress
             cfg.SecurityGroupIngress[
-                f'LoadBalancerApplicationHttp{n}']['IBOXENABLED'] = True
+                f'LoadBalancerApplicationHttp{n}']['IBOX_ENABLED'] = True
             r_Http = elbv2.Listener(f'ListenerHttp{n}')
             auto_get_props(r_Http, mapname=f'ListenerV2ECSHttp{n}')
             add_obj(r_Http)
@@ -234,7 +234,7 @@ def LB_ListenersV2ECS():
                 and n == 'External'):
             # Enable the relative LB SecurityGroupIngress
             cfg.SecurityGroupIngress[
-                f'LoadBalancerApplicationHttps{n}']['IBOXENABLED'] = True
+                f'LoadBalancerApplicationHttps{n}']['IBOX_ENABLED'] = True
             r_Https = elbv2.Listener(f'ListenerHttps{n}')
             auto_get_props(r_Https, mapname=f'ListenerV2ECSHttps{n}')
             add_obj(r_Https)
@@ -254,7 +254,7 @@ def LB_TargetGroupsEC2():
                        mapname=f'ElasticLoadBalancingV2TargetGroupEC2')
         add_obj(r_TG)
 
-        cfg.Alarm[f'TargetEC2{n}5XX']['IBOXENABLED'] = True
+        cfg.Alarm[f'TargetEC2{n}5XX']['IBOX_ENABLED'] = True
 
 
 def LB_TargetGroupsECS():
@@ -267,7 +267,7 @@ def LB_TargetGroupsECS():
                        mapname=f'ElasticLoadBalancingV2TargetGroupECS')
         add_obj(r_TG)
 
-        cfg.Alarm[f'Target{n}5XX']['IBOXENABLED'] = True
+        cfg.Alarm[f'Target{n}5XX']['IBOX_ENABLED'] = True
 
 
 def LB_TargetGroupsALB():
@@ -310,7 +310,7 @@ def LB_ElasticLoadBalancingClassicEC2():
         r_LB.Listeners = Listeners
 
         add_obj(r_LB)
-        cfg.Alarm[f'Backend{n}5XX']['IBOXENABLED'] = True
+        cfg.Alarm[f'Backend{n}5XX']['IBOX_ENABLED'] = True
 
 
 def LB_ElasticLoadBalancingApplicationEC2():

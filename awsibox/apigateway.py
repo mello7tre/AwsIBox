@@ -98,7 +98,7 @@ def AGW_Account(key):
 
 def AGW_DomainName(key):
     for n, v in getattr(cfg, key).items():
-        if not v['IBOXENABLED']:
+        if not v['IBOX_ENABLED']:
             continue
 
         resname = f'{key}{n}'

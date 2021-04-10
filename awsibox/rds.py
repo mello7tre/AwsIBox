@@ -111,7 +111,7 @@ def RDS_DB(key):
     for n, v in getattr(cfg, key).items():
         mapname = f'{key}{n}'
 
-        if not v['IBOXENABLED']:
+        if not v['IBOX_ENABLED']:
             continue
 
         try:

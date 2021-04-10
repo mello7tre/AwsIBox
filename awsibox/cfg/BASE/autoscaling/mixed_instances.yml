@@ -30,16 +30,16 @@ global:
   AutoScalingGroup:
     - Base:
         LaunchTemplate:
-          IBOXIF:
+          IBOX_IF:
             - AutoScalingGroupBaseMixedInstancesPolicy
             - Ref('AWS::NoValue')
-            - IBOXIFVALUE
+            - IBOX_IFVALUE
           LaunchTemplateId: Ref('LaunchTemplate')
           Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
         MixedInstancesPolicy:
-          IBOXIF:
+          IBOX_IF:
             - AutoScalingGroupBaseMixedInstancesPolicy
-            - IBOXIFVALUE
+            - IBOX_IFVALUE
             - Ref('AWS::NoValue')
           LaunchTemplate:
             LaunchTemplateSpecification:

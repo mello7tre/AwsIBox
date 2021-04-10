@@ -39,10 +39,10 @@ ec2:
   Alarm:
     - CPUHigh:
         <<: *cpu
-        IBOXENABLED: True
+        IBOX_ENABLED: True
     - CPULow:
         <<: *cpu
-        IBOXENABLED: True
+        IBOX_ENABLED: True
   CustomUserDataScript: init.sh
   DeploymentGroup: False
   LoadBalancer:
@@ -76,9 +76,9 @@ ec2:
                   Name: AutoScalingGroupName
                   Value: Ref('AutoScalingGroup')
     - Down:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
     - Up:
-        IBOXENABLED: True
+        IBOX_ENABLED: True
   ScheduledAction:
     - Down:
         DesiredSize: CapacityDesired

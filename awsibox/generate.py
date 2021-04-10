@@ -15,7 +15,7 @@ def execute_method(RP_cmm):
 
         if k in list(RP_cmm.keys()):
             RP_value = RP_cmm[k]
-            if isinstance(RP_value, str) and RP_value == 'IBOXSKIPFUNC':
+            if isinstance(RP_value, str) and RP_value == 'IBOX_SKIP_FUNC':
                 continue
             if isinstance(func_name, list):
                 for n in func_name:

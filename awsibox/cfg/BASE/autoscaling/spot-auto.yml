@@ -29,25 +29,25 @@ global:
     - Base:
         Tags:
           - SpotAuto:
-              IBOXIF:
+              IBOX_IF:
                 - SpotAuto
-                - IBOXIFVALUE
+                - IBOX_IFVALUE
                 - Ref('AWS::NoValue')
               Key: spot-enabled
               Value: 'true'
               PropagateAtLaunch: True
           - SpotAutoMinOnDemandNumber:
-              IBOXIF:
+              IBOX_IF:
                 - SpotAutoMinOnDemandNumber
-                - IBOXIFVALUE
+                - IBOX_IFVALUE
                 - Ref('AWS::NoValue')
               Key: autospotting_min_on_demand_number
               Value: get_endvalue('SpotAutoMinOnDemandNumber')
               PropagateAtLaunch: True
           - SpotAutoAllowedInstances:
-              IBOXIF:
+              IBOX_IF:
                 - SpotAutoAllowedInstances
-                - IBOXIFVALUE
+                - IBOX_IFVALUE
                 - Ref('AWS::NoValue')
               Key: autospotting_allowed_instance_types
               Value: get_endvalue('SpotAutoAllowedInstances')

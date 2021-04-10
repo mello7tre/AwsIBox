@@ -2,9 +2,9 @@ Distribution: &distribution
   Enabled: True
   HttpVersion: get_endvalue('CloudFrontHttpVersion')
   Logging:
-    IBOXIF:
+    IBOX_IF:
       - CloudFrontLogging
-      - IBOXIFVALUE
+      - IBOX_IFVALUE
       - Ref('AWS::NoValue')
     Bucket: Sub(f'{cfg.BucketLogs}.s3.amazonaws.com')
     Prefix: Sub('${EnvRole}.${AWS::StackName}/')
@@ -17,22 +17,22 @@ Distribution: &distribution
   WebACLId: get_endvalue('CloudFrontWebACLId', condition=True)
 
 Origin: &origin
-  IBOXPARAMETER:
+  IBOX_PARAMETER:
     - IBOXRESNAMEDomainName:
         Description: 'empty for mapped value'
   CustomOriginConfig:
-    IBOXPARAMETER:
+    IBOX_PARAMETER:
       - IBOXRESNAMECustomOriginConfigHTTPSPort:
           Description: 'empty for mapped value'
     OriginProtocolPolicy: https-only
   OriginPath: ''
   S3OriginConfig:
-    IBOXPARAMETER:
+    IBOX_PARAMETER:
       - IBOXRESNAMES3OriginConfigOriginAccessIdentity:
           Description: 'empty for mapped value'
 
 global:
   CloudFrontDistribution:
-    - IBOXBASE: *distribution
+    - IBOX_BASE: *distribution
   CloudFrontOrigins:
-    - IBOXBASE: *origin
+    - IBOX_BASE: *origin

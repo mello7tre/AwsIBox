@@ -393,18 +393,17 @@ def import_lambda(name):
 
 def auto_get_props(obj, mapname=None, key=None, rootdict=None):
     # IBOXRESNAME can be used in yaml
-    IBOXOBJ = obj
     IBOXRESNAME = obj.title
-    IBOXMAPNAME = mapname
+    IBOX_MAPNAME = mapname
 
     # create a dict where i will put all property with a flat hierarchy
     # with the name equals to the mapname and the relative value.
     # Later i will assign this dict to the relative output object using
-    # IBOXOBJOUTPUT
+    # IBOX_OUTPUT
     IBOX_PROPS = {'MAP': {}}
 
     def _iboxif(if_wrapper, mapname, value):
-        condname = if_wrapper[0].replace('IBOXMAPNAME_', mapname)
+        condname = if_wrapper[0].replace('IBOX_MAPNAME_', mapname)
         condname = condname.replace('IBOXRESNAME', IBOXRESNAME)
         condvalues = []
         for i in if_wrapper[1:3]:
@@ -414,7 +413,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 v = i
             condvalues.append(v)
 
-        if condvalues[0] == 'IBOXIFVALUE':
+        if condvalues[0] == 'IBOX_IFVALUE':
             value = If(condname, value, condvalues[1])
         else:
             value = If(condname, condvalues[0], value)
@@ -436,11 +435,11 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     v['Value'] = get_endvalue(f'{mapname_obj}{k}Value')
 
                 try:
-                    if_wrapper = v['IBOXIF']
+                    if_wrapper = v['IBOX_IF']
                 except Exception:
                     pass
                 else:
-                    del v['IBOXIF']
+                    del v['IBOX_IF']
                     v = _iboxif(if_wrapper, mapname, v)
 
                 prop_list.append(v)
@@ -487,8 +486,8 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             prop_list = []
             prop_class = props[obj_propname][0][0]
             for o, v in key[obj_propname].items():
-                if o == 'IBOXIF':
-                    # element named IBOXIF must no be parsed
+                if o == 'IBOX_IF':
+                    # element named IBOX_IF must no be parsed
                     # is needed for wrapping whole returned obj in _populate
                     continue
                 name_o = str(o)
@@ -499,7 +498,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
                 # trick to wrapper single obj in If Condition
                 try:
-                    if_wrapper = v['IBOXIF']
+                    if_wrapper = v['IBOX_IF']
                 except Exception:
                     prop_list.append(prop_obj)
                 else:
@@ -527,22 +526,22 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             def _condition(k):
                 # this is needed or eval do not find IBOXRESNAME??
                 IBOXRESNAME
-                IBOXMAPNAME
+                IBOX_MAPNAME
                 for n, v in k.items():
                     n = n.replace('IBOXRESNAME', IBOXRESNAME)
-                    if IBOXMAPNAME:
-                        n = n.replace('IBOXMAPNAME', IBOXMAPNAME)
+                    if IBOX_MAPNAME:
+                        n = n.replace('IBOX_MAPNAME', IBOX_MAPNAME)
                     condition = {n: eval(v)}
                     add_obj(condition)
 
-            def _output(k):
+            def _output_no_more_used(k):
                 for n, v in k.items():
                     n = n.replace('IBOXRESNAME', IBOXRESNAME)
                     output = Output(n)
                     _populate(output, rootdict=v)
                     add_obj(output)
 
-            def _objoutput(k):
+            def _output(k):
                 for n, v in k.items():
                     n = n.replace('IBOXRESNAME', IBOXRESNAME)
                     output = Output(n)
@@ -556,10 +555,9 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     add_obj(output)
 
             func_map = {
-                'IBOXPARAMETER': _parameter,
-                'IBOXCONDITION': _condition,
-                'IBOXOUTPUT': _output,
-                'IBOXOBJOUTPUT': _objoutput,
+                'IBOX_PARAMETER': _parameter,
+                'IBOX_CONDITION': _condition,
+                'IBOX_OUTPUT': _output,
             }
             for pco in list(func_map.keys()):
                 try:
@@ -573,13 +571,13 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             if mode == 'p':
                 parameter_base = {'Description': 'Empty for mapped value'}
                 parameter_base.update(conf)
-                parameter = {'IBOXPARAMETER': {
+                parameter = {'IBOX_PARAMETER': {
                     f'{mapname}{name}': parameter_base}}
                 _try_PCO_in_obj(parameter)
             if mode == 'o':
                 output_base = {'Value': value}
                 output_base.update(conf)
-                output = {'IBOXOBJOUTPUT': {
+                output = {'IBOX_OUTPUT': {
                     f'{mapname}{name}': output_base}}
                 _try_PCO_in_obj(output)
 
@@ -594,18 +592,18 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             key_value = key[propname]
 
             if propname.endswith(
-                    ('.IBOXPCO', '.IBOX_AUTO_PO', '.IBOX_AUTO_P')):
-                if propname.endswith('.IBOXPCO'):
-                    # If there is a key ending with {prop}.IBOXPCO process it
+                    ('.IBOX_PCO', '.IBOX_AUTO_PO', '.IBOX_AUTO_P')):
+                if propname.endswith('.IBOX_PCO'):
+                    # If there is a key ending with {prop}.IBOX_PCO process it
                     _try_PCO_in_obj(key_value)
                 if propname.endswith(('.IBOX_AUTO_PO', '.IBOX_AUTO_P')):
                     # Automatically create parameter
                     _auto_PO(propname.split('.')[0], key_value, 'p')
                 continue
 
-            if propname in props and f'{propname}.IBOXCODE' not in key:
+            if propname in props and f'{propname}.IBOX_CODE' not in key:
                 # propname is an obj props and there is no propname key
-                # defining code (look down for processing IBOXCODE propname).
+                # defining code (look down for processing IBOX_CODE propname).
 
                 # set value
                 if isinstance(key_value, dict):
@@ -630,23 +628,23 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     value = get_endvalue(
                         f'{mapname}{propname}', resname=IBOXRESNAME)
 
-                if key_value == 'IBOXIFCONDVALUE':
+                if key_value == 'IBOX_IFCONDVALUE':
                     # auto add condition and wrap value in AWS If Condition
                     add_obj(get_condition(f'{mapname}{propname}',
-                                          'not_equals', 'IBOXIFCONDVALUE'))
+                                          'not_equals', 'IBOX_IFCONDVALUE'))
                     value = If(
                         f'{mapname}{propname}',
                         value,
                         Ref('AWS::NoValue'))
                 elif (isinstance(key_value, str)
-                        and key_value.startswith('IBOXIF')):
+                        and key_value.startswith('IBOX_IF')):
                     # trick to wrapper value in If Condition
                     if_list = key_value.split()[1:4]
                     value = _iboxif(if_list, mapname, value)
 
                 # trick to wrapper recursed returned value in If Condition
                 try:
-                    if_wrapper = key_value['IBOXIF']
+                    if_wrapper = key_value['IBOX_IF']
                 except Exception:
                     pass
                 else:
@@ -656,13 +654,13 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     # Avoid intercepting a Template Condition
                     # as a Resource Condition
                     continue
-            elif propname.endswith('.IBOXCODE'):
-                # If there is a key ending with {prop}.IBOXCODE
+            elif propname.endswith('.IBOX_CODE'):
+                # If there is a key ending with {prop}.IBOX_CODE
                 # eval it and use it as prop value.
                 # Usefull if a str value need to be processed by a code.
                 # (like in autoscaling-scheduledactions.yml)
                 value = eval(key_value)
-                propname = propname.replace('.IBOXCODE', '')
+                propname = propname.replace('.IBOX_CODE', '')
             else:
                 # NO match between propname and one of obj props
                 continue
@@ -684,7 +682,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
         # title override
         try:
-            obj.title = key['IBOXTITLE']
+            obj.title = key['IBOX_TITLE']
         except Exception:
             pass
 

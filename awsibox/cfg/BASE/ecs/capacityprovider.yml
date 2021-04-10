@@ -1,7 +1,7 @@
 global:
   ECSCapacityProvider:
     - Base:
-        IBOXPARAMETER:
+        IBOX_PARAMETER:
           - IBOXRESNAMEEnabled:
               Description: 'Empty for mapped value'
               AllowedValues: ['', 'True', 'False']
@@ -17,10 +17,10 @@ global:
           - IBOXRESNAMEAutoScalingGroupProviderManagedScalingStatus:
               Description: 'Empty for mapped value'
               AllowedValues: ['', 'DISABLED', 'ENABLED']
-        IBOXCONDITION:
+        IBOX_CONDITION:
           - IBOXRESNAME:
               get_condition('', 'equals', 'True', f'{IBOXRESNAME}Enabled')
-        IBOXOBJOUTPUT:
+        IBOX_OUTPUT:
           - IBOXRESNAME:
               Condition: IBOXRESNAME
               Value: >-

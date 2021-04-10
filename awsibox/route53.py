@@ -235,7 +235,7 @@ def R53_HostedZones(key):
 
 def R53_RecordSets(key):
     for n, v in getattr(cfg, key).items():
-        if not v['IBOXENABLED']:
+        if not v['IBOX_ENABLED']:
             continue
         resname = f'RecordSet{n}'
 

@@ -1,8 +1,8 @@
 Base: &base
-  IBOXCONDITION:
+  IBOX_CONDITION:
     - LoadBalancerCookieSticky:
         get_condition('', 'not_equals', 'None', 'LoadBalancerCookieSticky')
-  IBOXOBJOUTPUT:
+  IBOX_OUTPUT:
     - HealthCheck:
         Value:
           get_subvalue(
@@ -15,9 +15,9 @@ Base: &base
               'HealthyThresholdCount',
               'UnhealthyThresholdCount'])
   AccessLoggingPolicy:
-    IBOXIF:
+    IBOX_IF:
       - LoadBalancerLog
-      - IBOXIFVALUE
+      - IBOX_IFVALUE
       - Ref('AWS::NoValue')
     EmitInterval: get_endvalue('LoadBalancerLog')
     Enabled: True

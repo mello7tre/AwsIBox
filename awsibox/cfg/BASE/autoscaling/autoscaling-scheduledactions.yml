@@ -1,5 +1,5 @@
 Base: &base
-  IBOXPARAMETER:
+  IBOX_PARAMETER:
     - IBOXRESNAMEDesiredSize:
         Description: 'k to keep current value - empty for mapped value'
     - IBOXRESNAMEMinSize:
@@ -10,7 +10,7 @@ Base: &base
         Description: 'empty for mapped value - "none" to disable'
     - IBOXRESNAMEStartTime:
         Description: ''
-  IBOXCONDITION:
+  IBOX_CONDITION:
     - IBOXRESNAMEKeepDesiredSize:
         get_condition('', 'equals', 'k', f'{IBOXRESNAME}DesiredSize')
     - IBOXRESNAMEKeepMinSize:
@@ -25,22 +25,22 @@ Base: &base
         get_condition('', 'equals', 'CapacityMax', f'{IBOXRESNAME}MaxSize')
     - IBOXRESNAME:
         get_condition('', 'not_equals', 'none', f'{IBOXRESNAME}Recurrence')
-  IBOXOBJOUTPUT:
+  IBOX_OUTPUT:
     - IBOXRESNAME:
         Value: >-
           DesiredSize= ${DesiredCapacity} ,MinSize= ${MinSize} ,MaxSize= ${MaxSize}
           ,Recurrence= ${Recurrence} ,StartTime= ${StartTime}
   Condition: IBOXRESNAME
   AutoScalingGroupName: Ref('AutoScalingGroup')
-  DesiredCapacity.IBOXCODE: If(
+  DesiredCapacity.IBOX_CODE: If(
     f'{IBOXRESNAME}CapacityDesiredSize',
     get_endvalue('CapacityDesired'),
     get_endvalue(f'{IBOXRESNAME}DesiredSize', nocondition=f'{IBOXRESNAME}KeepDesiredSize'))
-  MinSize.IBOXCODE: If(
+  MinSize.IBOX_CODE: If(
     f'{IBOXRESNAME}CapacityMinSize',
     get_endvalue('CapacityMin'),
     get_endvalue(f'{IBOXRESNAME}MinSize', nocondition=f'{IBOXRESNAME}KeepMinSize'))
-  MaxSize.IBOXCODE: If(
+  MaxSize.IBOX_CODE: If(
     f'{IBOXRESNAME}CapacityMaxSize',
     get_endvalue('CapacityMax'),
     get_endvalue(f'{IBOXRESNAME}MaxSize', nocondition=f'{IBOXRESNAME}KeepMaxSize'))
@@ -48,6 +48,6 @@ Base: &base
 
 global:
   ScheduledAction:
-    - IBOXBASE:
+    - IBOX_BASE:
         <<: *base
         StartTime: Ref('AWS::NoValue')

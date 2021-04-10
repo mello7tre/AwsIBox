@@ -103,8 +103,9 @@ class Loader(yaml.Loader):
 
 def replace_not_allowed_char(s):
     key = str(s)
-    for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
-        key = key.replace(s, w)
+    if not key.startswith('IBOX_'):
+        for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
+            key = key.replace(s, w)
 
     return int(key) if key.isdigit() else key
 
@@ -121,8 +122,8 @@ def gen_dict_extract(cfg, envs, check_root=None):
                     not k.startswith('IBoxLoader')):
                 if k in enforce_list:
                     continue
-                elif k.endswith('_IBOXENFORCE'):
-                    k = k.replace('_IBOXENFORCE', '')
+                elif k.endswith('_IBOX_ENFORCE'):
+                    k = k.replace('_IBOX_ENFORCE', '')
                     enforce_list.append(k)
                 yield {k: v}
             # for empty dict in common.yml
@@ -188,7 +189,7 @@ def my_merge_dict(basedict, workdict):
         # attach them to RoleInstance, adding element to ManagedPolicyArns,
         # preserving the base ones
         try:
-            ibox_add_to_list = (workdict[k][0] == 'IBOXADDTOLIST')
+            ibox_add_to_list = (workdict[k][0] == 'IBOX_ADD_TO_LIST')
         except Exception:
             ibox_add_to_list = False
 
@@ -306,7 +307,7 @@ def prepend_base_cfgs(cfg_cmm):
                                 base_cfgs[n] = base_key_value
                             key_names[n].extend(list(k.keys()))
                         else:
-                            # use IBOXBASE (or other value in cfg.BASE_CFGS)
+                            # use IBOX_BASE (or other value in cfg.BASE_CFGS)
                             for j, w in base_value.items():
                                 j_current = base_cfgs[n].get(j)
                                 if j_current and isinstance(j_current, list):

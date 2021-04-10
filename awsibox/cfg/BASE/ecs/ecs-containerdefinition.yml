@@ -1,5 +1,5 @@
 Base: &base
-  IBOXPARAMETER:
+  IBOX_PARAMETER:
     - IBOXRESNAMECpu:
         Description: 'Cpu Share - empty for mapped value'
     - IBOXRESNAMEMemory:
@@ -12,7 +12,7 @@ Base: &base
     - IBOXRESNAMELinuxParametersInitProcessEnabled:
         Description: 'empty for mapped value - True if EnableExecuteCommand'
         AllowedValues: ['', 'True', 'False']
-  IBOXCONDITION:
+  IBOX_CONDITION:
     - IBOXRESNAMECommand: Or(
         Condition(f'{IBOXRESNAME}CommandOverride'),
         Equals('True', 'True' if isinstance(getattr(cfg, f'{IBOXRESNAME}Command'), list) else 'False'))
@@ -20,7 +20,7 @@ Base: &base
         get_condition('', 'not_equals', 0, f'{IBOXRESNAME}ContainerPort')
     - IBOXRESNAMEHostPort:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}HostPort')
-  IBOXOBJOUTPUT:
+  IBOX_OUTPUT:
     - IBOXRESNAMECommand:
         Condition: IBOXRESNAMECommand
         Value: Join(',', get_endvalue(f'{IBOXRESNAME}Command')) 
@@ -29,9 +29,9 @@ Base: &base
           Cpu= ${Cpu} ,Memory= ${Memory} ,MemoryReservation= ${MemoryReservation}
   Essential: True
   LogConfiguration:
-    IBOXIF:
+    IBOX_IF:
       - LogConfiguration
-      - IBOXIFVALUE
+      - IBOX_IFVALUE
       - Ref('AWS::NoValue')
     LogDriver:
       get_endvalue('LogDriver')
@@ -43,9 +43,9 @@ Base: &base
   ContainerPort: 0
   HostPort: None
   PortMappings:
-    - IBOXIF:
+    - IBOX_IF:
       - IBOXRESNAMEContainerPort
-      - IBOXIFVALUE
+      - IBOX_IFVALUE
       - Ref('AWS::NoValue')
     - 0:
         ContainerPort: get_endvalue(f'{IBOXRESNAME}ContainerPort')
@@ -81,7 +81,7 @@ Base: &base
         Value: get_endvalue('ClusterStack')
   LinuxParameters:
     InitProcessEnabled: False
-    InitProcessEnabled.IBOXCODE:
+    InitProcessEnabled.IBOX_CODE:
       If(f'EnableExecuteCommand', True, get_endvalue(f'{IBOXRESNAME}LinuxParametersInitProcessEnabled'))
   DockerLabels: 
     LastUpdate: Ref('DockerLabelLastUpdate')
@@ -89,4 +89,4 @@ Base: &base
 
 global:
   ContainerDefinitions:
-    - IBOXBASE: *base
+    - IBOX_BASE: *base

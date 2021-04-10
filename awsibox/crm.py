@@ -7,7 +7,7 @@ from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
 
 def CRM_Certificate(key):
     for n, v in getattr(cfg, key).items():
-        if not v['IBOXENABLED']:
+        if not v['IBOX_ENABLED']:
             continue
         # resources
         resname = f'{key}{n}'
