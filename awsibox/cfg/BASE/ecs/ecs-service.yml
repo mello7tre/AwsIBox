@@ -56,7 +56,7 @@ Replica: &replica
         Field.IBOX_PCO:
           IBOX_CONDITION:
             - _PlacementStrategies0TypeRandom:
-                get_condition('', 'equals', 'random', get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Type'))
+                get_condition('', 'equals', 'random', f'{IBOX_RESNAME}PlacementStrategies0Type')
         Field.IBOX_CODE: If(
           f'{IBOX_RESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
           get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Field'))
