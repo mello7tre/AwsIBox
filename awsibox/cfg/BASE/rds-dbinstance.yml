@@ -57,45 +57,43 @@ Base: &base
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}SourceDBInstanceIdentifier')
     - IBOXRESNAMEDBInstanceSkipProperties:
         Or(Condition(f'{IBOXRESNAME}DBSnapshotIdentifier'), Condition(f'{IBOXRESNAME}SourceDBInstanceIdentifier'))
-    - IBOXRESNAMEInternal:
-        get_condition('', 'equals', 'false', f'{IBOXRESNAME}PubliclyAccessible')
     - IBOXRESNAMEMonitoringInterval:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MonitoringInterval')
     - IBOXRESNAMEPerformanceInsights:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}PerformanceInsights')
     - IBOXRESNAMEStorageAutoScaling:
         get_condition('', 'not_equals', '0', f'{IBOXRESNAME}MaxAllocatedStorage')
-  IBOXOUTPUT:
+  IBOXOBJOUTPUT:
     - IBOXRESNAMEAllocatedStorage:
-        Value: get_endvalue(f'{IBOXRESNAME}AllocatedStorage')
+        Value: ${AllocatedStorage}
     - IBOXRESNAMEMaxAllocatedStorage:
-        Value: get_endvalue(f'{IBOXRESNAME}MaxAllocatedStorage')
+        Value: ${MaxAllocatedStorage}
     - IBOXRESNAMEDBInstanceClass:
-        Value: get_endvalue(f'{IBOXRESNAME}DBInstanceClass')
+        Value: ${DBInstanceClass}
     - IBOXRESNAMEDBName:
-        Value: get_endvalue(f'{IBOXRESNAME}DBName')
+        Value: ${DBName}
     - IBOXRESNAMEDBSnapshotIdentifier:
-        Value: get_endvalue(f'{IBOXRESNAME}DBSnapshotIdentifier')
+        Value: ${DBSnapshotIdentifier}
     - IBOXRESNAMEDeletionProtection:
-        Value: get_endvalue(f'{IBOXRESNAME}DeletionProtection')
+        Value: ${DeletionProtection}
     - IBOXRESNAMEEngine:
-        Value: get_endvalue(f'{IBOXRESNAME}Engine')
+        Value: ${Engine}
     - IBOXRESNAMEEngineVersion:
-        Value: get_endvalue(f'{IBOXRESNAME}EngineVersion')
+        Value: ${EngineVersion}
     - IBOXRESNAMEMasterUsername:
-        Value: get_endvalue(f'{IBOXRESNAME}MasterUsername')
+        Value: ${MasterUsername}
     - IBOXRESNAMEMonitoringInterval:
-        Value: get_endvalue(f'{IBOXRESNAME}MonitoringInterval')
+        Value: ${MonitoringInterval}
     - IBOXRESNAMEMultiAZ:
-        Value: get_endvalue(f'{IBOXRESNAME}MultiAZ')
-    - IBOXRESNAMEPerformanceInsights:
-        Value: get_endvalue(f'{IBOXRESNAME}PerformanceInsights')
-    - IBOXRESNAMEScheme:
-        Value: If(f'{IBOXRESNAME}Internal', 'Internal', 'External')
+        Value: ${MultiAZ}
+    - IBOXRESNAMEPerformanceInsightsRetentionPeriod:
+        Value: ${PerformanceInsightsRetentionPeriod}
+    - IBOXRESNAMEPubliclyAccessible:
+        Value: ${PubliclyAccessible}
     - IBOXRESNAMESourceDBInstanceIdentifier:
-        Value: get_endvalue(f'{IBOXRESNAME}SourceDBInstanceIdentifier')
+        Value: ${SourceDBInstanceIdentifier}
     - IBOXRESNAMEStorageType:
-        Value: get_endvalue(f'{IBOXRESNAME}StorageType')
+        Value: ${StorageType}
   AllocatedStorage: 50
   AllowMajorVersionUpgrade: True
   DBInstanceClass: db.t3.micro

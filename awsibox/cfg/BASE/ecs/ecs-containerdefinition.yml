@@ -20,11 +20,10 @@ Base: &base
         get_condition('', 'not_equals', 0, f'{IBOXRESNAME}ContainerPort')
     - IBOXRESNAMEHostPort:
         get_condition('', 'not_equals', 'None', f'{IBOXRESNAME}HostPort')
-  IBOXOUTPUT:
+  IBOXOBJOUTPUT:
     - IBOXRESNAMECommand:
         Condition: IBOXRESNAMECommand
         Value: Join(',', get_endvalue(f'{IBOXRESNAME}Command')) 
-  IBOXOBJOUTPUT:
     - IBOXRESNAMEConstraints:
         Value: >-
           Cpu= ${Cpu} ,Memory= ${Memory} ,MemoryReservation= ${MemoryReservation}

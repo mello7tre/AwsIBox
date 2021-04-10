@@ -42,7 +42,7 @@ Base: &base
 
 ALB: &alb
   <<: *base
-  IBOXOUTPUT:
+  IBOXOBJOUTPUT:
     - IBOXRESNAME:
         Condition: IBOXRESNAME
         Value: Ref(IBOXRESNAME)

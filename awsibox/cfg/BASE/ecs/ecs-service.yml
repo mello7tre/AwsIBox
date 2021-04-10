@@ -31,7 +31,7 @@ Replica: &replica
         Description: 'empty for mapped value'
     - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:
         Description: 'empty for mapped value'
-  IBOXOUTPUT:
+  IBOXOBJOUTPUT:
     - IBOXRESNAMEDeploymentConfigurationMaximumPercent:
         Value: get_endvalue(f'{IBOXRESNAME}DeploymentConfigurationMaximumPercent')
     - IBOXRESNAMEDeploymentConfigurationMinimumHealthyPercent:

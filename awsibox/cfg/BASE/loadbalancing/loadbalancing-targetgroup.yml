@@ -23,7 +23,7 @@ Base: &base
 
 EC2: &ec2
   <<: *base
-  IBOXOUTPUT:
+  IBOXOBJOUTPUT:
     - HealthCheck:
         Value:
           get_subvalue(
@@ -39,7 +39,7 @@ EC2: &ec2
 
 ECS: &ecs
   <<: *base
-  IBOXOUTPUT:
+  IBOXOBJOUTPUT:
     - HealthCheck:
         Value:
           get_subvalue(

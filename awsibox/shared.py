@@ -80,18 +80,20 @@ def add_objoutput(res):
     except Exception:
         pass
     else:
-        mapname = iboxprops['MAP'][res.title]
-        join_list = []
-        for n in res.Value.split():
-            n = n.strip()
-            if n.startswith('${'):
-                n = n.strip('${}')
-                obj = iboxprops[f'{mapname}{n}'][0]
-                propname = iboxprops[f'{mapname}{n}'][1]
-                n = getattr(obj, propname)
-            join_list.append(n)
+        if isinstance(res.Value, str):
+            mapname = iboxprops['MAP'][res.title]
+            join_list = []
+            for n in res.Value.split():
+                n = n.strip()
+                if n.startswith('${'):
+                    n = n.strip('${}')
+                    obj = iboxprops[f'{mapname}{n}'][0]
+                    propname = iboxprops[f'{mapname}{n}'][1]
+                    n = getattr(obj, propname)
+                join_list.append(n)
 
-        res.Value = Join('', join_list)
+            res.Value = Join('', join_list)
+
         del res.properties['IBOX_PROPS']
 
 
@@ -577,7 +579,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
             if mode == 'o':
                 output_base = {'Value': value}
                 output_base.update(conf)
-                output = {'IBOXOUTPUT': {
+                output = {'IBOXOBJOUTPUT': {
                     f'{mapname}{name}': output_base}}
                 _try_PCO_in_obj(output)
 
