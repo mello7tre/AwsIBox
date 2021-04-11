@@ -32,7 +32,7 @@ global:
           - Ref('RoleInstance')
   LaunchType: EC2
   Log:
-    Driver: None
+    Driver: none
     GroupName: IBOX_SKIP_FUNC
   Role:
     - Task:

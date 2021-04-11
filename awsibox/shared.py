@@ -135,7 +135,7 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
                 scope_g = globals()
                 scope_l = locals()
                 value = [
-                    eval(r, scope_g, scope_l) if r.startswith(
+                    eval(r, scope_g, scope_l) if str(r).startswith(
                         cfg.EVAL_FUNCTIONS_IN_CFG) else r for r in value
                 ]
             if isinstance(value, str):

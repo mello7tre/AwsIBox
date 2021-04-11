@@ -17,12 +17,12 @@ global:
         AllowedValues: ['', 'EC2', 'FARGATE']
     - LogDriver:
         Description: 'Log driver for task container - empty for default'
-        AllowedValues: ['', 'None', 'awslogs', 'fluentd', 'gelf', 'journald', 'json-file', 'splunk', 'syslog']
+        AllowedValues: ['', 'none', 'awslogs', 'fluentd', 'gelf', 'journald', 'json-file', 'splunk', 'syslog']
   Condition:
     - LaunchTypeFarGate:
         get_condition('', 'equals', 'FARGATE', 'LaunchType')
     - LogConfiguration:
-        get_condition('', 'not_equals', 'None', 'LogDriver')
+        get_condition('', 'not_equals', 'none', 'LogDriver')
   Output:
     - LaunchType:
         Value: get_endvalue('LaunchType')
