@@ -51,9 +51,9 @@ global:
         Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
   Condition:
     - ListenerLoadBalancerHttpPort:
-        get_condition('', 'not_equals', 'None', 'ListenerLoadBalancerHttpPort')
+        get_condition('', 'not_equals', 'none', 'ListenerLoadBalancerHttpPort')
     - ListenerLoadBalancerHttpsPort:
-        get_condition('', 'not_equals', 'None', 'ListenerLoadBalancerHttpsPort')
+        get_condition('', 'not_equals', 'none', 'ListenerLoadBalancerHttpsPort')
   Listener:
     - Classic:
         PolicyNames:

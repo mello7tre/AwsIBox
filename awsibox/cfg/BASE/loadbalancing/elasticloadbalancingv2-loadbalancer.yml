@@ -3,9 +3,6 @@ Base: &base
     - LoadBalancerHttp2:
         Description: 'empty for mapped value'
         AllowedValues: ['', 'true', 'false']
-  IBOX_CONDITION:
-    - LoadBalancerHttp2:
-        get_condition('', 'not_equals', 'None', 'LoadBalancerHttp2')
   LoadBalancerAttributes:
     - LogEnabled:
         IBOX_IF:
@@ -31,10 +28,6 @@ Base: &base
         Key: access_logs.s3.prefix
         Value: Sub('${EnvRole}.${AWS::StackName}')
     - Http2:
-        IBOX_IF:
-          - LoadBalancerHttp2
-          - IBOX_IFVALUE
-          - Ref('AWS::NoValue')
         Key: routing.http2.enabled
         Value: get_endvalue('LoadBalancerHttp2')
   SecurityGroups:

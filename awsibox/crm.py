@@ -28,7 +28,7 @@ def CRM_Certificate(key):
 
 
 def CRM_CertificateEC2(key):
-    if cfg.ListenerLoadBalancerHttpsPort != 'None':
+    if cfg.ListenerLoadBalancerHttpsPort != 'none':
         CRM_Certificate(key)
 
 

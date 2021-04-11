@@ -4,11 +4,11 @@ IBoxLoader: !include [
 
 agw:
   Condition:
-    - ListenerLoadBalancerHttpPort: Equals('True', 'False')
-    - ListenerLoadBalancerHttpsPort: Equals('True', 'True')
+    - ListenerLoadBalancerHttpPort: Equals('true', 'false')
+    - ListenerLoadBalancerHttpsPort: Equals('true', 'true')
     - RecordSetCloudFront: And(
         Condition('CloudFrontDistribution'),
-        Equals('True', 'True'))
+        Equals('true', 'true'))
   Output:
     - InvokeUrl:
         Value: Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/%s' % cfg.ApiGatewayRestApi['Base']['Stage'])

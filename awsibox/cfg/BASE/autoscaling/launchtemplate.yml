@@ -2,8 +2,8 @@ global:
   Parameter:
     - DoNotSignal:
         Description: 'Do Not Signal ASG - WARNING need to manually exec cfn-signal!'
-        AllowedValues: ['False', 'True']
-        Default: 'False'
+        AllowedValues: ['yes', 'no']
+        Default: 'no'
     - EfsMounts:
         Description: 'Efs Mounts List'
         Type: 'CommaDelimitedList'
@@ -35,7 +35,7 @@ global:
     - DoNotSignal:
         And(
           Condition('RollingUpdate'),
-          Equals(Ref('DoNotSignal'), 'True')
+          Equals(Ref('DoNotSignal'), 'yes')
         )
     - EfsMounts:
          Not(Equals(Select('0', Ref('EfsMounts')), ''))
@@ -123,12 +123,12 @@ global:
           SpotOptions:
             MaxPrice: '0'
         InstanceType: t3.micro
-        KeyName: None 
+        KeyName: none
         Monitoring:
-          Enabled: False
+          Enabled: false
         NetworkInterfaces:
           - eth0:
-              AssociatePublicIpAddress: False
+              AssociatePublicIpAddress: false
               DeviceIndex: 0
               Groups:
                 - GetAtt('SecurityGroupInstancesRules', 'GroupId')

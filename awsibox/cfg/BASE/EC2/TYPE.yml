@@ -11,8 +11,8 @@ ec2:
   Parameter:
     - UpdateMode:
         Description: 'How to update Instances'
-        AllowedValue: ['None', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
-        Default: 'None'
+        AllowedValue: ['none', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
+        Default: 'none'
     - AutoScalingGroupBaseHealthCheckGracePeriod:
         Description: 'How long to wait before ASG check instance health - empty for default based on env/role'
   Condition:
@@ -46,7 +46,7 @@ ec2:
   CustomUserDataScript: init.sh
   DeploymentGroup: False
   LoadBalancer:
-    CookieSticky: None
+    CookieSticky: '0'
     IdleTimeout: 60
   IAMPolicy:
     - CloudFormation:

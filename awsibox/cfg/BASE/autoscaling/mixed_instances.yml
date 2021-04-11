@@ -2,19 +2,19 @@ global:
   Parameter:
     - AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides1InstanceType:
         Description: 'InstanceType - default for mapped value'
-        ConstraintDescription: 'must be a valid EC2 instance type or None'
-        AllowedValues: cfg.INSTANCE_LIST + ['None']
+        ConstraintDescription: 'must be a valid EC2 instance type or "none"'
+        AllowedValues: cfg.INSTANCE_LIST + ['none']
         Default: 'default'
     - AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides2InstanceType:
         Description: 'InstanceType - default for mapped value'
-        ConstraintDescription: 'must be a valid EC2 instance type or None'
-        AllowedValues: cfg.INSTANCE_LIST + ['None']
+        ConstraintDescription: 'must be a valid EC2 instance type or "none"'
+        AllowedValues: cfg.INSTANCE_LIST + ['none']
         Default: 'default'
   Condition:
     - AutoScalingGroupBaseMixedInstancesPolicy:
         And(
-          get_condition('', 'not_equals', 'None', 'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides1InstanceType'),
-          get_condition('', 'not_equals', 'None', 'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides2InstanceType'),
+          get_condition('', 'not_equals', 'none', 'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides1InstanceType'),
+          get_condition('', 'not_equals', 'none', 'AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides2InstanceType'),
         )
   Output:
     - LaunchTemplateDataInstanceType:
@@ -47,8 +47,8 @@ global:
               Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
             Overrides:
               - 1:
-                  InstanceType: None
+                  InstanceType: none
                   WeightedCapacity: '1'
               - 2:
-                  InstanceType: None
+                  InstanceType: none
                   WeightedCapacity: '1'

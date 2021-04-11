@@ -67,11 +67,11 @@ ALB: &alb
 global:
   Condition:
     - TargetGroupCookieSticky:
-        get_condition('', 'not_equals', 'None', 'TargetGroupCookieSticky')
+        get_condition('', 'not_equals', '0', 'TargetGroupCookieSticky')
   ElasticLoadBalancingV2TargetGroup:
     - EC2: *ec2
     - ECS: *ecs
     - ALB: *alb
   TargetGroupDeregistrationDelay: '30'
-  TargetGroupCookieSticky: None
+  TargetGroupCookieSticky: '0'
   TargetGroupProtocol: HTTP

@@ -1,12 +1,13 @@
 global:
   Parameter:
     - LoadBalancerSslCertificateAdHoc:
-        Description: 'Load Balancer External Ssl Certificate AdHoc - None to disable - empty for default based on env/role'
+        Description: 'Load Balancer External Ssl Certificate AdHoc - empty for mapped value'
+        AllowedValues: ['', 'yes', 'no']
   Condition:
     - LoadBalancerSslCertificateAdHoc:
         And(
           Condition('ListenerLoadBalancerHttpsPort'),
-          get_condition('', 'not_equals', 'None', 'LoadBalancerSslCertificateAdHoc')
+          get_condition('', 'equals', 'yes', 'LoadBalancerSslCertificateAdHoc')
         )
   Output:
     - LoadBalancerSslCertificateAdHoc:
@@ -52,4 +53,4 @@ global:
         Port: get_endvalue('ListenerLoadBalancerHttpsPort')
         Protocol: HTTPS
         SslPolicy: get_endvalue('ListenerLoadBalancerSslPolicy')
-  LoadBalancerSslCertificateAdHoc: None
+  LoadBalancerSslCertificateAdHoc: 'no'

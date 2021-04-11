@@ -10,8 +10,8 @@ IBoxLoader: !include [
 global:
   HealthCheckIntervalSeconds: 30
   HealthCheckTimeoutSeconds: 6
-  HealthCheckPath: None
-  HealthCheckTarget: None
+  HealthCheckPath: none
+  HealthCheckTarget: none
   HealthyThresholdCount: 2
   UnhealthyThresholdCount: 3
 

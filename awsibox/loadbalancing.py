@@ -222,7 +222,7 @@ def LB_ListenersV2ECS():
         # resources
         if n not in cfg.LoadBalancerApplication:
             continue
-        if cfg.ListenerLoadBalancerHttpPort not in ['None', 80]:
+        if cfg.ListenerLoadBalancerHttpPort not in ['none', 80]:
             # Enable the relative LB SecurityGroupIngress
             cfg.SecurityGroupIngress[
                 f'LoadBalancerApplicationHttp{n}']['IBOX_ENABLED'] = True
@@ -230,7 +230,7 @@ def LB_ListenersV2ECS():
             auto_get_props(r_Http, mapname=f'ListenerV2ECSHttp{n}')
             add_obj(r_Http)
 
-        if (cfg.ListenerLoadBalancerHttpsPort not in ['None', 443]
+        if (cfg.ListenerLoadBalancerHttpsPort not in ['none', 443]
                 and n == 'External'):
             # Enable the relative LB SecurityGroupIngress
             cfg.SecurityGroupIngress[
