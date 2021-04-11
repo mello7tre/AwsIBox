@@ -2,11 +2,11 @@ global:
   Parameter:
     - CloudWatchAgent:
         Description: 'CloudWatch Agent Install - empty for default based on env/role'
-        AllowedValues: ['', 'True', 'None']
+        AllowedValues: ['', 'true', 'false']
   Condition:
     - CloudWatchAgent:
-        get_condition('', 'not_equals', 'None', 'CloudWatchAgent')
-  CloudWatchAgent: None
+        get_condition('', 'equals', 'true', 'CloudWatchAgent')
+  CloudWatchAgent: false
   Role:
     - Instance:
         ManagedPolicyArns:
