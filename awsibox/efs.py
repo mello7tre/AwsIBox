@@ -65,12 +65,12 @@ def EFS_FileStorage(key):
             add_obj(r_Mount)
         # conditions
         add_obj(get_condition(
-            resname, 'not_equals', 'None', f'{resname}Enabled'))
+            resname, 'equals', 'yes', f'{resname}Enabled'))
 
         # resources
         r_File = EFSFileSystem(resname, key=v)
 
-        if v['R53'] != 'None':
+        if v['R53']:
             r_Record = R53RecordSetEFS(recordname, efsname=n)
 
             add_obj(r_Record)

@@ -16,14 +16,14 @@ Base: &base
           'db.t2.micro', 'db.t2.small', 'db.t2.medium', 'db.t2.large',
           'db.t3.micro', 'db.t3.small', 'db.t3.medium', 'db.t3.large']
     - _DBName:
-        Description: 'None for not creating one - empty for mapped value'
+        Description: 'Empty for mapped value'
     - _DBSnapshotIdentifier:
-        Description: 'DB snapshot used to restore the DB instance - None for not using one - empty for mapped value'
+        Description: 'DB snapshot used to restore the DB instance - "none" for not using one - empty for mapped value'
     - _DeletionProtection:
         Description: 'empty for mapped value'
-        AllowedValues: ['', 'True', 'False']
+        AllowedValues: ['', 'true', 'false']
     - _SourceDBInstanceIdentifier:
-        Description: 'ID of the source DB instance to create ReadReplica - None for not using one - empty for mapped value'
+        Description: 'ID of the source DB instance to create ReadReplica - "none" for not using one - empty for mapped value'
     - _Engine:
         Description: 'Engine - empty for mapped value'
         AllowedValues: [
@@ -36,25 +36,23 @@ Base: &base
         Description: 'Username - empty for mapped value'
     - _MasterUserPassword:
         Description: 'Password - empty for mapped value'
-        NoEcho: True
+        NoEcho: true
     - _MonitoringInterval:
         Description: 'The interval, in seconds, for Enhanced Monitoring metrics - empty for mapped value - 0 to disable'
         AllowedValues: ['', '0', '1', '5', '10', '15', '30', '60']
     - _MultiAZ:
         Description: 'Use multiple Availability Zone - empty for mapped value'
-        AllowedValues: ['', 'True', 'False']
+        AllowedValues: ['', 'true', 'false']
     - _PerformanceInsights:
         Description: 'The amount of time, in days, to retain Performance Insights data - empty for mapped value - 0 to disable'
     - _StorageType:
         Description: 'empty for mapped value'
         AllowedValues: ['', 'standard', 'gp2']
   IBOX_CONDITION:
-    - _DBName:
-        get_condition('', 'not_equals', 'None', f'{IBOX_RESNAME}DBName')
     - _DBSnapshotIdentifier:
-        get_condition('', 'not_equals', 'None', f'{IBOX_RESNAME}DBSnapshotIdentifier')
+        get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}DBSnapshotIdentifier')
     - _SourceDBInstanceIdentifier:
-        get_condition('', 'not_equals', 'None', f'{IBOX_RESNAME}SourceDBInstanceIdentifier')
+        get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}SourceDBInstanceIdentifier')
     - _DBInstanceSkipProperties:
         Or(Condition(f'{IBOX_RESNAME}DBSnapshotIdentifier'), Condition(f'{IBOX_RESNAME}SourceDBInstanceIdentifier'))
     - _MonitoringInterval:
@@ -95,12 +93,12 @@ Base: &base
     - _StorageType:
         Value: ${StorageType}
   AllocatedStorage: 50
-  AllowMajorVersionUpgrade: True
+  AllowMajorVersionUpgrade: true
   DBInstanceClass: db.t3.micro
   DBName: dbname
   DBParameterGroupName: Ref('DBParameterGroup1')
-  DBSnapshotIdentifier: None
-  DeletionProtection: False
+  DBSnapshotIdentifier: none
+  DeletionProtection: false
   EnablePerformanceInsights:
     If(f'{IBOX_RESNAME}PerformanceInsights', True, False)
   MasterUsername: masterusername
@@ -110,11 +108,11 @@ Base: &base
     If(f'{IBOX_RESNAME}StorageAutoScaling', get_endvalue(f'{IBOX_RESNAME}MaxAllocatedStorage'), Ref('AWS::NoValue'))
   MonitoringInterval: 0
   MonitoringRoleArn: If(f'{IBOX_RESNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
-  MultiAZ: False
+  MultiAZ: false
   PerformanceInsights: 0
   PerformanceInsightsRetentionPeriod:
     If(f'{IBOX_RESNAME}PerformanceInsights', get_endvalue(f'{IBOX_RESNAME}PerformanceInsights'), Ref('AWS::NoValue'))
-  SourceDBInstanceIdentifier: None
+  SourceDBInstanceIdentifier: none
   StorageType: gp2
   VPCSecurityGroups:
     - Ref(f'SecurityGroup{IBOX_RESNAME}')
@@ -126,11 +124,11 @@ Mysql: &mysql
 
 MysqlInternal:
   <<: [*base, *mysql]
-  PubliclyAccessible: False
+  PubliclyAccessible: false
   DBSubnetGroupName: get_expvalue('DBSubnetGroupPrivate')
 MysqlExternal:
   <<: [*base, *mysql]
-  PubliclyAccessible: True
+  PubliclyAccessible: true
   DBSubnetGroupName: get_expvalue('DBSubnetGroupPublic')
 
 global:

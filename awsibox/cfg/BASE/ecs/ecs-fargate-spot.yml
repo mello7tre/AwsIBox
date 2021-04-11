@@ -2,19 +2,19 @@ global:
   Parameter:
     - FargateSpot:
         Description: 'Use Capacity Provider FARGATE_SPOT (Two services are created) - empty for default based on mapping'
-        AllowedValues: ['', 'True', 'None']
+        AllowedValues: ['', 'yes', 'no']
   Condition:
     - FargateSpot:
         And(
           Condition('LaunchTypeFarGate'),
-          get_condition('', 'not_equals', 'None', 'FargateSpot')
+          get_condition('', 'equals', 'yes', 'FargateSpot')
         )
     - FargateBase:
         And(
           Condition('LaunchTypeFarGate'),
-          get_condition('', 'equals', 'None', 'FargateSpot')
+          get_condition('', 'equals', 'no', 'FargateSpot')
         )
-  FargateSpot: None
+  FargateSpot: 'no'
   CCRFargateSpot: True
   Service:
     - Spot:

@@ -2,11 +2,11 @@ global:
   Parameter:
     - SpotAuto:
         Description: 'ASG TAG for autospotting https://github.com/AutoSpotting/AutoSpotting - empty for default based on env/role'
-        AllowedValues: ['', 'True', 'None']
+        AllowedValues: ['', 'yes', 'no']
     - SpotAutoMinOnDemandNumber:
-        Description: 'ASG TAG for autospotting minimum on-demand instance to keep - empty for default based on env/role - None to disable'
+        Description: 'ASG TAG for autospotting minimum on-demand instance to keep - empty for default based on env/role - 0 to disable'
     - SpotAutoAllowedInstances:
-        Description: 'ASG TAG for autospotting allowed instance types (comma delimited) - current to use the same of ASG - empty for default based on env/role - None to disable'
+        Description: 'ASG TAG for autospotting allowed instance types (comma delimited) - current to use the same of ASG - empty for default based on env/role - "default" to use lambda configuration'
   Condition:
     - Spot:
         Or(
@@ -14,16 +14,16 @@ global:
           Condition('LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice'),
         )
     - SpotAuto:
-        get_condition('', 'not_equals', 'None', 'SpotAuto')
+        get_condition('', 'equals', 'yes', 'SpotAuto')
     - SpotAutoMinOnDemandNumber:
         And(
           Condition('SpotAuto'),
-          get_condition('', 'not_equals', 'None', 'SpotAutoMinOnDemandNumber')
+          get_condition('', 'not_equals', '0', 'SpotAutoMinOnDemandNumber')
         )
     - SpotAutoAllowedInstances:
         And(
           Condition('SpotAuto'),
-          get_condition('', 'not_equals', 'None', 'SpotAutoAllowedInstances')
+          get_condition('', 'not_equals', 'default', 'SpotAutoAllowedInstances')
         )
   AutoScalingGroup:
     - Base:
@@ -52,6 +52,6 @@ global:
               Key: autospotting_allowed_instance_types
               Value: get_endvalue('SpotAutoAllowedInstances')
               PropagateAtLaunch: True
-  SpotAuto: None
-  SpotAutoMinOnDemandNumber: None
-  SpotAutoAllowedInstances: None
+  SpotAuto: 'no'
+  SpotAutoMinOnDemandNumber: '0'
+  SpotAutoAllowedInstances: default

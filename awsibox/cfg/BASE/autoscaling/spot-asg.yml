@@ -1,8 +1,8 @@
 global:
   Parameter:
     - SpotASG:
-        Description: 'Create SpotASG / Create SpotASG as Main ASG - empty for default based on env/role'
-        AllowedValues: ['', 'True', 'Main', 'None']
+        Description: 'SpotASG type - empty for default based on env/role'
+        AllowedValues: ['', 'primary', 'secondary', 'none']
   Condition:
     - RollingUpdate:
         And(
@@ -25,11 +25,11 @@ global:
           Equals(Ref('UpdateMode'), 'Replace')
         )
     - SpotASG:
-        get_condition('', 'not_equals', 'None', 'SpotASG')
+        get_condition('', 'not_equals', 'none', 'SpotASG')
     - ASGMainIsSpot:
         And(
           Condition('SpotASG'),
-          get_condition('', 'equals', 'Main', 'SpotASG')
+          get_condition('', 'equals', 'primary', 'SpotASG')
         )
   Alarm:
     - ASGSpotNotAvailable:
@@ -84,4 +84,4 @@ global:
   SNSTopic:
     - ASGSpot:
         Condition: SpotASG
-  SpotASG: None
+  SpotASG: none

@@ -14,10 +14,10 @@ res-extra-01:
   DBSubnetGroup: True
   EFSFileSystem:
     - EcsCluster:
-        Enabled: None
-        R53: None
+        Enabled: 'no'
+        R53: False
         Name: EcsCluster
-        Encrypted: False
+        Encrypted: 'false'
         PerformanceMode: generalPurpose
   SecurityGroup:
     - RDS:
