@@ -35,7 +35,7 @@ global:
                 - Ref('AWS::NoValue')
               Key: spot-enabled
               Value: 'true'
-              PropagateAtLaunch: True
+              PropagateAtLaunch: true
           - SpotAutoMinOnDemandNumber:
               IBOX_IF:
                 - SpotAutoMinOnDemandNumber
@@ -43,7 +43,7 @@ global:
                 - Ref('AWS::NoValue')
               Key: autospotting_min_on_demand_number
               Value: get_endvalue('SpotAutoMinOnDemandNumber')
-              PropagateAtLaunch: True
+              PropagateAtLaunch: true
           - SpotAutoAllowedInstances:
               IBOX_IF:
                 - SpotAutoAllowedInstances
@@ -51,7 +51,7 @@ global:
                 - Ref('AWS::NoValue')
               Key: autospotting_allowed_instance_types
               Value: get_endvalue('SpotAutoAllowedInstances')
-              PropagateAtLaunch: True
+              PropagateAtLaunch: true
   SpotAuto: 'no'
   SpotAutoMinOnDemandNumber: '0'
   SpotAutoAllowedInstances: default

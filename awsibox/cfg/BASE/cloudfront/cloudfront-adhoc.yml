@@ -1,7 +1,7 @@
 global:
   Condition:
     - CloudFrontOriginAdHoc:
-        get_condition('', 'equals', True, 'CloudFrontOriginAdHoc')
+        get_condition('', 'equals', 'yes', 'CloudFrontOriginAdHoc')
   CloudFrontCacheBehaviors:
     - 0:
         TargetOriginId:
@@ -10,4 +10,4 @@ global:
             Ref('RecordSetExternal'),
             Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s' % cfg.HostedZoneNameEnv)
           )
-  CloudFrontOriginAdHoc: False
+  CloudFrontOriginAdHoc: 'no'

@@ -17,7 +17,7 @@ res-extra-01:
         Enabled: 'no'
         R53: False
         Name: EcsCluster
-        Encrypted: 'false'
+        Encrypted: false
         PerformanceMode: generalPurpose
   SecurityGroup:
     - RDS:

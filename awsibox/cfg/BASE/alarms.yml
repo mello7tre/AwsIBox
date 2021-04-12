@@ -21,7 +21,7 @@ Base: &base
                               f'{IBOX_RESNAME}Threshold'])
   IBOX_ENABLED: False
   Condition: IBOX_RESNAME
-  ActionsEnabled: True
+  ActionsEnabled: true
   Period: 60
   Dimensions: []
 
@@ -54,7 +54,7 @@ AlarmASGSpot: &asgspot
   Metrics: &asgspotmetrics
     - Expression:
     - MinOnDemand:
-        ReturnData: False
+        ReturnData: false
         Id: m1
         MetricStat:
           Metric:
@@ -67,7 +67,7 @@ AlarmASGSpot: &asgspot
           Stat: Average
           Period: 60
     - InServiceDemand:
-        ReturnData: False
+        ReturnData: false
         Id: m2
         MetricStat:
           Metric:
@@ -80,7 +80,7 @@ AlarmASGSpot: &asgspot
           Stat: Average
           Period: 60
     - DesiredSpot:
-        ReturnData: False
+        ReturnData: false
         Id: m3
         MetricStat:
           Metric:
@@ -93,7 +93,7 @@ AlarmASGSpot: &asgspot
           Stat: Average
           Period: 60
     - InServiceSpot:
-        ReturnData: False
+        ReturnData: false
         Id: m4
         MetricStat:
           Metric:
@@ -189,7 +189,7 @@ global:
         Metrics:
           <<: *asgspotmetrics
           Expression:
-            ReturnData: True
+            ReturnData: true
             Expression: m1 - m2 + m3 - m4
             Id: e1
             Label: SpotNotAvailable
@@ -201,7 +201,7 @@ global:
         Metrics:
           <<: *asgspotmetrics
           Expression:
-            ReturnData: True
+            ReturnData: true
             Expression: m1 - m2 + m3 - m4
             Id: e1
             Label: OnDemandInExcess

@@ -39,11 +39,11 @@ global:
           - Name:
               Key: Name
               Value: Ref('EnvRole')
-              PropagateAtLaunch: True
+              PropagateAtLaunch: true
           - EnvStackName:
               Key: EnvStackName
               Value: Ref('AWS::StackName')
-              PropagateAtLaunch: True
+              PropagateAtLaunch: true
         TerminationPolicies: ['OldestInstance']
         UpdatePolicy:
           AutoScalingReplacingUpdate:
@@ -51,7 +51,7 @@ global:
               - WillReplace
               - IBOX_IFVALUE
               - Ref('AWS::NoValue')
-            WillReplace: True
+            WillReplace: true
           AutoScalingRollingUpdate:
             IBOX_IF:
               - RollingUpdate
@@ -66,8 +66,8 @@ global:
               - ReplaceUnhealthy
               - AlarmNotification
               - ScheduledActions
-            WaitOnResourceSignals: True
+            WaitOnResourceSignals: true
           AutoScalingScheduledAction:
-            IgnoreUnmodifiedGroupSizeProperties: True
+            IgnoreUnmodifiedGroupSizeProperties: true
         VPCZoneIdentifier: Split(',', get_expvalue(cfg.VPCZoneIdentifier))
   VPCZoneIdentifier: SubnetsPrivate

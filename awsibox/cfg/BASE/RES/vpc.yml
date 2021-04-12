@@ -21,7 +21,7 @@ vpc:
   VPC:
     - Base:
         CidrBlock: Ref('VPCCidrBlock')
-        EnableDnsSupport: True
-        EnableDnsHostnames: True
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
         Tags: Tags(Name=Ref('VPCName'))
   NatGateway: True

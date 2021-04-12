@@ -19,7 +19,7 @@ agw:
           Types:
             - REGIONAL
         Name: 'Api-Gateway Name is missing'
-  CloudFront: True
+  CloudFront: 'yes'
   CloudFrontAliasExtra:
     - Cdn: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv)
   CloudFrontOrigins:
