@@ -1,12 +1,12 @@
 AllowedIpBase: &allowedipbase
   IBOX_CONDITION:
     - IBOX_MAPNAME:
-        get_condition('', 'not_equals', 'None', f'{IBOX_MAPNAME}Enabled')
-  Enabled: True
+        get_condition('', 'equals', 'yes', f'{IBOX_MAPNAME}Enabled')
+  Enabled: 'yes'
   CidrIp: '127.0.0.1/32'
 
 
 global:
   AllowedIp:
     - IBOX_BASE: *allowedipbase
-  SecurityGroups: 'BaseInstance,None,None,None'
+  SecurityGroups: 'BaseInstance,none,none,none'

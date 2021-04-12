@@ -41,13 +41,13 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
                 ['EcrAccount', f'{name}RepoName']
             )
         # use the same EnvApp version for all containers
-        elif cfg.RepoName != 'None':
+        elif cfg.RepoName:
             self.Image = get_subvalue(
                 '${1M}.dkr.ecr.${AWS::Region}.amazonaws.com/${2M}:'
                 '${EnvApp1Version}',
                 ['EcrAccount', 'RepoName']
             )
-        elif cfg.Image != 'None':
+        elif cfg.Image:
             self.Image = get_endvalue('Image')
 
         if 'Name' in key:
@@ -86,7 +86,7 @@ def ECS_ContainerDefinition():
             o_EnvAppOut.Value = Ref(nameenvapp)
 
             # and use different output for RepoName
-            if cfg.RepoName != 'None':
+            if cfg.RepoName:
                 if 'RepoName' in v:
                     o_Repo = Output(f'{name}RepoName')
                     o_Repo.Value = get_endvalue(f'{name}RepoName')

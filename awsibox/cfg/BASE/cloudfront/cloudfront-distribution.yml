@@ -1,5 +1,5 @@
 Distribution: &distribution
-  Enabled: True
+  Enabled: true
   HttpVersion: get_endvalue('CloudFrontHttpVersion')
   Logging:
     IBOX_IF:
@@ -11,7 +11,7 @@ Distribution: &distribution
   PriceClass: PriceClass_100
   ViewerCertificate:
     AcmCertificateArn: If('CloudFrontAcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))
-    CloudFrontDefaultCertificate: If('CloudFrontAcmCertificate', Ref('AWS::NoValue'), 'True')
+    CloudFrontDefaultCertificate: If('CloudFrontAcmCertificate', Ref('AWS::NoValue'), True)
     SslSupportMethod: If('CloudFrontAcmCertificate', 'sni-only', Ref('AWS::NoValue'))
     MinimumProtocolVersion: If('CloudFrontAcmCertificate', get_endvalue('CloudFrontMinimumProtocolVersion'), Ref('AWS::NoValue'))
   WebACLId: get_endvalue('CloudFrontWebACLId', condition=True)

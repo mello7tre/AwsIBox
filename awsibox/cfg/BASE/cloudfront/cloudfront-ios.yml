@@ -7,14 +7,14 @@ global:
   Parameter:
     - CloudFront:
         Description: 'Create CloudFront Distribution - empty for default based on env/role'
-        AllowedValues: ['', 'None', 'True']
+        AllowedValues: ['', 'yes', 'no']
     - RecordSetCloudFrontSuffix:
         Description: 'RecordSetCloudFront DNS Name Suffix - empty to disable'
   Condition:
     - CloudFrontAliasZone:
-        get_condition('', 'not_equals', 'None', 'CloudFrontAliasZone')
+        get_condition('', 'not_equals', 'none', 'CloudFrontAliasZone')
     - CloudFrontDistribution:
-        get_condition('', 'not_equals', 'None', 'CloudFront')
+        get_condition('', 'equals', 'yes', 'CloudFront')
     - CloudFrontOriginsDefaultProtocolHTTP:
         And(
           Condition('ListenerLoadBalancerHttpPort'),
@@ -28,7 +28,7 @@ global:
     - RecordSetCloudFront:
         And(
           Condition('CloudFrontDistribution'),
-          get_condition('', 'not_equals', 'None', 'RecordSetCloudFront')
+          get_condition('', 'equals', 'yes', 'RecordSetCloudFront')
         )
   Output:
     - CloudFront:
@@ -36,6 +36,7 @@ global:
     - RecordSetCloudFront:
         Condition: RecordSetCloudFront
         Value: Sub('${RecordSetCloudFront} --> ${CloudFrontDistribution.DomainName}')
+  CloudFront: 'no'
   CloudFrontCacheBehaviors:
     - 0:
         TargetOriginId: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s' % cfg.HostedZoneNameEnv)
@@ -56,8 +57,8 @@ global:
     - Env: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.%s' % cfg.HostedZoneNameEnv)
     - Zone: If('CloudFrontAliasZone',
               Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)), Ref('AWS::NoValue'))
-  CloudFrontAliasZone: None
-  RecordSetCloudFront: True
+  CloudFrontAliasZone: none
+  RecordSetCloudFront: 'yes'
   R53RecordSet:
     - CloudFront:
         IBOX_ENABLED: True

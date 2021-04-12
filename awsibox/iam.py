@@ -374,7 +374,7 @@ def IAM_Groups(key):
 
         # conditions
         c_Enabled = get_condition(
-            resname, 'not_equals', 'None', f'{resname}Enabled')
+            resname, 'equals', 'yes', f'{resname}Enabled')
         add_obj(c_Enabled)
 
         ManagedPolicyArns = []

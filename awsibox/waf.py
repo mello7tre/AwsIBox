@@ -121,7 +121,7 @@ class WAFWebACLRule(waf.Rules, wafr.Rules):
 
 def WAF_condition(condname, mapname, wtype):
     return {condname: And(
-        get_condition('', 'not_equals', 'None', f'{mapname}Enabled'),
+        get_condition('', 'equals', 'yes', f'{mapname}Enabled'),
         Condition('Global') if wtype == 'Global' else Equals('1', '1'),
         Or(
             get_condition('', 'equals', wtype, f'{mapname}WafType'),

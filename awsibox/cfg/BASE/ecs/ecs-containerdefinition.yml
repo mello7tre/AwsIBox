@@ -10,16 +10,16 @@ Base: &base
         Description: 'Command to execute'
         Type: 'CommaDelimitedList'
     - _LinuxParametersInitProcessEnabled:
-        Description: 'empty for mapped value - True if EnableExecuteCommand'
-        AllowedValues: ['', 'True', 'False']
+        Description: 'Empty for mapped value - "true" if EnableExecuteCommand'
+        AllowedValues: ['', 'true', 'false']
   IBOX_CONDITION:
     - _Command: Or(
         Condition(f'{IBOX_RESNAME}CommandOverride'),
-        Equals('True', 'True' if isinstance(getattr(cfg, f'{IBOX_RESNAME}Command'), list) else 'False'))
+        Equals('yes', 'yes' if isinstance(getattr(cfg, f'{IBOX_RESNAME}Command'), list) else 'no'))
     - _ContainerPort:
         get_condition('', 'not_equals', 0, f'{IBOX_RESNAME}ContainerPort')
     - _HostPort:
-        get_condition('', 'not_equals', 'None', f'{IBOX_RESNAME}HostPort')
+        get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}HostPort')
   IBOX_OUTPUT:
     - _Command:
         Condition: IBOX_RESNAMECommand
@@ -27,7 +27,7 @@ Base: &base
     - _Constraints:
         Value: >-
           Cpu= ${Cpu} ,Memory= ${Memory} ,MemoryReservation= ${MemoryReservation}
-  Essential: True
+  Essential: true
   LogConfiguration:
     IBOX_IF:
       - LogConfiguration
@@ -41,7 +41,7 @@ Base: &base
       awslogs-stream-prefix: Ref('AWS::StackName')
   Cpu: 16
   ContainerPort: 0
-  HostPort: None
+  HostPort: none
   PortMappings:
     - IBOX_IF:
       - _ContainerPort
@@ -80,7 +80,7 @@ Base: &base
         Name: EnvClusterStackName
         Value: get_endvalue('ClusterStack')
   LinuxParameters:
-    InitProcessEnabled: False
+    InitProcessEnabled: false
     InitProcessEnabled.IBOX_CODE:
       If(f'EnableExecuteCommand', True, get_endvalue(f'{IBOX_RESNAME}LinuxParametersInitProcessEnabled'))
   DockerLabels: 

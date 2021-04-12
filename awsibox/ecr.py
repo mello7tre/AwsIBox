@@ -118,7 +118,7 @@ def ECR_Repositories(key):
     for n, v in cfg.EcrAccount.items():
         mapname = f'EcrAccount{n}Id'  # Ex. EcrAccountPrdId
         # conditions
-        add_obj(get_condition(mapname, 'not_equals', 'None'))
+        add_obj(get_condition(mapname, 'not_equals', 'none'))
 
         if 'Pull' in v['Policy']:
             PolicyStatementAccount = (

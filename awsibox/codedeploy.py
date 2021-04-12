@@ -62,7 +62,7 @@ def CD_DeploymentGroup():
     add_obj([
         {'DeploymentGroup': And(
             Condition('Apps1'),
-            get_condition('', 'equals', True, 'DeploymentGroup')
+            get_condition('', 'equals', 'yes', 'DeploymentGroup')
         )},
         {'DeployRevision': Equals(Ref('UpdateMode'), 'CodeDeploy')}])
 

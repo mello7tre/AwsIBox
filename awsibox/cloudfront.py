@@ -155,7 +155,7 @@ def CF_CloudFront(key):
             # conditions
             add_obj(
                 get_condition(
-                    name, 'not_equals', 'None', f'{name}PathPattern'))
+                    name, 'not_equals', 'none', f'{name}PathPattern'))
 
             cachebehaviors.append(
                 If(
@@ -186,7 +186,7 @@ def CF_CloudFront(key):
         cloudfrontaliasextra.append(get_endvalue(name, condition=True))
 
         # conditions
-        add_obj(get_condition(name, 'not_equals', 'None'))
+        add_obj(get_condition(name, 'not_equals', 'none'))
 
     DistributionConfig.Aliases = cloudfrontaliasextra
     DistributionConfig.CustomErrorResponses = CFCustomErrors()

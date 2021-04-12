@@ -81,7 +81,7 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
 
         # conditions
         add_obj({name: Not(get_condition(
-            '', 'equals', 'None', Select(n, Split(',', 'SecurityGroups'))))})
+            '', 'equals', 'none', Select(n, Split(',', 'SecurityGroups'))))})
 
         SecurityGroups.append(If(
             name,
@@ -95,7 +95,7 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
             outvaluename: If(
                 name,
                 get_expvalue(value, prefix='SecurityGroup'),
-                'None')})
+                'none')})
 
     # Outputs
     O_SecurityGroups = Output('SecurityGroups')

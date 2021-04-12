@@ -37,8 +37,8 @@ global:
     - ParameterStore:
         Roles:
           - Ref('RoleTask')
-  Image: None
-  RepoName: None
+  Image: False
+  RepoName: False
   Role:
     - Task:
         ManagedPolicyArns:

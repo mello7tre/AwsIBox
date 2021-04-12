@@ -17,8 +17,8 @@ infra-info:
         PathPart: '{proxy+}'
         Method:
           - 01ANY:
-              ApiKeyRequired: False
-              AuthorizationType: None
+              ApiKeyRequired: false
+              AuthorizationType: NONE
               HttpMethod: ANY
               Integration:
                 ContentHandling: CONVERT_TO_TEXT
@@ -40,17 +40,17 @@ infra-info:
                 ])
   ApiGatewayStage:
     - v1:
-        CacheClusterEnabled: False
+        CacheClusterEnabled: false
         MethodSettings:
           - 1:
-              CachingEnabled: False
-              DataTraceEnabled: False
+              CachingEnabled: false
+              DataTraceEnabled: false
               HttpMethod: '*'
-              MetricsEnabled: True
+              MetricsEnabled: true
               ResourcePath: '/*'
               ThrottlingBurstLimit: 5000
               ThrottlingRateLimit: 10000
-        TracingEnabled: False
+        TracingEnabled: false
   IAMPolicy:
     - LambdaInfraInfo:
         Roles:

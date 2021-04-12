@@ -2,34 +2,34 @@ res-iam-group-01:
   StackName: iam-g-01
   IAMGroup:
     - Base:
-        Enabled: True
+        Enabled: 'yes'
         ManagedPolicyArns:
           - IAMUserManageOwn
           - S3ListBuckets
           - LogGroupsDescribe
     - Power:
-        Enabled: True
+        Enabled: 'yes'
         ManagedPolicyArns:
           - IAMUserManageOwn
           - PowerUserAccessNoSSM
           - SSMParameterStoreBase
     - Developer:
-        Enabled: True
+        Enabled: 'yes'
         ManagedPolicyArns:
           - SSMParameterStoreBase
           - LogRead
           - ECRRead
           - MetricRead
     - BackEndDeveloper:
-        Enabled: True
+        Enabled: 'yes'
         ManagedPolicyArns:
           - BackEndDeveloper
     - CloudWatchRead:
-        Enabled: True
+        Enabled: 'yes'
         ManagedPolicyArns:
           - LogRead
           - MetricRead
     - CloudWatchReadJoker01:
-        Enabled: True
+        Enabled: 'yes'
         ManagedPolicyArns:
           - LogReadJoker01

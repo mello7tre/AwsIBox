@@ -1,8 +1,8 @@
 ecr:
   EcrAccount:
     - Stg:
-        Id: None
+        Id: none
         Policy: ['Pull', 'Push']
     - Prd:
-        Id: None
+        Id: none
         Policy: ['Pull']

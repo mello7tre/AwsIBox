@@ -203,7 +203,7 @@ def R53_HostedZones(key):
 
             # conditions
             c_Enabled = get_condition(
-                resname, 'not_equals', 'None', f'{mapname}Enabled')
+                resname, 'equals', 'yes', f'{mapname}Enabled')
 
             add_obj(c_Enabled)
 

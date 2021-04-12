@@ -50,7 +50,7 @@ global:
     - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount:
         And(
           Condition('LaunchTemplateDataBlockDeviceMappingsAdditionalStorage'),
-          get_condition('', 'not_equals', 'None', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount')
+          get_condition('', 'equals', 'yes', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount')
         )
     - LaunchTemplateDataImageIdLatest:
         get_condition('', 'equals', 'latest', 'LaunchTemplateDataImageId')
@@ -89,7 +89,7 @@ global:
               Ebs:
                 VolumeSize: 0
                 VolumeType: gp2
-              Mount: True
+              Mount: 'yes'
           - InstaceEphemeral0:
               IBOX_IF:
                 - InstaceEphemeral0

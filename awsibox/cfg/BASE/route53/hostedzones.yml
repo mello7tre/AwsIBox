@@ -1,14 +1,14 @@
 global:
   HostedZone:
     - PublicEnv:
-        Enabled: None
-        Id: None
+        Enabled: 'no'
+        Id: none
         ResourceName: HostedZoneEnv
         HostedZoneConfig:
           Comment: Sub('${EnvShort} public zone')
         Name: Sub(cfg.HostedZoneNameEnv)
     - PrivateEnv:
-        Id: None
+        Id: none
         ResourceName: HostedZonePrivate
         HostedZoneConfig:
             Comment: Sub('${EnvShort} private zone ${AWS::Region}')

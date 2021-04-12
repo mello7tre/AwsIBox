@@ -65,14 +65,15 @@ def CFM_CustomResourceLightHouse(key):
     # Parameters
     P_LightHouse = Parameter('CCRLightHouse')
     P_LightHouse.Description = (
-        'Enable CustomResource for LightHouse - None to disable - '
+        'Enable CustomResource for LightHouse - '
         'empty for default based on env/role')
+    P_LightHouse.AllowedValues = ['', 'yes', 'no']
 
     add_obj(P_LightHouse)
 
     # Conditions
     C_LightHouse = get_condition(
-        resname, 'not_equals', 'None', 'CCRLightHouse')
+        resname, 'equals', 'yes', 'CCRLightHouse')
 
     add_obj(C_LightHouse)
 

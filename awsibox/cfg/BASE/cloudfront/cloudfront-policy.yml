@@ -9,8 +9,8 @@ global:
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: all
-            EnableAcceptEncodingGzip: True
-            EnableAcceptEncodingBrotli: True
+            EnableAcceptEncodingGzip: true
+            EnableAcceptEncodingBrotli: true
             HeadersConfig:
               HeaderBehavior: none
             QueryStringsConfig:
@@ -24,8 +24,8 @@ global:
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
-            EnableAcceptEncodingGzip: True
-            EnableAcceptEncodingBrotli: True
+            EnableAcceptEncodingGzip: true
+            EnableAcceptEncodingBrotli: true
             HeadersConfig:
               HeaderBehavior: none
             QueryStringsConfig:
@@ -39,8 +39,8 @@ global:
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
-            EnableAcceptEncodingGzip: True
-            EnableAcceptEncodingBrotli: True
+            EnableAcceptEncodingGzip: true
+            EnableAcceptEncodingBrotli: true
             HeadersConfig:
               HeaderBehavior: none
             QueryStringsConfig:
@@ -54,8 +54,8 @@ global:
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
-            EnableAcceptEncodingGzip: True
-            EnableAcceptEncodingBrotli: True
+            EnableAcceptEncodingGzip: true
+            EnableAcceptEncodingBrotli: true
             HeadersConfig:
               HeaderBehavior: whitelist
               Headers:
@@ -71,8 +71,8 @@ global:
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
-            EnableAcceptEncodingGzip: True
-            EnableAcceptEncodingBrotli: True
+            EnableAcceptEncodingGzip: true
+            EnableAcceptEncodingBrotli: true
             HeadersConfig:
               HeaderBehavior: none
             QueryStringsConfig:
@@ -86,8 +86,8 @@ global:
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
-            EnableAcceptEncodingGzip: True
-            EnableAcceptEncodingBrotli: True
+            EnableAcceptEncodingGzip: true
+            EnableAcceptEncodingBrotli: true
             HeadersConfig:
               HeaderBehavior: whitelist
               Headers:

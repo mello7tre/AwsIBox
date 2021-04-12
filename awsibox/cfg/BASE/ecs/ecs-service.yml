@@ -8,8 +8,8 @@ Base: &base
   EnableExecuteCommand.IBOX_PCO:
     IBOX_PARAMETER:
       - _EnableExecuteCommand:
-          Description: 'empty for mapped value - Default to True for FARGATE'
-          AllowedValues: ['', 'True', 'False']
+          Description: 'empty for mapped value - Default to "true" for FARGATE'
+          AllowedValues: ['', 'true', 'false']
     IBOX_OUTPUT:
       - _EnableExecuteCommand:
           Value: ${EnableExecuteCommand}
@@ -93,4 +93,4 @@ global:
   Condition:
     - EnableExecuteCommand:
         get_condition('', 'equals', True, f'EnableExecuteCommand')
-  EnableExecuteCommand: False
+  EnableExecuteCommand: false

@@ -20,15 +20,15 @@ Base: &base
       - IBOX_IFVALUE
       - Ref('AWS::NoValue')
     EmitInterval: get_endvalue('LoadBalancerLog')
-    Enabled: True
+    Enabled: true
     S3BucketName: Sub(cfg.BucketLogs)
     S3BucketPrefix: ''
   ConnectionDrainingPolicy:
-    Enabled: True
+    Enabled: true
     Timeout: 5
   ConnectionSettings:
     IdleTimeout: 60
-  CrossZone: True
+  CrossZone: true
   HealthCheck:
     HealthyThreshold: get_endvalue('HealthyThresholdCount')
     Interval: get_endvalue('HealthCheckIntervalSeconds')
