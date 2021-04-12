@@ -159,7 +159,7 @@ def LBD_Lambdas(key):
         if 'Enabled' in v:
             # conditions
             add_obj(get_condition(
-                resname, 'not_equals', 'None', f'{resname}Enabled'))
+                resname, 'equals', 'yes', f'{resname}Enabled'))
 
             r_Lambda.Condition = resname
 

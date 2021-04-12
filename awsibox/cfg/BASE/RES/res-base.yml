@@ -18,7 +18,7 @@ res-base:
         OutputValueRegion: 'AWSRegion'
         Versioning: Enabled
     - Logs:
-        Create: True
+        Create: 'yes'
         LifecycleConfiguration:
             Rules:
               - 1:
@@ -33,4 +33,4 @@ res-base:
               Sid: AllowLBLogs
   KMSKey: True
   ServiceDiscovery: True
-  VPCEndpoint: True
+  VPCEndpoint: 'yes'

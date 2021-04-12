@@ -107,33 +107,32 @@ CLF_PATH_PATTERN_REPLACEMENT = {
 
 BASE_CFGS = {
     'Bucket': {
-        'Enabled': 'None',
-        'Create': 'None',
+        'Create': 'no',
         'AccountsRead': {
-            'dev': 'None',
-            'stg': 'None',
-            'prd': 'None',
+            'dev': 'none',
+            'stg': 'none',
+            'prd': 'none',
         },
         'AccountsWrite': {
-            'dev': 'None',
-            'stg': 'None',
-            'prd': 'None',
+            'dev': 'none',
+            'stg': 'none',
+            'prd': 'none',
         },
-        'Cors': 'None',
+        'Cors': 'no',
         'CloudFrontOriginAccessIdentityExtra': {
-            'Dev': 'None',
-            'Stg': 'None',
-            'Prd': 'None',
+            'Dev': 'none',
+            'Stg': 'none',
+            'Prd': 'none',
         },
         'PolicyStatementReplica': {
             'Resource': {},
-            'Principal': 'None',
+            'Principal': 'none',
         },
         'Replication': {
-            'Enabled': 'None',
+            'Enabled': 'no',
             'ConfigurationRules': {},
         },
-        'Versioning': 'None',
+        'Versioning': 'Disabled',
     },
     'CloudFrontCacheBehaviors': {
         'Compress': True,

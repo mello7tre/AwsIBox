@@ -277,10 +277,10 @@ def IAM_Users(key):
 
         # conditions
         c_Enabled = get_condition(
-            resname, 'not_equals', 'None', f'{resname}Enabled')
+            resname, 'equals', 'yes', f'{resname}Enabled')
 
         c_RoleAccount = get_condition(
-            f'{resname}RoleAccount', 'not_equals', 'None')
+            f'{resname}RoleAccount', 'not_equals', 'none')
 
         add_obj([
             c_Enabled,
@@ -292,7 +292,7 @@ def IAM_Users(key):
             for m, w in v['RoleGroups'].items():
                 condname = f'{resname}RoleGroups{m}'
                 # conditions
-                add_obj(get_condition(condname, 'not_equals', 'None'))
+                add_obj(get_condition(condname, 'equals', 'yes'))
 
                 # resources
                 RoleGroups.append(
@@ -346,7 +346,7 @@ def IAM_UserToGroupAdditions(key):
         for m, w in v['User'].items():
             condname = f'{resname}User{m}'
             # conditions
-            add_obj(get_condition(condname, 'not_equals', 'None'))
+            add_obj(get_condition(condname, 'not_equals', 'none'))
 
             Users.append(
                 If(

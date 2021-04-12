@@ -119,7 +119,7 @@ class EC2SubnetRouteTableAssociationPublic(ec2.SubnetRouteTableAssociation):
 def VPC_Endpoint(key):
     # Conditions
     c_VPCEndpoint = get_condition(
-        'EC2VPCEndpointS3', 'not_equals', 'None', 'VPCEndpoint')
+        'EC2VPCEndpointS3', 'equals', 'yes', 'VPCEndpoint')
 
     add_obj(c_VPCEndpoint)
 

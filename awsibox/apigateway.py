@@ -166,7 +166,8 @@ def AGW_ApiKeys(key):
         # parameters
         p_Enabled = Parameter(f'{resname}Enabled')
         p_Enabled.Description = (
-            f'{resname}Enabled - empty for default based on env/role')
+            f'{resname}Enabled - empty for mapped value')
+        p_Enabled.AllowedValues = ['', 'yes', 'no']
 
         p_UsagePlan = Parameter(f'{resname}UsagePlan')
         p_UsagePlan.Description = (

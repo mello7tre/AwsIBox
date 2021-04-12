@@ -243,7 +243,7 @@ def S3_Buckets(key):
         for m, w in v['AccountsRead'].items():
             accountread_name = f'{resname}AccountsRead{m}'
             # conditions
-            add_obj(get_condition(accountread_name, 'not_equals', 'None'))
+            add_obj(get_condition(accountread_name, 'not_equals', 'none'))
 
             PolicyReadConditions.append(Condition(accountread_name))
             PolicyReadPrincipal.append(If(
@@ -269,7 +269,7 @@ def S3_Buckets(key):
         for m, w in v['AccountsWrite'].items():
             accountwrite_name = f'{resname}AccountsWrite{m}'
             # conditions
-            add_obj(get_condition(accountwrite_name, 'not_equals', 'None'))
+            add_obj(get_condition(accountwrite_name, 'not_equals', 'none'))
 
             PolicyWriteConditions.append(Condition(accountwrite_name))
             PolicyWritePrincipal.append(If(
@@ -290,22 +290,22 @@ def S3_Buckets(key):
                 f'{resname}PolicyWrite': Equals('True', 'False')}
 
         c_Create = get_condition(
-            resname, 'not_equals', 'None', f'{resname}Create')
+            resname, 'equals', 'yes', f'{resname}Create')
 
         c_Versioning = get_condition(
-            f'{resname}Versioning', 'not_equals', 'None')
+            f'{resname}Versioning', 'equals', 'Enabled')
 
         c_Cors = get_condition(
-            f'{resname}Cors', 'not_equals', 'None')
+            f'{resname}Cors', 'equals', 'yes')
 
         c_Replica = {f'{resname}Replica': And(
             Condition(resname),
             get_condition(
-                '', 'not_equals', 'None', f'{resname}ReplicationEnabled')
+                '', 'equals', 'yes', f'{resname}ReplicationEnabled')
         )}
         c_ReplicaPolicyStatement = get_condition(
             f'{resname}PolicyStatementReplicaPrincipal',
-            'not_equals', 'None')
+            'not_equals', 'none')
 
         add_obj([
             c_PolicyRead,
@@ -336,7 +336,7 @@ def S3_Buckets(key):
             # conditions
             add_obj([
                 get_condition(f'{replica_name}DestinationBucket',
-                              'not_equals', 'None')])
+                              'not_equals', 'none')])
 
             # resources
             rule = s3.ReplicationConfigurationRules(replica_name)
@@ -364,7 +364,7 @@ def S3_Buckets(key):
             # conditions
             add_obj(
                 get_condition(
-                    f'{polstatname}Prefix', 'not_equals', 'None'))
+                    f'{polstatname}Prefix', 'not_equals', 'none'))
 
             PolicyStatementReplicaResources.append(If(
                 f'{polstatname}Prefix',
@@ -471,7 +471,7 @@ def S3_Buckets(key):
                 ixname = (
                     f'{resname}CloudFrontOriginAccessIdentityExtra{ixn}')
                 # conditions
-                add_obj(get_condition(ixname, 'not_equals', 'None'))
+                add_obj(get_condition(ixname, 'not_equals', 'none'))
 
                 PolicyCloudFrontOriginAccessIdentityPrincipal.append(If(
                     ixname,
@@ -484,7 +484,7 @@ def S3_Buckets(key):
             # conditions
             identitycondname = f'{resname}CloudFrontOriginAccessIdentity'
             c_identity = get_condition(
-                identitycondname, 'not_equals', 'None')
+                identitycondname, 'not_equals', 'none')
 
             add_obj(c_identity)
 
