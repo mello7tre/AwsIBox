@@ -83,6 +83,14 @@ class WAFPredicates(waf.Predicates, wafr.Predicates):
     def __init__(self, title, name, ptype, wtype, key, **kwargs):
         super().__init__(title, **kwargs)
         self.Negated = get_endvalue(f'{name}Negated')
+
+        try:
+            self.Type = key['Type']
+        except Exception:
+            pass
+        else:
+            ptype = self.Type
+
         if ptype == 'ByteMatch':
             self.DataId = Ref(
                 f'Waf{wtype}ByteMatchSet{self.title}')
@@ -103,11 +111,6 @@ class WAFPredicates(waf.Predicates, wafr.Predicates):
             self.DataId = Ref(
                 f'Waf{wtype}XssMatchSet{self.title}')
             self.Type = 'XssMatch'
-
-        try:
-            self.Type = key['Type']
-        except Exception:
-            pass
 
 
 class WAFAction(waf.Action, wafr.Action):
