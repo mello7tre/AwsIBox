@@ -6,6 +6,7 @@ import copy
 import json
 import logging
 from pprint import pprint, pformat
+from troposphere import validators
 from troposphere.autoscaling import Tags as asgTags
 import troposphere.ssm as ssm
 
@@ -58,3 +59,15 @@ def my_one_of(class_name, properties, property, conditionals):
                 )
             )
         )
+
+
+def boolean(x):
+    if x in [True, 1, '1', 'true', 'True']:
+        return True
+    if x in [False, 0, '0', 'false', 'False']:
+        return False
+    raise ValueError
+
+
+# Fix to avoid setting OS variable TROPO_REAL_BOOL
+validators.boolean = boolean
