@@ -154,7 +154,7 @@ def VPC_VPC(key):
     R_VPCGatewayAttachment.InternetGatewayId = Ref('InternetGateway')
     R_VPCGatewayAttachment.VpcId = Ref('VPC')
 
-    if cfg.NatGateway != 'None':
+    if cfg.NatGateway:
         # resources
         R_EIPNat = ec2.EIP('EIPNat')
         R_EIPNat.Domain = 'vpc'

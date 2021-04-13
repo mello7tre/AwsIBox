@@ -4,7 +4,7 @@ global:
         IBOX_PARAMETER:
           - _Enabled:
               Description: 'Empty for mapped value'
-              AllowedValues: ['', 'True', 'False']
+              AllowedValues: ['', 'yes', 'no']
           - _AutoScalingGroupProviderManagedTerminationProtection:
               Description: 'Empty for mapped value'
               AllowedValues: ['', 'DISABLED', 'ENABLED']
@@ -19,7 +19,7 @@ global:
               AllowedValues: ['', 'DISABLED', 'ENABLED']
         IBOX_CONDITION:
           - _:
-              get_condition('', 'equals', 'True', f'{IBOX_RESNAME}Enabled')
+              get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}Enabled')
         IBOX_OUTPUT:
           - _:
               Condition: IBOX_RESNAME
@@ -30,7 +30,7 @@ global:
                 ,TargetCapacity= ${AutoScalingGroupProviderManagedScalingTargetCapacity}
                 ,Status= ${AutoScalingGroupProviderManagedScalingStatus}
         Condition: IBOX_RESNAME
-        Enabled: 'False'
+        Enabled: 'no'
         AutoScalingGroupProvider:
           AutoScalingGroupArn: Ref('AutoScalingGroup')
           ManagedTerminationProtection: DISABLED
