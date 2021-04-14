@@ -205,8 +205,8 @@ def ECS_Service(key):
 def ECS_Cluster(key):
     for n, v in getattr(cfg, key).items():
         mapname = f'{key}{n}'
-        r_Cluster = ecs.Cluster('Cluster')
-        auto_get_props(r_Cluster, mapname)
+        r_Cluster = ecs.Cluster(mapname)
+        auto_get_props(r_Cluster)
 
         add_obj([
             r_Cluster,

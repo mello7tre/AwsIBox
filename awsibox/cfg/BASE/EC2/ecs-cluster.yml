@@ -48,8 +48,23 @@ ecs-cluster:
   Apps: []
   ECSCluster:
     - Base:
+        IBOX_TITLE: Cluster
         AgentCfg:
           ImagePullBehavior: once
+        ClusterAutoReduceTag.IBOX_AUTO_PO: {}
+        ClusterAutoReduceTag.IBOX_PCO:
+          IBOX_CONDITION:
+            - _ClusterAutoReduceTag:
+                get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}ClusterAutoReduceTag')
+        ClusterAutoReduceTag: 'no'
+        Tags:
+          - ClusterAutoReduce:
+              IBOX_IF:
+                - _ClusterAutoReduceTag
+                - IBOX_IFVALUE
+                - Ref('AWS::NoValue')
+              Key: IBOX_CLUSTER_AUTO_REDUCE
+              Value: 'yes'
   Listeners: []
   RecordSet: []
   SecurityGroupIngress:
