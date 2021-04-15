@@ -1,0 +1,35 @@
+global:
+  EventsRule:
+    - ECSClusterAutoscale:
+       Description: 'Schedule LambaECSClusterAutoscale'
+       State: 'DISABLED'
+       ScheduleExpression: 'cron(*/2 * * * ? *)'
+       Targets:
+         - LambdaECSClusterAutoscale:
+             Arn: GetAtt('LambdaECSClusterAutoscale', 'Arn')
+             Id: 'TargetFunction-01'
+  Lambda:
+    - ECSClusterAutoscale:
+        Export: True
+        Description: 'Lambda to automatically reduce and ECS Cluster'
+        MemorySize: 128
+        Runtime: python3.7
+        Timeout: 65
+  IAMPolicy:
+    - LambdaECSClusterAutoscale:
+        Roles:
+          - Ref('RoleLambdaECSClusterAutoscale')
+        Statement:
+          - 1:
+              Action: 'autoscaling:TerminateInstanceInAutoScalingGroup'
+              Resource: '*'
+          - 2:
+              Action:
+                - 'ecs:DescribeContainerInstances'
+                - 'ecs:ListContainerInstances'
+                - 'ecs:ListServices'
+                - 'ecs:DescribeServices'
+                - 'ecs:TagResource'
+                - 'ecs:ListClusters'
+                - 'ecs:DescribeClusters'
+              Resource: '*'

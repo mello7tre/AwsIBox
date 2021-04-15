@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+import logging
+import boto3
+from math import floor
+from pprint import pprint, pformat
+from datetime import datetime, timezone
+
+logging.basicConfig()
+logging.getLogger('botocore').setLevel('CRITICAL')
+logger = logging.getLogger('ibox_cluster_autoscale')
+logger.setLevel(logging.INFO)
+
+
+def process_containers(cluster, containers, res):
+    net = 0
+    response = client.describe_container_instances(
+        cluster=cluster,
+        containerInstances=containers)
+
+    for n in response['containerInstances']:
+        if n['registeredAt'] < res['i_date']:
+            res['i_date'] = n['registeredAt']
+            res['i_id'] = n['ec2InstanceId']
+        for r in n['registeredResources']:
+            if r['name'] == 'CPU':
+                res['cpu_base'] = r['integerValue']
+                net += res['cpu_base'] / 1024 * 5
+            if r['name'] == 'MEMORY':
+                res['ram_base'] = r['integerValue']
+        for r in n['remainingResources']:
+            if r['name'] == 'CPU':
+                res['cpu_free'] += r['integerValue']
+            if r['name'] == 'MEMORY':
+                res['ram_free'] += r['integerValue']
+
+    res['net_free'] = net - res['net_used']
+
+
+def populate_free_resources(cluster, res):
+    paginator = client.get_paginator('list_container_instances')
+    response_iterator = paginator.paginate(
+        cluster=cluster,
+        status='ACTIVE')
+    for s in response_iterator:
+        container_instance_arns = s['containerInstanceArns']
+        if not container_instance_arns:
+            continue
+        # describe_container_instances - only max 100 containerInstances
+        while container_instance_arns:
+            cia = container_instance_arns[0:100]
+            process_containers(cluster, cia, res)
+            del container_instance_arns[0:100]
+
+    return res
+
+
+def process_services(c):
+    net = 0
+    paginator_service = client.get_paginator('list_services')
+    response_iterator_service = paginator_service.paginate(
+        cluster=c,
+        launchType='EC2',
+        PaginationConfig={
+            'PageSize': 10,
+        }
+    )
+    for s in response_iterator_service:
+        if not s['serviceArns']:
+            continue
+        s_d = client.describe_services(
+            cluster=c,
+            services=s['serviceArns'],
+        )['services']
+        for srv in s_d:
+            if srv.get('networkConfiguration'):
+                net += srv['runningCount'] + srv['pendingCount']
+
+    return net
+
+
+def need_to_run(c):
+    run = False
+    count = 0
+    for n in c['tags']:
+        key = n['key']
+        value = n['value']
+        if key == 'IBOX_CLUSTER_AUTO_REDUCE' and value == 'yes':
+            run = True
+        if key == 'IBOX_CLUSTER_AUTO_REDUCE_COUNT':
+            count = int(value)
+    if run:
+        for n in c['statistics']:
+            name = n['name']
+            value = n['value']
+            if name == 'pendingEC2TasksCount' and int(value) > 0:
+                run = False
+
+    n_instaces = c['registeredContainerInstancesCount']
+    if n_instaces == 0:
+        run = False
+
+    return run, count, n_instaces
+
+
+def tag_ecs_count(cluster, c):
+    client.tag_resource(
+        resourceArn=cluster,
+        tags=[{
+            'key': 'IBOX_CLUSTER_AUTO_REDUCE_COUNT',
+            'value': str(c)}])
+
+
+def process_cluster(c):
+    run, count, n_instaces = need_to_run(c)
+    if not run:
+        return
+
+    cluster = c['clusterArn']
+    c_name = cluster.split('/')[1]
+
+    res = {
+        'cluster': c_name,
+        'n_instances': n_instaces,
+        'count': count,
+        'i_date': datetime.now(timezone.utc),
+        'i_id': None,
+        'cpu_free': 0,
+        'ram_free': 0,
+        'net_free': 0,
+        'net_base': 0,
+        'net_used': 0,
+        'cpu_base': 0,
+        'ram_base': 0,
+    }
+    net = process_services(cluster)
+    res['net_used'] += net
+    populate_free_resources(cluster, res)
+    res['net_base'] = res['cpu_base'] / 1024 * 5
+
+    logger.info(pformat(res))
+
+    cpu_extra = floor(res['cpu_free'] / res['cpu_base'])
+    ram_extra = floor(res['ram_free'] / res['ram_base'])
+    net_extra = floor(res['net_free'] / res['net_base'])
+
+    if cpu_extra > 0 and ram_extra > 0 and net_extra > 0:
+        n_reduce = min(cpu_extra, ram_extra, net_extra)
+
+        count += 1
+        logger.info(f'Cluster {c_name} can be reduced of {n_reduce}')
+        if count < 2:
+            tag_ecs_count(cluster, count)
+            logger.info(f'Skip terminate count={count}')
+        else:
+            instance = res['i_id']
+            logger.info(f'Terminate {instance}')
+            autoscaling.terminate_instance_in_auto_scaling_group(
+                InstanceId=instance,
+                ShouldDecrementDesiredCapacity=True)
+            tag_ecs_count(cluster, 0)
+    else:
+        tag_ecs_count(cluster, 0)
+
+
+def do_work():
+    # warning max 100 clusters are returned
+    clusters = client.list_clusters()['clusterArns']
+    clusters = client.describe_clusters(
+        clusters=clusters,
+        include=['TAGS', 'STATISTICS'])['clusters']
+    for c in clusters:
+        process_cluster(c)
+
+
+def lambda_handler(event=None, context=None):
+    global client
+    global autoscaling
+
+    client = boto3.client('ecs')
+    autoscaling = boto3.client('autoscaling')
+
+    do_work()
+
+
+if __name__ == "__main__":
+    lambda_handler()
