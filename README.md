@@ -8,6 +8,8 @@ Guidelines:
 - Same cloudformation template for all environments and regions (Ex. development and production).
 - Scalable as needed.
 
+## Installation ##
+`pip install awsibox`
 
 ## License ##
 
