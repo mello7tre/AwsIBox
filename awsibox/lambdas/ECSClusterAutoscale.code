@@ -111,11 +111,13 @@ def tag_ecs_count(cluster, c):
 
 
 def process_cluster(c):
+    cluster = c['clusterArn']
+
     run, count, n_instaces = need_to_run(c)
     if not run:
+        tag_ecs_count(cluster, 0)
         return
 
-    cluster = c['clusterArn']
     c_name = cluster.split('/')[1]
 
     res = {
