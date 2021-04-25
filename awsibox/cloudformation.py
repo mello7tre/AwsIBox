@@ -35,7 +35,7 @@ def CFM_CustomResourceReplicator(key):
     # Parameters
     P_ReplicateRegions = Parameter('CCRReplicateRegions')
     P_ReplicateRegions.Description = (
-        'Regions where to replicate - None to disable - '
+        'Regions where to replicate - none to disable - '
         'empty for default based on env/role')
     P_ReplicateRegions.Type = 'CommaDelimitedList'
 
