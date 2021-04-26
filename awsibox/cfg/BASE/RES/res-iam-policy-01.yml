@@ -19,6 +19,8 @@ res-iam-policy-01:
         IBOX_ENABLED: True
     - BackEndDeveloper:
         IBOX_ENABLED: True
+    - BackEndTechLead01:
+        IBOX_ENABLED: True
     - IAMUserManageOwn:
         Export: True
         Type: Managed
