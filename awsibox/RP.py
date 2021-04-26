@@ -193,6 +193,13 @@ def my_merge_dict(basedict, workdict):
         except Exception:
             ibox_add_to_list = False
 
+        # Trick to overwrite a key - needed if it's value is a dict
+        # to avoid that previous dict values are merged.
+        try:
+            basedict[k] = sumdict[f'{k}**']
+        except:
+            pass
+
         if is_dict and is_map:
             my_merge_dict(basedict[k], workdict[k])
         elif ibox_add_to_list:
