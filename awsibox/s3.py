@@ -375,7 +375,7 @@ def S3_Buckets(key):
 
         r_Policy = S3BucketPolicy(f'BucketPolicy{name}', key=v)
         r_Policy.Condition = resname
-        r_Policy.Bucket = Sub(bucket_name)
+        r_Policy.Bucket = Ref(resname)
         r_Policy.PolicyDocument['Statement'] = BucketPolicyStatement
 
         # At least one statement must be always present,
