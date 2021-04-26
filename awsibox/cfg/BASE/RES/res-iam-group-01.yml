@@ -16,10 +16,7 @@ res-iam-group-01:
     - Developer:
         Enabled: 'yes'
         ManagedPolicyArns:
-          - SSMParameterStoreBase
-          - LogRead
-          - ECRRead
-          - MetricRead
+          - Developer
     - BackEndDeveloper:
         Enabled: 'yes'
         ManagedPolicyArns:

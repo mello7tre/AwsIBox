@@ -397,6 +397,9 @@ def IAM_Groups(key):
 def IAM_Policies(key):
     # Resources
     for n, v in getattr(cfg, key).items():
+        if not v.get('IBOX_ENABLED', True):
+            continue
+
         resname = f'{key}{n}'  # Ex. IAMPolicyLambdaR53RecordInstanceId
         Statement = []
         for m, w in v['Statement'].items():

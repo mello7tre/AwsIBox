@@ -1,6 +1,24 @@
+IBoxLoader: !include [
+  iam/iam-policy.yml,
+]
+
 res-iam-policy-01:
   StackName: iam-p-01
   IAMPolicy:
+    - SSMParameterStoreBase:
+        IBOX_ENABLED: True
+    - LogRead:
+        IBOX_ENABLED: True
+    - MetricRead:
+        IBOX_ENABLED: True
+    - ECRRead:
+        IBOX_ENABLED: True
+    - RDSRead:
+        IBOX_ENABLED: True
+    - Developer:
+        IBOX_ENABLED: True
+    - BackEndDeveloper:
+        IBOX_ENABLED: True
     - IAMUserManageOwn:
         Export: True
         Type: Managed
@@ -58,24 +76,6 @@ res-iam-policy-01:
               Resource:
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
-    - SSMParameterStoreBase:
-        Export: True
-        Type: Managed
-        Description: 'Describe all SSM Parameters and read KMS Key'
-        Statement:
-          - 1:
-              Action:
-                - 'ssm:DescribeParameters'
-              Resource: '*'
-          - 2:
-              Action:
-                - 'kms:Decrypt'
-                - 'kms:Encrypt'
-              Resource: get_expvalue('KeyParameterStore')
-          - 3:
-              Action:
-                - 'kms:ListAliases'
-              Resource: '*'
     - STSAssumeRoleOwn:
         Export: True
         Type: Managed
@@ -85,18 +85,6 @@ res-iam-policy-01:
               Action:
                 - 'sts:AssumeRole'
               Resource: 'arn:aws:iam::*:role/${aws:username}'
-    - LogRead:
-        Export: True
-        Type: Managed
-        Description: 'Read CloudWatch Logs'
-        Statement:
-          - 1:
-              Action:
-                - 'logs:Describe*'
-                - 'logs:TestMetricFilter'
-                - 'logs:FilterLogEvents'
-                - 'logs:Get*'
-              Resource: '*'
     - LogFilter:
         Export: True
         Type: Managed
@@ -126,19 +114,6 @@ res-iam-policy-01:
                 - 'logs:FilterLogEvents'
                 - 'logs:Get*'
               Resource: '*'
-    - MetricRead:
-        Export: True
-        Type: Managed
-        Description: 'Read CloudWatch Metrics and DashBoard'
-        Statement:
-          - 1:
-              Action:
-                - 'cloudwatch:ListMetrics'
-                - 'cloudwatch:ListDashboards'
-                - 'cloudwatch:GetMetricData'
-                - 'cloudwatch:GetMetricStatistics'
-                - 'cloudwatch:GetDashboard'
-              Resource: '*'
     - MetricWrite:
         Export: True
         Type: Managed
@@ -147,28 +122,6 @@ res-iam-policy-01:
           - 1:
               Action:
                 - 'cloudwatch:PutMetricData'
-              Resource: '*'
-    - BackEndDeveloper:
-        Export: True
-        Type: Managed
-        Description: 'Access to specific ECR and SSM Parameters'
-        Statement:
-          - 1:
-              Action:
-                - 'ssm:PutParameter'
-                - 'ssm:GetParameter*'
-                - 'ssm:DeleteParameter*'
-              Resource: '*'
-    - ECRRead:
-        Export: True
-        Type: Managed
-        Description: 'Read Grant to All Ecr Repos'
-        Statement:
-          - 1:
-              Action:
-                - 'ecr:GetAuthorizationToken'
-                - 'ecr:DescribeRepositories'
-                - 'ecr:ListImages'
               Resource: '*'
     - CloudFrontInvalidate:
         Export: True
@@ -183,25 +136,4 @@ res-iam-policy-01:
                 - 'cloudfront:CreateInvalidation'
                 - 'waf:GetWebACL'
                 - 'waf:ListWebACLs'
-              Resource: '*'
-    - RDSRead:
-        Export: True
-        Type: Managed
-        Description: 'AWS Managed AmazonRDSReadOnlyAccess + DownloadDBLogFilePortion'
-        Statement:
-          - 1:
-              Action:
-                - 'rds:Describe*'
-                - 'rds:ListTagsForResource'
-                - 'rds:DownloadDBLogFilePortion'
-                - 'ec2:DescribeAccountAttributes'
-                - 'ec2:DescribeAvailabilityZones'
-                - 'ec2:DescribeInternetGateways'
-                - 'ec2:DescribeSecurityGroups'
-                - 'ec2:DescribeSubnets'
-                - 'ec2:DescribeVpcAttribute'
-                - 'ec2:DescribeVpcs'
-                - 'cloudwatch:GetMetricStatistics'
-                - 'logs:DescribeLogStreams'
-                - 'logs:GetLogEvents'
               Resource: '*'
