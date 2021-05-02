@@ -107,17 +107,10 @@ ecs-cluster:
     BlockDeviceMappingsXvdaEbsVolumeSize: 100
 
 dev: &cfg_dev
-  CapacityMax: 3
   ASGLifecycleHook:
     - ECSDrainInstance:
         HeartbeatTimeout: 900
   LaunchTemplateData:
     ImageId: latest
-    InstanceType: t3.large
 
 stg: *cfg_dev
-
-prd:
-  LaunchTemplateData:
-    InstanceType: c5.xlarge
-    BlockDeviceMappingsXvdaEbsVolumeSize: 50

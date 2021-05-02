@@ -120,15 +120,32 @@ def cfn_ecs_cluster():
     # aws ecs ami by default run postfix, use yaml cfg Postfix: false to
     # stop it
     try:
-        if cfg.Postfix == 'false':
-            postfixService = {'postfix': {
-                'enabled': 'false',
-                'ensureRunning': cfg.Postfix,
-            }}
-            dataIf = init_args['SERVICES'].services.data['Fn::If']
-            dataIf[1]['sysvinit'].update(postfixService)
-            dataIf[2] = {'sysvinit': postfixService}
+        cfg.Postfix
     except Exception:
         pass
+    else:
+        # Parameter
+        P_Postfix = Parameter('Postfix')
+        P_Postfix.Description = 'Disable Postfix Service'
+        # Condition
+        C_Postfix = get_condition('Postfix', 'equals', 'no')
+        # Output
+        O_Postfix = Output('Postfix')
+        O_Postfix.Value = get_endvalue('Postfix')
+
+        add_obj([
+            P_Postfix,
+            C_Postfix,
+            O_Postfix,
+        ])
+
+        init_args['SERVICES'].services = {
+            'sysvinit': {
+                'postfix': If(
+                    'Postfix',
+                    {
+                        'enabled': 'false',
+                        'ensureRunning': 'false'},
+                    Ref('AWS::NoValue'))}}
 
     return init_args
