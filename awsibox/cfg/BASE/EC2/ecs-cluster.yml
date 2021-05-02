@@ -1,6 +1,6 @@
 IBoxLoader: 
   - !include [
-      autoscaling/imageid-ecs.yml,
+      #autoscaling/imageid-ecs.yml,
       ecs/capacityprovider.yml,
       ecs/daemon-reserver-cpu.yml,
     ]

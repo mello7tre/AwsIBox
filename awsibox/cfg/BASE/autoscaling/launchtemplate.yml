@@ -113,7 +113,9 @@ global:
               VirtualName: ephemeral2
         IamInstanceProfile:
           Arn: GetAtt('InstanceProfile', 'Arn')
-        ImageId: IBOX_IF LaunchTemplateDataImageIdLatest Ref('LaunchTemplateDataImageIdLatest') IBOX_IFVALUE
+        ImageId.IBOX_CODE: If(
+          'LaunchTemplateDataImageIdLatest', Ref('LaunchTemplateDataImageIdLatest'), get_endvalue('LaunchTemplateDataImageId'))
+        ImageId: latest
         InstanceMarketOptions:
           IBOX_IF:
             - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice

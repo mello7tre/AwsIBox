@@ -636,11 +636,6 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                         f'{mapname}{propname}',
                         value,
                         Ref('AWS::NoValue'))
-                elif (isinstance(key_value, str)
-                        and key_value.startswith('IBOX_IF')):
-                    # trick to wrapper value in If Condition
-                    if_list = key_value.split()[1:4]
-                    value = _iboxif(if_list, mapname, value)
 
                 # trick to wrapper recursed returned value in If Condition
                 try:

@@ -1,6 +1,6 @@
 IBoxLoader: !include [
   capacity.yml,
-  imageid-ec2.yml,
+  #imageid-ec2.yml,
   launchtemplate.yml,
   autoscaling-scalingpolicy.yml,
   autoscaling-scheduledactions.yml,
