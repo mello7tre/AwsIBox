@@ -9,14 +9,14 @@ global:
   Parameter:
     - DaemonReserveCpu:
         Description: 'Empty for mapped value'
-        AllowedValues: ['', 'True', 'False']
+        AllowedValues: ['', 'yes', 'no']
   Condition:
     - DaemonReserveCpu:
-        get_condition('', 'equals', 'True', 'DaemonReserveCpu')
+        get_condition('', 'equals', 'yes', 'DaemonReserveCpu')
   Output:
     - DaemonReserveCpu:
         Value: get_endvalue('DaemonReserveCpu')
-  DaemonReserveCpu: 'False'
+  DaemonReserveCpu: 'no'
   ContainerDefinitions:
     - ReserveCpu:
         Command: ['tail', '-f']
