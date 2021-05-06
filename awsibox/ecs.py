@@ -63,9 +63,6 @@ class ECSContainerDefinition(ecs.ContainerDefinition):
 def ECS_ContainerDefinition():
     Containers = []
     for n, v in cfg.ContainerDefinitions.items():
-        Environments = []
-        MountPoints = []
-
         name = f'ContainerDefinitions{n}'  # Ex. ContainerDefinitions1
 
         # if ContainerDefinitions have RepoName
@@ -100,11 +97,6 @@ def ECS_ContainerDefinition():
                 o_EnvAppOut,
             ])
 
-        # resources
-        Container = ECSContainerDefinition(name, key=v, index=n)
-        Containers.append(Container)
-
-        # outputs
         EnvValue_Out_String = []
         EnvValue_Out_Map = {}
         for m, w in v['Environment'].items():
@@ -122,13 +114,17 @@ def ECS_ContainerDefinition():
             if 'NoParam' not in w:
                 add_obj(p_EnvValue)
 
-            # outputs
             EnvValue_Out_String.append(
                 '%s=${%s}' % (envkeyname, envkeyname))
             EnvValue_Out_Map.update({
                 envkeyname: get_endvalue(f'{envname}Value')
             })
 
+        # resources
+        Container = ECSContainerDefinition(name, key=v, index=n)
+        Containers.append(Container)
+
+        # outputs
         o_EnvValueOut = Output(f'{name}Environment')
         o_EnvValueOut.Value = Sub(
             ','.join(EnvValue_Out_String), **EnvValue_Out_Map)
