@@ -35,6 +35,12 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
                             f'{mapname}PathPattern')})
                     ]
                 ))
+            if 'RequestMethod' in key:
+                self.Conditions.append(elbv2.Condition(
+                    Field='http-request-method',
+                    Values=[get_endvalue(
+                        f'{mapname}RequestMethod', issub=True)]
+                ))
         if 'Actions' not in key:
             self.Actions = [elbv2.Action(
                 Type='forward',
