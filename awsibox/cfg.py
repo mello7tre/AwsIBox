@@ -147,6 +147,7 @@ BASE_CFGS = {
     'ScheduledAction': 'IBOX_BASE',
     'ContainerDefinitions': 'IBOX_BASE',
     'AllowedIp': 'IBOX_BASE',
+    'ElasticLoadBalancingV2TargetGroupECS': 'IBOX_BASE',
 }
 
 INSTANCE_LIST = [

@@ -245,29 +245,33 @@ def LB_ListenersV2ECS():
 
 
 def LB_TargetGroupsEC2():
-    for n in ['External', 'Internal']:
+    for n in cfg.ElasticLoadBalancingV2TargetGroupEC2:
         # resources
         if n not in cfg.LoadBalancerApplication:
             continue
         r_TG = elbv2.TargetGroup(f'TargetGroup{n}')
         auto_get_props(r_TG,
-                       mapname=f'ElasticLoadBalancingV2TargetGroupEC2')
+                       mapname=f'ElasticLoadBalancingV2TargetGroupEC2{n}')
         add_obj(r_TG)
 
         cfg.Alarm[f'TargetEC2{n}5XX']['IBOX_ENABLED'] = True
 
 
 def LB_TargetGroupsECS():
-    for n in ['External', 'Internal']:
+    for n in cfg.ElasticLoadBalancingV2TargetGroupECS:
         # resources
-        if n not in cfg.LoadBalancerApplication:
+        if (n in ['External', 'Internal']
+                and n not in cfg.LoadBalancerApplication):
             continue
         r_TG = elbv2.TargetGroup(f'TargetGroup{n}')
         auto_get_props(r_TG,
-                       mapname=f'ElasticLoadBalancingV2TargetGroupECS')
+                       mapname=f'ElasticLoadBalancingV2TargetGroupECS{n}')
         add_obj(r_TG)
 
-        cfg.Alarm[f'Target{n}5XX']['IBOX_ENABLED'] = True
+        try:
+            cfg.Alarm[f'Target{n}5XX']['IBOX_ENABLED'] = True
+        except Exception:
+            pass
 
 
 def LB_TargetGroupsALB():
@@ -275,13 +279,13 @@ def LB_TargetGroupsALB():
     lambda_arn = get_expvalue(f'Lambda{lambda_name}Arn')
     perm_name = f'LambdaPermission{lambda_name}LoadBalancerApplication'
 
-    for n in ['External', 'Internal']:
+    for n in cfg.ElasticLoadBalancingV2TargetGroupALB:
         # resources
         if n not in cfg.LoadBalancerApplication:
             continue
         r_TG = elbv2.TargetGroup(f'TargetGroupServiceUnavailable{n}')
         auto_get_props(r_TG,
-                       mapname=f'ElasticLoadBalancingV2TargetGroupALB')
+                       mapname=f'ElasticLoadBalancingV2TargetGroupALB{n}')
         r_TG.DependsOn = f'{perm_name}{n}'
         r_TG.Condition = f'LoadBalancerApplication{n}'
 

@@ -195,6 +195,12 @@ def ECS_Service(key):
             r_Service.LoadBalancers.append(
                 ECSLoadBalancer('', scheme='Internal'))
 
+        # add extra LoadBalancers
+        for n in cfg.LoadBalancers:
+            LoadBalancer = ecs.LoadBalancer(f'LoadBalancers{n}')
+            auto_get_props(LoadBalancer)
+            r_Service.LoadBalancers.append(LoadBalancer)
+
         add_obj(r_Service)
 
 

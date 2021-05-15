@@ -54,6 +54,9 @@ ecs:
     - CPULow:
         <<: *cpu
         AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyDown')]
+  ElasticLoadBalancingV2TargetGroupECS:
+    - External: {}
+    - Internal: {}
   ListenerRules:
     - 1:
         HostHeader: '*${EnvRole}.*'

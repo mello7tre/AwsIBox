@@ -68,10 +68,14 @@ global:
   Condition:
     - TargetGroupCookieSticky:
         get_condition('', 'not_equals', '0', 'TargetGroupCookieSticky')
-  ElasticLoadBalancingV2TargetGroup:
-    - EC2: *ec2
-    - ECS: *ecs
-    - ALB: *alb
+  ElasticLoadBalancingV2TargetGroupEC2: 
+    - External: *ec2
+    - Internal: *ec2
+  ElasticLoadBalancingV2TargetGroupECS:
+    - IBOX_BASE: *ecs
+  ElasticLoadBalancingV2TargetGroupALB:
+    - External: *alb
+    - Internal: *alb
   TargetGroupDeregistrationDelay: '30'
   TargetGroupCookieSticky: '0'
   TargetGroupProtocol: HTTP
