@@ -43,9 +43,10 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
                             f'{mapname}RequestMethod', issub=True)])
                 ))
         if 'Actions' not in key:
+            tg_prefix = key.get('TargetGroupPrefix', '')
             self.Actions = [elbv2.Action(
                 Type='forward',
-                TargetGroupArn=Ref(f'TargetGroup{scheme}')
+                TargetGroupArn=Ref(f'TargetGroup{tg_prefix}{scheme}')
             )]
         self.Priority = get_endvalue(f'{mapname}Priority')
 
