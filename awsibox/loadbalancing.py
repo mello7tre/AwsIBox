@@ -38,8 +38,9 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
             if 'RequestMethod' in key:
                 self.Conditions.append(elbv2.Condition(
                     Field='http-request-method',
-                    Values=[get_endvalue(
-                        f'{mapname}RequestMethod', issub=True)]
+                    HttpRequestMethodConfig=elbv2.HttpRequestMethodConfig(
+                        Values=[get_endvalue(
+                            f'{mapname}RequestMethod', issub=True)])
                 ))
         if 'Actions' not in key:
             self.Actions = [elbv2.Action(
@@ -87,6 +88,11 @@ def LB_ListenersEC2():
 
 
 def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
+    # Skip if Rule is only for External/Internal
+    only_scheme = key.get('Scheme')
+    if only_scheme and only_scheme != scheme:
+        return
+
     # resources
     R_RuleHttp = ELBV2ListernerRuleECS(
         f'ListenerHttp{scheme}Rules{index}',
