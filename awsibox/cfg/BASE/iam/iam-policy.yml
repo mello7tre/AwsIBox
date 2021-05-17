@@ -12,9 +12,12 @@ SSMParameterStoreBase02: &ssm_parameter_store_base_02
 LogRead01: &log_read_01
     Action:
       - 'logs:Describe*'
+      - 'logs:Get*'
+      - 'logs:List*'
+      - 'logs:StartQuery'
+      - 'logs:StopQuery'
       - 'logs:TestMetricFilter'
       - 'logs:FilterLogEvents'
-      - 'logs:Get*'
     Resource: '*'
 
 ECRRead01: &ecr_read_01
