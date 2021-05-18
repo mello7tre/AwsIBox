@@ -79,13 +79,17 @@ def process_services(c):
 
 
 def need_to_run(c):
+    enabled = False
     run = False
     count = 0
+
     for n in c['tags']:
         key = n['key']
         value = n['value']
-        if key == 'IBOX_CLUSTER_AUTO_REDUCE' and value == 'yes':
-            run = True
+        if key == 'IBOX_CLUSTER_AUTO_REDUCE':
+            enabled = True
+            if value == 'yes':
+                run = True
         if key == 'IBOX_CLUSTER_AUTO_REDUCE_COUNT':
             count = int(value)
     if run:
@@ -99,7 +103,7 @@ def need_to_run(c):
     if n_instaces == 0:
         run = False
 
-    return run, count, n_instaces
+    return enabled, run, count, n_instaces
 
 
 def tag_ecs_count(cluster, c):
@@ -113,8 +117,8 @@ def tag_ecs_count(cluster, c):
 def process_cluster(c):
     cluster = c['clusterArn']
 
-    run, count, n_instaces = need_to_run(c)
-    if not run:
+    enabled, run, count, n_instaces = need_to_run(c)
+    if enabled and not run:
         tag_ecs_count(cluster, 0)
         return
 
