@@ -322,6 +322,8 @@ CFG_TO_FUNC = {
                             'WAF_RegionalWebAcls']},
     'ServiceDiscovery': {'module': 'servicediscovery',
                          'func': 'SRVD_ServiceDiscovery'},
+    'ServiceDiscoveryService': {'module': 'servicediscovery',
+                                'func': 'SRVD_ServiceDiscoveryService'},
     'VPCEndpoint': {'module': 'vpc',
                     'func': 'VPC_Endpoint'},
     'SecurityGroup': {'module': 'securitygroup',

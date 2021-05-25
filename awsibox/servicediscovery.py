@@ -28,3 +28,11 @@ def SRVD_ServiceDiscoveryRES(key):
     add_obj([
         R_PublicDnsNamespace,
         O_PublicDnsNamespace])
+
+
+def SRVD_ServiceDiscoveryService(key):
+    for n, v in getattr(cfg, key).items():
+        mapname = f'{key}{n}'
+        r_Service = srvd.Service(mapname)
+        auto_get_props(r_Service)
+        add_obj(r_Service)
