@@ -122,7 +122,10 @@ def process_cluster(c):
     if not run:
         if enabled:
             tag_ecs_count(cluster, 0)
-        return
+        try:
+            cmdline
+        except Exception:
+            return
 
     c_name = cluster.split('/')[1]
 
@@ -146,6 +149,9 @@ def process_cluster(c):
     res['net_base'] = res['cpu_base'] / 1024 * 5
 
     logger.info(pformat(res))
+
+    if not run:
+        return
 
     cpu_extra = floor(res['cpu_free'] / res['cpu_base'])
     ram_extra = floor(res['ram_free'] / res['ram_base'])
@@ -191,4 +197,5 @@ def lambda_handler(event=None, context=None):
 
 
 if __name__ == "__main__":
+    cmdline = True
     lambda_handler()
