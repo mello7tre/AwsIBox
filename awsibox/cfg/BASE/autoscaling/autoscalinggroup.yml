@@ -27,9 +27,14 @@ global:
           IBOX_PARAMETER:
             - _MaxInstanceLifetime:
                 Description: 'Empty for mapped value - 0 to disable'
+          IBOX_CONDITION:
+            - _MaxInstanceLifetime:
+                get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}MaxInstanceLifetime')
           IBOX_OUTPUT:
             - _MaxInstanceLifetime:
                 Value: ${MaxInstanceLifetime}
+        MaxInstanceLifetime.IBOX_CODE: If(
+          f'{IBOX_RESNAME}MaxInstanceLifetime', get_endvalue(f'{IBOX_RESNAME}MaxInstanceLifetime'), Ref('AWS::NoValue'))
         MaxInstanceLifetime: 0
         MaxSize: get_endvalue('CapacityMax')
         MetricsCollection:
