@@ -35,7 +35,6 @@ ecs:
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue(f'ListenerLoadBalancerHttpsPort')
         ToPort: get_endvalue(f'ListenerLoadBalancerHttpsPort')
-  AllowedIp**: {}
   LaunchType: EC2
   AlarmCPUBase: &cpu
     IBOX_ENABLED: False
