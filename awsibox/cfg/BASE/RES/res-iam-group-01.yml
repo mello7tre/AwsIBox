@@ -20,7 +20,13 @@ res-iam-group-01:
     - BackEndDeveloper:
         Enabled: 'yes'
         ManagedPolicyArns:
+          - Developer
           - BackEndDeveloper
+    - FrontEndDeveloper:
+        Enabled: 'yes'
+        ManagedPolicyArns:
+          - Developer
+          - FrontEndDeveloper
     - CloudWatchRead:
         Enabled: 'yes'
         ManagedPolicyArns:

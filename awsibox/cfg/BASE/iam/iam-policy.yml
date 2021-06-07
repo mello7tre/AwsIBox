@@ -116,3 +116,9 @@ global:
         Type: Managed
         Description: "BackEndDeveloper"
         Statement: {}
+    - FrontEndDeveloper:
+        IBOX_ENABLED: False
+        Export: True
+        Type: Managed
+        Description: "FrontEndDeveloper"
+        Statement: {}
