@@ -1,57 +1,57 @@
 SSMParameterStoreBase01: &ssm_parameter_store_base_01
-    Action:
-      - 'kms:ListAliases'
-      - 'ssm:DescribeParameters'
-    Resource: '*'
+  Action:
+    - 'kms:ListAliases'
+    - 'ssm:DescribeParameters'
+  Resource: '*'
 SSMParameterStoreBase02: &ssm_parameter_store_base_02
-    Action:
-      - 'kms:Decrypt'
-      - 'kms:Encrypt'
-    Resource: get_expvalue('KeyParameterStore')
+  Action:
+    - 'kms:Decrypt'
+    - 'kms:Encrypt'
+  Resource: get_expvalue('KeyParameterStore')
 
 LogRead01: &log_read_01
-    Action:
-      - 'logs:Describe*'
-      - 'logs:Get*'
-      - 'logs:List*'
-      - 'logs:StartQuery'
-      - 'logs:StopQuery'
-      - 'logs:TestMetricFilter'
-      - 'logs:FilterLogEvents'
-    Resource: '*'
+  Action:
+    - 'logs:Describe*'
+    - 'logs:Get*'
+    - 'logs:List*'
+    - 'logs:StartQuery'
+    - 'logs:StopQuery'
+    - 'logs:TestMetricFilter'
+    - 'logs:FilterLogEvents'
+  Resource: '*'
 
 ECRRead01: &ecr_read_01
-    Action:
-      - 'ecr:GetAuthorizationToken'
-      - 'ecr:DescribeRepositories'
-      - 'ecr:ListImages'
-    Resource: '*'
+  Action:
+    - 'ecr:GetAuthorizationToken'
+    - 'ecr:DescribeRepositories'
+    - 'ecr:ListImages'
+  Resource: '*'
 
 MetricRead01: &metric_read_01
-    Action:
-      - 'cloudwatch:ListMetrics'
-      - 'cloudwatch:ListDashboards'
-      - 'cloudwatch:GetMetricData'
-      - 'cloudwatch:GetMetricStatistics'
-      - 'cloudwatch:GetDashboard'
-    Resource: '*'
+  Action:
+    - 'cloudwatch:ListMetrics'
+    - 'cloudwatch:ListDashboards'
+    - 'cloudwatch:GetMetricData'
+    - 'cloudwatch:GetMetricStatistics'
+    - 'cloudwatch:GetDashboard'
+  Resource: '*'
 
 RDSRead01: &rds_read_01
-    Action:
-      - 'rds:Describe*'
-      - 'rds:ListTagsForResource'
-      - 'rds:DownloadDBLogFilePortion'
-      - 'ec2:DescribeAccountAttributes'
-      - 'ec2:DescribeAvailabilityZones'
-      - 'ec2:DescribeInternetGateways'
-      - 'ec2:DescribeSecurityGroups'
-      - 'ec2:DescribeSubnets'
-      - 'ec2:DescribeVpcAttribute'
-      - 'ec2:DescribeVpcs'
-      - 'cloudwatch:GetMetricStatistics'
-      - 'logs:DescribeLogStreams'
-      - 'logs:GetLogEvents'
-    Resource: '*'
+  Action:
+    - 'rds:Describe*'
+    - 'rds:ListTagsForResource'
+    - 'rds:DownloadDBLogFilePortion'
+    - 'ec2:DescribeAccountAttributes'
+    - 'ec2:DescribeAvailabilityZones'
+    - 'ec2:DescribeInternetGateways'
+    - 'ec2:DescribeSecurityGroups'
+    - 'ec2:DescribeSubnets'
+    - 'ec2:DescribeVpcAttribute'
+    - 'ec2:DescribeVpcs'
+    - 'cloudwatch:GetMetricStatistics'
+    - 'logs:DescribeLogStreams'
+    - 'logs:GetLogEvents'
+  Resource: '*'
 
 
 global:
