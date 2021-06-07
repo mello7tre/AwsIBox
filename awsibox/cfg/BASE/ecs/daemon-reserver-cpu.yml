@@ -24,7 +24,6 @@ global:
         Image: 'busybox'
         LogConfiguration: IBOX_SKIP_FUNC
         Memory: 32
-        MemoryReservation: 32
   # Included yaml ecs/ecs-task.yml have changed ParameterStore Roles to RoleTask, need to restore it.
   IAMPolicy:
     - ParameterStore:

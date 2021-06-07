@@ -4,8 +4,6 @@ Base: &base
         Description: 'Cpu Share - empty for mapped value'
     - _Memory:
         Description: 'Memory hard limit - empty for mapped value'
-    - _MemoryReservation:
-        Description: 'Memory soft limit - empty for mapped value'
     - _Command:
         Description: 'Command to execute'
         Type: 'CommaDelimitedList'
@@ -55,7 +53,16 @@ Base: &base
           If(f'{IBOX_RESNAME}HostPort', get_endvalue(f'{IBOX_RESNAME}HostPort'), 0))
         Protocol: tcp
   Memory: 128
-  MemoryReservation: 64
+  MemoryReservation.IBOX_PCO:
+    IBOX_PARAMETER:
+      - _MemoryReservation:
+          Description: 'Memory soft limit - empty for mapped value - 0 to disable'
+    IBOX_CONDITION:
+      - _MemoryReservation:
+          get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}MemoryReservation')
+  MemoryReservation.IBOX_CODE: If(
+    f'{IBOX_RESNAME}MemoryReservation', get_endvalue(f'{IBOX_RESNAME}MemoryReservation'), Ref('AWS::NoValue'))
+  MemoryReservation: 0
   Command: Ref('AWS::NoValue')
   Environment:
     - Env:

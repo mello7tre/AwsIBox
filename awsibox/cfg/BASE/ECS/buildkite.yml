@@ -21,7 +21,6 @@ buildkite:
               Name: AWS_DEFAULT_REGION
               Value: Ref('AWS::Region')
         Memory: 128
-        MemoryReservation: 64
         MountPoints:
           - DockerSock:
               ReadOnly: false
