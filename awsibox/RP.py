@@ -5,7 +5,6 @@ import os
 import copy
 import json
 import logging
-from collections.abc import Mapping
 from pprint import pprint, pformat
 
 from . import cfg
@@ -177,11 +176,11 @@ def my_merge_dict(basedict, workdict):
 
     for k in sumdict.keys():
         try:
-            is_dict = isinstance(workdict[k], dict)
-            is_map = isinstance(basedict[k], Mapping)
+            both_are_dict = all([
+                isinstance(workdict[k], dict),
+                isinstance(basedict[k], dict)])
         except Exception:
-            is_dict = False
-            is_map = False
+            both_are_dict = False
 
         # Trick to be able to add an element
         # to a previuosly created/defined list.
@@ -200,7 +199,7 @@ def my_merge_dict(basedict, workdict):
         except:
             pass
 
-        if is_dict and is_map:
+        if both_are_dict:
             my_merge_dict(basedict[k], workdict[k])
         elif ibox_add_to_list:
             del workdict[k][0]
@@ -242,8 +241,6 @@ def get_RP_for_envs(value):
                     RP[key] = my_merge_dict(RP[key], get_RP_for_envs(j))
                 else:
                     RP[key] = get_RP_for_envs(j)
-    elif isinstance(value, list):
-        RP = list(value)
     else:
         RP = value
 
