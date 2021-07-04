@@ -122,8 +122,8 @@ def gen_dict_extract(cfg, envs, check_root=None):
                     not k.startswith('IBoxLoader')):
                 if k in enforce_list:
                     continue
-                elif k.endswith('_IBOX_ENFORCE'):
-                    k = k.replace('_IBOX_ENFORCE', '')
+                elif k.endswith('.IBOX_FIXED'):
+                    k = k.replace('.IBOX_FIXED', '')
                     enforce_list.append(k)
                 yield {k: v}
             # for empty dict in common.yml
