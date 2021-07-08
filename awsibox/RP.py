@@ -195,17 +195,18 @@ def build_RP():
                     base[k] = work[k]
             return base
 
-        def _process(key, data, RP):
+        def _process(key, data, RP, merge=True):
             key = str(key)
 
             if key.startswith('/'):
                 # for CFront Behaviors
                 key = replace_not_allowed_char(key)
-
             if key.endswith('**'):
                 # ** is used to replace existing dict instead of merging it
-                RP[key.replace('**', '')] = _recurse(data)
-            elif isinstance(RP.get(key), dict):
+                key = key.replace('**', '')
+                merge = False
+
+            if merge and isinstance(RP.get(key), dict):
                 # RP[key] already exist as a dict, try merging
                 RP[key] =  _merge(RP[key], _recurse(data))
             else:
