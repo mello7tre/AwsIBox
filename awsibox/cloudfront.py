@@ -124,7 +124,7 @@ def CF_CloudFront(key):
         'CloudFrontDistributionConfig')
     auto_get_props(DistributionConfig, 'CloudFrontDistributionIBOX_BASE')
     DistributionConfig.DefaultCacheBehavior = CFDefaultCacheBehavior(
-        'CloudFrontCacheBehaviors0', key=cfg.CloudFrontCacheBehaviors[0])
+        'CloudFrontCacheBehaviors0', key=cfg.CloudFrontCacheBehaviors['0'])
 
     cachebehaviors = []
     # Skip DefaultBehaviour

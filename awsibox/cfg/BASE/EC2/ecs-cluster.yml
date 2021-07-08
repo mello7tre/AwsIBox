@@ -80,8 +80,7 @@ ecs-cluster:
         ToPort: 60999
   Role:
     - Instance:
-        ManagedPolicyArns:
-          - IBOX_ADD_TO_LIST
+        ManagedPolicyArns++:
           - get_expvalue('IAMPolicyEcs')
   AutoScalingScalingPolicy:
     - Custom:

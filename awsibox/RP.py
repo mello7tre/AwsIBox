@@ -120,7 +120,7 @@ def build_RP():
             except IOError:
                 pass
 
-    def dict_extract(cfg, envs, check_root=None):
+    def process_cfg(cfg, envs, check_root=None):
         if hasattr(cfg, 'items'):
             # This method allow to delete items from a dictionary
             # while iterating over it
@@ -134,11 +134,11 @@ def build_RP():
                 if isinstance(v, dict) and len(v) == 0:
                     yield {k: v}
                 # for recursively descending in env/region role dict.
-                # List is needed for IBoxLoader include list.
+                # list is needed for IBoxLoader include list.
                 if k in envs and isinstance(v, (dict, list)):
                     if k in ['IBoxLoader', 'IBoxLoaderAfter']:
                         # IBoxLoader included dict processed by
-                        # dict_extract have check_root = True
+                        # process_cfg have check_root = True
                         kwargs = {'check_root': True}
                     else:
                         kwargs = {}
@@ -151,7 +151,7 @@ def build_RP():
                             del cfg[k]
                     except Exception:
                         pass
-                    for result in dict_extract(v, envs, **kwargs):
+                    for result in process_cfg(v, envs, **kwargs):
                         yield result
                 if check_root:
                     # Here i do not have yet encountered a envs key in an
@@ -162,100 +162,71 @@ def build_RP():
                 # (final key is the concatenation of traversed dict keys)
                 if k not in RP_base_keys and isinstance(v, dict):
                     for j, w in v.items():
-                        for result in dict_extract({f'{k}{j}': w}, envs):
+                        for result in process_cfg({f'{k}{j}': w}, envs):
                             yield result
         if isinstance(cfg, list):
             for n in cfg:
-                for result in dict_extract(n, envs, check_root=check_root):
+                for result in process_cfg(n, envs, check_root=check_root):
                     yield result
 
-    def my_merge_dict(basedict, workdict):
-        if isinstance(workdict, (str, list)):
-            return workdict
-        if len(basedict) > 0:
-            sumdict = dict(list(basedict.items()) + list(workdict.items()))
-        else:
-            basedict.update(workdict)
-            return dict(list(workdict.items()))
-
-        for k in sumdict.keys():
-            try:
-                both_are_dict = all([
-                    isinstance(workdict[k], dict),
-                    isinstance(basedict[k], dict)])
-            except Exception:
-                both_are_dict = False
-
-            # Trick to be able to add an element
-            # to a previuosly created/defined list.
-            # I can centralize some general iampolicy in ecs-cluster and
-            # attach them to RoleInstance, adding element to ManagedPolicyArns,
-            # preserving the base ones
-            try:
-                ibox_add_to_list = (workdict[k][0] == 'IBOX_ADD_TO_LIST')
-            except Exception:
-                ibox_add_to_list = False
-
-            # Trick to overwrite a key - needed if it's value is a dict
-            # to avoid that previous dict values are merged.
-            try:
-                basedict[k] = sumdict[f'{k}**']
-            except Exception:
-                pass
-
-            if both_are_dict:
-                my_merge_dict(basedict[k], workdict[k])
-            elif ibox_add_to_list:
-                del workdict[k][0]
-                basedict[k] += workdict[k]
-            elif k in workdict:
-                basedict[k] = workdict[k]
-            else:
-                pass
-
-        return basedict
-
     def replace_not_allowed_char(s):
+        # CF Mapping allow for index only alfanumeric char
+        # this way i can specify more "clear" name
+        # for index in CloudFormation behaviours
         key = str(s)
-        if not key.startswith(('IBOX_', '_')):
-            for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
-                key = key.replace(s, w)
+        for s, w in cfg.CLF_PATH_PATTERN_REPLACEMENT.items():
+            key = key.replace(s, w)
 
         return int(key) if key.isdigit() else key
 
-    def get_RP_for_envs(value):
-        RP = {}
+    def get_RP_for_envs(data):
+        def _merge(base, work):
+            if isinstance(work, (str, list)) or not base:
+                return work
+            keys = dict(list(base.items()) + list(work.items())).keys()
+            for k in keys:
+                if (isinstance(base.get(k), dict)
+                        and isinstance(work.get(k), dict)):
+                    base[k] = _merge(base[k], work[k])
+                elif k.endswith('++') and isinstance(work.get(k), list):
+                    # ++ is used to append elements to an existing key
+                    base[k.replace('++', '')] += work[k]
+                elif k in work:
+                    base[k] = work[k]
+            return base
 
-        try:
-            is_dict = isinstance(value[0], dict)
-        except Exception:
-            is_dict = False
+        def _process(key, data, RP):
+            key = str(key)
 
-        if hasattr(value, 'items'):
-            for d, v in value.items():
-                RP[d] = get_RP_for_envs(v)
-        elif is_dict:
-            for d, v in enumerate(value):
-                for i, j in v.items():
-                    # Trick to overwrite a key - needed if it's value is a dict
-                    # to avoid that previous dict values are merged.
-                    if str(i).endswith('**'):
-                        key = i.replace('**', '')
-                        RP[key] = get_RP_for_envs(j)
-                        continue
-                    # CF Mapping allow for index only alfanumeric char,
-                    # this way i can specify more "clear" name
-                    # for index in CloudFormation behaviours
-                    key = replace_not_allowed_char(i)
-                    # RP[key] already exist as a dict, try merging
-                    if key in RP and isinstance(RP[key], dict):
-                        RP[key] = my_merge_dict(RP[key], get_RP_for_envs(j))
-                    else:
-                        RP[key] = get_RP_for_envs(j)
-        else:
-            RP = value
+            if key.startswith('/'):
+                # for CFront Behaviors
+                key = replace_not_allowed_char(key)
 
-        return RP
+            if key.endswith('**'):
+                # ** is used to replace existing dict
+                RP[key.replace('**', '')] = _recurse(data)
+            if isinstance(RP.get(key), dict):
+                # RP[key] already exist as a dict, try merging
+                RP[key] =  _merge(RP[key], _recurse(data))
+            else:
+                RP[key] =  _recurse(data)
+
+        def _recurse(data):
+            RP = {}
+            if isinstance(data, dict):
+                # data is a dict
+                for n, v in data.items():
+                    _process(n, v, RP)
+            elif isinstance(data, list) and data and isinstance(data[0], dict):
+                # data is a list of dicts
+                for v in data:
+                    for m, w in v.items():
+                        _process(m, w, RP)
+            else:
+                RP = data
+            return RP
+
+        return _recurse(data)
 
     def read_yaml(file_type, brand, base_dir, stacktype=''):
         cfg_file = os.path.join(
@@ -274,9 +245,11 @@ def build_RP():
 
         def _parse_cfg(cfg, envs=[]):
             parsed_cfg = {}
-            for value in dict_extract(cfg, envs):
+            for value in process_cfg(cfg, envs):
                 for k, v in value.items():
                     try:
+                        # if v is a list of dict and the same key (k) already
+                        # exist, final value is the sum of the list (of dicts)
                         if isinstance(v[0], dict):
                             parsed_cfg[k] = parsed_cfg[k] + v
                         else:

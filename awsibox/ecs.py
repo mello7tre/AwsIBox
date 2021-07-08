@@ -67,7 +67,7 @@ def ECS_ContainerDefinition():
 
         # if ContainerDefinitions have RepoName
         # use different EnvApp version
-        if n == 1 or 'RepoName' in v:
+        if n == '1' or 'RepoName' in v:
             nameenvapp = f'EnvApp{n}Version'  # Ex. EnvApp1Version
 
             # parameters
