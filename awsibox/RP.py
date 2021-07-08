@@ -264,6 +264,7 @@ def build_RP():
                 keys = ['IBoxLoader', 'IBoxLoaderAfter'] + cfg_key[cfg]
                 RP_list.append(_parse_cfg(c, keys))
 
+        # RP_list is now a list of dict
         return RP_list
 
     def prepend_base_cfgs(cfg_cmm):
