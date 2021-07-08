@@ -208,9 +208,9 @@ def build_RP():
 
             if merge and isinstance(RP.get(key), dict):
                 # RP[key] already exist as a dict, try merging
-                RP[key] =  _merge(RP[key], _recurse(data))
+                RP[key] = _merge(RP[key], _recurse(data))
             else:
-                RP[key] =  _recurse(data)
+                RP[key] = _recurse(data)
 
         def _recurse(data):
             RP = {}
