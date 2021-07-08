@@ -203,9 +203,9 @@ def build_RP():
                 key = replace_not_allowed_char(key)
 
             if key.endswith('**'):
-                # ** is used to replace existing dict
+                # ** is used to replace existing dict instead of merging it
                 RP[key.replace('**', '')] = _recurse(data)
-            if isinstance(RP.get(key), dict):
+            elif isinstance(RP.get(key), dict):
                 # RP[key] already exist as a dict, try merging
                 RP[key] =  _merge(RP[key], _recurse(data))
             else:
