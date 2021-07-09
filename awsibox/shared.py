@@ -548,7 +548,8 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     _populate(output, rootdict=v)
                     # alter troposphere obj and add IBOX property
                     output.props['IBOX_PROPS'] = (dict, False)
-                    output.propnames.append('IBOX_PROPS')
+                    # starting from troposphere 3.0 propnames is a set
+                    output.propnames = list(output.propnames) + ['IBOX_PROPS']
                     # assign auto_get_props populated obj to IBOX property
                     output.IBOX_PROPS = IBOX_PROPS
                     output.IBOX_PROPS['MAP'][n] = mapname
@@ -582,7 +583,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                 _try_PCO_in_obj(output)
 
         # Allowed object properties
-        props = vars(obj)['propnames']
+        props = list(vars(obj)['propnames'])
         props.extend(vars(obj)['attributes'])
 
         # Parameters, Conditions, Outpus in yaml cfg
