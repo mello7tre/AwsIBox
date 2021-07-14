@@ -529,7 +529,6 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None, indexname=''):
                     add_obj(parameter)
 
             def _condition(k):
-                # this is needed or eval do not find IBOX_RESNAME??
                 for n, v in k.items():
                     if IBOX_MAPNAME:
                         n = n.replace('IBOX_MAPNAME', IBOX_MAPNAME)
