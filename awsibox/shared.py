@@ -537,13 +537,6 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None, indexname=''):
                     condition = {n: eval(v, scope_g, scope_l)}
                     add_obj(condition)
 
-            def _output_no_more_used(k):
-                for n, v in k.items():
-                    n = n.replace('_', IBOX_RESNAME)
-                    output = Output(n)
-                    _populate(output, rootdict=v)
-                    add_obj(output)
-
             def _output(k):
                 for n, v in k.items():
                     n = n.replace('{IBOX_INDEXNAME}', IBOX_INDEXNAME)
