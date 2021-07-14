@@ -107,7 +107,11 @@ def do_no_override(action):
 def get_endvalue(param, ssm=False, condition=False, nocondition=False,
                  nolist=False, inlist=False, split=False, issub=False,
                  strout=False, fixedvalues=None, mapinlist=False,
-                 resname=None):
+                 scope=(None, None)):
+    # Used to inject auto_get_props variables in evals
+    scope_g = scope[0]
+    scope_l = scope[1]
+
     if not fixedvalues:
         # set default if not defined
         fixedvalues = cfg.fixedvalues
@@ -124,23 +128,19 @@ def get_endvalue(param, ssm=False, condition=False, nocondition=False,
         return override_value
 
     def _get_value():
-        if resname:
-            IBOX_RESNAME = resname
         # if param in fixedvalues means its value do not changes
         # based on Env/Region so hardcode the value in json, ...
         if param in fixedvalues:
             value = fixedvalues[param]
             # check if value start with method and use eval to run code
             if isinstance(value, list):
-                scope_g = globals()
-                scope_l = locals()
                 value = [
                     eval(r, scope_g, scope_l) if str(r).startswith(
                         cfg.EVAL_FUNCTIONS_IN_CFG) else r for r in value
                 ]
             if isinstance(value, str):
                 value = (
-                    eval(value.replace('\n', ''))
+                    eval(value.replace('\n', ''), scope_g, scope_l)
                     if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
                     else value)
         # ... otherway use mapping
@@ -391,10 +391,14 @@ def import_lambda(name):
         exit(1)
 
 
-def auto_get_props(obj, mapname=None, key=None, rootdict=None):
+def auto_get_props(obj, mapname=None, key=None, rootdict=None, indexname=''):
     # IBOX_RESNAME can be used in yaml
     IBOX_RESNAME = obj.title
     IBOX_MAPNAME = mapname
+    IBOX_INDEXNAME = indexname
+
+    scope_g = globals()
+    scope_l = locals()
 
     # create a dict where i will put all property with a flat hierarchy
     # with the name equals to the mapname and the relative value.
@@ -518,6 +522,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
         def _try_PCO_in_obj(key):
             def _parameter(k):
                 for n, v in k.items():
+                    n = n.replace('{IBOX_INDEXNAME}', IBOX_INDEXNAME)
                     n = n.replace('_', IBOX_RESNAME)
                     parameter = Parameter(n)
                     _populate(parameter, rootdict=v)
@@ -525,13 +530,11 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
             def _condition(k):
                 # this is needed or eval do not find IBOX_RESNAME??
-                IBOX_RESNAME
-                IBOX_MAPNAME
                 for n, v in k.items():
                     if IBOX_MAPNAME:
                         n = n.replace('IBOX_MAPNAME', IBOX_MAPNAME)
                     n = n.replace('_', IBOX_RESNAME)
-                    condition = {n: eval(v)}
+                    condition = {n: eval(v, scope_g, scope_l)}
                     add_obj(condition)
 
             def _output_no_more_used(k):
@@ -543,6 +546,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
 
             def _output(k):
                 for n, v in k.items():
+                    n = n.replace('{IBOX_INDEXNAME}', IBOX_INDEXNAME)
                     n = n.replace('_', IBOX_RESNAME)
                     output = Output(n)
                     _populate(output, rootdict=v)
@@ -619,15 +623,15 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None):
                     # where is passed as a dictionary to parse for parameters
                     value = get_endvalue(
                         f'{mapname}{propname}', fixedvalues=rootdict,
-                        resname=IBOX_RESNAME)
+                        scope=(scope_g, scope_l))
                 elif (isinstance(key_value, str)
                         and key_value.startswith('get_endvalue(')):
                     # Usefull to migrate code in yaml using auto_get_props
                     # get_endvalue is used only when migrating code
-                    value = eval(key_value)
+                    value = eval(key_value, scope_g, scope_l)
                 else:
                     value = get_endvalue(
-                        f'{mapname}{propname}', resname=IBOX_RESNAME)
+                        f'{mapname}{propname}', scope=(scope_g, scope_l))
 
                 if key_value == 'IBOX_IFCONDVALUE':
                     # auto add condition and wrap value in AWS If Condition

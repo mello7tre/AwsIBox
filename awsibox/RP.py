@@ -290,10 +290,11 @@ def build_RP():
                                     base_cfgs[n] = base_key_value
                                 key_names[n].extend(list(k.keys()))
                             else:
-                                # use IBOX_BASE (or other value in cfg.BASE_CFGS)
+                                # use IBOX_BASE (or values in cfg.BASE_CFGS)
                                 for j, w in base_value.items():
                                     j_current = base_cfgs[n].get(j)
-                                    if j_current and isinstance(j_current, list):
+                                    if j_current and isinstance(
+                                            j_current, list):
                                         # if property is a list extend it
                                         base_cfgs[n][j].extend(w)
                                     else:
@@ -304,7 +305,7 @@ def build_RP():
 
         for n, v in key_names.items():
             values = []
-            # can be optimized with "set(v):" but change order so for now keep it
+            # is better "set(v):" but change order so for now keep it
             for m in v:
                 values.append({m: base_cfgs[n]})
             cfg_cmm.insert(0, {n: values})

@@ -1,5 +1,9 @@
 Base: &base
   IBOX_PARAMETER:
+    - EnvApp{IBOX_INDEXNAME}Version:
+        Description: str(f'EnvApp{IBOX_INDEXNAME}Version')
+        AllowedPattern: '^[a-zA-Z0-9-_.]*$'
+        Default: '1'
     - _Cpu:
         Description: 'Cpu Share - empty for mapped value'
     - _Memory:
@@ -10,6 +14,7 @@ Base: &base
     - _LinuxParametersInitProcessEnabled:
         Description: 'Empty for mapped value - "true" if EnableExecuteCommand'
         AllowedValues: ['', 'true', 'false']
+
   IBOX_CONDITION:
     - _Command: Or(
         Condition(f'{IBOX_RESNAME}CommandOverride'),
@@ -19,51 +24,21 @@ Base: &base
     - _HostPort:
         get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}HostPort')
   IBOX_OUTPUT:
+    - EnvApp{IBOX_INDEXNAME}Version:
+        Value: Ref(f'EnvApp{IBOX_INDEXNAME}Version')
     - _Command:
         Condition: IBOX_RESNAMECommand
         Value: Join(',', get_endvalue(f'{IBOX_RESNAME}Command')) 
     - _Constraints:
         Value: >-
           Cpu= ${Cpu} ,Memory= ${Memory} ,MemoryReservation= ${MemoryReservation}
-  Essential: true
-  LogConfiguration:
-    IBOX_IF:
-      - LogConfiguration
-      - IBOX_IFVALUE
-      - Ref('AWS::NoValue')
-    LogDriver:
-      get_endvalue('LogDriver')
-    Options:
-      awslogs-group: Ref('LogsLogGroup')
-      awslogs-region: Ref('AWS::Region')
-      awslogs-stream-prefix: Ref('AWS::StackName')
-  Cpu: 16
-  ContainerPort: 0
-  HostPort: none
-  PortMappings:
-    - IBOX_IF:
-      - _ContainerPort
-      - IBOX_IFVALUE
-      - Ref('AWS::NoValue')
-    - 0:
-        ContainerPort: get_endvalue(f'{IBOX_RESNAME}ContainerPort')
-        HostPort: If(
-          'NetworkModeAwsVpc',
-          get_endvalue(f'{IBOX_RESNAME}ContainerPort'),
-          If(f'{IBOX_RESNAME}HostPort', get_endvalue(f'{IBOX_RESNAME}HostPort'), 0))
-        Protocol: tcp
-  Memory: 128
-  MemoryReservation.IBOX_PCO:
-    IBOX_PARAMETER:
-      - _MemoryReservation:
-          Description: 'Memory soft limit - empty for mapped value - 0 to disable'
-    IBOX_CONDITION:
-      - _MemoryReservation:
-          get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}MemoryReservation')
-  MemoryReservation.IBOX_CODE: If(
-    f'{IBOX_RESNAME}MemoryReservation', get_endvalue(f'{IBOX_RESNAME}MemoryReservation'), Ref('AWS::NoValue'))
-  MemoryReservation: 0
+    - _Image:
+        Value: ${Image}
   Command: Ref('AWS::NoValue')
+  ContainerPort: 0
+  Cpu: 16
+  DockerLabels: 
+    LastUpdate: Ref('DockerLabelLastUpdate')
   Environment:
     - Env:
         Name: Env
@@ -86,13 +61,51 @@ Base: &base
     - EnvClusterStackName:
         Name: EnvClusterStackName
         Value: get_endvalue('ClusterStack')
+  Essential: true
+  HostPort: none
+  Image: get_subvalue('${1M}.dkr.ecr.${AWS::Region}.amazonaws.com/${2M}:${%s}' %
+    (f"EnvApp{IBOX_INDEXNAME}Version" if 'RepoName' in getattr(cfg, IBOX_RESNAME) else 'EnvApp1Version'),
+    ['EcrAccount', f'{IBOX_RESNAME}RepoName' if 'RepoName' in getattr(cfg, IBOX_RESNAME) else 'RepoName'])
   LinuxParameters:
     InitProcessEnabled: false
     InitProcessEnabled.IBOX_CODE:
       If(f'EnableExecuteCommand', True, get_endvalue(f'{IBOX_RESNAME}LinuxParametersInitProcessEnabled'))
-  DockerLabels: 
-    LastUpdate: Ref('DockerLabelLastUpdate')
-
+  LogConfiguration:
+    IBOX_IF:
+      - LogConfiguration
+      - IBOX_IFVALUE
+      - Ref('AWS::NoValue')
+    LogDriver:
+      get_endvalue('LogDriver')
+    Options:
+      awslogs-group: Ref('LogsLogGroup')
+      awslogs-region: Ref('AWS::Region')
+      awslogs-stream-prefix: Ref('AWS::StackName')
+  Memory: 128
+  MemoryReservation.IBOX_PCO:
+    IBOX_PARAMETER:
+      - _MemoryReservation:
+          Description: 'Memory soft limit - empty for mapped value - 0 to disable'
+    IBOX_CONDITION:
+      - _MemoryReservation:
+          get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}MemoryReservation')
+  MemoryReservation.IBOX_CODE: If(
+    f'{IBOX_RESNAME}MemoryReservation', get_endvalue(f'{IBOX_RESNAME}MemoryReservation'), Ref('AWS::NoValue'))
+  MemoryReservation: 0
+  Name.IBOX_CODE: get_subvalue(
+    '${EnvRole}%s' % ('-${1M}' if 'Name' in getattr(cfg, IBOX_RESNAME) else ''), f'{IBOX_RESNAME}Name')
+  PortMappings:
+    - IBOX_IF:
+      - _ContainerPort
+      - IBOX_IFVALUE
+      - Ref('AWS::NoValue')
+    - 0:
+        ContainerPort: get_endvalue(f'{IBOX_RESNAME}ContainerPort')
+        HostPort: If(
+          'NetworkModeAwsVpc',
+          get_endvalue(f'{IBOX_RESNAME}ContainerPort'),
+          If(f'{IBOX_RESNAME}HostPort', get_endvalue(f'{IBOX_RESNAME}HostPort'), 0))
+        Protocol: tcp
 
 global:
   ContainerDefinitions:

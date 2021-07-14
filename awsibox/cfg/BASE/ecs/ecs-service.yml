@@ -14,6 +14,15 @@ Base: &base
       - _EnableExecuteCommand:
           Value: ${EnableExecuteCommand}
   HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancerApplication else Ref('AWS::NoValue')")
+  LoadBalancers:
+    - External:
+        ContainerName: Ref('EnvRole')
+        ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
+        TargetGroupArn: Ref('TargetGroupExternal')
+    - Internal:
+        ContainerName: Ref('EnvRole')
+        ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
+        TargetGroupArn: Ref('TargetGroupInternal')
   NetworkConfiguration:
     IBOX_IF:
       - NetworkModeAwsVpc
@@ -85,6 +94,7 @@ global:
   Service:
     - Base:
         <<: [*base, *replica]
+        IBOX_TITLE: Service
     - Daemon:
         <<: [*base, *daemon]
     - Spot:

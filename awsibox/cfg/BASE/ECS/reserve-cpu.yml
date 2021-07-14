@@ -14,9 +14,9 @@ reserve-cpu:
     - 1:
         Command: ['tail', '-f', '.dockerenv']
         Cpu: 512
+        Image: 'amazonlinux:2'
         Memory: 64
   LaunchType: EC2
-  Image: 'amazonlinux:2'
   ScalableTarget: IBOX_SKIP_FUNC
   Service:
     - Base:
