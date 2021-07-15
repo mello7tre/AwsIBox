@@ -9,6 +9,7 @@ IBoxLoader: !include [
   res-base/ecs_draininstance.yml,
   res-base/ecs_runtask.yml,
   res-base/cloudwatch_alarm.yml,
+  res-base/servicediscovery.yml,
 ]
 
 res-base:
@@ -32,5 +33,4 @@ res-base:
               Principal: get_endvalue('LoadBalancerAccountID')
               Sid: AllowLBLogs
   KMSKey: True
-  ServiceDiscovery: True
   VPCEndpoint: 'yes'

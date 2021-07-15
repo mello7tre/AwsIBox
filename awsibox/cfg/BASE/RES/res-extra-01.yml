@@ -1,6 +1,6 @@
 IBoxLoader: !include [
-  certificate-global.yml,
-  certificate-regional.yml,
+  crm/certificate-global.yml,
+  crm/certificate-regional.yml,
   cloudfront/cloudfront-policy.yml,
   res-extra/cloudformation_stackset.yml,
 ]

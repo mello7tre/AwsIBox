@@ -1,3 +1,7 @@
+IBoxLoader: !include [
+  crm/certificate.yml,
+]
+
 global:
   Certificate:
     - LoadBalancerExternal:

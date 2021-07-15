@@ -1,10 +1,10 @@
 from . import cfg
 from .shared import stack_add_res
-from . import (mappings, lambdas, securitygroup, cloudwatch, loadbalancing,
-               autoscaling, iam, codedeploy, route53, crm, events, cloudfront,
+from . import (mappings, lambdas, securitygroup, loadbalancing,
+               autoscaling, iam, codedeploy, route53, events, cloudfront,
                sqs, sns, ecs, ecr, s3, waf, vpc, dynamodb, kms, rds, efs,
-               elasticache, servicediscovery, cloudformation, logs, apigateway,
-               __version__)
+               elasticache, cloudformation, logs, apigateway,
+               joker, __version__)
 
 
 def execute_method(RP_cmm):
@@ -26,6 +26,9 @@ def execute_method(RP_cmm):
                 getattr(module, stacktype_func)(key=k)
             elif func_name in dir(module):
                 getattr(module, func_name)(key=k)
+            elif module_name == 'joker':
+                # for resources that can be built using only auto_get_props
+                joker.Joker(key=k, module=func_name[0], cls=func_name[1])
 
     stack_add_res()
 

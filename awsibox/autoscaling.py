@@ -758,15 +758,3 @@ def AS_ScalableTargetECS(key):
 
         add_obj([
             r_ScalableTarget])
-
-
-def AS_LifecycleHook(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f'{key}{n}'
-
-        # resources
-        r_Hook = asg.LifecycleHook(resname)
-        auto_get_props(r_Hook)
-
-        add_obj([
-            r_Hook])

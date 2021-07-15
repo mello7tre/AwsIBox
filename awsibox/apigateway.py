@@ -124,17 +124,6 @@ def AGW_DomainName(key):
             o_Domain])
 
 
-def AGW_BasePathMapping(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f'{key}{n}'
-
-        # resources
-        r_Path = agw.BasePathMapping(resname)
-        auto_get_props(r_Path)
-
-        add_obj(r_Path)
-
-
 def AGW_UsagePlans(key):
     for n, v in getattr(cfg, key).items():
         resname = f'{key}{n}'

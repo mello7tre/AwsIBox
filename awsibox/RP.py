@@ -308,7 +308,8 @@ def build_RP():
             # is better "set(v):" but change order so for now keep it
             for m in v:
                 values.append({m: base_cfgs[n]})
-            cfg_cmm.insert(0, {n: values})
+            if values:
+                cfg_cmm.insert(0, {n: values})
 
     def get_RP(cfgs):
         RP = copy.deepcopy(RP_base)

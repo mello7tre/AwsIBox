@@ -14,11 +14,7 @@ Base: &base
         get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}EvaluationPeriods')
   IBOX_OUTPUT:
     - _:
-        Value: get_subvalue('Period=${1M},EvaluationPeriods=${2M},Threshold=${3M}',
-                            [
-                              f'{IBOX_RESNAME}Period',
-                              f'{IBOX_RESNAME}EvaluationPeriods',
-                              f'{IBOX_RESNAME}Threshold'])
+        Value: Period= ${Period} ,EvaluationPeriods= ${EvaluationPeriods} ,Threshold= ${Threshold}
   IBOX_ENABLED: False
   Condition: IBOX_RESNAME
   ActionsEnabled: true
@@ -51,6 +47,7 @@ AlarmASGSpot: &asgspot
   <<: *base
   Condition: SpotASG
   AlarmActions: [Ref('SNSTopicASGSpot')]
+  Period: Ref('AWS::NoValue')
   Metrics: &asgspotmetrics
     - Expression:
     - MinOnDemand:

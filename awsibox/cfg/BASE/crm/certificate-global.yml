@@ -1,0 +1,3 @@
+IBoxLoader: !include [
+  crm/certificate.yml,
+]

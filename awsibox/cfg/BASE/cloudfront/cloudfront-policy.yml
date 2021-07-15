@@ -1,5 +1,12 @@
 global:
   CloudFrontCachePolicy:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)
+        CachePolicyConfig:
+          Name: str(IBOX_INDEXNAME)
     - 0AllHeadersNone:
         CachePolicyConfig:
           Comment: 'Default TTL 0 All Cookies and QueryStrings No Headers'
@@ -96,6 +103,13 @@ global:
             QueryStringsConfig:
               QueryStringBehavior: all
   CloudFrontOriginRequestPolicy:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)
+        OriginRequestPolicyConfig:
+          Name: str(IBOX_INDEXNAME)
     - All:
         OriginRequestPolicyConfig:
           Comment: 'Forward All'

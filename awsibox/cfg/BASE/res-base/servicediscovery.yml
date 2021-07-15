@@ -1,0 +1,10 @@
+global:
+  ServiceDiscoveryPublicDnsNamespace:
+    - Find:
+        IBOX_TITLE: PublicDnsNamespace
+        IBOX_OUTPUT:
+          - ServiceDiscoveryPublicDnsNamespaceId:
+              Value: Ref('PublicDnsNamespace')
+              Export: Export('ServiceDiscoveryPublicDnsNamespaceId')
+        Description: Service Discovery
+        Name: Sub(f'find.{cfg.HostedZoneNameEnv}')

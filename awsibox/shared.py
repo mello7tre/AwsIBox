@@ -80,8 +80,9 @@ def add_objoutput(res):
     except Exception:
         pass
     else:
+        mapname = iboxprops['MAP'][res.title]
+
         if isinstance(res.Value, str):
-            mapname = iboxprops['MAP'][res.title]
             join_list = []
             for n in res.Value.split():
                 n = n.strip()
@@ -93,6 +94,19 @@ def add_objoutput(res):
                 join_list.append(n)
 
             res.Value = Join('', join_list)
+        else:
+            # output use relative resource condition if do not have one
+            # i do this only if Value is not a string
+            # i need Condition only if using Ref for getting the resource
+            try:
+                res.Condition
+            except Exception:
+                try:
+                    cond = iboxprops[f'{mapname}Condition'][0].Condition
+                except Exception:
+                    pass
+                else:
+                    res.Condition = cond
 
         del res.properties['IBOX_PROPS']
 

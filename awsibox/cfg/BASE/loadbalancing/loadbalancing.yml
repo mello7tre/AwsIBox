@@ -2,7 +2,7 @@ IBoxLoader: !include [
   lb-hostedzoneid.yml,
   loadbalancing-listener.yml,
   loadbalancing-targetgroup.yml,
-  certificate-regional.yml,
+  crm/certificate-regional.yml,
   securitygroup.yml,
   route53/route53-recordset.yml,
 ]

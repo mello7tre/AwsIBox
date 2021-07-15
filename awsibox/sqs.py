@@ -35,16 +35,3 @@ class SQSQueuePolicy(sqs.QueuePolicy):
                 }
             ]
         }
-
-##
-
-
-def SQS_Queues(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f'{key}{n}'
-        # resources
-        r_Queue = sqs.Queue(resname)
-        auto_get_props(r_Queue)
-
-        add_obj([
-            r_Queue])

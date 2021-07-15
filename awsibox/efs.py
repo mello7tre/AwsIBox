@@ -113,13 +113,3 @@ def EFS_FileStorage(key):
             r_SGI,
             o_File,
             o_SGClient])
-
-
-def EFS_AccessPoint(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f'{key}{n}'
-
-        r_APoint = efs.AccessPoint(resname)
-        auto_get_props(r_APoint)
-
-        add_obj(r_APoint)

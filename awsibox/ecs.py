@@ -118,33 +118,3 @@ def ECS_Service(key):
             r_Service.Role = Ref('AWS::NoValue')
 
         add_obj(r_Service)
-
-
-def ECS_Cluster(key):
-    for n, v in getattr(cfg, key).items():
-        mapname = f'{key}{n}'
-        r_Cluster = ecs.Cluster(mapname)
-        auto_get_props(r_Cluster)
-
-        add_obj([
-            r_Cluster,
-        ])
-
-
-def ECS_CapacityProvider(key):
-    for n, v in getattr(cfg, key).items():
-        mapname = f'{key}{n}'
-        r_CapacityProvider = ecs.CapacityProvider(mapname)
-        auto_get_props(r_CapacityProvider)
-
-        add_obj(r_CapacityProvider)
-
-
-def ECS_ClusterCapacityProviderAssociations(key):
-    for n, v in getattr(cfg, key).items():
-        mapname = f'{key}{n}'
-        r_CapacityProviderAss = ecs.ClusterCapacityProviderAssociations(
-            mapname)
-        auto_get_props(r_CapacityProviderAss)
-
-        add_obj(r_CapacityProviderAss)
