@@ -87,6 +87,7 @@ EVAL_FUNCTIONS_IN_CFG = (
     'Join(',
     'If(',
     'Equals(',
+    'Not(',
     'GetAZs(',
     'dict(',
     'eval(',

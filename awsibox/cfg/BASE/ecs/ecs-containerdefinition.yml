@@ -3,7 +3,6 @@ Base: &base
     - EnvApp{IBOX_INDEXNAME}Version:
         Description: str(f'EnvApp{IBOX_INDEXNAME}Version')
         AllowedPattern: '^[a-zA-Z0-9-_.]*$'
-        Default: '1'
     - _Cpu:
         Description: 'Cpu Share - empty for mapped value'
     - _Memory:
@@ -23,6 +22,8 @@ Base: &base
         get_condition('', 'not_equals', 0, f'{IBOX_RESNAME}ContainerPort')
     - _HostPort:
         get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}HostPort')
+    - EnvApp{IBOX_INDEXNAME}Version:
+        Not(Equals('', Ref(f'EnvApp{IBOX_INDEXNAME}Version')))
   IBOX_OUTPUT:
     - EnvApp{IBOX_INDEXNAME}Version:
         Value: Ref(f'EnvApp{IBOX_INDEXNAME}Version')
@@ -63,9 +64,13 @@ Base: &base
         Value: get_endvalue('ClusterStack')
   Essential: true
   HostPort: none
-  Image: get_subvalue('${1M}.dkr.ecr.${AWS::Region}.amazonaws.com/${2M}:${%s}' %
-    (f"EnvApp{IBOX_INDEXNAME}Version" if 'RepoName' in getattr(cfg, IBOX_RESNAME) else 'EnvApp1Version'),
-    ['EcrAccount', f'{IBOX_RESNAME}RepoName' if 'RepoName' in getattr(cfg, IBOX_RESNAME) else 'RepoName'])
+  Image: Join('', [
+      get_endvalue('EcrAccount'), '.dkr.ecr.', Ref('AWS::Region'), '.amazonaws.com/',
+      get_endvalue(f'{IBOX_RESNAME}RepoName' if 'RepoName' in getattr(cfg, IBOX_RESNAME) else 'RepoName'), ':',
+      If(
+        f'EnvApp{IBOX_INDEXNAME}Version', Ref(f'EnvApp{IBOX_INDEXNAME}Version'), Ref('EnvApp1Version')
+      ) if 'RepoName' not in getattr(cfg, IBOX_RESNAME) else Ref(f'EnvApp{IBOX_INDEXNAME}Version'),
+    ])
   LinuxParameters:
     InitProcessEnabled: false
     InitProcessEnabled.IBOX_CODE:

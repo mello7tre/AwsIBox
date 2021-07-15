@@ -532,6 +532,7 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None, indexname=''):
                 for n, v in k.items():
                     if IBOX_MAPNAME:
                         n = n.replace('IBOX_MAPNAME', IBOX_MAPNAME)
+                    n = n.replace('{IBOX_INDEXNAME}', IBOX_INDEXNAME)
                     n = n.replace('_', IBOX_RESNAME)
                     condition = {n: eval(v, scope_g, scope_l)}
                     add_obj(condition)
