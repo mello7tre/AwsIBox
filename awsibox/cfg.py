@@ -85,6 +85,7 @@ EVAL_FUNCTIONS_IN_CFG = (
     'Export(',
     'ImportValue(',
     'Join(',
+    'Base64(',
     'If(',
     'Equals(',
     'Not(',
@@ -156,11 +157,6 @@ BASE_CFGS = {
 
 INSTANCE_LIST = [
     'default',
-    'm3.medium', 'm3.large', 'm3.xlarge', 'm3.2xlarge',
-    'c3.large', 'c3.xlarge', 'c3.2xlarge', 'c3.4xlarge',
-    'r3.large', 'r3.xlarge', 'r3.2xlarge', 'r3.4xlarge',
-    'i2.xlarge', 'i2.2xlarge', 'i2.4xlarge',
-    'd2.xlarge', 'd2.2xlarge', 'd2.4xlarge',
     't2.nano', 't2.micro', 't2.small', 't2.medium', 't2.large',
     't2.xlarge', 't2.2xlarge',
     'm4.large', 'm4.xlarge', 'm4.2xlarge', 'm4.4xlarge',
@@ -186,6 +182,10 @@ INSTANCE_LIST = [
     't3a.xlarge', 't3a.2xlarge',
     't4g.nano', 't4g.micro', 't4g.small', 't4g.medium', 't4g.large',
     't4g.xlarge', 't4g.2xlarge',
+    'c6g.medium', 'c6g.large', 'c6g.xlarge', 'c6g.2xlarge', 'c6g.4xlarge',
+    'c6g.8xlarge', 'c6g.12xlarge', 'c6g.16xlarge',
+    'm6g.medium', 'm6g.large', 'm6g.xlarge', 'm6g.2xlarge', 'm6g.4xlarge',
+    'm6g.8xlarge', 'm6g.12xlarge', 'm6g.16xlarge',
 ]
 
 # override previous cfg with an External one

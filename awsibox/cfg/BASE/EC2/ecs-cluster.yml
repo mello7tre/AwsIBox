@@ -18,6 +18,9 @@ ecs-cluster:
         AllowedValues:
           - '/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
           - '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+          - '/aws/service/ecs/optimized-ami/amazon-linux-2/arm64/recommended/image_id'
+          - '/aws/service/bottlerocket/aws-ecs-1/x86_64/latest/image_id'
+          - '/aws/service/bottlerocket/aws-ecs-1/arm64/latest/image_id'
         Type: 'AWS::SSM::Parameter::Value<String>'
     - ASGLifecycleHookECSDrainInstanceHeartbeatTimeout:
         Description: 'ECSDrainInstance ASGLifecycleHook and Lambda HeartbeatTimeout - empty for default based on env/role'
@@ -25,13 +28,27 @@ ecs-cluster:
         Description: 'Install Coda and nvidia-docker2'
         AllowedValues: ['yes', 'no']
         Default: 'no'
+    - BottleRocket:
+        Description: 'Change user-data for BottleRocket'
+        AllowedValues: ['', 'yes', 'no']
   Condition:
     - GPUInstance:
         Equals(Ref('GPUInstance'), 'yes')
+    - BottleRocket:
+        get_condition('', 'equals', 'yes', 'BottleRocket')
   Output:
     - Cluster:
         Value: Ref('Cluster')
         Export: Export(Sub('Cluster-${AWS::StackName}'))
+    - BottleRocket:
+        Value: Ref('BottleRocket')
+  AutoScalingGroup:
+    - Base:
+        CreationPolicy:
+          AutoScalingCreationPolicy:
+            MinSuccessfulInstancesPercent: If('BottleRocket', 0, 100)
+          ResourceSignal:
+            Count.IBOX_CODE: If('BottleRocket', 0, get_endvalue('AutoScalingGroupBaseCreationPolicyResourceSignalCount')) 
   Alarm:
     - CPUHigh:
         IBOX_ENABLED: False
@@ -46,6 +63,7 @@ ecs-cluster:
         NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
         RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance') 
   Apps: []
+  BottleRocket: 'no'
   ECSCluster:
     - Base:
         IBOX_TITLE: Cluster

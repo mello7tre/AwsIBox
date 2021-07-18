@@ -21,7 +21,7 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
     def __init__(self, title, UserDataApp, **kwargs):
         super().__init__(title, **kwargs)
         auto_get_props(self, 'LaunchTemplateData')
-        self.UserData = Base64(Join('', [
+        user_data = [
             '#!/bin/bash\n',
             'PATH=/opt/aws/bin:$PATH\n',
             'export BASH_ENV=/etc/profile.d/ibox_env.sh\n',
@@ -44,7 +44,22 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
                     '--region ${AWS::Region}\n')
             ),
             'rm /var/lib/cloud/instance/sem/config_scripts_user\n',
-        ]))
+        ]
+
+        try:
+            cfg.BottleRocket
+        except Exception:
+            self.UserData = Base64(Join('', user_data))
+        else:
+            self.UserData = Base64(Join('', If(
+                'BottleRocket',
+                [
+                    '[settings.ecs]\n',
+                    Sub('cluster = "${Cluster}"\n'),
+                    'enable-spot-instance-draining = true\n',
+                ],
+                user_data
+            )))
 
 
 # ############################################

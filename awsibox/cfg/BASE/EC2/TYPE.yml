@@ -11,7 +11,7 @@ ec2:
   Parameter:
     - UpdateMode:
         Description: 'How to update Instances'
-        AllowedValue: ['none', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
+        AllowedValues: ['none', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
         Default: 'none'
     - AutoScalingGroupBaseHealthCheckGracePeriod:
         Description: 'How long to wait before ASG check instance health - empty for default based on env/role'
