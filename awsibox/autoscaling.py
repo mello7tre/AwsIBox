@@ -22,26 +22,23 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
         super().__init__(title, **kwargs)
         auto_get_props(self, 'LaunchTemplateData')
         user_data = [
-            '#!/bin/bash\n',
-            'PATH=/opt/aws/bin:$PATH\n',
-            'export BASH_ENV=/etc/profile.d/ibox_env.sh\n',
-            'export ENV=$BASH_ENV\n',
-            'yum -C list installed aws-cfn-bootstrap || '
-            'yum install -y aws-cfn-bootstrap\n',
+            '#!/bin/bash',
+            'PATH=/opt/aws/bin:$PATH',
+            'export BASH_ENV=/etc/profile.d/ibox_env.sh',
+            'export ENV=$BASH_ENV',
+            'yum -C list installed aws-cfn-bootstrap ||'
+            ' yum install -y aws-cfn-bootstrap',
             Sub(''.join(UserDataApp)),
-            'cfn-init -v',
-            ' --stack ', Ref('AWS::StackName'),
-            ' --role ', Ref('RoleInstance'),
-            ' --resource LaunchTemplate',
-            ' --region ', Ref('AWS::Region'), '\n',
+            Sub(
+                'cfn-init -v --stack ${AWS::StackName} --role ${RoleInstance}'
+                ' --resource LaunchTemplate --region ${AWS::Region}'),
             If(
                 'DoNotSignal',
                 Ref('AWS::NoValue'),
                 Sub(
-                    'cfn-signal -e $? --stack ${AWS::StackName} '
-                    '--role ${RoleInstance} '
-                    f'--resource AutoScalingGroup '
-                    '--region ${AWS::Region}\n')
+                    'cfn-signal -e $? --stack ${AWS::StackName}'
+                    ' --role ${RoleInstance} --resource AutoScalingGroup'
+                    ' --region ${AWS::Region}')
             ),
             'rm /var/lib/cloud/instance/sem/config_scripts_user\n',
         ]
@@ -49,16 +46,14 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
         try:
             cfg.BottleRocket
         except Exception:
-            self.UserData = Base64(Join('', user_data))
+            self.UserData = Base64(Join('\n', user_data))
         else:
-            self.UserData = Base64(Join('', If(
+            self.UserData = Base64(Join('\n', If(
                 'BottleRocket',
                 [
-                    '[settings.ecs]\n',
-                    Sub('cluster = "${Cluster}"\n'),
-                    'enable-spot-instance-draining = true\n',
-                ],
-                user_data
+                    get_endvalue(f'BottleRocketUserData{n}Line')
+                    for n in cfg.BottleRocketUserData] + ['\n'],
+                user_data,
             )))
 
 

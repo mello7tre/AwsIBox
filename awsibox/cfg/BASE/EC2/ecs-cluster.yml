@@ -64,6 +64,13 @@ ecs-cluster:
         RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance') 
   Apps: []
   BottleRocket: 'no'
+  BottleRocketUserData:
+    - 0:
+        Line: '[settings.ecs]'
+    - 1:
+        Line: Sub('cluster = "${Cluster}"')
+    - 2:
+        Line: enable-spot-instance-draining = true
   ECSCluster:
     - Base:
         IBOX_TITLE: Cluster
