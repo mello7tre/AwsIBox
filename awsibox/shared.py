@@ -603,22 +603,35 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None, indexname=''):
         # Parameters, Conditions, Outpus in yaml cfg
         _try_PCO_in_obj(key)
 
-        for propname in key:
-            key_value = key[propname]
+        for propname in dict(
+                list(key.items()) +
+                list(dict.fromkeys(props, None).items())).keys():
+            # iterate over both obj props and key - using key order
 
-            if propname.endswith(
-                    ('.IBOX_PCO', '.IBOX_AUTO_PO', '.IBOX_AUTO_P')):
-                if propname.endswith('.IBOX_PCO'):
-                    # If there is a key ending with {prop}.IBOX_PCO process it
-                    _try_PCO_in_obj(key_value)
-                if propname.endswith(('.IBOX_AUTO_PO', '.IBOX_AUTO_P')):
+            # IBOX_AUTO_PO
+            for n in [f'{propname}.IBOX_AUTO_PO',
+                      f'{propname}.IBOX_AUTO_P']:
+                if n in key:
                     # Automatically create parameter
-                    _auto_PO(propname.split('.')[0], key_value, 'p')
-                continue
+                    _auto_PO(propname, key[n], 'p')
 
-            if propname in props and f'{propname}.IBOX_CODE' not in key:
-                # propname is an obj props and there is no propname key
-                # defining code (look down for processing IBOX_CODE propname).
+            # IBOX_PCO
+            ibox_pco = f'{propname}.IBOX_PCO'
+            if ibox_pco in key:
+                # If there is a key ending with {prop}.IBOX_PCO process it
+                _try_PCO_in_obj(key[ibox_pco])
+
+            # IBOX_CODE
+            ibox_code = f'{propname}.IBOX_CODE'
+            if ibox_code in key:
+                # If there is a key ending with {prop}.IBOX_CODE
+                # eval it and use it as prop value.
+                # Usefull if a str value need to be processed by a code.
+                # (like in autoscaling-scheduledactions.yml)
+                value = eval(key[ibox_code])
+            elif propname in key and propname in props:
+                # there is match between obj prop and a dict key
+                key_value = key[propname]
 
                 # set value
                 if isinstance(key_value, dict):
@@ -664,15 +677,8 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None, indexname=''):
                     # Avoid intercepting a Template Condition
                     # as a Resource Condition
                     continue
-            elif propname.endswith('.IBOX_CODE'):
-                # If there is a key ending with {prop}.IBOX_CODE
-                # eval it and use it as prop value.
-                # Usefull if a str value need to be processed by a code.
-                # (like in autoscaling-scheduledactions.yml)
-                value = eval(key_value)
-                propname = propname.replace('.IBOX_CODE', '')
             else:
-                # NO match between propname and one of obj props
+                # NO match between propname and cfg keys
                 continue
 
             # Finally set obj property
