@@ -587,6 +587,9 @@ def auto_get_props(obj, mapname=None, key=None, rootdict=None, indexname=''):
                     f'{mapname}{name}': parameter_base}}
                 _try_PCO_in_obj(parameter)
             if mode == 'o':
+                if isinstance(value, int):
+                    # Output value must be a string
+                    value = str(value)
                 output_base = {'Value': value}
                 output_base.update(conf)
                 output = {'IBOX_OUTPUT': {
