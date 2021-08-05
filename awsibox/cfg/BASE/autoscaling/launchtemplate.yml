@@ -33,9 +33,7 @@ global:
     - CloudFormationInit:
         Equals(Ref('UpdateMode'), 'Cfn')
     - DoNotSignal:
-        And(
-          Equals(Ref('DoNotSignal'), 'yes')
-        )
+        Equals(Ref('DoNotSignal'), 'yes')
     - EfsMounts:
          Not(Equals(Select('0', Ref('EfsMounts')), ''))
     - InstaceEphemeral0:
