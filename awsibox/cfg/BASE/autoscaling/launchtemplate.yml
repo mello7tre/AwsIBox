@@ -34,7 +34,6 @@ global:
         Equals(Ref('UpdateMode'), 'Cfn')
     - DoNotSignal:
         And(
-          Condition('RollingUpdate'),
           Equals(Ref('DoNotSignal'), 'yes')
         )
     - EfsMounts:
