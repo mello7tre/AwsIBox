@@ -2,7 +2,7 @@ IBoxLoader: !include [
   loadbalancing/loadbalancing-elb.yml,
 ]
 
-ecs-alb:
+global:
   StackName: alb
   Parameter:
     - LoadBalancerApplication:

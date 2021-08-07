@@ -2,7 +2,7 @@ IBoxLoader:
   - !include
     - iam/iampolicy-update_stack.yml
 
-stacks-ops:
+global:
   StackName: sss
   IAMPolicy:
     - UpdateStack:

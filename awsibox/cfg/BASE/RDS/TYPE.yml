@@ -4,7 +4,7 @@ IBoxLoader: !include [
   route53/route53-recordset.yml,
 ]
 
-rds:
+global:
   DBParameterGroup:
     - 1:
         character_set_server: utf8

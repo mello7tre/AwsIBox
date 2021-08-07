@@ -1,2 +1,2 @@
-res-s3-01:
+global:
   StackName: r-s3-01

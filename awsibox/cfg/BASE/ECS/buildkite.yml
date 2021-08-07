@@ -6,7 +6,7 @@ IBoxLoader:
   - !include
     - iam/iampolicy-update_stack.yml
 
-buildkite:
+global:
   StackName: bkt
   ApplicationAutoScalingScalingPolicy: IBOX_SKIP_FUNC
   Capacity:

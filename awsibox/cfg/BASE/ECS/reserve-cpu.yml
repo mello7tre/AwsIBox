@@ -7,7 +7,7 @@ IBoxLoader: !exclude [
   cloudfront/cloudfront-ios.yml,
 ]
 
-reserve-cpu:
+global:
   StackName: rsc
   ApplicationAutoScalingScalingPolicy: IBOX_SKIP_FUNC
   ContainerDefinitions:

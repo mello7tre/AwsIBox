@@ -1,4 +1,4 @@
-vpc:
+global:
   StackName: vpc
   Parameter:
     - VPCCidrBlock:

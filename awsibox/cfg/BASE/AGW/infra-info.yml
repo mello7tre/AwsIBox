@@ -2,7 +2,7 @@ IBoxLoader:
   - !exclude
     - cloudfront/cloudfront-ios.yml
 
-infra-info:
+global:
   StackName: iif
   ApiGatewayRestApi:
     - Base:

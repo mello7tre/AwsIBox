@@ -1,4 +1,4 @@
-res-ccr-lighthouse:
+global:
   StackName: r-ccr-lth
   Parameter:
     - EnvApp1Version:

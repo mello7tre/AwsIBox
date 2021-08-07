@@ -3,7 +3,7 @@ IBoxLoader: !include [
   route53/route53-recordset.yml,
 ]
 
-cch:
+global:
   Parameter:
     - ReplicationGroupBaseAutomaticFailoverEnabled:
         Description: 'Multi-AZ is enabled for this replication group (only for redis and ReplicationGroup) - empty for default based on env/role'

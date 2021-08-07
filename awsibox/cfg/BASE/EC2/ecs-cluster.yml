@@ -9,7 +9,7 @@ IBoxLoader:
       loadbalancing/loadbalancing-elb.yml,
     ]
 
-ecs-cluster:
+global:
   StackName: ecs
   Parameter:
     - LaunchTemplateDataImageIdLatest:

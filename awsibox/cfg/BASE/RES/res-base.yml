@@ -12,7 +12,7 @@ IBoxLoader: !include [
   res-base/servicediscovery.yml,
 ]
 
-res-base:
+global:
   StackName: r-base
   Bucket:
     - AppRepository:

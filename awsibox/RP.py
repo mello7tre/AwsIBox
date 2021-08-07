@@ -316,8 +316,8 @@ def build_RP():
 
         cfg_key_cmm = {
             'common': ['global'],
-            'type': [stacktype, 'global'],
-            'role': [envrole, 'global'],
+            'type': ['global'],
+            'role': ['global'],
         }
 
         cfg_merge_cmm = merge_cfg(cfgs, cfg_key_cmm)

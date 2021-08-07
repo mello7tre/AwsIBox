@@ -1,4 +1,4 @@
-res-ccr-stack-replicator:
+global:
   StackName: r-ccr-rpl
   Parameter:
     - Mytest:

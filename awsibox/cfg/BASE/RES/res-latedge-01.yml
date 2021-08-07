@@ -1,4 +1,4 @@
-res-latedge-01:
+global:
   StackName: r-latedge-01
   Lambda:
     - AtEdgeAddHeaders:

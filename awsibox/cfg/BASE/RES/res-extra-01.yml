@@ -5,7 +5,7 @@ IBoxLoader: !include [
   res-extra/cloudformation_stackset.yml,
 ]
 
-res-extra-01:
+global:
   StackName: r-extra-01
   MappingClass:
     - AZones:

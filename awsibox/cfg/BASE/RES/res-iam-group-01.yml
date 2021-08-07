@@ -1,4 +1,4 @@
-res-iam-group-01:
+global:
   StackName: iam-g-01
   IAMGroup:
     - Base:

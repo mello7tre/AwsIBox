@@ -7,7 +7,7 @@ IBoxLoader: !include [
   iam/parameterstore.yml,
 ]
 
-ec2:
+global:
   Parameter:
     - UpdateMode:
         Description: 'How to update Instances'

@@ -2,7 +2,7 @@ IBoxLoader: !include [
   iam/iam-policy.yml,
 ]
 
-res-iam-policy-01:
+global:
   StackName: iam-p-01
   IAMPolicy:
     - SSMParameterStoreBase:

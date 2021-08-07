@@ -1,4 +1,4 @@
-ecr:
+global:
   EcrAccount:
     - Stg:
         Id: none

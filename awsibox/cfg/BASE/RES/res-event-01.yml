@@ -4,5 +4,5 @@ IBoxLoader: !include [
   res-event/event_ecs.yml,
 ]
 
-res-event-01:
+global:
   StackName: r-event-01

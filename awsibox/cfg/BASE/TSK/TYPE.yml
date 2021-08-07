@@ -2,7 +2,7 @@ IBoxLoader: !include [
   ecs/ecs-task.yml,
 ]
 
-tsk:
+global:
   Condition:
     - EnableExecuteCommand: Equals(True, False)
   EventsRule:

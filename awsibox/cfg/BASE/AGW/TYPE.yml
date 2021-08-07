@@ -2,7 +2,7 @@ IBoxLoader: !include [
   cloudfront/cloudfront-ios.yml,
 ]
 
-agw:
+global:
   Condition:
     - ListenerLoadBalancerHttpPort: Equals('true', 'false')
     - ListenerLoadBalancerHttpsPort: Equals('true', 'true')
