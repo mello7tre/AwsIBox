@@ -489,15 +489,6 @@ class ASInitConfigELBApplicationInternal(cfm.InitConfig):
 # ### END STACK META CLASSES AND METHODS ###
 # ##########################################
 
-def AS_ScheduledActionsEC2(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f'{key}{n}'
-
-        r_ScheduledActions = asg.ScheduledAction(resname)
-        auto_get_props(r_ScheduledActions)
-        add_obj(r_ScheduledActions)
-
-
 def AS_ScalingPolicies(key):
     Out_String = []
     Out_Map = {}
@@ -730,8 +721,6 @@ def AS_Autoscaling(key):
         TargetGroups.append(Ref(f'TargetGroup{n}'))
 
     # Resources
-    AS_ScheduledActionsEC2('ScheduledAction')
-
     LaunchTemplateTags = AS_LaunchTemplate()
 
     R_ASG = asg.AutoScalingGroup('AutoScalingGroupBase')
@@ -743,6 +732,15 @@ def AS_Autoscaling(key):
 
     add_obj([
         R_ASG])
+
+
+def AS_ScheduledActionEC2(key):
+    for n, v in getattr(cfg, key).items():
+        resname = f'{key}{n}'
+
+        r_ScheduledActions = asg.ScheduledAction(resname)
+        auto_get_props(r_ScheduledActions)
+        add_obj(r_ScheduledActions)
 
 
 def AS_ScalableTargetECS(key):
@@ -757,6 +755,8 @@ def AS_ScalableTargetECS(key):
 
         ScheduledActions = []
         for m, w in cfg.ScheduledAction.items():
+            if not w.get('IBOX_ENABLED', True):
+                continue
             sc_name = f'ScheduledAction{m}'
             r_ScheduledAction = aas.ScheduledAction(sc_name)
             auto_get_props(r_ScheduledAction)

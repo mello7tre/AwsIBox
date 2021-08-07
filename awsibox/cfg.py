@@ -217,6 +217,9 @@ CFG_TO_FUNC = {
     'AutoScalingGroup': {
         'module': 'autoscaling',
         'func': 'AS_Autoscaling'},
+    'ScheduledAction': {
+        'module': 'autoscaling',
+        'func': 'AS_ScheduledAction'},
     'ScalableTarget': {
         'module': 'autoscaling',
         'func': 'AS_ScalableTarget'},
