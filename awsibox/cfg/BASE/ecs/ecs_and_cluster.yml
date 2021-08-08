@@ -1,0 +1,23 @@
+IBoxLoader:
+  - !exclude [
+      autoscaling-scheduledactions.yml,
+      ecs/daemon-reserver-cpu.yml,
+      loadbalancing/loadbalancing-elb.yml,
+      cloudfront/cloudfront-ios.yml,
+  ]
+  - !include [
+      EC2/TYPE.yml,
+      EC2/ecs-cluster.yml,
+  ]
+
+global:
+  IAMPolicy:
+    - ParameterStore:
+        Roles:
+          - Ref('RoleTask')
+  Service:
+    - Base:
+        Cluster: Ref('Cluster')
+  ScalableTarget:
+    - Service:
+        ResourceId: Sub('service/${Cluster}/${Service.Name}')
