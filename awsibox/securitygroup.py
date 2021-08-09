@@ -113,16 +113,6 @@ def SG_SecurityGroupsEC2(key):
         'SecurityGroupInstancesRules': {
             'Ref': 'SecurityGroupInstancesRules'}}
 
-    # Resources
-    R_SGInstance = SecurityGroup(
-        'SecurityGroupInstancesRules')
-    R_SGInstance.GroupDescription = (
-        'Enable Access from LoadBalancer to Instances '
-        'and between Instances')
-
-    add_obj([
-        R_SGInstance])
-
     SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
 
 
@@ -242,7 +232,8 @@ def SG_SecurityGroup(key):
         try:
             cfg.Outputs[outname]
         except Exception:
-            add_obj(o_SG)
+            if not v.get('IBOX_NO_OUTPUT'):
+                add_obj(o_SG)
 
 
 def SG_SecurityGroupIngresses(key):

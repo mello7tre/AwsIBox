@@ -659,7 +659,10 @@ def AS_LaunchTemplate():
         InitConfigELBInternal = ASInitConfigELBApplicationInternal()
         CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
-    SecurityGroups = cfg.SecurityGroupsImport
+    if getattr(cfg, 'IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA', False):
+        SecurityGroups = []
+    else:
+        SecurityGroups = cfg.SecurityGroupsImport
 
     # Resources
     R_LaunchTemplate = ec2.LaunchTemplate(

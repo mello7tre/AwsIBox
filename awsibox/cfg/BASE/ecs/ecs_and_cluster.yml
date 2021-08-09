@@ -11,10 +11,17 @@ IBoxLoader:
   ]
 
 global:
+  IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA: True
   IAMPolicy:
     - ParameterStore:
         Roles:
           - Ref('RoleTask')
+  LaunchTemplate:
+    - Data:
+        NetworkInterfaces:
+          - eth0:
+              Groups++:
+                - ImportValue('SecurityGroupBaseInstance')
   Service:
     - Base:
         Cluster: Ref('Cluster')

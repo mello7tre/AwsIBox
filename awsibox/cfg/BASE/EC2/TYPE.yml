@@ -79,6 +79,10 @@ global:
         IBOX_ENABLED: True
     - Up:
         IBOX_ENABLED: True
+  SecurityGroup:
+    - InstancesRules:
+        IBOX_NO_OUTPUT: True
+        GroupDescription: Enable Access from LoadBalancer to Instances and between Instances
   ScheduledAction:
     - Down:
         DesiredSize: CapacityDesired
