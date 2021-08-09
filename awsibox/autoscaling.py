@@ -656,6 +656,7 @@ def AS_LaunchTemplate():
         CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
 
     # LoadBalancerApplication Internal
+    if cfg.LoadBalancerApplicationInternal:
         InitConfigELBInternal = ASInitConfigELBApplicationInternal()
         CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
