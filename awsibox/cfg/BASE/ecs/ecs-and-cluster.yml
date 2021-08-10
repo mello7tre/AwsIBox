@@ -23,6 +23,7 @@ global:
           - eth0:
               Groups++:
                 - ImportValue('SecurityGroupBaseInstance')
+  RecordSet: ['External', 'Internal']
   Service:
     - Base:
         Cluster: Ref('Cluster')
