@@ -74,7 +74,9 @@ class ASInitConfigSets(cfm.InitConfigSets):
 
         CWAGENT = If('CloudWatchAgent', 'CWAGENT', Ref('AWS::NoValue'))
 
-        if cfg.LoadBalancerClassic or cfg.LoadBalancerApplication:
+        if getattr(cfg, 'IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH', False):
+            ELBWAITER = Ref('AWS::NoValue')
+        elif cfg.LoadBalancerClassic or cfg.LoadBalancerApplication:
             ELBWAITER = 'ELBWAITER'
         else:
             ELBWAITER = Ref('AWS::NoValue')
@@ -640,25 +642,26 @@ def AS_LaunchTemplate():
         CfmInitArgs['CODEDEPLOY'] = InitConfigCodeDeploy
         CD_DeploymentGroup()
 
-    # LoadBalancerClassic External
-    if cfg.LoadBalancerClassicExternal:
-        InitConfigELBExternal = ASInitConfigELBClassicExternal()
-        CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
+    if not getattr(cfg, 'IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH', False):
+        # LoadBalancerClassic External
+        if cfg.LoadBalancerClassicExternal:
+            InitConfigELBExternal = ASInitConfigELBClassicExternal()
+            CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
 
-    # LoadBalancerClassic Internal
-    if cfg.LoadBalancerClassicInternal:
-        InitConfigELBInternal = ASInitConfigELBClassicInternal()
-        CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
+        # LoadBalancerClassic Internal
+        if cfg.LoadBalancerClassicInternal:
+            InitConfigELBInternal = ASInitConfigELBClassicInternal()
+            CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
-    # LoadBalancerApplication External
-    if cfg.LoadBalancerApplicationExternal:
-        InitConfigELBExternal = ASInitConfigELBApplicationExternal()
-        CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
+        # LoadBalancerApplication External
+        if cfg.LoadBalancerApplicationExternal:
+            InitConfigELBExternal = ASInitConfigELBApplicationExternal()
+            CfmInitArgs['ELBWAITER'] = InitConfigELBExternal
 
-    # LoadBalancerApplication Internal
-    if cfg.LoadBalancerApplicationInternal:
-        InitConfigELBInternal = ASInitConfigELBApplicationInternal()
-        CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
+        # LoadBalancerApplication Internal
+        if cfg.LoadBalancerApplicationInternal:
+            InitConfigELBInternal = ASInitConfigELBApplicationInternal()
+            CfmInitArgs['ELBWAITER'] = InitConfigELBInternal
 
     if getattr(cfg, 'IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA', False):
         SecurityGroups = []

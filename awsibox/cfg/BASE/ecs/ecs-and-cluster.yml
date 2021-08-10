@@ -12,6 +12,7 @@ IBoxLoader:
 
 global:
   IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA: True
+  IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH: True
   IAMPolicy:
     - ParameterStore:
         Roles:
