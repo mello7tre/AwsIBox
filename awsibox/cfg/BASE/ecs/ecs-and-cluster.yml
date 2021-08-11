@@ -22,7 +22,8 @@ global:
         MinSize.IBOX_AUTO_P: {}
         MinSize: 1
         CreationPolicy:
-          Count: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
+          ResourceSignal:
+            Count: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
         UpdatePolicy:
           AutoScalingRollingUpdate:
             MinInstancesInService: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
