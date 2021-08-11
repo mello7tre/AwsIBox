@@ -13,6 +13,19 @@ IBoxLoader:
 global:
   IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA: True
   IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH: True
+  AutoScalingGroup:
+    - Base:
+        DesiredCapacity.IBOX_AUTO_P: {}
+        DesiredCapacity: 1
+        MaxSize.IBOX_AUTO_P: {}
+        MaxSize: 10
+        MinSize.IBOX_AUTO_P: {}
+        MinSize: 1
+        CreationPolicy:
+          Count: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
+        UpdatePolicy:
+          AutoScalingRollingUpdate:
+            MinInstancesInService: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
   IAMPolicy:
     - ParameterStore:
         Roles:
