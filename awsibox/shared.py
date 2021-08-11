@@ -401,7 +401,7 @@ def import_lambda(name):
 
 
 def auto_get_props(obj, mapname=None, key=None, rootdict=None, indexname=''):
-    # IBOX_RESNAME can be used in yaml
+    # IBOX_RESNAME can be used in yaml and resolved inside get_endvalue
     global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME
     IBOX_RESNAME = obj.title
     IBOX_MAPNAME = mapname
