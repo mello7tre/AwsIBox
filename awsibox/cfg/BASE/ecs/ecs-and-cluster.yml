@@ -34,6 +34,10 @@ global:
         AutoScalingGroupProvider:
           ManagedScaling:
             TargetCapacity: 100
+  ECSCluster:
+    - Base:
+        AgentCfg:
+          ECS_RESERVED_MEMORY: 64
   IAMPolicy:
     - ParameterStore:
         Roles:

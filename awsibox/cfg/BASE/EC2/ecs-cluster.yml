@@ -77,7 +77,6 @@ global:
         AgentCfg:
           ECS_ENABLE_SPOT_INSTANCE_DRAINING: true
           ECS_IMAGE_PULL_BEHAVIOR: once
-          ECS_RESERVED_MEMORY: 64
         ClusterAutoReduceTag.IBOX_AUTO_PO: {}
         ClusterAutoReduceTag.IBOX_PCO:
           IBOX_CONDITION:
