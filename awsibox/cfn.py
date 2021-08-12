@@ -81,7 +81,7 @@ def cfn_ecs_cluster():
                         Sub('ECS_CLUSTER=${Cluster}')
                     ] + [
                         get_subvalue('%s=${1M}' % n,
-                            f'ECSClusterBaseAgentCfg{n}') for n in 
+                                     f'ECSClusterBaseAgentCfg{n}') for n in
                         cfg.ECSClusterBaseAgentCfg
                     ] + [
                         If(
