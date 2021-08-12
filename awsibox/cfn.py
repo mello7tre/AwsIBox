@@ -78,12 +78,12 @@ def cfn_ecs_cluster():
             files={
                 '/etc/ecs/ecs.config': {
                     'content': Join('\n', [
-                        Sub('ECS_CLUSTER=${Cluster}'),
-                        'ECS_ENABLE_SPOT_INSTANCE_DRAINING=true',
-                        get_subvalue(
-                            'ECS_IMAGE_PULL_BEHAVIOR=${1M}',
-                            'ECSClusterBaseAgentCfgImagePullBehavior'
-                        ),
+                        Sub('ECS_CLUSTER=${Cluster}')
+                    ] + [
+                        get_subvalue('%s=${1M}' % n,
+                            f'ECSClusterBaseAgentCfg{n}') for n in 
+                        cfg.ECSClusterBaseAgentCfg
+                    ] + [
                         If(
                             'GPUInstance',
                             'ECS_DISABLE_PRIVILEGED=false',
