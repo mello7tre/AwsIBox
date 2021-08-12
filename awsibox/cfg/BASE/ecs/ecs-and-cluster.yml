@@ -13,6 +13,7 @@ IBoxLoader:
 global:
   IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA: True
   IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH: True
+  IBOX_CFN_FUNC: cfn_ecs_cluster
   AutoScalingGroup:
     - Base:
         DesiredCapacity.IBOX_AUTO_P: {}
@@ -27,6 +28,12 @@ global:
         UpdatePolicy:
           AutoScalingRollingUpdate:
             MinInstancesInService: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
+  ECSCapacityProvider:
+    - Base:
+        Enabled: 'yes'
+        AutoScalingGroupProvider:
+          ManagedScaling:
+            TargetCapacity: 100
   IAMPolicy:
     - ParameterStore:
         Roles:

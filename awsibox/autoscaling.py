@@ -680,7 +680,11 @@ def AS_LaunchTemplate():
     R_InstanceProfile = IAMInstanceProfile('InstanceProfile')
 
     # Import role specific cfn definition
-    cfn_envrole = f'cfn_{cfg.func_envrole}'
+    try:
+        # Do not use role but direct cfg yaml configuration (ecs + cluster)
+        cfn_envrole = cfg.IBOX_CFN_FUNC
+    except Exception:
+        cfn_envrole = f'cfn_{cfg.func_envrole}'
     if cfn_envrole in globals():  # Ex cfn_client_portal
         CfnRole = globals()[cfn_envrole]()
         CfmInitArgs.update(CfnRole)
