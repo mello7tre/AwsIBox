@@ -59,6 +59,3 @@ global:
   ScalableTargetScheduledAction:
     - Down: *scheduledaction
     - Up: *scheduledaction
-    - Rotate:
-        <<: *scheduledaction
-        IBOX_ENABLED: False

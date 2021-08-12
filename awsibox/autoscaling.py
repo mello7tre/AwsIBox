@@ -745,7 +745,7 @@ def AS_Autoscaling(key):
         R_ASG])
 
 
-def AS_ScheduledActionEC2(key):
+def AS_ScheduledActioneEC2(key):
     for n, v in getattr(cfg, key).items():
         resname = f'{key}{n}'
 

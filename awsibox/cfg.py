@@ -218,8 +218,8 @@ CFG_TO_FUNC = {
         'module': 'autoscaling',
         'func': 'AS_Autoscaling'},
     'ScheduledAction': {
-        'module': 'autoscaling',
-        'func': 'AS_ScheduledAction'},
+        'module': 'joker',
+        'func': ('autoscaling', 'ScheduledAction')},
     'ScalableTarget': {
         'module': 'autoscaling',
         'func': 'AS_ScalableTarget'},
