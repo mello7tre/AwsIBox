@@ -1,6 +1,5 @@
 IBoxLoader:
   - !exclude [
-      autoscaling-scheduledactions.yml,
       ecs/daemon-reserver-cpu.yml,
       loadbalancing/loadbalancing-elb.yml,
       cloudfront/cloudfront-ios.yml,
@@ -49,6 +48,20 @@ global:
               Groups++:
                 - ImportValue('SecurityGroupBaseInstance')
   RecordSet: ['External', 'Internal']
+  ScheduledAction:
+    - IBOX_BASE:
+        DesiredCapacity.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityDesiredSize',
+          get_endvalue('AutoScalingGroupBaseDesiredCapacity'),
+          get_endvalue(f'{IBOX_RESNAME}DesiredSize', nocondition=f'{IBOX_RESNAME}KeepDesiredSize'))
+        MinSize.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityMinSize',
+          get_endvalue('AutoScalingGroupBaseMinSize'),
+          get_endvalue(f'{IBOX_RESNAME}MinSize', nocondition=f'{IBOX_RESNAME}KeepMinSize'))
+        MaxSize.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityMaxSize',
+          get_endvalue('AutoScalingGroupBaseMaxSize'),
+          get_endvalue(f'{IBOX_RESNAME}MaxSize', nocondition=f'{IBOX_RESNAME}KeepMaxSize'))
   Service:
     - Base:
         Cluster: Ref('Cluster')
