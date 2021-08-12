@@ -62,6 +62,8 @@ global:
           f'{IBOX_RESNAME}CapacityMaxSize',
           get_endvalue('AutoScalingGroupBaseMaxSize'),
           get_endvalue(f'{IBOX_RESNAME}MaxSize', nocondition=f'{IBOX_RESNAME}KeepMaxSize'))
+    - Rotate:
+        IBOX_ENABLED: False
   Service:
     - Base:
         Cluster: Ref('Cluster')
