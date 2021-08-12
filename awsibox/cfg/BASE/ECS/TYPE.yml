@@ -73,7 +73,7 @@ global:
               - Service:
                   Name: ServiceName
                   Value: GetAtt('Service', 'Name')
-  ScheduledAction:
+  ScalableTargetScheduledAction:
     - Down:
         CapacityMax: k
         CapacityMin: k
@@ -92,7 +92,7 @@ dev: &cfg_dev
         EvaluationPeriods: 0
     - TargetInternal5XX:
         EvaluationPeriods: 0
-  ScheduledAction:
+  ScalableTargetScheduledAction:
     - Down:
         CapacityMax: k
         CapacityMin: k

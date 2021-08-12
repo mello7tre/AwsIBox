@@ -56,7 +56,7 @@ global:
   ScalableTarget:
     - Service: *ecs
         
-  ScheduledAction:
+  ScalableTargetScheduledAction:
     - Down: *scheduledaction
     - Up: *scheduledaction
     - Rotate:

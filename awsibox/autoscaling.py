@@ -765,10 +765,10 @@ def AS_ScalableTargetECS(key):
         auto_get_props(r_ScalableTarget, f'{key}Service')
 
         ScheduledActions = []
-        for m, w in cfg.ScheduledAction.items():
+        for m, w in cfg.ScalableTargetScheduledAction.items():
             if not w.get('IBOX_ENABLED', True):
                 continue
-            sc_name = f'ScheduledAction{m}'
+            sc_name = f'ScalableTargetScheduledAction{m}'
             r_ScheduledAction = aas.ScheduledAction(sc_name)
             auto_get_props(r_ScheduledAction)
             ScheduledActions.append(If(
