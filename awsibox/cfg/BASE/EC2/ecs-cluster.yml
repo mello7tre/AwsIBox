@@ -75,8 +75,8 @@ global:
     - Base:
         IBOX_TITLE: Cluster
         AgentCfg:
-          ECS_ENABLE_SPOT_INSTANCE_DRAINING: true
-          ECS_IMAGE_PULL_BEHAVIOR: once
+          EcsEnableSpotInstanceDraining: true
+          EcsImagePullBehavior: once
         ClusterAutoReduceTag.IBOX_AUTO_PO: {}
         ClusterAutoReduceTag.IBOX_PCO:
           IBOX_CONDITION:

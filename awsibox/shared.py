@@ -757,3 +757,21 @@ def clf_compute_order(pattern):
     cfg.dbg_clf_compute_order[pattern] = base_ord
 
     return base_ord
+
+
+def camel_to_snake(data):
+    out = ''
+    skip_next = False
+    for n,v in enumerate(data):
+        if skip_next:
+            skip_next = False
+            continue
+        if v.isupper() and data[n+1].isupper():
+            out += f'_{v}{data[n+1]}'
+            skip_next = True
+        elif v.isupper():
+            out += f'_{v}' if out else v
+        else:
+            out += v
+
+    return out.upper()

@@ -38,7 +38,7 @@ global:
   ECSCluster:
     - Base:
         AgentCfg:
-          ECS_RESERVED_MEMORY: 64
+          EcsReservedMemory: 64
   IAMPolicy:
     - ParameterStore:
         Roles:

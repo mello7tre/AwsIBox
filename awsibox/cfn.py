@@ -2,7 +2,7 @@ import troposphere.cloudformation as cfm
 
 from .common import *
 from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
-                     auto_get_props, get_condition, add_obj)
+                     auto_get_props, get_condition, add_obj, camel_to_snake)
 
 
 def cfn_ecs_cluster():
@@ -80,7 +80,7 @@ def cfn_ecs_cluster():
                     'content': Join('\n', [
                         Sub('ECS_CLUSTER=${Cluster}')
                     ] + [
-                        get_subvalue('%s=${1M}' % n,
+                        get_subvalue('%s=${1M}' % camel_to_snake(n),
                                      f'ECSClusterBaseAgentCfg{n}') for n in
                         cfg.ECSClusterBaseAgentCfg
                     ] + [
