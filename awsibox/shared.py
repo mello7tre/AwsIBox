@@ -762,7 +762,7 @@ def clf_compute_order(pattern):
 def camel_to_snake(data):
     out = ''
     skip_next = False
-    for n,v in enumerate(data):
+    for n, v in enumerate(data):
         if skip_next:
             skip_next = False
             continue
