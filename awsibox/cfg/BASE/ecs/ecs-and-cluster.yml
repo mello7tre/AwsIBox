@@ -2,7 +2,6 @@ IBoxLoader:
   - !exclude [
       ecs/daemon-reserver-cpu.yml,
       loadbalancing/loadbalancing-elb.yml,
-      cloudfront/cloudfront-ios.yml,
   ]
   - !include [
       EC2/TYPE.yml,
