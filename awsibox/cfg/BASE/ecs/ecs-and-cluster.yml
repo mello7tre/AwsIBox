@@ -20,6 +20,10 @@ global:
         MaxSize: 10
         MinSize.IBOX_AUTO_P: {}
         MinSize: 1
+        DesiredCapacity.IBOX_PCO:
+          IBOX_OUTPUT:
+            - _Capacity:
+                Value: Desired= ${DesiredCapacity} ,Max= ${MaxSize} ,Min= ${MinSize} 
         CreationPolicy:
           ResourceSignal:
             Count: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
