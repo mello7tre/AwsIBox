@@ -26,6 +26,9 @@ global:
         UpdatePolicy:
           AutoScalingRollingUpdate:
             MinInstancesInService: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
+  AutoScalingScalingPolicy:
+    - Custom:
+        DependsOn: ECSClusterCapacityProviderAssociationsBase
   ECSCapacityProvider:
     - Base:
         Enabled: 'yes'
