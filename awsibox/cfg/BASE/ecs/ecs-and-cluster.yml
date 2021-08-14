@@ -12,6 +12,14 @@ global:
   IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA: True
   IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH: True
   IBOX_CFN_FUNC: cfn_ecs_cluster
+  ApplicationAutoScalingScalingPolicy:
+    - Custom:
+        TargetTrackingScalingPolicyConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions:
+              - Cluster:
+                  Name: ClusterName
+                  Value: Ref('Cluster')
   AutoScalingGroup:
     - Base:
         DesiredCapacity.IBOX_AUTO_P: {}
