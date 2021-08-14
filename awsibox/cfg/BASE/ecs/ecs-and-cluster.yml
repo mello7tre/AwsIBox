@@ -72,6 +72,7 @@ global:
         IBOX_ENABLED: False
   Service:
     - Base:
+        DependsOn: ECSClusterCapacityProviderAssociationsBase
         Cluster: Ref('Cluster')
   ScalableTarget:
     - Service:
