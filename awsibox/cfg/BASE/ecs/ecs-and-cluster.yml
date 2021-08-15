@@ -35,6 +35,7 @@ global:
         CreationPolicy:
           ResourceSignal:
             Count: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
+        TargetGroupARNs: []
         UpdatePolicy:
           AutoScalingRollingUpdate:
             MinInstancesInService: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')

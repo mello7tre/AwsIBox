@@ -735,10 +735,11 @@ def AS_Autoscaling(key):
     LaunchTemplateTags = AS_LaunchTemplate()
 
     R_ASG = asg.AutoScalingGroup('AutoScalingGroupBase')
-    auto_get_props(R_ASG)
-
     R_ASG.LoadBalancerNames = LoadBalancers
     R_ASG.TargetGroupARNs = TargetGroups
+
+    auto_get_props(R_ASG)
+
     R_ASG.Tags += LaunchTemplateTags
 
     add_obj([
