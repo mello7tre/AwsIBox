@@ -13,7 +13,7 @@ global:
   IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH: True
   IBOX_CFN_FUNC: cfn_ecs_cluster
   ApplicationAutoScalingScalingPolicy:
-    - Cpu::
+    - Cpu:
         IBOX_ENABLED: False
     - Custom:
         IBOX_ENABLED: True
