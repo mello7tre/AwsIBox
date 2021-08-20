@@ -49,6 +49,8 @@ global:
   AutoScalingScalingPolicy:
     - Custom:
         DependsOn: ECSClusterCapacityProviderAssociationsBase
+        TargetTrackingConfiguration:
+          DisableScaleIn: true
   ECSCapacityProvider:
     - Base:
         Enabled: 'yes'
