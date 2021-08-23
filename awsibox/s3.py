@@ -517,26 +517,26 @@ def S3_Buckets(key):
             r_Role])
 
         # outputs
-        outvaluebase = Sub(bucket_name)
+        outvalue = If(
+            resname,
+            Ref(resname),
+            Sub(bucket_name)
+        )
         if 'OutputValueRegion' in v:
             condname = f'{resname}OutputValueRegion'
             # conditions
             add_obj(get_condition(condname, 'not_equals', 'AWSRegion'))
 
-            outvaluebase = If(
+            outvalue = If(
                 condname,
                 Sub('${Region}-%s'
                     % bucket_name.replace('${AWS::Region}-', '', 1),
                     **{'Region': get_endvalue(condname)}),
-                outvaluebase
+                outvalue
             )
 
         o_Bucket = Output(resname)
-        o_Bucket.Value = If(
-            resname,
-            Ref(resname),
-            outvaluebase
-        )
+        o_Bucket.Value = outvalue
         if resname == 'BucketAppRepository':
             o_Bucket.Export = Export(resname)
 
