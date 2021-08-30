@@ -42,7 +42,7 @@ global:
         Export: Export(Sub('Cluster-${AWS::StackName}'))
     - BottleRocket:
         Value: Ref('BottleRocket')
-  AutoScalingGroup:
+  AutoScalingGroup.DISABLED:
     - Base:
         CreationPolicy:
           AutoScalingCreationPolicy:
@@ -71,6 +71,14 @@ global:
         Line: Sub('cluster = "${Cluster}"')
     - 2:
         Line: enable-spot-instance-draining = true
+    - 3:
+        Line: '[settings.cloudformation]'
+    - 4:
+        Line: signal = true
+    - 5:
+        Line: Sub('stack-name = "${AWS::StackName}"')
+    - 6:
+        Line: logical-resource-id = "AutoScalingGroup"
   ECSCluster:
     - Base:
         IBOX_TITLE: Cluster
