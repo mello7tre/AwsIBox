@@ -74,7 +74,7 @@ global:
     - 3:
         Line: '[settings.cloudformation]'
     - 4:
-        Line: signal = true
+        Line: should-signal = true
     - 5:
         Line: Sub('stack-name = "${AWS::StackName}"')
     - 6:
