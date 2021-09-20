@@ -46,7 +46,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
                 eventType = key['LambdaEventType']
             # conditions
             add_obj(
-                get_condition(condname, 'not_equals', 'None')
+                get_condition(condname, 'not_equals', 'none')
             )
 
             self.LambdaFunctionAssociations = [
