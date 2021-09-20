@@ -41,9 +41,7 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
 
         if 'LambdaFunctionARN' in key:
             condname = f'{name}LambdaFunctionARN'
-            eventType = 'origin-request'
-            if 'LambdaEventType' in key:
-                eventType = key['LambdaEventType']
+            eventType = key.get('LambdaEventType', 'origin-request')
             # conditions
             add_obj(
                 get_condition(condname, 'not_equals', 'none')
