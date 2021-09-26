@@ -12,29 +12,29 @@ args = args.get_args()
 
 
 def output_template(template, brand=None, envrole=None):
-    if args.Output == 'json':
+    if args.Output == "json":
         output = template.to_json()
-        extension = '.json'
-    elif args.Output == 'cjson':
+        extension = ".json"
+    elif args.Output == "cjson":
         output = template.to_json(indent=None)
-        extension = '.json'
-    elif args.Output == 'yaml':
+        extension = ".json"
+    elif args.Output == "yaml":
         output = template.to_yaml(long_form=True)
-        extension = '.yaml'
+        extension = ".yaml"
 
-    if args.action == 'view':
+    if args.action == "view":
         print(output)
-    elif args.action == 'write':
-        file_path = os.path.join(os.getcwd(), 'templates', brand)
+    elif args.action == "write":
+        file_path = os.path.join(os.getcwd(), "templates", brand)
         try:
             os.makedirs(file_path)
         except Exception:
             pass
         file_name = os.path.join(file_path, envrole + extension)
-        with open(file_name, 'w') as f:
-            f.write(output + '\n')
+        with open(file_name, "w") as f:
+            f.write(output + "\n")
 
-        print(f'Brand: {brand} - EnvRole: {envrole}')
+        print(f"Brand: {brand} - EnvRole: {envrole}")
 
 
 def get_template():
@@ -76,16 +76,15 @@ def concurrent_exec(roles, kwargs):
             try:
                 data[role] = future.result()
             except Exception as e:
-                print(f'{role} generated an exception: {e}')
+                print(f"{role} generated an exception: {e}")
                 print_exc()
                 break
         for future in future_to_role:
             future.cancel()
 
 
-if args.action == 'view':
-    discover_map = discover.discover(
-        [args.Brand], [args.EnvRole], [])
+if args.action == "view":
+    discover_map = discover.discover([args.Brand], [args.EnvRole], [])
 
     cfg.brand = args.Brand
     try:
@@ -94,14 +93,13 @@ if args.action == 'view':
         pass
     else:
         do_process(role[0], role[1])
-elif args.action == 'write':
-    discover_map = discover.discover(
-        args.Brands, args.EnvRoles, args.StackTypes)
+elif args.action == "write":
+    discover_map = discover.discover(args.Brands, args.EnvRoles, args.StackTypes)
 
     for brand, roles in discover_map.items():
         cfg.brand = brand
         if args.jobs:
-            kwargs = {'max_workers': args.jobs}
+            kwargs = {"max_workers": args.jobs}
         else:
             kwargs = {}
         concurrent_exec(set(roles), kwargs)

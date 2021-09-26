@@ -1,2 +1,2 @@
-name = 'awsibox'
-__version__ = '0.2.28'
+name = "awsibox"
+__version__ = "0.2.28"

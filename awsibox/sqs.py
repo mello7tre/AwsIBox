@@ -1,8 +1,15 @@
 import troposphere.sqs as sqs
 
 from .common import *
-from .shared import (Parameter, get_endvalue, get_expvalue, get_subvalue,
-                     auto_get_props, get_condition, add_obj)
+from .shared import (
+    Parameter,
+    get_endvalue,
+    get_expvalue,
+    get_subvalue,
+    auto_get_props,
+    get_condition,
+    add_obj,
+)
 
 
 class SQSQueuePolicy(sqs.QueuePolicy):
@@ -10,28 +17,22 @@ class SQSQueuePolicy(sqs.QueuePolicy):
         super().__init__(title, **kwargs)
         self.Queues = [
             Sub(
-                'https://sqs.${AWS::Region}.amazonaws.com/'
-                '${AWS::AccountId}/${QueueId}',
-                **{'QueueId': Select('5', Split(':', eval(key['Endpoint'])))}
+                "https://sqs.${AWS::Region}.amazonaws.com/"
+                "${AWS::AccountId}/${QueueId}",
+                **{"QueueId": Select("5", Split(":", eval(key["Endpoint"])))}
             )
         ]
         self.PolicyDocument = {
-            'Version': '2012-10-17',
-            'Statement': [
+            "Version": "2012-10-17",
+            "Statement": [
                 {
-                    'Action': [
-                        'SQS:SendMessage'
-                    ],
-                    'Condition': {
-                        'ArnEquals': {
-                            'aws:SourceArn': eval(key['TopicArn'])
-                        }
+                    "Action": ["SQS:SendMessage"],
+                    "Condition": {
+                        "ArnEquals": {"aws:SourceArn": eval(key["TopicArn"])}
                     },
-                    'Effect': 'Allow',
-                    'Principal': {
-                        'AWS': '*'
-                    },
-                    'Resource': '*'
+                    "Effect": "Allow",
+                    "Principal": {"AWS": "*"},
+                    "Resource": "*",
                 }
-            ]
+            ],
         }

@@ -14,21 +14,17 @@ def build_RP():
     LD_INCLUDED = []
     LD_EXCLUDED = []
 
-    CFG_FILE_INT = '%s/cfg' % os.path.dirname(os.path.realpath(__file__))
+    CFG_FILE_INT = "%s/cfg" % os.path.dirname(os.path.realpath(__file__))
     CFG_FILE_INT = os.path.normpath(CFG_FILE_INT)
 
-    CFG_FILE_EXT = '%s/cfg' % os.getcwd()
+    CFG_FILE_EXT = "%s/cfg" % os.getcwd()
     CFG_FILE_EXT = os.path.normpath(CFG_FILE_EXT)
 
     envrole = cfg.envrole
     stacktype = cfg.stacktype
     brand = cfg.brand
 
-    RP_base = {
-        'cmm': {
-            'cmm': {}
-        }
-    }
+    RP_base = {"cmm": {"cmm": {}}}
 
     # dynamically populate RP_base Dict from ENV_BASE and cfg.regions
     for n in cfg.ENV_BASE:
@@ -39,7 +35,7 @@ def build_RP():
     cfg.RP_base = RP_base
 
     def _get_RP_base_keys():
-        RP_base_keys = ['global']
+        RP_base_keys = ["global"]
         for n, v in RP_base.items():
             RP_base_keys.append(n)
             for m, w in v.items():
@@ -54,31 +50,31 @@ def build_RP():
             # This way for include relative to file with include statement
             self._root_current = os.path.split(stream.name)[0]
             # This way for include BASE relative on BASE dir
-            self._root_base = os.path.join(CFG_FILE_INT, 'BASE')
+            self._root_base = os.path.join(CFG_FILE_INT, "BASE")
             # This way for include relative on BASE EXT dir
-            self._root_base_ext = os.path.join(CFG_FILE_EXT, 'BASE')
+            self._root_base_ext = os.path.join(CFG_FILE_EXT, "BASE")
             # This way for include relative on brand EXT dir
             self._root_brand_ext = os.path.join(CFG_FILE_EXT, brand)
 
             # try to find out if source file is in a subfolder
             if self._root_base in self._root_current:
-                suffix = self._root_current.replace(self._root_base, '')
+                suffix = self._root_current.replace(self._root_base, "")
             elif self._root_base_ext in self._root_current:
-                suffix = self._root_current.replace(self._root_base_ext, '')
+                suffix = self._root_current.replace(self._root_base_ext, "")
             else:
-                suffix = self._root_current.replace(self._root_brand_ext, '')
+                suffix = self._root_current.replace(self._root_brand_ext, "")
 
             # self.root_current_suffix will be empty if source file is in root
             self.root_current_suffix = os.path.basename(suffix)
             if self.root_current_suffix.upper() in cfg.STACK_TYPES:
                 # set to empty even if UPPERCASE subfolders is in
                 # cfg.STACK_TYPES to not be searched for include files
-                self.root_current_suffix = ''
+                self.root_current_suffix = ""
 
             self.stream = stream
             super(Loader, self).__init__(stream)
-            Loader.add_constructor('!include', Loader.include)
-            Loader.add_constructor('!exclude', Loader.exclude)
+            Loader.add_constructor("!include", Loader.include)
+            Loader.add_constructor("!exclude", Loader.exclude)
 
         def exclude(self, node):
             if isinstance(node, yaml.SequenceNode):
@@ -95,40 +91,42 @@ def build_RP():
                     LD_INCLUDED.append(filename)
 
                     # search for include in files in roots
-                    for path in [self._root_base,
-                                 self._root_base_ext,
-                                 self._root_brand_ext]:
+                    for path in [
+                        self._root_base,
+                        self._root_base_ext,
+                        self._root_brand_ext,
+                    ]:
                         contents = self.extractFile(filename, path)
                         if contents:
                             result.append(contents)
                         if self.root_current_suffix:
                             # search in subfolder too
-                            contents = self.extractFile(filename, os.path.join(
-                                path, self.root_current_suffix))
+                            contents = self.extractFile(
+                                filename, os.path.join(path, self.root_current_suffix)
+                            )
                             if contents:
                                 result.append(contents)
                 return result
             else:
-                print('Error:: unrecognised node type in !include statement')
+                print("Error:: unrecognised node type in !include statement")
                 raise yaml.constructor.ConstructorError
 
         def extractFile(self, filename, root):
             filepath = os.path.join(root, filename)
             try:
-                with open(filepath, 'r') as f:
+                with open(filepath, "r") as f:
                     return yaml.load(f, Loader)
             except IOError:
                 pass
 
     def process_cfg(cfg, envs, check_root=None):
-        if hasattr(cfg, 'items'):
+        if hasattr(cfg, "items"):
             # This method allow to delete items from a dictionary
             # while iterating over it
             for k in list(cfg):
                 v = cfg[k]
                 # for final values
-                if (isinstance(v, (str, int, list))
-                        and not k.startswith('IBoxLoader')):
+                if isinstance(v, (str, int, list)) and not k.startswith("IBoxLoader"):
                     yield {k: v}
                 # for empty dict in common.yml
                 if isinstance(v, dict) and len(v) == 0:
@@ -136,10 +134,10 @@ def build_RP():
                 # for recursively descending in env/region role dict.
                 # list is needed for IBoxLoader include list.
                 if k in envs and isinstance(v, (dict, list)):
-                    if k in ['IBoxLoader', 'IBoxLoaderAfter']:
+                    if k in ["IBoxLoader", "IBoxLoaderAfter"]:
                         # IBoxLoader included dict processed by
                         # process_cfg have check_root = True
-                        kwargs = {'check_root': True}
+                        kwargs = {"check_root": True}
                     else:
                         kwargs = {}
                     try:
@@ -162,7 +160,7 @@ def build_RP():
                 # (final key is the concatenation of traversed dict keys)
                 if k not in RP_base_keys and isinstance(v, dict):
                     for j, w in v.items():
-                        for result in process_cfg({f'{k}{j}': w}, envs):
+                        for result in process_cfg({f"{k}{j}": w}, envs):
                             yield result
         if isinstance(cfg, list):
             for n in cfg:
@@ -185,12 +183,11 @@ def build_RP():
                 return work
             keys = dict(list(base.items()) + list(work.items())).keys()
             for k in keys:
-                if (isinstance(base.get(k), dict)
-                        and isinstance(work.get(k), dict)):
+                if isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
                     base[k] = _merge(base[k], work[k])
-                elif k.endswith('++') and isinstance(work.get(k), list):
+                elif k.endswith("++") and isinstance(work.get(k), list):
                     # ++ is used to append elements to an existing key
-                    base[k.replace('++', '')] += work[k]
+                    base[k.replace("++", "")] += work[k]
                 elif k in work:
                     base[k] = work[k]
             return base
@@ -198,12 +195,12 @@ def build_RP():
         def _process(key, data, RP, merge=True):
             key = str(key)
 
-            if key.startswith('/'):
+            if key.startswith("/"):
                 # for CFront Behaviors
                 key = replace_not_allowed_char(key)
-            if key.endswith('**'):
+            if key.endswith("**"):
                 # ** is used to replace existing dict instead of merging it
-                key = key.replace('**', '')
+                key = key.replace("**", "")
                 merge = False
 
             if merge and isinstance(RP.get(key), dict):
@@ -229,12 +226,11 @@ def build_RP():
 
         return _recurse(data)
 
-    def read_yaml(file_type, brand, base_dir, stacktype=''):
-        cfg_file = os.path.join(
-            base_dir, brand, stacktype.upper(), f'{file_type}.yml')
+    def read_yaml(file_type, brand, base_dir, stacktype=""):
+        cfg_file = os.path.join(base_dir, brand, stacktype.upper(), f"{file_type}.yml")
 
         try:
-            with open(cfg_file, 'r') as ymlfile:
+            with open(cfg_file, "r") as ymlfile:
                 cfg = yaml.load(ymlfile, Loader=Loader)
 
                 return cfg
@@ -261,7 +257,7 @@ def build_RP():
 
         for cfg, v in cfgs.items():
             for c in v:
-                keys = ['IBoxLoader', 'IBoxLoaderAfter'] + cfg_key[cfg]
+                keys = ["IBoxLoader", "IBoxLoaderAfter"] + cfg_key[cfg]
                 RP_list.append(_parse_cfg(c, keys))
 
         # RP_list is now a list of dict
@@ -293,8 +289,7 @@ def build_RP():
                                 # use IBOX_BASE (or values in cfg.BASE_CFGS)
                                 for j, w in base_value.items():
                                     j_current = base_cfgs[n].get(j)
-                                    if j_current and isinstance(
-                                            j_current, list):
+                                    if j_current and isinstance(j_current, list):
                                         # if property is a list extend it
                                         base_cfgs[n][j].extend(w)
                                     else:
@@ -315,9 +310,9 @@ def build_RP():
         RP = copy.deepcopy(RP_base)
 
         cfg_key_cmm = {
-            'common': ['global'],
-            'type': ['global'],
-            'role': ['global'],
+            "common": ["global"],
+            "type": ["global"],
+            "role": ["global"],
         }
 
         cfg_merge_cmm = merge_cfg(cfgs, cfg_key_cmm)
@@ -325,16 +320,16 @@ def build_RP():
         # Prepend base config from awsibox/cfg.py BASE_CFGS
         prepend_base_cfgs(cfg_merge_cmm)
 
-        RP['cmm']['cmm'] = get_RP_for_envs(cfg_merge_cmm)
+        RP["cmm"]["cmm"] = get_RP_for_envs(cfg_merge_cmm)
 
         for env, rvalue in RP.items():
-            if env == 'cmm':
+            if env == "cmm":
                 continue
 
             cfg_key_env = {
-                'common': [env],
-                'type': [env],
-                'role': [env],
+                "common": [env],
+                "type": [env],
+                "role": [env],
             }
 
             cfg_merge_env = merge_cfg(cfgs, cfg_key_env)
@@ -342,36 +337,36 @@ def build_RP():
             for region in rvalue.keys():
 
                 cfg_key_region = {
-                    'common': [region],
-                    'type': [region],
-                    'role': [region],
+                    "common": [region],
+                    "type": [region],
+                    "role": [region],
                 }
 
                 cfg_key_env_region = {
-                    'common': [env, region],
-                    'type': [env, region],
-                    'role': [env, region],
+                    "common": [env, region],
+                    "type": [env, region],
+                    "role": [env, region],
                 }
 
-                cfg_merge_region = merge_cfg(
-                    cfgs, cfg_key_region, cfg_merge_env)
+                cfg_merge_region = merge_cfg(cfgs, cfg_key_region, cfg_merge_env)
                 cfg_merge_env_region = merge_cfg(
-                    cfgs, cfg_key_env_region, cfg_merge_region)
+                    cfgs, cfg_key_env_region, cfg_merge_region
+                )
 
                 RP[env][region] = get_RP_for_envs(cfg_merge_env_region)
 
-        return(RP)
+        return RP
 
     def set_cfg():
         def RP_to_cfg(key):
-            if hasattr(key, 'items'):
+            if hasattr(key, "items"):
                 for k, v in key.items():
                     setattr(cfg, k, v)
                     # recursively traverse dict
                     # keys name are the concatenation of traversed dict keys
                     if isinstance(v, dict):
                         for j, w in v.items():
-                            RP_to_cfg({f'{k}{j}': w})
+                            RP_to_cfg({f"{k}{j}": w})
 
         # for n, v in cfg.RP_cmm.items():
         #     setattr(cfg, n, v)
@@ -393,7 +388,7 @@ def build_RP():
 
         # LoadBalancer
         cfg.LoadBalancer = None
-        for n in ['LoadBalancerClassic', 'LoadBalancerApplication']:
+        for n in ["LoadBalancerClassic", "LoadBalancerApplication"]:
             try:
                 getattr(cfg, n)
             except Exception:
@@ -409,9 +404,9 @@ def build_RP():
         except Exception:
             pass
         else:
-            if 'External' in cfg.LoadBalancerClassic:
+            if "External" in cfg.LoadBalancerClassic:
                 cfg.LoadBalancerClassicExternal = True
-            if 'Internal' in cfg.LoadBalancerClassic:
+            if "Internal" in cfg.LoadBalancerClassic:
                 cfg.LoadBalancerClassicInternal = True
 
         # LoadBalancerApplicationExternal LoadBalancerApplicationInternal
@@ -422,39 +417,39 @@ def build_RP():
         except Exception:
             pass
         else:
-            if 'External' in cfg.LoadBalancerApplication:
+            if "External" in cfg.LoadBalancerApplication:
                 cfg.LoadBalancerApplicationExternal = True
-            if 'Internal' in cfg.LoadBalancerApplication:
+            if "Internal" in cfg.LoadBalancerApplication:
                 cfg.LoadBalancerApplicationInternal = True
 
         # RecordSet
         cfg.RecordSetExternal = None
         cfg.RecordSetInternal = None
-        if 'External' in cfg.RecordSet:
+        if "External" in cfg.RecordSet:
             cfg.RecordSetExternal = True
-        if 'Internal' in cfg.RecordSet:
+        if "Internal" in cfg.RecordSet:
             cfg.RecordSetInternal = True
 
-# End inner methods
+    # End inner methods
 
     cfg_role = [
-        read_yaml(envrole, 'BASE', CFG_FILE_INT, stacktype),
-        read_yaml(envrole, 'BASE', CFG_FILE_EXT, stacktype),
+        read_yaml(envrole, "BASE", CFG_FILE_INT, stacktype),
+        read_yaml(envrole, "BASE", CFG_FILE_EXT, stacktype),
         read_yaml(envrole, brand, CFG_FILE_EXT, stacktype),
     ]
 
     cfgs = {
-        'common': [
-            read_yaml('common', 'BASE', CFG_FILE_INT),
-            read_yaml('common', 'BASE', CFG_FILE_EXT),
-            read_yaml('common', brand, CFG_FILE_EXT),
+        "common": [
+            read_yaml("common", "BASE", CFG_FILE_INT),
+            read_yaml("common", "BASE", CFG_FILE_EXT),
+            read_yaml("common", brand, CFG_FILE_EXT),
         ],
-        'type': [
-            read_yaml('TYPE', 'BASE', CFG_FILE_INT, stacktype),
-            read_yaml('TYPE', 'BASE', CFG_FILE_EXT, stacktype),
-            read_yaml('TYPE', brand, CFG_FILE_EXT, stacktype),
+        "type": [
+            read_yaml("TYPE", "BASE", CFG_FILE_INT, stacktype),
+            read_yaml("TYPE", "BASE", CFG_FILE_EXT, stacktype),
+            read_yaml("TYPE", brand, CFG_FILE_EXT, stacktype),
         ],
-        'role': cfg_role,
+        "role": cfg_role,
     }
 
     RP = get_RP(cfgs)
@@ -462,19 +457,19 @@ def build_RP():
     # print(RP['dev']['eu-west-1']['CloudFrontCacheBehaviors']
     #    [2]['QueryStringCacheKeys'])
     if cfg.debug:
-        print('##########RP#########START#####')
+        print("##########RP#########START#####")
         pprint(RP)
-        print('##########RP#########END#######')
+        print("##########RP#########END#######")
 
-        print('##########EXCLUDED#######START#####')
+        print("##########EXCLUDED#######START#####")
         pprint(LD_EXCLUDED)
-        print('##########EXCLUDED#######END#######')
+        print("##########EXCLUDED#######END#######")
 
-        print('##########INCLUDED#######START#####')
+        print("##########INCLUDED#######START#####")
         pprint(LD_INCLUDED)
-        print('##########INCLUDED#######END#######')
+        print("##########INCLUDED#######END#######")
 
     cfg.RP = RP
-    cfg.RP_cmm = RP['cmm']['cmm']
+    cfg.RP_cmm = RP["cmm"]["cmm"]
 
     set_cfg()

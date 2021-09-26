@@ -11,7 +11,7 @@ def get_brands():
 
     brands = set(brand_int + brand_ext)
 
-    brands.remove('BASE')
+    brands.remove("BASE")
 
     return brands
 
@@ -29,21 +29,22 @@ def build_discover_map(brand, stacktypes, envroles):
     for n in [path_int, path_ext]:
         for root, directories, filenames in os.walk(n, topdown=True):
             try:
-                directories.remove('UNUSED')
+                directories.remove("UNUSED")
             except Exception:
                 pass
             for filename in filenames:
                 root_dir = os.path.basename(root)
                 stacktype = root_dir.lower()
                 role = os.path.splitext(os.path.basename(filename))[0]
-                if (root_dir.isupper()
-                        and not filename.startswith('.')
-                        and not filename == 'TYPE.yml'
-                        and (stacktype in stacktypes
-                             or role in envroles)):
+                if (
+                    root_dir.isupper()
+                    and not filename.startswith(".")
+                    and not filename == "TYPE.yml"
+                    and (stacktype in stacktypes or role in envroles)
+                ):
                     roles.append((stacktype, role))
 
-    if brand == 'BASE':
+    if brand == "BASE":
         for n in ext_brands:
             add_to_map(n, roles)
     else:
@@ -71,7 +72,7 @@ def discover(brands, envroles, stacktypes):
         ext_brands = get_brands()
         brands = list(ext_brands)
 
-    brands.append('BASE')
+    brands.append("BASE")
 
     for brand in brands:
         build_discover_map(brand, stacktypes, envroles)

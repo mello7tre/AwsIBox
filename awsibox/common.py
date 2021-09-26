@@ -49,22 +49,24 @@ from .cfg import (
 
 # Temporary fix for https://github.com/cloudtools/troposphere/issues/1474
 def my_one_of(class_name, properties, property, conditionals):
-    if (properties.get(property) not in conditionals and
-            not isinstance(properties.get(property), If)):
+    if properties.get(property) not in conditionals and not isinstance(
+        properties.get(property), If
+    ):
         raise ValueError(
             # Ensure we handle None as a valid value
-            '%s.%s must be one of: "%s"' % (
-                class_name, property, ', '.join(
-                    condition for condition in conditionals if condition
-                )
+            '%s.%s must be one of: "%s"'
+            % (
+                class_name,
+                property,
+                ", ".join(condition for condition in conditionals if condition),
             )
         )
 
 
 def boolean(x):
-    if x in [True, 1, '1', 'true', 'True']:
+    if x in [True, 1, "1", "true", "True"]:
         return True
-    if x in [False, 0, '0', 'false', 'False']:
+    if x in [False, 0, "0", "false", "False"]:
         return False
     raise ValueError
 
