@@ -40,11 +40,6 @@ def ECS_ContainerDefinition():
         auto_get_props(Container, indexname=n)
 
         if len(cfg.ContainerDefinitions) == 1:
-            Container.Cpu = If(
-                'CpuTask',
-                get_endvalue('Cpu'),
-                get_endvalue(f'{name}Cpu')
-            )
             Container.Memory = If(
                 'LaunchTypeFarGate',
                 get_endvalue('Memory'),
