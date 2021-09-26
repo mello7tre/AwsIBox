@@ -22,9 +22,6 @@ Base: &base
         get_condition('', 'not_equals', 0, f'{IBOX_RESNAME}ContainerPort')
     - _HostPort:
         get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}HostPort')
-    - _UseTaskCpu: And(
-        Condition('CpuTask'),
-        get_condition('', 'equals', 'use_task_cpu', f'{IBOX_RESNAME}Cpu'))
     - EnvApp{IBOX_INDEXNAME}Version:
         Not(Equals('', Ref(f'EnvApp{IBOX_INDEXNAME}Version')))
   IBOX_OUTPUT:
@@ -40,7 +37,6 @@ Base: &base
         Value: ${Image}
   Command: Ref('AWS::NoValue')
   ContainerPort: 0
-  Cpu.IBOX_CODE: If(f'{IBOX_RESNAME}UseTaskCpu', get_endvalue('Cpu'), get_endvalue(f'{IBOX_RESNAME}Cpu'))
   Cpu: 16
   DockerLabels: 
     LastUpdate: Ref('DockerLabelLastUpdate')
@@ -115,6 +111,7 @@ Base: &base
           get_endvalue(f'{IBOX_RESNAME}ContainerPort'),
           If(f'{IBOX_RESNAME}HostPort', get_endvalue(f'{IBOX_RESNAME}HostPort'), 0))
         Protocol: tcp
+  UseTaskCpu: 'true'
 
 global:
   ContainerDefinitions:
