@@ -49,6 +49,8 @@ def ECS_ContainerDefinition():
             p_UseTaskCpu.Description = "Empty for mapped value - Use Task Cpu Value, if present, for Container Cpu"
             p_UseTaskCpu.AllowedValues = ["", "true", "false"]
 
+            add_obj(p_UseTaskCpu)
+
             # conditions
             c_UseTaskCpu = {
                 f"{name}UseTaskCpu": And(
@@ -57,9 +59,7 @@ def ECS_ContainerDefinition():
                 )
             }
 
-            add_obj(
-                [p_UseTaskCpu, c_UseTaskCpu,]
-            )
+            add_obj(c_UseTaskCpu)
 
             Container.Cpu = If(
                 f"{name}UseTaskCpu", get_endvalue("Cpu"), get_endvalue(f"{name}Cpu")
