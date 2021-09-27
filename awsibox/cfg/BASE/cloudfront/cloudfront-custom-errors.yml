@@ -12,6 +12,8 @@ global:
         DomainName: Sub(f'{cfg.BucketPortalStatic}.s3.amazonaws.com')
         Id: portal-static-error-pages
         OriginCustomHeaders: []
+        S3OriginConfig:
+          OriginAccessIdentity: ''
   CloudFrontCustomErrorResponses:
     - 1:
         ErrorCode: 404
