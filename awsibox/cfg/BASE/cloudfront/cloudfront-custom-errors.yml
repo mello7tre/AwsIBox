@@ -6,11 +6,11 @@ global:
         DefaultTTL: 31536000
         ForwardedValues:
           QueryString: false
-        TargetOriginId: portal-static
+        TargetOriginId: portal-static-error-pages
   CloudFrontOrigins:
-    - PortalStatic:
+    - PortalStaticErrorPages:
         DomainName: Sub(f'{cfg.BucketPortalStatic}.s3.amazonaws.com')
-        Id: portal-static
+        Id: portal-static-error-pages
         OriginCustomHeaders: []
   CloudFrontCustomErrorResponses:
     - 1:
