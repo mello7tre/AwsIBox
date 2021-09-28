@@ -208,6 +208,8 @@ def SG_SecurityGroupRules(groupname, ingresses):
 
 def SG_SecurityGroup(key):
     for n, v in getattr(cfg, key).items():
+        if cfg.LoadBalancerNetwork:
+            return
         resname = f"{key}{n}"
 
         # resources

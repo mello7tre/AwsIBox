@@ -121,7 +121,6 @@ def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
     R_RuleHttp.ListenerArn = get_expvalue(
         f"ListenerHttpDefault{scheme}", "LoadBalancerApplicationStack"
     )
-    R_RuleHttp.Condition = "ListenerLoadBalancerHttpPort"
 
     R_RuleHttps = ELBV2ListernerRuleECS(
         f"ListenerHttps{scheme}Rules{index}",
@@ -133,7 +132,6 @@ def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
     R_RuleHttps.ListenerArn = get_expvalue(
         f"ListenerHttpsDefault{scheme}", "LoadBalancerApplicationStack"
     )
-    R_RuleHttps.Condition = "ListenerLoadBalancerHttpsPort"
 
     # Create ListenerRule only in stack's specific new Listener
     ListenerHttpPort = cfg.ListenerLoadBalancerHttpPort
@@ -152,8 +150,7 @@ def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
         if ListenerHttpsPort != 443:
             RuleHttpsAdd = True
     else:
-        # by default create http rules on Internal LB
-        # and https rules on External one
+        # by default create http rules on Internal LB and https rules on External one
         if scheme == "Internal":
             RuleHttpAdd = True
         if scheme == "External":
@@ -241,7 +238,7 @@ def LB_ListenerRules():
         add_obj(o_ListenerRule)
 
 
-def LB_ListenersV2EC2():
+def LB_ListenersV2ApplicationEC2():
     LB_ListenersEC2()
     for n in ["External", "Internal"]:
         # resources
@@ -256,7 +253,22 @@ def LB_ListenersV2EC2():
             auto_get_props(r_Https, mapname=f"ListenerV2EC2Https{n}")
             add_obj(r_Https)
 
-    LB_TargetGroupsEC2()
+    LB_TargetGroupsEC2('Application')
+
+
+def LB_ListenersV2NetworkEC2():
+    for n in ["External", "Internal"]:
+        # resources
+        if n not in cfg.LoadBalancerNetowrk:
+            continue
+        for n, v in cfg.Listeners.items():
+            mapname = f"Listeners{n}"  # Ex ListenersPort5601
+            listener = elbv2.Listener(mapname)
+            auto_get_props(listener)
+            auto_get_props(listener, mapname=f"ListenerV2EC2TCP{n}")
+            add_obj(listener)
+
+    LB_TargetGroupsEC2('Network')
 
 
 def LB_ListenersV2ECS():
@@ -287,13 +299,15 @@ def LB_ListenersV2ECS():
     LB_ListenerRules()
 
 
-def LB_TargetGroupsEC2():
+def LB_TargetGroupsEC2(lb_type):
     for n in cfg.ElasticLoadBalancingV2TargetGroupEC2:
         # resources
-        if n not in cfg.LoadBalancerApplication:
+        if n not in getattr(cfg, f'LoadBalancer{lb_type}', []):
             continue
         r_TG = elbv2.TargetGroup(f"TargetGroup{n}")
         auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupEC2{n}")
+        if lb_type == 'Network':
+            r_TG.Protocol = 'TCP'
         add_obj(r_TG)
 
         cfg.Alarm[f"TargetEC2{n}5XX"]["IBOX_ENABLED"] = True
@@ -355,15 +369,27 @@ def LB_ElasticLoadBalancingClassicEC2():
 
 
 def LB_ElasticLoadBalancingApplicationEC2():
-    for n, v in cfg.ElasticLoadBalancingV2LoadBalancer.items():
+    for n, v in cfg.ElasticLoadBalancingV2LoadBalancerAPP.items():
         # resources
         if n not in cfg.LoadBalancerApplication:
             continue
         r_LB = elbv2.LoadBalancer(f"LoadBalancerApplication{n}")
-        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancer{n}")
+        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerAPP{n}")
         add_obj(r_LB)
 
-    LB_ListenersV2EC2()
+    LB_ListenersV2ApplicationEC2()
+
+
+def LB_ElasticLoadBalancingNetworkEC2():
+    for n, v in cfg.ElasticLoadBalancingV2LoadBalancerNET.items():
+        # resources
+        if n not in cfg.LoadBalancerNetwork:
+            continue
+        r_LB = elbv2.LoadBalancer(f"LoadBalancerNetwork{n}")
+        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerNET{n}")
+        add_obj(r_LB)
+
+    LB_ListenersV2NetworkEC2()
 
 
 def LB_ElasticLoadBalancingEC2(key):
@@ -375,6 +401,9 @@ def LB_ElasticLoadBalancingEC2(key):
 
     if cfg.LoadBalancerApplication:
         LB_ElasticLoadBalancingApplicationEC2()
+
+    if cfg.LoadBalancerNetwork:
+        LB_ElasticLoadBalancingNetworkEC2()
 
 
 def LB_ElasticLoadBalancingALB(key):

@@ -327,6 +327,10 @@ CFG_TO_FUNC = {
         "module": "loadbalancing",
         "func": "LB_ElasticLoadBalancing",
     },
+    "LoadBalancerNetwork": {
+        "module": "loadbalancing",
+        "func": "LB_ElasticLoadBalancing",
+    },
     "LoadBalancerClassic": {
         "module": "loadbalancing",
         "func": "LB_ElasticLoadBalancing",

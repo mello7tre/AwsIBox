@@ -1,14 +1,36 @@
 Http: &http
+  IBOX_PARAMETER:
+    - ListenerLoadBalancerHttpPort:
+        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
   Port: get_endvalue('ListenerLoadBalancerHttpPort')
   Protocol: HTTP
 
 Https: &https
+  IBOX_PARAMETER:
+    - ListenerLoadBalancerHttpsPort:
+        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
   Certificates:
     Regional:
       CertificateArn: get_endvalue('RegionalCertificateArn')
   Port: get_endvalue('ListenerLoadBalancerHttpsPort')
   Protocol: HTTPS
   SslPolicy: get_endvalue('ListenerLoadBalancerSslPolicy')
+
+TCPExternal: &tcp_external 
+  Protocol: TCP
+  DefaultActions:
+    - TG:
+        Type: forward
+        TargetGroupArn: Ref(f'TargetGroupExternal')
+  LoadBalancerArn: Ref(f'LoadBalancerNetworkExternal')
+
+TCPInternal: &tcp_internal 
+  Protocol: TCP
+  DefaultActions:
+    - TG:
+        Type: forward
+        TargetGroupArn: Ref(f'TargetGroupInternal')
+  LoadBalancerArn: Ref(f'LoadBalancerNetworkInternal')
 
 External: &external
   DefaultActions:
@@ -44,16 +66,6 @@ ALB: &alb
 
 
 global:
-  Parameter:
-    - ListenerLoadBalancerHttpPort:
-        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
-    - ListenerLoadBalancerHttpsPort:
-        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
-  Condition:
-    - ListenerLoadBalancerHttpPort:
-        get_condition('', 'not_equals', 'none', 'ListenerLoadBalancerHttpPort')
-    - ListenerLoadBalancerHttpsPort:
-        get_condition('', 'not_equals', 'none', 'ListenerLoadBalancerHttpsPort')
   Listener:
     - Classic:
         PolicyNames:
@@ -68,18 +80,18 @@ global:
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
     - HttpsExternal:
         <<: *httpsexternal
-        Condition: ListenerLoadBalancerHttpsPort
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
   ListenerV2EC2:
     - HttpExternal:
         <<: *httpexternal
-        Condition: ListenerLoadBalancerHttpPort
     - HttpInternal:
         <<: *httpinternal
-        Condition: ListenerLoadBalancerHttpPort
     - HttpsExternal:
         <<: *httpsexternal
-        Condition: ListenerLoadBalancerHttpsPort
+    - TCPExternal:
+       <<: *tcp_external
+    - TCPInternal:
+       <<: *tcp_internal
   ListenerV2ALB:
     - HttpExternal:
         <<: [*alb, *httpexternal]

@@ -386,9 +386,19 @@ def build_RP():
         except Exception:
             cfg.LoadBalancerApplication = []
 
+        # LoadBalancerNetwork
+        try:
+            cfg.LoadBalancerNetwork
+        except Exception:
+            cfg.LoadBalancerNetwork = []
+
         # LoadBalancer
         cfg.LoadBalancer = None
-        for n in ["LoadBalancerClassic", "LoadBalancerApplication"]:
+        for n in [
+            "LoadBalancerClassic",
+            "LoadBalancerApplication",
+            "LoadBalancerNetwork",
+        ]:
             try:
                 getattr(cfg, n)
             except Exception:
@@ -421,6 +431,19 @@ def build_RP():
                 cfg.LoadBalancerApplicationExternal = True
             if "Internal" in cfg.LoadBalancerApplication:
                 cfg.LoadBalancerApplicationInternal = True
+
+        # LoadBalancerNetworkExternal LoadBalancerNetworkInternal
+        cfg.LoadBalancerNetworkExternal = False
+        cfg.LoadBalancerNetworkInternal = False
+        try:
+            cfg.LoadBalancerNetwork
+        except Exception:
+            pass
+        else:
+            if "External" in cfg.LoadBalancerNetwork:
+                cfg.LoadBalancerNetworkExternal = True
+            if "Internal" in cfg.LoadBalancerNetwork:
+                cfg.LoadBalancerNetworkInternal = True
 
         # RecordSet
         cfg.RecordSetExternal = None

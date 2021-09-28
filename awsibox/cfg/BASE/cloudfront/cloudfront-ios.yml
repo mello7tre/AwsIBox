@@ -15,16 +15,6 @@ global:
         get_condition('', 'not_equals', 'none', 'CloudFrontAliasZone')
     - CloudFrontDistribution:
         get_condition('', 'equals', 'yes', 'CloudFront')
-    - CloudFrontOriginsDefaultProtocolHTTP:
-        And(
-          Condition('ListenerLoadBalancerHttpPort'),
-          get_condition('', 'not_equals', 'https-only', 'CloudFrontOriginsDefaultCustomOriginConfigOriginProtocolPolicy')
-        )
-    - CloudFrontOriginsDefaultProtocolHTTPS:
-        And(
-          Condition('ListenerLoadBalancerHttpsPort'),
-          get_condition('', 'not_equals', 'http-only', 'CloudFrontOriginsDefaultCustomOriginConfigOriginProtocolPolicy')
-        )
     - RecordSetCloudFront:
         And(
           Condition('CloudFrontDistribution'),
@@ -45,10 +35,8 @@ global:
   CloudFrontOrigins:
     - Default:
         CustomOriginConfig:
-          HTTPSPort: If('CloudFrontOriginsDefaultProtocolHTTPS',
-                        get_endvalue('ListenerLoadBalancerHttpsPort'), Ref('AWS::NoValue'))
-          HTTPPort:  If('CloudFrontOriginsDefaultProtocolHTTP',
-                        get_endvalue('ListenerLoadBalancerHttpPort'), Ref('AWS::NoValue'))
+          HTTPSPort: get_endvalue('ListenerLoadBalancerHttpsPort')
+          HTTPPort:  get_endvalue('ListenerLoadBalancerHttpPort')
         DomainName: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
         Id: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
   CloudFrontAliasExtra:
