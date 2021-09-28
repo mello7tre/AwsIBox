@@ -3,9 +3,6 @@ IBoxLoader: !include [
 ]
 
 global:
-  Condition:
-    - ListenerLoadBalancerHttpPort: Equals('true', 'false')
-    - ListenerLoadBalancerHttpsPort: Equals('true', 'true')
   Output:
     - InvokeUrl:
         Value: Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/%s' % cfg.ApiGatewayRestApi['Base']['Stage'])
