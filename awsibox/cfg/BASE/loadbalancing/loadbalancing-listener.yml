@@ -70,7 +70,7 @@ global:
     - Classic:
         PolicyNames:
           - If('LoadBalancerCookieSticky', 'LBCookieStickinessPolicy', Ref('AWS::NoValue'))
-        SSLCertificateId: If('ListenerLoadBalancerHttpsPort', get_endvalue('RegionalCertificateArn'), Ref('AWS::NoValue'))
+        SSLCertificateId: get_endvalue('RegionalCertificateArn')
   ListenerV2ECS:
     - HttpExternal:
         <<: *httpexternal
