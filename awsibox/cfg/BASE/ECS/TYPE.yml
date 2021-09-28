@@ -16,21 +16,18 @@ global:
   SecurityGroupIngress:
     - LoadBalancerApplicationHttpExternal:
         IBOX_ENABLED: False
-        Condition: ListenerLoadBalancerHttpPort 
         CidrIp: '0.0.0.0/0'
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
         ToPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
     - LoadBalancerApplicationHttpInternal:
         IBOX_ENABLED: False
-        Condition: ListenerLoadBalancerHttpPort
         CidrIp: '0.0.0.0/0'
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
         ToPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
     - LoadBalancerApplicationHttpsExternal:
         IBOX_ENABLED: False
-        Condition: ListenerLoadBalancerHttpsPort
         CidrIp: '0.0.0.0/0'
         GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue(f'ListenerLoadBalancerHttpsPort')
