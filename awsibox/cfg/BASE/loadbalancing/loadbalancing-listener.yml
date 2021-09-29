@@ -16,21 +16,13 @@ Https: &https
   Protocol: HTTPS
   SslPolicy: get_endvalue('ListenerLoadBalancerSslPolicy')
 
-TCPExternal: &tcp_external 
+TCP: &tcp 
   Protocol: TCP
+  Port: get_endvalue(f'{IBOX_REMAPNAME}LoadBalancerPort')
   DefaultActions:
     - TG:
         Type: forward
-        TargetGroupArn: Ref(f'TargetGroupExternal')
-  LoadBalancerArn: Ref(f'LoadBalancerNetworkExternal')
-
-TCPInternal: &tcp_internal 
-  Protocol: TCP
-  DefaultActions:
-    - TG:
-        Type: forward
-        TargetGroupArn: Ref(f'TargetGroupInternal')
-  LoadBalancerArn: Ref(f'LoadBalancerNetworkInternal')
+        TargetGroupArn: Ref(f'TargetGroup{IBOX_RESNAME}')
 
 External: &external
   DefaultActions:
@@ -89,9 +81,11 @@ global:
     - HttpsExternal:
         <<: *httpsexternal
     - TCPExternal:
-       <<: *tcp_external
+       <<: *tcp
+       LoadBalancerArn: Ref(f'LoadBalancerNetworkExternal')
     - TCPInternal:
-       <<: *tcp_internal
+       <<: *tcp
+       LoadBalancerArn: Ref(f'LoadBalancerNetworkInternal')
   ListenerV2ALB:
     - HttpExternal:
         <<: [*alb, *httpexternal]

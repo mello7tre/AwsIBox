@@ -91,7 +91,7 @@ class ASInitConfigSets(cfm.InitConfigSets):
 
         if getattr(cfg, "IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH", False):
             ELBWAITER = Ref("AWS::NoValue")
-        elif cfg.LoadBalancerClassic or cfg.LoadBalancerApplication:
+        elif cfg.LoadBalancer or cfg.LoadBalancer:
             ELBWAITER = "ELBWAITER"
         else:
             ELBWAITER = Ref("AWS::NoValue")
@@ -457,34 +457,9 @@ class ASInitConfigAppsBuildAmi(ASInitConfigApps):
                     self.commands[n] = v.data["Fn::If"][2]
 
 
-class ASInitConfigELBClassicExternal(cfm.InitConfig):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
-        self.commands = {
-            "ELBClassicExternalHealthCheck": {
-                "command": Join(
-                    "",
-                    [
-                        'until [ "$state" = \'"InService"\' ]; do',
-                        "  state=$(aws --region ",
-                        Ref("AWS::Region"),
-                        " elb describe-instance-health",
-                        "  --load-balancer-name ",
-                        Ref("LoadBalancerClassicExternal"),
-                        "  --instances $(curl -s "
-                        "http://169.254.169.254/latest/meta-data/instance-id)",
-                        "  --query InstanceStates[0].State);",
-                        "  sleep 10;",
-                        "done",
-                    ],
-                )
-            }
-        }
-
-
-class ASInitConfigELBClassicInternal(cfm.InitConfig):
-    def __init__(self, **kwargs):
+class ASInitConfigELBClassic(cfm.InitConfig):
+    def __init__(self, scheme, **kwargs):
         super().__init__(**kwargs)
 
         self.commands = {
@@ -497,7 +472,7 @@ class ASInitConfigELBClassicInternal(cfm.InitConfig):
                         Ref("AWS::Region"),
                         " elb describe-instance-health",
                         "  --load-balancer-name ",
-                        Ref("LoadBalancerClassicInternal"),
+                        Ref(f"LoadBalancerClassic{scheme}"),
                         "  --instances $(curl -s "
                         "http://169.254.169.254/latest/meta-data/instance-id)",
                         "  --query InstanceStates[0].State);",
@@ -509,8 +484,8 @@ class ASInitConfigELBClassicInternal(cfm.InitConfig):
         }
 
 
-class ASInitConfigELBApplicationExternal(cfm.InitConfig):
-    def __init__(self, **kwargs):
+class ASInitConfigELBApplication(cfm.InitConfig):
+    def __init__(self, scheme, **kwargs):
         super().__init__(**kwargs)
 
         self.commands = {
@@ -523,33 +498,7 @@ class ASInitConfigELBApplicationExternal(cfm.InitConfig):
                         Ref("AWS::Region"),
                         " elbv2 describe-target-health",
                         "  --target-group-arn ",
-                        Ref("TargetGroupExternal"),
-                        "  --targets Id=$(curl -s "
-                        "http://169.254.169.254/latest/meta-data/instance-id)",
-                        "  --query " "TargetHealthDescriptions[0].TargetHealth.State);",
-                        "  sleep 10;",
-                        "done",
-                    ],
-                )
-            }
-        }
-
-
-class ASInitConfigELBApplicationInternal(cfm.InitConfig):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.commands = {
-            "ELBApplicationInternalHealthCheck": {
-                "command": Join(
-                    "",
-                    [
-                        'until [ "$state" = \'"healthy"\' ]; do',
-                        "  state=$(aws --region ",
-                        Ref("AWS::Region"),
-                        " elbv2 describe-target-health",
-                        "  --target-group-arn ",
-                        Ref("TargetGroupInternal"),
+                        Ref(f"TargetGroup{scheme}"),
                         "  --targets Id=$(curl -s "
                         "http://169.254.169.254/latest/meta-data/instance-id)",
                         "  --query " "TargetHealthDescriptions[0].TargetHealth.State);",
@@ -731,26 +680,17 @@ def AS_LaunchTemplate():
         CD_DeploymentGroup()
 
     if not getattr(cfg, "IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH", False):
-        # LoadBalancerClassic External
-        if cfg.LoadBalancerClassicExternal:
-            InitConfigELBExternal = ASInitConfigELBClassicExternal()
-            CfmInitArgs["ELBWAITER"] = InitConfigELBExternal
-
-        # LoadBalancerClassic Internal
-        if cfg.LoadBalancerClassicInternal:
-            InitConfigELBInternal = ASInitConfigELBClassicInternal()
-            CfmInitArgs["ELBWAITER"] = InitConfigELBInternal
-
-        # LoadBalancerApplication External
-        if cfg.LoadBalancerApplicationExternal:
-            InitConfigELBExternal = ASInitConfigELBApplicationExternal()
-            CfmInitArgs["ELBWAITER"] = InitConfigELBExternal
-
-        # LoadBalancerApplication Internal
-        if cfg.LoadBalancerApplicationInternal:
-            InitConfigELBInternal = ASInitConfigELBApplicationInternal()
-            CfmInitArgs["ELBWAITER"] = InitConfigELBInternal
-
+        for lb in cfg.LoadBalancer:
+            # LoadBalancerClassic
+            if cfg.LoadBalancerClassic:
+                InitConfigELB= ASInitConfigELBClassic(scheme=lb)
+                CfmInitArgs["ELBWAITER"] = InitConfigELB
+    
+            # LoadBalancerApplication
+            if cfg.LoadBalancerApplication:
+                InitConfigELBE = ASInitConfigELBApplication(scheme=lb)
+                CfmInitArgs["ELBWAITER"] = InitConfigELB
+    
     if getattr(cfg, "IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA", False):
         SecurityGroups = []
     else:
@@ -807,12 +747,13 @@ def AS_LaunchTemplate():
 
 def AS_Autoscaling(key):
     LoadBalancers = []
-    for n in cfg.LoadBalancerClassic:
-        LoadBalancers.append(Ref(f"LoadBalancerClassic{n}"))
-
     TargetGroups = []
-    for n in cfg.LoadBalancerApplication:
-        TargetGroups.append(Ref(f"TargetGroup{n}"))
+    for n in cfg.LoadBalancer:
+        if cfg.LoadBalancerClassic:
+            LoadBalancers.append(Ref(f"LoadBalancerClassic{n}"))
+
+        if cfg.LoadBalancerApplication:
+            TargetGroups.append(Ref(f"TargetGroup{n}"))
 
     # Resources
     LaunchTemplateTags = AS_LaunchTemplate()

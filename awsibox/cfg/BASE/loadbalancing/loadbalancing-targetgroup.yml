@@ -51,7 +51,7 @@ ECS: &ecs
               'HealthyThresholdCount',
               'UnhealthyThresholdCount'])
     - LoadBalancerApplication:
-        Value: get_endvalue('LoadBalancerApplication', nolist=True)
+        Value: get_endvalue('LoadBalancer', nolist=True)
     - ListenerLoadBalancer:
         Value: get_subvalue('HttpPort=${1M},HttpsPort=${2M}', ['ListenerLoadBalancerHttpPort', 'ListenerLoadBalancerHttpsPort'])
   Port: get_endvalue('ContainerDefinitions1ContainerPort')
@@ -71,6 +71,9 @@ global:
   ElasticLoadBalancingV2TargetGroupEC2: 
     - External: *ec2
     - Internal: *ec2
+    - Network:
+        <<: *base
+        Port: get_endvalue(f'{IBOX_REMAPNAME}InstancePort')
   ElasticLoadBalancingV2TargetGroupECS:
     - IBOX_BASE: *ecs
   ElasticLoadBalancingV2TargetGroupALB:

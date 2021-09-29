@@ -43,25 +43,15 @@ def R53_RecordSetEC2LoadBalancer():
         R_External = r53.RecordSetType("RecordSetExternal")
         auto_get_props(R_External, "R53RecordSetEC2LoadBalancerExternal")
 
-        # LoadBalancerClassic
-        if cfg.LoadBalancerClassicExternal:
-            R_External.AliasTarget.DNSName = Sub(
-                "dualstack.${LoadBalancerClassicExternal.DNSName}"
+        if 'External' in cfg.LoadBalancer:
+            R_External.AliasTarget.DNSName = GetAtt(
+                f"LoadBalancer{cfg.LoadBalancerType}External", "DNSName"
             )
-        elif cfg.LoadBalancerClassicInternal:
-            R_External.AliasTarget.DNSName = Sub(
-                "dualstack.${LoadBalancerClassicInternal.DNSName}"
+        elif 'Internal' in cfg.LoadBalancer:
+            R_External.AliasTarget.DNSName = GetAtt(
+                f"LoadBalancer{cfg.LoadBalancerType}Internal", "DNSName"
             )
 
-        # LoadBalancerApplication
-        if cfg.LoadBalancerApplicationExternal:
-            R_External.AliasTarget.DNSName = Sub(
-                "dualstack.${LoadBalancerApplicationExternal.DNSName}"
-            )
-        elif cfg.LoadBalancerApplicationInternal:
-            R_External.AliasTarget.DNSName = Sub(
-                "dualstack.${LoadBalancerApplicationInternal.DNSName}"
-            )
 
         # outputs
         O_External = Output("RecordSetExternal")
@@ -74,24 +64,13 @@ def R53_RecordSetEC2LoadBalancer():
         R_Internal = r53.RecordSetType("RecordSetInternal")
         auto_get_props(R_Internal, "R53RecordSetEC2LoadBalancerInternal")
 
-        # LoadBalancerClassic
-        if cfg.LoadBalancerClassicInternal:
-            R_Internal.AliasTarget.DNSName = Sub(
-                "dualstack.${LoadBalancerClassicInternal.DNSName}"
+        if 'Internal' in cfg.LoadBalancer:
+            R_Internal.AliasTarget.DNSName = GetAtt(
+                f"LoadBalancer{cfg.LoadBalancerType}Internal", "DNSName"
             )
-        elif cfg.LoadBalancerClassicExternal:
-            R_Internal.AliasTarget.DNSName = Sub(
-                "dualstack.${LoadBalancerClassicExternal.DNSName}"
-            )
-
-        # LoadBalancerApplication
-        if cfg.LoadBalancerApplicationInternal:
-            R_Internal.AliasTarget.DNSName = Sub(
-                "dualstack.${LoadBalancerApplicationInternal.DNSName}"
-            )
-        elif cfg.LoadBalancerApplicationExternal:
-            R_Internal.AliasTarget.DNSName = Sub(
-                "dualstack.${LoadBalancerApplicationExternal.DNSName}"
+        if 'External' in cfg.LoadBalancer:
+            R_Internal.AliasTarget.DNSName = GetAtt(
+                f"LoadBalancer{cfg.LoadBalancerType}External", "DNSName"
             )
 
         # outputs
@@ -106,7 +85,7 @@ def R53_RecordSetECSLoadBalancer():
     if cfg.RecordSetExternal:
         R_External = r53.RecordSetType("RecordSetExternal")
 
-        if cfg.LoadBalancerApplicationExternal:
+        if 'External' in cfg.LoadBalancer:
             auto_get_props(
                 R_External, "R53RecordSetECSLoadBalancerTargetExternalExternal"
             )
@@ -124,7 +103,7 @@ def R53_RecordSetECSLoadBalancer():
     if cfg.RecordSetInternal:
         R_Internal = r53.RecordSetType("RecordSetInternal")
 
-        if cfg.LoadBalancerApplicationInternal:
+        if 'Internal' in cfg.LoadBalancer:
             auto_get_props(
                 R_Internal, "R53RecordSetECSLoadBalancerTargetInternalInternal"
             )

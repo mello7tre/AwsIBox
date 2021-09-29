@@ -93,11 +93,11 @@ def ECS_TaskDefinition(key):
 def ECS_Service(key):
     # Resources
     R_SG = SecurityGroupEcsService("SecurityGroupEcsService")
-    if cfg.LoadBalancerApplicationExternal:
+    if 'External' in cfg.LoadBalancer:
         SGRule = SecurityGroupRuleEcsService(scheme="External")
         R_SG.SecurityGroupIngress.append(SGRule)
 
-    if cfg.LoadBalancerApplicationInternal:
+    if 'Internal' in cfg.LoadBalancer:
         SGRule = SecurityGroupRuleEcsService(scheme="Internal")
         R_SG.SecurityGroupIngress.append(SGRule)
 
@@ -111,7 +111,7 @@ def ECS_Service(key):
         # delete not used LoadBalancers configuration, so that auto_get_props
         # do not find it
         for m in ["External", "Internal"]:
-            if not getattr(cfg, f"LoadBalancerApplication{m}"):
+            if m not in cfg.LoadBalancer:
                 del v["LoadBalancers"][m]
         if not v["LoadBalancers"]:
             # delete if empty to maintain compatibility with previous conf
@@ -129,7 +129,7 @@ def ECS_Service(key):
         # the Amazon ECS service-linked role must be created.
         # The role is created by omitting the Role property
         # in AWS CloudFormation
-        if cfg.LoadBalancerApplicationExternal and cfg.LoadBalancerApplicationInternal:
+        if all(k in cfg.LoadBalancer for k in ["External", "Internal"]):
             r_Service.Role = Ref("AWS::NoValue")
 
         add_obj(r_Service)

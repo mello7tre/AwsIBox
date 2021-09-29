@@ -5,7 +5,7 @@ IBoxLoader: !include [
 global:
   StackName: alb
   Parameter:
-    - LoadBalancerApplication:
+    - LoadBalancer:
         Description: 'Application Load Balancer to conditionally create - empty for default based on role - need to be already defined'
         AllowedValues: ['External', 'Internal', '']
     - RegionalCertificateArn:
@@ -13,17 +13,17 @@ global:
   Condition:
     - LoadBalancerApplicationExternal:
         Or(
-          Equals(Ref('LoadBalancerApplication'), 'External'),
-          Equals(Ref('LoadBalancerApplication'), '')
+          Equals(Ref('LoadBalancer'), 'External'),
+          Equals(Ref('LoadBalancer'), '')
         )
     - LoadBalancerApplicationInternal:
         Or(
-          Equals(Ref('LoadBalancerApplication'), 'Internal'),
-          Equals(Ref('LoadBalancerApplication'), ''),
+          Equals(Ref('LoadBalancer'), 'Internal'),
+          Equals(Ref('LoadBalancer'), ''),
         )
   Output:
     - LoadBalancerApplication:
-        Value: get_endvalue('LoadBalancerApplication', nolist=True)
+        Value: get_endvalue('LoadBalancer', nolist=True)
   SecurityGroup**:
     - LoadBalancerApplicationExternal:
         IBOX_OUTPUT:
@@ -55,5 +55,6 @@ global:
               CidrIp: '0.0.0.0/0'
               FromPort: 80
               ToPort: 80
-  LoadBalancerApplication: ['External', 'Internal']
+  LoadBalancer: ['External', 'Internal']
+  LoadBalancerType: Application
   RecordSet: []

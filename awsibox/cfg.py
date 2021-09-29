@@ -323,15 +323,7 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("awslambda", "EventInvokeConfig"),
     },
-    "LoadBalancerApplication": {
-        "module": "loadbalancing",
-        "func": "LB_ElasticLoadBalancing",
-    },
-    "LoadBalancerNetwork": {
-        "module": "loadbalancing",
-        "func": "LB_ElasticLoadBalancing",
-    },
-    "LoadBalancerClassic": {
+    "LoadBalancer": {
         "module": "loadbalancing",
         "func": "LB_ElasticLoadBalancing",
     },

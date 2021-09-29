@@ -45,6 +45,7 @@ global:
         IBOX_ENABLED: True
   CustomUserDataScript: init.sh
   DeploymentGroup: 'no'
+  LoadBalancerType: Classic
   LoadBalancer:
     CookieSticky: '0'
     IdleTimeout: 60

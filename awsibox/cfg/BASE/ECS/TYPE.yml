@@ -56,6 +56,7 @@ global:
   ListenerRules:
     - 1:
         HostHeader: '*${EnvRole}.*'
+  LoadBalancerType: Application
   LoadBalancerApplicationStack: alb-a
   ApplicationAutoScalingScalingPolicy:
     - Cpu:

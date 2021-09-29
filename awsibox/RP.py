@@ -374,76 +374,9 @@ def build_RP():
 
         # set generic attribute based on condition:
 
-        # LoadBalancerClassic
-        try:
-            cfg.LoadBalancerClassic
-        except Exception:
-            cfg.LoadBalancerClassic = []
-
-        # LoadBalancerApplication
-        try:
-            cfg.LoadBalancerApplication
-        except Exception:
-            cfg.LoadBalancerApplication = []
-
-        # LoadBalancerNetwork
-        try:
-            cfg.LoadBalancerNetwork
-        except Exception:
-            cfg.LoadBalancerNetwork = []
-
         # LoadBalancer
-        cfg.LoadBalancer = None
-        for n in [
-            "LoadBalancerClassic",
-            "LoadBalancerApplication",
-            "LoadBalancerNetwork",
-        ]:
-            try:
-                getattr(cfg, n)
-            except Exception:
-                pass
-            else:
-                cfg.LoadBalancer = True
-
-        # LoadBalancerClassicExternal LoadBalancerClassicInternal
-        cfg.LoadBalancerClassicExternal = None
-        cfg.LoadBalancerClassicInternal = None
-        try:
-            cfg.LoadBalancerClassic
-        except Exception:
-            pass
-        else:
-            if "External" in cfg.LoadBalancerClassic:
-                cfg.LoadBalancerClassicExternal = True
-            if "Internal" in cfg.LoadBalancerClassic:
-                cfg.LoadBalancerClassicInternal = True
-
-        # LoadBalancerApplicationExternal LoadBalancerApplicationInternal
-        cfg.LoadBalancerApplicationExternal = False
-        cfg.LoadBalancerApplicationInternal = False
-        try:
-            cfg.LoadBalancerApplication
-        except Exception:
-            pass
-        else:
-            if "External" in cfg.LoadBalancerApplication:
-                cfg.LoadBalancerApplicationExternal = True
-            if "Internal" in cfg.LoadBalancerApplication:
-                cfg.LoadBalancerApplicationInternal = True
-
-        # LoadBalancerNetworkExternal LoadBalancerNetworkInternal
-        cfg.LoadBalancerNetworkExternal = False
-        cfg.LoadBalancerNetworkInternal = False
-        try:
-            cfg.LoadBalancerNetwork
-        except Exception:
-            pass
-        else:
-            if "External" in cfg.LoadBalancerNetwork:
-                cfg.LoadBalancerNetworkExternal = True
-            if "Internal" in cfg.LoadBalancerNetwork:
-                cfg.LoadBalancerNetworkInternal = True
+        for n in ['Classic', 'Application', 'Network']:
+            setattr(cfg, f"LoadBalancer{n}", getattr(cfg, 'LoadBalancerType', None) == n)
 
         # RecordSet
         cfg.RecordSetExternal = None

@@ -404,11 +404,14 @@ def import_lambda(name):
         exit(1)
 
 
-def auto_get_props(obj, mapname=None, key=None, rootdict=None, indexname=""):
+def auto_get_props(
+    obj, mapname=None, key=None, rootdict=None, indexname="", remapname=None
+):
     # IBOX_RESNAME can be used in yaml and resolved inside get_endvalue
-    global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME
+    global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME, IBOX_REMAPNAME
     IBOX_RESNAME = obj.title
     IBOX_MAPNAME = mapname
+    IBOX_REMAPNAME = remapname
     IBOX_INDEXNAME = indexname
 
     # create a dict where i will put all property with a flat hierarchy

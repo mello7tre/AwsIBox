@@ -219,14 +219,9 @@ def LB_ListenerRules():
             )
 
         # resources
-        if cfg.LoadBalancerApplicationExternal:
+        for lb in cfg.LoadBalancer:
             LB_ListenerRulesExternalInternal(
-                index=str(n), key=v, mapname=mapname, scheme="External"
-            )
-
-        if cfg.LoadBalancerApplicationInternal:
-            LB_ListenerRulesExternalInternal(
-                index=str(n), key=v, mapname=mapname, scheme="Internal"
+                index=str(n), key=v, mapname=mapname, scheme=lb
             )
 
         # outputs
@@ -242,7 +237,7 @@ def LB_ListenersV2ApplicationEC2():
     LB_ListenersEC2()
     for n in ["External", "Internal"]:
         # resources
-        if n not in cfg.LoadBalancerApplication:
+        if n not in cfg.LoadBalancer:
             continue
         r_Http = elbv2.Listener(f"ListenerHttp{n}")
         auto_get_props(r_Http, mapname=f"ListenerV2EC2Http{n}")
@@ -253,28 +248,28 @@ def LB_ListenersV2ApplicationEC2():
             auto_get_props(r_Https, mapname=f"ListenerV2EC2Https{n}")
             add_obj(r_Https)
 
-    LB_TargetGroupsEC2('Application')
+    LB_TargetGroupsEC2Application()
 
 
 def LB_ListenersV2NetworkEC2():
-    for n in ["External", "Internal"]:
+    for lb in ["External", "Internal"]:
         # resources
-        if n not in cfg.LoadBalancerNetowrk:
+        if lb not in cfg.LoadBalancer:
             continue
         for n, v in cfg.Listeners.items():
             mapname = f"Listeners{n}"  # Ex ListenersPort5601
-            listener = elbv2.Listener(mapname)
-            auto_get_props(listener)
-            auto_get_props(listener, mapname=f"ListenerV2EC2TCP{n}")
+            listener = elbv2.Listener(f"{mapname}{lb}")
+            auto_get_props(listener, mapname=f"ListenerV2EC2TCP{lb}", remapname=mapname)
+            auto_get_props(listener, mapname=mapname)
             add_obj(listener)
 
-    LB_TargetGroupsEC2('Network')
+            LB_TargetGroupsEC2Network(lb, mapname)
 
 
 def LB_ListenersV2ECS():
     for n in ["External", "Internal"]:
         # resources
-        if n not in cfg.LoadBalancerApplication:
+        if n not in cfg.LoadBalancer:
             continue
         if cfg.ListenerLoadBalancerHttpPort not in ["none", 80]:
             # Enable the relative LB SecurityGroupIngress
@@ -299,24 +294,36 @@ def LB_ListenersV2ECS():
     LB_ListenerRules()
 
 
-def LB_TargetGroupsEC2(lb_type):
+def LB_TargetGroupsEC2Application():
     for n in cfg.ElasticLoadBalancingV2TargetGroupEC2:
         # resources
-        if n not in getattr(cfg, f'LoadBalancer{lb_type}', []):
+        if n not in cfg.LoadBalancer:
             continue
         r_TG = elbv2.TargetGroup(f"TargetGroup{n}")
         auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupEC2{n}")
-        if lb_type == 'Network':
-            r_TG.Protocol = 'TCP'
         add_obj(r_TG)
 
         cfg.Alarm[f"TargetEC2{n}5XX"]["IBOX_ENABLED"] = True
 
 
+def LB_TargetGroupsEC2Network(lb, mapname_listener):
+    # resources
+    r_TG = elbv2.TargetGroup(f"TargetGroup{mapname_listener}{lb}")
+    auto_get_props(
+        r_TG,
+        mapname=f"ElasticLoadBalancingV2TargetGroupEC2Network",
+        remapname=mapname_listener,
+    )
+    auto_get_props(r_TG, mapname=mapname_listener)
+    add_obj(r_TG)
+
+    cfg.Alarm[f"TargetEC2{lb}5XX"]["IBOX_ENABLED"] = True
+
+
 def LB_TargetGroupsECS():
     for n in cfg.ElasticLoadBalancingV2TargetGroupECS:
         # resources
-        if n in ["External", "Internal"] and n not in cfg.LoadBalancerApplication:
+        if n in ["External", "Internal"] and n not in cfg.LoadBalancer:
             continue
         r_TG = elbv2.TargetGroup(f"TargetGroup{n}")
         auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupECS{n}")
@@ -335,7 +342,7 @@ def LB_TargetGroupsALB():
 
     for n in cfg.ElasticLoadBalancingV2TargetGroupALB:
         # resources
-        if n not in cfg.LoadBalancerApplication:
+        if n not in cfg.LoadBalancer:
             continue
         r_TG = elbv2.TargetGroup(f"TargetGroupServiceUnavailable{n}")
         auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupALB{n}")
@@ -358,7 +365,7 @@ def LB_ElasticLoadBalancingClassicEC2():
     Listeners = LB_ListenersEC2()
     for n, v in cfg.ElasticLoadBalancingLoadBalancer.items():
         # resources
-        if n not in cfg.LoadBalancerClassic:
+        if n not in cfg.LoadBalancer:
             continue
         r_LB = elb.LoadBalancer(f"LoadBalancerClassic{n}")
         auto_get_props(r_LB, mapname=f"ElasticLoadBalancingLoadBalancer{n}")
@@ -371,7 +378,7 @@ def LB_ElasticLoadBalancingClassicEC2():
 def LB_ElasticLoadBalancingApplicationEC2():
     for n, v in cfg.ElasticLoadBalancingV2LoadBalancerAPP.items():
         # resources
-        if n not in cfg.LoadBalancerApplication:
+        if n not in cfg.LoadBalancer:
             continue
         r_LB = elbv2.LoadBalancer(f"LoadBalancerApplication{n}")
         auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerAPP{n}")
@@ -383,7 +390,7 @@ def LB_ElasticLoadBalancingApplicationEC2():
 def LB_ElasticLoadBalancingNetworkEC2():
     for n, v in cfg.ElasticLoadBalancingV2LoadBalancerNET.items():
         # resources
-        if n not in cfg.LoadBalancerNetwork:
+        if n not in cfg.LoadBalancer:
             continue
         r_LB = elbv2.LoadBalancer(f"LoadBalancerNetwork{n}")
         auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerNET{n}")
@@ -409,7 +416,7 @@ def LB_ElasticLoadBalancingEC2(key):
 def LB_ElasticLoadBalancingALB(key):
     for n, v in cfg.ElasticLoadBalancingV2LoadBalancerALB.items():
         # resources
-        if n not in cfg.LoadBalancerApplication:
+        if n not in cfg.LoadBalancer:
             continue
         r_LB = elbv2.LoadBalancer(f"LoadBalancerApplication{n}")
         auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerALB{n}")
