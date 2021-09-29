@@ -120,7 +120,7 @@ def ECS_Service(key):
         r_Service = ecs.Service(mapname)
         auto_get_props(r_Service)
 
-        if cfg.LoadBalancerApplication:
+        if cfg.LoadBalancer:
             r_Service.Role = If(
                 "NetworkModeAwsVpc", Ref("AWS::NoValue"), get_expvalue("RoleECSService")
             )

@@ -377,14 +377,14 @@ def build_RP():
         # LoadBalancer
         for n in ['Classic', 'Application', 'Network']:
             setattr(cfg, f"LoadBalancer{n}", getattr(cfg, 'LoadBalancerType', None) == n)
-
+        try:
+            cfg.LoadBalancer
+        except Exception:
+            cfg.LoadBalancer = []
+            
         # RecordSet
-        cfg.RecordSetExternal = None
-        cfg.RecordSetInternal = None
-        if "External" in cfg.RecordSet:
-            cfg.RecordSetExternal = True
-        if "Internal" in cfg.RecordSet:
-            cfg.RecordSetInternal = True
+        for n in ["External", 'Internal']:
+            setattr(cfg, f'RecordSet{n}', True if n in cfg.RecordSet else None)
 
     # End inner methods
 

@@ -13,7 +13,7 @@ Base: &base
     IBOX_OUTPUT:
       - _EnableExecuteCommand:
           Value: ${EnableExecuteCommand}
-  HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancerApplication else Ref('AWS::NoValue')")
+  HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancer else Ref('AWS::NoValue')")
   LoadBalancers:
     - External:
         ContainerName: Ref('EnvRole')

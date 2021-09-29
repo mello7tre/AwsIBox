@@ -71,6 +71,7 @@ global:
           - eth0:
               Groups++:
                 - ImportValue('SecurityGroupBaseInstance')
+  LoadBalancerType: Application
   RecordSet: ['External', 'Internal']
   ScheduledAction:
     - IBOX_BASE:
