@@ -755,6 +755,10 @@ def AS_Autoscaling(key):
         if cfg.LoadBalancerApplication:
             TargetGroups.append(Ref(f"TargetGroup{n}"))
 
+        if cfg.LoadBalancerNetwork:
+            for k, w in cfg.Listeners.items():
+                TargetGroups.append(Ref(f"TargetGroupListeners{k}{n}"))
+
     # Resources
     LaunchTemplateTags = AS_LaunchTemplate()
 

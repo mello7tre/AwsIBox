@@ -375,16 +375,18 @@ def build_RP():
         # set generic attribute based on condition:
 
         # LoadBalancer
-        for n in ['Classic', 'Application', 'Network']:
-            setattr(cfg, f"LoadBalancer{n}", getattr(cfg, 'LoadBalancerType', None) == n)
+        for n in ["Classic", "Application", "Network"]:
+            setattr(
+                cfg, f"LoadBalancer{n}", getattr(cfg, "LoadBalancerType", None) == n
+            )
         try:
             cfg.LoadBalancer
         except Exception:
             cfg.LoadBalancer = []
-            
+
         # RecordSet
-        for n in ["External", 'Internal']:
-            setattr(cfg, f'RecordSet{n}', True if n in cfg.RecordSet else None)
+        for n in ["External", "Internal"]:
+            setattr(cfg, f"RecordSet{n}", True if n in cfg.RecordSet else None)
 
     # End inner methods
 
