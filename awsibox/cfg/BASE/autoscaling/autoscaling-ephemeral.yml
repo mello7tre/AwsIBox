@@ -1,0 +1,34 @@
+global:
+  Condition:
+    - InstaceEphemeral0:
+        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral0'))
+    - InstaceEphemeral1:
+        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral1'))
+    - InstaceEphemeral2:
+        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral2'))
+  MappingClass:
+    - EC2:
+  LaunchTemplate:
+    - Data:
+        BlockDeviceMappings:
+          - InstaceEphemeral0:
+              IBOX_IF:
+                - InstaceEphemeral0
+                - IBOX_IFVALUE
+                - Ref('AWS::NoValue')
+              DeviceName: /dev/xvdb
+              VirtualName: ephemeral0
+          - InstaceEphemeral1:
+              IBOX_IF:
+                - InstaceEphemeral1
+                - IBOX_IFVALUE
+                - Ref('AWS::NoValue')
+              DeviceName: /dev/xvdc
+              VirtualName: ephemeral1
+          - InstaceEphemeral2:
+              IBOX_IF:
+                - InstaceEphemeral2
+                - IBOX_IFVALUE
+                - Ref('AWS::NoValue')
+              DeviceName: /dev/xvdd
+              VirtualName: ephemeral2

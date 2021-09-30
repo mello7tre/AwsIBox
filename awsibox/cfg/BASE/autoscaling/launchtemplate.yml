@@ -1,3 +1,8 @@
+IBoxLoader: !include [
+  #autoscaling-ephemeral.yml,
+]
+
+
 global:
   Parameter:
     - DoNotSignal:
@@ -36,12 +41,6 @@ global:
         Equals(Ref('DoNotSignal'), 'yes')
     - EfsMounts:
          Not(Equals(Select('0', Ref('EfsMounts')), ''))
-    - InstaceEphemeral0:
-        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral0'))
-    - InstaceEphemeral1:
-        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral1'))
-    - InstaceEphemeral2:
-        get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral2'))
     - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage:
         get_condition('', 'not_equals', '0', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize')
     - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount:
@@ -87,27 +86,6 @@ global:
                 VolumeSize: 0
                 VolumeType: gp2
               Mount: 'yes'
-          - InstaceEphemeral0:
-              IBOX_IF:
-                - InstaceEphemeral0
-                - IBOX_IFVALUE
-                - Ref('AWS::NoValue')
-              DeviceName: /dev/xvdb
-              VirtualName: ephemeral0
-          - InstaceEphemeral1:
-              IBOX_IF:
-                - InstaceEphemeral1
-                - IBOX_IFVALUE
-                - Ref('AWS::NoValue')
-              DeviceName: /dev/xvdc
-              VirtualName: ephemeral1
-          - InstaceEphemeral2:
-              IBOX_IF:
-                - InstaceEphemeral2
-                - IBOX_IFVALUE
-                - Ref('AWS::NoValue')
-              DeviceName: /dev/xvdd
-              VirtualName: ephemeral2
         IamInstanceProfile:
           Arn: GetAtt('InstanceProfile', 'Arn')
         ImageId.IBOX_CODE: If(

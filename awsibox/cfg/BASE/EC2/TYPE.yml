@@ -28,8 +28,6 @@ global:
   Output:
     - UpdateMode:
         Value: Ref('UpdateMode')
-  MappingClass:
-    - EC2:
   AlarmCPUBase: &cpu
     Dimensions:
       - Autoscaling:
