@@ -87,19 +87,23 @@ def LB_ListenersEC2():
         r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
             f"SecurityGroupIngress{mapname}", listener=mapname
         )
+        if cfg.LoadBalancerNetwork:
+            r_SGIInstance.CidrIp = "0.0.0.0/0"
+            del r_SGIInstance.properties["SourceSecurityGroupId"]
 
         add_obj(r_SGIInstance)
 
-        # outputs
-        Listener_Output = Output(mapname)
-        Listener_Output.Value = Sub(
-            "Protocol=${Protocol},Access=${Access}",
-            **{
-                "Protocol": get_endvalue(f"{mapname}Protocol"),
-                "Access": get_endvalue(f"{mapname}Access"),
-            },
-        )
-        add_obj(Listener_Output)
+        if not cfg.LoadBalancerNetwork:
+            # outputs
+            Listener_Output = Output(mapname)
+            Listener_Output.Value = Sub(
+                "Protocol=${Protocol},Access=${Access}",
+                **{
+                    "Protocol": get_endvalue(f"{mapname}Protocol"),
+                    "Access": get_endvalue(f"{mapname}Access"),
+                },
+            )
+            add_obj(Listener_Output)
 
     return Listeners
 
@@ -252,6 +256,7 @@ def LB_ListenersV2ApplicationEC2():
 
 
 def LB_ListenersV2NetworkEC2():
+    LB_ListenersEC2()
     for lb in ["External", "Internal"]:
         # resources
         if lb not in cfg.LoadBalancer:
@@ -316,8 +321,6 @@ def LB_TargetGroupsEC2Network(lb, mapname_listener):
     )
     auto_get_props(r_TG, mapname=mapname_listener)
     add_obj(r_TG)
-
-    cfg.Alarm[f"TargetEC2{lb}5XX"]["IBOX_ENABLED"] = True
 
 
 def LB_TargetGroupsECS():

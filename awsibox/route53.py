@@ -43,15 +43,14 @@ def R53_RecordSetEC2LoadBalancer():
         R_External = r53.RecordSetType("RecordSetExternal")
         auto_get_props(R_External, "R53RecordSetEC2LoadBalancerExternal")
 
-        if 'External' in cfg.LoadBalancer:
+        if "External" in cfg.LoadBalancer:
             R_External.AliasTarget.DNSName = GetAtt(
                 f"LoadBalancer{cfg.LoadBalancerType}External", "DNSName"
             )
-        elif 'Internal' in cfg.LoadBalancer:
+        elif "Internal" in cfg.LoadBalancer:
             R_External.AliasTarget.DNSName = GetAtt(
                 f"LoadBalancer{cfg.LoadBalancerType}Internal", "DNSName"
             )
-
 
         # outputs
         O_External = Output("RecordSetExternal")
@@ -64,11 +63,11 @@ def R53_RecordSetEC2LoadBalancer():
         R_Internal = r53.RecordSetType("RecordSetInternal")
         auto_get_props(R_Internal, "R53RecordSetEC2LoadBalancerInternal")
 
-        if 'Internal' in cfg.LoadBalancer:
+        if "Internal" in cfg.LoadBalancer:
             R_Internal.AliasTarget.DNSName = GetAtt(
                 f"LoadBalancer{cfg.LoadBalancerType}Internal", "DNSName"
             )
-        if 'External' in cfg.LoadBalancer:
+        if "External" in cfg.LoadBalancer:
             R_Internal.AliasTarget.DNSName = GetAtt(
                 f"LoadBalancer{cfg.LoadBalancerType}External", "DNSName"
             )
@@ -79,13 +78,17 @@ def R53_RecordSetEC2LoadBalancer():
 
         add_obj([R_Internal, O_Internal])
 
+    # fix bad for networkloadbalancer having different HostedZoneId
+    for r in [R_External, R_Internal]:
+        r.AliasTarget.HostedZoneId = get_endvalue("HostedZoneIdLBNET")
+
 
 def R53_RecordSetECSLoadBalancer():
     # Resources
     if cfg.RecordSetExternal:
         R_External = r53.RecordSetType("RecordSetExternal")
 
-        if 'External' in cfg.LoadBalancer:
+        if "External" in cfg.LoadBalancer:
             auto_get_props(
                 R_External, "R53RecordSetECSLoadBalancerTargetExternalExternal"
             )
@@ -103,7 +106,7 @@ def R53_RecordSetECSLoadBalancer():
     if cfg.RecordSetInternal:
         R_Internal = r53.RecordSetType("RecordSetInternal")
 
-        if 'Internal' in cfg.LoadBalancer:
+        if "Internal" in cfg.LoadBalancer:
             auto_get_props(
                 R_Internal, "R53RecordSetECSLoadBalancerTargetInternalInternal"
             )

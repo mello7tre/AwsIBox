@@ -47,6 +47,7 @@ eu-central-1 :
 
 eu-west-1 :
   HostedZoneIdLB: Z32O12XQLNTSW2
+  HostedZoneIdLBNET: Z2IFOLAFXWLO4F
 
 eu-west-2 :
   HostedZoneIdLB: ZHURV8PSTC4K8

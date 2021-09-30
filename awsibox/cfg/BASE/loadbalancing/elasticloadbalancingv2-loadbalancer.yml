@@ -36,7 +36,7 @@ Application: &app
         Value: get_endvalue('LoadBalancerHttp2')
   SecurityGroups:
     - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
-  Type: Application
+  Type: application
 
 NET: &net
   LoadBalancerAttributes:
@@ -46,7 +46,7 @@ NET: &net
     - CrossZone:
         Key: load_balancing.cross_zone.enabled
         Value: 'true'
-  Type: Network
+  Type: network
 
 ALB: &alb
   <<: *app

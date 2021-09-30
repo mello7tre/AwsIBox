@@ -152,6 +152,9 @@ def SG_SecurityGroupsTSK(key):
 
 
 def SG_SecurityGroupRules(groupname, ingresses):
+    if cfg.LoadBalancerNetwork:
+        return []
+
     SecurityGroup_Rules = []
     kwargs = {}
 
@@ -208,8 +211,6 @@ def SG_SecurityGroupRules(groupname, ingresses):
 
 def SG_SecurityGroup(key):
     for n, v in getattr(cfg, key).items():
-        if cfg.LoadBalancerNetwork:
-            return
         resname = f"{key}{n}"
 
         # resources

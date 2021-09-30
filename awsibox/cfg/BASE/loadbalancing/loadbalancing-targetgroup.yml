@@ -75,6 +75,8 @@ global:
         <<: *base
         HealthCheckPath: Ref('AWS::NoValue')
         HealthCheckTimeoutSeconds: Ref('AWS::NoValue')
+        HealthyThresholdCount: Ref('AWS::NoValue')
+        UnhealthyThresholdCount: Ref('AWS::NoValue')
         Port: get_endvalue(f'{IBOX_REMAPNAME}InstancePort')
   ElasticLoadBalancingV2TargetGroupECS:
     - IBOX_BASE: *ecs
