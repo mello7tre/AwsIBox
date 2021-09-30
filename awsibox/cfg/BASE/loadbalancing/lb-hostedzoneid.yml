@@ -1,65 +1,94 @@
 global:
 
-us-east-2 :
+us-east-2:
   HostedZoneIdLB: Z3AADJGX6KTTL2
+  HostedZoneIdLBNET: ZLMOA37VPKANP
 
-us-east-1 :
+us-east-1:
   HostedZoneIdLB: Z35SXDOTRQ7X7K
+  HostedZoneIdLBNET: Z26RNL4JYFTOTI
 
-us-west-1 :
+us-west-1:
   HostedZoneIdLB: Z368ELLRRE2KJ0
+  HostedZoneIdLBNET: Z24FKFUX50B4VW
 
-us-west-2 :
+us-west-2:
   HostedZoneIdLB: Z1H1FL5HABSF5
+  HostedZoneIdLBNET: Z18D5FSROUN65G
 
-ap-east-1 :
+af-south-1:
+  HostedZoneIdLB: Z268VQBMOI5EKX
+  HostedZoneIdLBNET: Z203XCE67M25HM
+
+ap-east-1:
   HostedZoneIdLB: Z3DQVH9N71FHZ0
+  HostedZoneIdLBNET: Z12Y7K3UBGUAD1
 
-ap-south-1 :
+ap-south-1:
   HostedZoneIdLB: ZP97RAFLXTNZK
+  HostedZoneIdLBNET: ZVDDRBQ08TROA
 
-ap-northeast-3 :
+ap-northeast-3:
   HostedZoneIdLB: Z5LXEXXYW11ES
+  HostedZoneIdLBNET: Z1GWIQ4HH19I5X
 
-ap-northeast-2 :
+ap-northeast-2:
   HostedZoneIdLB: ZWKZPGTI48KDX
+  HostedZoneIdLBNET: ZIBE1TIR4HY56
 
-ap-southeast-1 :
+ap-southeast-1:
   HostedZoneIdLB: Z1LMS91P8CMLE5
+  HostedZoneIdLBNET: ZKVM4W9LS7TM
 
-ap-southeast-2 :
+ap-southeast-2:
   HostedZoneIdLB: Z1GM3OXH4ZPM65
+  HostedZoneIdLBNET: ZCT6FZBF4DROD
 
-ap-northeast-1 :
+ap-northeast-1:
   HostedZoneIdLB: Z14GRHDCWA56QT
+  HostedZoneIdLBNET: Z31USIVHYNEOWT
 
-ca-central-1 :
+ca-central-1:
   HostedZoneIdLB: ZQSVJUPU6J1EY
+  HostedZoneIdLBNET: Z2EPGBW3API2WT
 
-cn-north-1 :
-  HostedZoneIdLB: Z3BX2TMKNYI13Y
+cn-north-1:
+  HostedZoneIdLB: Z1GDH35T77C1KE
+  HostedZoneIdLBNET: Z3QFB96KMJ7ED6
 
-cn-northwest-1 :
-  HostedZoneIdLB: Z3BX2TMKNYI13Y
+cn-northwest-1:
+  HostedZoneIdLB: ZM7IZAIOVVDZF
+  HostedZoneIdLBNET: ZQEIKTCZ8352D
 
-eu-central-1 :
+eu-central-1:
   HostedZoneIdLB: Z215JYRZR1TBD5
+  HostedZoneIdLBNET: Z3F0SRJ5LGBH90
 
-eu-west-1 :
+eu-west-1:
   HostedZoneIdLB: Z32O12XQLNTSW2
   HostedZoneIdLBNET: Z2IFOLAFXWLO4F
 
-eu-west-2 :
+eu-west-2:
   HostedZoneIdLB: ZHURV8PSTC4K8
+  HostedZoneIdLBNET: ZD4D7Y8KGAS4G
 
-eu-west-3 :
+eu-south-1:
+  HostedZoneIdLB: Z3ULH7SSC9OV64
+  HostedZoneIdLBNET: Z23146JA1KNAFP
+
+eu-west-3:
   HostedZoneIdLB: Z3Q77PNBQS71R4
+  HostedZoneIdLBNET: Z1CMS0P5QUZ6D5
 
-eu-north-1 :
+eu-north-1:
   HostedZoneIdLB: Z23TAZ6LKFMNIO
+  HostedZoneIdLBNET: Z1UDT6IFJ4EJM
 
-me-south-1 :
+me-south-1:
   HostedZoneIdLB: ZS929ML54UICD
+  HostedZoneIdLBNET: Z3QSRYVP46NYYV
 
-sa-east-1 :
+sa-east-1:
   HostedZoneIdLB: Z2P70J7HTTTPLU
+  HostedZoneIdLBNET: ZTK26PT1VY4CU
+
