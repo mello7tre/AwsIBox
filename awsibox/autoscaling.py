@@ -457,7 +457,6 @@ class ASInitConfigAppsBuildAmi(ASInitConfigApps):
                     self.commands[n] = v.data["Fn::If"][2]
 
 
-
 class ASInitConfigELBClassic(cfm.InitConfig):
     def __init__(self, scheme, **kwargs):
         super().__init__(**kwargs)
@@ -683,14 +682,22 @@ def AS_LaunchTemplate():
         for lb in cfg.LoadBalancer:
             # LoadBalancerClassic
             if cfg.LoadBalancerClassic:
-                InitConfigELB= ASInitConfigELBClassic(scheme=lb)
+                InitConfigELB = ASInitConfigELBClassic(scheme=lb)
                 CfmInitArgs["ELBWAITER"] = InitConfigELB
-    
+
             # LoadBalancerApplication
             if cfg.LoadBalancerApplication:
-                InitConfigELBE = ASInitConfigELBApplication(scheme=lb)
+                InitConfigELB = ASInitConfigELBApplication(scheme=lb)
                 CfmInitArgs["ELBWAITER"] = InitConfigELB
-    
+
+            # LoadBalancerNetwork
+            if cfg.LoadBalancerNetwork:
+                for k in cfg.Listeners:
+                    InitConfigELB = ASInitConfigELBApplication(
+                        scheme=f"TargetGroupListeners{k}{lb}"
+                    )
+                    CfmInitArgs["ELBWAITER"] = InitConfigELB
+
     if getattr(cfg, "IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA", False):
         SecurityGroups = []
     else:
@@ -756,7 +763,7 @@ def AS_Autoscaling(key):
             TargetGroups.append(Ref(f"TargetGroup{n}"))
 
         if cfg.LoadBalancerNetwork:
-            for k, w in cfg.Listeners.items():
+            for k in cfg.Listeners:
                 TargetGroups.append(Ref(f"TargetGroupListeners{k}{n}"))
 
     # Resources

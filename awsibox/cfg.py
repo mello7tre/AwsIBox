@@ -323,10 +323,7 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("awslambda", "EventInvokeConfig"),
     },
-    "LoadBalancer": {
-        "module": "loadbalancing",
-        "func": "LB_ElasticLoadBalancing",
-    },
+    "LoadBalancer": {"module": "loadbalancing", "func": "LB_ElasticLoadBalancing",},
     "Alarm": {"module": "joker", "func": ("cloudwatch", "Alarm")},
     "CloudFrontDistribution": {"module": "cloudfront", "func": "CF_CloudFront"},
     "CloudFrontCachePolicy": {"module": "joker", "func": ("cloudfront", "CachePolicy")},

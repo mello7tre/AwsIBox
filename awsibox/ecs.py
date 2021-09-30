@@ -93,11 +93,11 @@ def ECS_TaskDefinition(key):
 def ECS_Service(key):
     # Resources
     R_SG = SecurityGroupEcsService("SecurityGroupEcsService")
-    if 'External' in cfg.LoadBalancer:
+    if "External" in cfg.LoadBalancer:
         SGRule = SecurityGroupRuleEcsService(scheme="External")
         R_SG.SecurityGroupIngress.append(SGRule)
 
-    if 'Internal' in cfg.LoadBalancer:
+    if "Internal" in cfg.LoadBalancer:
         SGRule = SecurityGroupRuleEcsService(scheme="Internal")
         R_SG.SecurityGroupIngress.append(SGRule)
 
