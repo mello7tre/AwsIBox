@@ -51,3 +51,4 @@ global:
     - IBOX_BASE:
         <<: *base
         StartTime: Ref('AWS::NoValue')
+        TimeZone: Etc/UTC
