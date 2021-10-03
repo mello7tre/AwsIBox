@@ -10,6 +10,8 @@ Base: &base
         Description: 'empty for mapped value - "none" to disable'
     - _StartTime:
         Description: ''
+    - _TimeZone:
+        Description: 'empty for mapped value - https://en.wikipedia.org/wiki/List_of_tz_database_time_zones'
   IBOX_CONDITION:
     - _KeepDesiredSize:
         get_condition('', 'equals', 'k', f'{IBOX_RESNAME}DesiredSize')
@@ -29,7 +31,7 @@ Base: &base
     - _:
         Value: >-
           DesiredSize= ${DesiredCapacity} ,MinSize= ${MinSize} ,MaxSize= ${MaxSize}
-          ,Recurrence= ${Recurrence} ,StartTime= ${StartTime}
+          ,Recurrence= ${Recurrence} ,StartTime= ${StartTime} ,TimeZone= ${TimeZone}
   Condition: IBOX_RESNAME
   AutoScalingGroupName: Ref('AutoScalingGroup')
   DesiredCapacity.IBOX_CODE: If(
