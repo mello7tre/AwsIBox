@@ -79,8 +79,9 @@ def R53_RecordSetEC2LoadBalancer():
         add_obj([R_Internal, O_Internal])
 
     # fix bad for networkloadbalancer having different HostedZoneId
-    for r in [R_External, R_Internal]:
-        r.AliasTarget.HostedZoneId = get_endvalue("HostedZoneIdLBNET")
+    if cfg.LoadBalancerNetwork:
+        for r in [R_External, R_Internal]:
+            r.AliasTarget.HostedZoneId = get_endvalue("HostedZoneIdLBNET")
 
 
 def R53_RecordSetECSLoadBalancer():
