@@ -137,6 +137,7 @@ BASE_CFGS = {
     "Certificate": "IBOX_BASE",
     "CloudFrontCachePolicy": "IBOX_BASE",
     "CloudFrontOriginRequestPolicy": "IBOX_BASE",
+    "Alarm": "IBOX_BASE",
 }
 
 INSTANCE_LIST = [

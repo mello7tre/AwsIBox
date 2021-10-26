@@ -22,7 +22,6 @@ Base: &base
   Dimensions: []
 
 AlarmTarget5XX: &target5xx
-  <<: *base
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
   EvaluationPeriods: 2
   MetricName: HTTPCode_Target_5XX_Count
@@ -33,7 +32,6 @@ AlarmTarget5XX: &target5xx
   Namespace: 'AWS/ApplicationELB'
 
 AlarmBackend5XX: &backend5xx
-  <<: *base
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
   EvaluationPeriods: 2
   MetricName: HTTPCode_Backend_5XX
@@ -44,7 +42,6 @@ AlarmBackend5XX: &backend5xx
   Namespace: 'AWS/ELB'
 
 AlarmASGSpot: &asgspot
-  <<: *base
   Condition: SpotASG
   AlarmActions: [Ref('SNSTopicASGSpot')]
   Period: Ref('AWS::NoValue')
@@ -104,7 +101,6 @@ AlarmASGSpot: &asgspot
           Period: 60
 
 AlarmDiskUsed: &diskused
-  <<: *base
   EvaluationPeriods: 3
   MetricName: 'root_disk_used_percent'
   Statistic: 'Maximum'
@@ -118,13 +114,13 @@ AlarmDiskUsed: &diskused
 
 global:
   AlarmCPUBase: &cpu
-    <<: *base
     EvaluationPeriods: 5
     MetricName: 'CPUUtilization'
     Statistic: 'Average'
     Namespace: ''
     Unit: Percent
   Alarm:
+    - IBOX_BASE: *base
     - CPUHigh:
         <<: *cpu
         AlarmActions: [Ref('AutoScalingScalingPolicyUp')]
