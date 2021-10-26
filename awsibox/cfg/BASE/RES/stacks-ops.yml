@@ -27,9 +27,9 @@ global:
           S3Key: 'ibox-tools/stacks-ops/stacks-ops-01.zip'
         Description: 'Stacks Operations'
         Layers:
-          - Sub('arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:LambdaLayerVersionPython37SSM:1')
+          - Sub('arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:LambdaLayerVersionPython37SSM:2')
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Variables:
           - CloudFormationNotificationArn: get_expvalue('SNSTopicCloudFormationNotification')
         Timeout: 60
