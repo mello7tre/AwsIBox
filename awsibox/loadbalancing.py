@@ -141,7 +141,7 @@ def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
     ListenerHttpPort = cfg.ListenerLoadBalancerHttpPort
     ListenerHttpsPort = cfg.ListenerLoadBalancerHttpsPort
 
-    Protocol = key["Protocol"] if "Protocol" in key else "auto"
+    Protocol = key.get("Protocol", "auto")
 
     RuleHttpAdd = None
     RuleHttpsAdd = None

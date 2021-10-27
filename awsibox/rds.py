@@ -144,10 +144,7 @@ def RDS_DB(key):
         if not v["IBOX_ENABLED"]:
             continue
 
-        try:
-            resname = v["IBOX_RESNAME"]
-        except Exception:
-            resname = mapname
+        resname = v.get("IBOX_RESNAME", mapname)
 
         # resources
         r_DB = RDSDBInstance(mapname)

@@ -67,7 +67,7 @@ class LambdaVersion(lbd.Version):
 
 class LambdaFunction(lbd.Function):
     def setup(self, key, name):
-        import_name = key["ImportName"] if "ImportName" in key else name
+        import_name = key.get("ImportName", name)
         if "Code" not in key:
             self.Code = lbd.Code()
             try:

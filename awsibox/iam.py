@@ -244,7 +244,7 @@ def IAMPolicyInRole(name, key):
 
 def IAMPolicyStatement(key):
     Statement = {
-        "Effect": key["Effect"] if "Effect" in key else "Allow",
+        "Effect": key.get("Effect", "Allow"),
     }
 
     for k in ["Action", "NotAction", "Resource", "NotResource", "Condition"]:
