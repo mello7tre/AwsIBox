@@ -130,6 +130,8 @@ def LambdaLayers(obj, resname, i):
     o_Layer.Value = Select(i, get_endvalue(resname, condition=layername))
     o_Layer.Value = get_endvalue(resname, condition=layername, mapinlist=i)
 
+    add_obj(o_Layer)
+
     return o_Layer.Value
 
 
