@@ -7,7 +7,8 @@ Base: &base
   TargetGroupAttributes:
     - DeregistrationDelay:
         Key: 'deregistration_delay.timeout_seconds'
-        Value: get_endvalue('TargetGroupDeregistrationDelay')
+        Value.IBOX_AUTO_PO: {}
+        Value: '30'
     - GroupCookieSticky:
         Key: 'stickiness.enabled'
         Value: If('TargetGroupCookieSticky', 'true', 'false')
@@ -83,6 +84,5 @@ global:
   ElasticLoadBalancingV2TargetGroupALB:
     - External: *alb
     - Internal: *alb
-  TargetGroupDeregistrationDelay: '30'
   TargetGroupCookieSticky: '0'
   TargetGroupProtocol: HTTP

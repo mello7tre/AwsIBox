@@ -111,6 +111,8 @@ Base: &base
           get_endvalue(f'{IBOX_RESNAME}ContainerPort'),
           If(f'{IBOX_RESNAME}HostPort', get_endvalue(f'{IBOX_RESNAME}HostPort'), 0))
         Protocol: tcp
+  StopTimeout.IBOX_AUTO_PO: {}
+  StopTimeout: 30
   UseTaskCpu: 'true'
 
 global:
