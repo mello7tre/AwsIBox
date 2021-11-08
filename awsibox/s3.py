@@ -128,7 +128,9 @@ def S3BucketPolicyStatementSes(bucket):
             "Effect": "Allow",
             "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
             "Principal": {"Service": "ses.amazonaws.com"},
-            "Condition": {"StringEquals": {"aws:Referer": Ref("AWS::AccountId")},},
+            "Condition": {
+                "StringEquals": {"aws:Referer": Ref("AWS::AccountId")},
+            },
             "Sid": "AllowSES",
         },
     )
@@ -176,7 +178,9 @@ def S3BucketPolicyStatementWrite(bucket, principal):
     condition = f"{bucket}PolicyWrite"
     statements.append(
         {
-            "Action": ["s3:Put*",],
+            "Action": [
+                "s3:Put*",
+            ],
             "Effect": "Allow",
             "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
             "Principal": {"AWS": principal},
@@ -457,7 +461,11 @@ def S3_Buckets(key):
 
             # conditions
             identitycondname = f"{resname}CloudFrontOriginAccessIdentity"
-            c_identity = get_condition(identitycondname, "not_equals", "none")
+            c_identity = {
+                identitycondname: And(
+                    resname, get_condition("", "not_equals", "none", identitycondname)
+                )
+            }
 
             add_obj(c_identity)
 
@@ -476,7 +484,9 @@ def S3_Buckets(key):
             r_OriginAccessIdentity.Condition = identitycondname
 
             add_obj(
-                [r_OriginAccessIdentity,]
+                [
+                    r_OriginAccessIdentity,
+                ]
             )
 
             # outputs
