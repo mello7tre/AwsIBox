@@ -463,7 +463,8 @@ def S3_Buckets(key):
             identitycondname = f"{resname}CloudFrontOriginAccessIdentity"
             c_identity = {
                 identitycondname: And(
-                    resname, get_condition("", "not_equals", "none", identitycondname)
+                    Condition(resname),
+                    get_condition("", "not_equals", "none", identitycondname),
                 )
             }
 
