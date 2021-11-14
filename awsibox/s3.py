@@ -382,15 +382,15 @@ def S3_Buckets(key):
         else:
             for lbd_n, lbd_v in lbd_confs.items():
                 lambda_arn = eval(lbd_v["Function"])
-                if "Fn::GettAtt" in lambda_arn.data:
+                if "Fn::GetAtt" in lambda_arn.data:
                     permname = "%s%s" % (
-                        lambda_arn.data["Fn::GettAtt"].replace(
+                        lambda_arn.data["Fn::GetAtt"][0].replace(
                             "Lambda", "LambdaPermission"
                         ),
                         resname,
                     )
                 else:
-                    permname = "LambdaPermission"
+                    permname = f"LambdaPermission{resname}"
 
                 r_LambdaPermission = LambdaPermissionS3(
                     permname, key=lambda_arn, source=resname
