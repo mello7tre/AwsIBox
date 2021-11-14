@@ -381,20 +381,29 @@ def S3_Buckets(key):
             pass
         else:
             for lbd_n, lbd_v in lbd_confs.items():
-                lambda_arn = eval(lbd_v["Function"])
-                if "Fn::GetAtt" in lambda_arn.data:
-                    permname = "%s%s" % (
-                        lambda_arn.data["Fn::GetAtt"][0].replace(
-                            "Lambda", "LambdaPermission"
-                        ),
-                        resname,
-                    )
-                else:
+                try:
+                    lambda_arn = eval(lbd_v["Function"])
+
+                    if "Fn::GetAtt" in lambda_arn.data:
+                        lambda_name = lambda_arn.data["Fn::GetAtt"][0]
+                        permname = "%s%s" % (
+                            lambda_name.replace("Lambda", "LambdaPermission"),
+                            resname,
+                        )
+                except Exception:
+                    lambda_arn = lbd_v["Function"]
                     permname = f"LambdaPermission{resname}"
 
                 r_LambdaPermission = LambdaPermissionS3(
                     permname, key=lambda_arn, source=resname
                 )
+
+                try:
+                    r_LambdaPermission.Condition = getattr(
+                        cfg, f"{lambda_name}Condition"
+                    )
+                except Exception:
+                    pass
 
                 add_obj(r_LambdaPermission)
 
