@@ -4,7 +4,7 @@ global:
         Roles:
           - Ref('RoleTask')
         Statement:
-          - 1:
+          - Base:
               Action:
                 - 's3:Get*'
                 - 's3:List*'
@@ -39,9 +39,12 @@ global:
                 - 'waf:GetWebACL'
                 - 'waf:ListWebACLs'
               Resource: '*'
-          - 2:
+          - Ami:
               Action: 'ssm:GetParameter*'
               Resource:
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+          - EnvAppVersions:
+              Action: 'ssm:PutParameter'
+              Resource: 'arn:aws:ssm:*:*:parameter/EnvAppVersions'

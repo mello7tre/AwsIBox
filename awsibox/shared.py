@@ -6,15 +6,25 @@ from .common import *
 
 
 # S - PARAMETERS #
+class SSMParameter(ssm.Parameter):
+    Type = "String"
+
+
 class Parameter(Parameter):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.Type = "String"
         self.Default = ""
 
-
-class SSMParameter(ssm.Parameter):
-    Type = "String"
+        # Create SSM Parameter for EnvAppXVersion Params to have history of application versions
+        if title.startswith("EnvApp") and title.endswith("Version"):
+            add_obj(
+                SSMParameter(
+                    f"SSMParameter{title}",
+                    Name=Sub("/EnvAppVersions/${EnvRole}/${AWS::StackName}/%s" % title),
+                    Value=Ref(title),
+                )
+            )
 
 
 # E - PARAMETERS #
@@ -343,8 +353,14 @@ def get_condition(
     ):
         key_override = f"{key_name}Override"
         condition = Or(
-            And(Condition(key_override), cond_param,),
-            And(Not(Condition(key_override)), cond_map,),
+            And(
+                Condition(key_override),
+                cond_param,
+            ),
+            And(
+                Not(Condition(key_override)),
+                cond_map,
+            ),
         )
         if OrExtend:
             condition.data["Fn::Or"].extend(OrExtend)
