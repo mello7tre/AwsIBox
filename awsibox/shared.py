@@ -19,11 +19,16 @@ class Parameter(Parameter):
         # Create SSM Parameter for EnvAppXVersion Params to have history of application versions
         if title.startswith("EnvApp") and title.endswith("Version"):
             add_obj(
-                SSMParameter(
-                    f"SSMParameter{title}",
-                    Name=Sub("/EnvAppVersions/${EnvRole}/${AWS::StackName}/%s" % title),
-                    Value=Ref(title),
-                )
+                [
+                    get_condition(title, "not_equals", "", nomap=True),
+                    SSMParameter(
+                        f"SSMParameter{title}",
+                        Name=Sub(
+                            "/EnvAppVersions/${EnvRole}/${AWS::StackName}/%s" % title
+                        ),
+                        Value=If(title, Ref(title), "none"),
+                    ),
+                ]
             )
 
 
