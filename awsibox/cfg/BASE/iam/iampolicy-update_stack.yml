@@ -47,4 +47,4 @@ global:
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
           - SSMEnvAppVersions:
               Action: 'ssm:PutParameter'
-              Resource: 'arn:aws:ssm:*:*:parameter/EnvAppVersions'
+              Resource: 'arn:aws:ssm:*:*:parameter/EnvAppVersions/*'
