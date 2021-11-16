@@ -57,7 +57,7 @@ global:
         Type: Managed
         Description: 'Provides full access apart management of Users and groups, Direct Access to SSM Parameters.'
         Statement:
-          - 1:
+          - IAMAllowed:
               Action:
                 - 'iam:CreateServiceLinkedRole'
                 - 'iam:DeleteServiceLinkedRole'
@@ -68,18 +68,19 @@ global:
                 - 'iam:PassRole'
                 - 'organizations:DescribeOrganization'
               Resource: '*'
-          - 2:
+          - MISCDenied:
               NotAction:
                 - 'iam:*'
                 - 'organizations:*'
                 - 'ssm:*'
               Resource: '*'
-          - 3:
+          - SSMAllowed:
               Action:
                 - 'ssm:GetParameter*'
               Resource:
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+                - 'arn:aws:ssm:*:*:parameter/EnvAppVersions/*'
     - STSAssumeRoleOwn:
         Export: True
         Type: Managed

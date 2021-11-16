@@ -9,15 +9,15 @@ global:
         Roles:
           - Ref('RoleLambdaStacksOps')
         Statement:
-          - EnvRole:
+          - SSMEnvRole:
               Action: 'ssm:GetParameter*'
               Resource: 'arn:aws:ssm:*:*:parameter/buildkite/*'
-          - Read:
+          - SSMRead:
               Action:
                 - 'ssm:DescribeParameters'
                 - 'kms:ListAliases'
               Resource: '*'
-          - Key:
+          - KMSKey:
               Action: 'kms:Decrypt'
               Resource: get_expvalue('KeyParameterStore')
   Lambda:
