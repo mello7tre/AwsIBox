@@ -23,10 +23,11 @@ class Parameter(Parameter):
                     get_condition(title, "not_equals", "", nomap=True),
                     SSMParameter(
                         f"SSMParameter{title}",
+                        Condition=title,
                         Name=Sub(
                             "/EnvAppVersions/${EnvRole}/${AWS::StackName}/%s" % title
                         ),
-                        Value=If(title, Ref(title), "none"),
+                        Value=Ref(title),
                     ),
                 ]
             )
