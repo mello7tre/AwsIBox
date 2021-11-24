@@ -35,3 +35,8 @@ global:
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole'
         Principal: monitoring.rds.amazonaws.com
+    - GlueService:
+        Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'
+        Principal: glue.amazonaws.com

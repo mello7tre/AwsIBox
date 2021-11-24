@@ -83,6 +83,7 @@ EVAL_FUNCTIONS_IN_CFG = (
     "get_condition(",
     "GetAtt(",
     "Split(",
+    "Select(",
     "Export(",
     "ImportValue(",
     "Join(",
