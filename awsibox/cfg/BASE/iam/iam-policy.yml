@@ -53,6 +53,12 @@ RDSRead01: &rds_read_01
     - 'logs:GetLogEvents'
   Resource: '*'
 
+EC2Base01: &ec2_base_01
+  Action:
+    - 'ec2:DescribeSecurityGroups'
+    - 'ec2:DescribeSubnets'
+    - 'ec2:DescribeVpcs'
+
 
 global:
   IAMPolicy:
@@ -92,6 +98,13 @@ global:
         Description: 'AWS Managed AmazonRDSReadOnlyAccess + DownloadDBLogFilePortion'
         Statement:
           - RDSRead01: *rds_read_01
+    - EC2Base:
+        IBOX_ENABLED: False
+        Export: True
+        Type: Managed
+        Description: 'EC2 Base policy'
+        Statement:
+          - EC2Base01: *ec2_base_01
     - Developer:
         IBOX_ENABLED: False
         Export: True
