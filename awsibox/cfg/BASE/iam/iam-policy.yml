@@ -58,6 +58,7 @@ EC2Base01: &ec2_base_01
     - 'ec2:DescribeSecurityGroups'
     - 'ec2:DescribeSubnets'
     - 'ec2:DescribeVpcs'
+  Resource: '*'
 
 
 global:
