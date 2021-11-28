@@ -41,6 +41,7 @@ global:
           - 2:
               Action:
                 - 'iam:ListUsers'
+                - 'iam:ListRoles'
               Resource: '*'
     - S3ListBuckets:
         Export: True
