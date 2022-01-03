@@ -82,12 +82,17 @@ def ECS_ContainerDefinition():
 
 
 def ECS_TaskDefinition(key):
-    # Resources
-    R_TaskDefinition = ecs.TaskDefinition("TaskDefinitionBase")
-    auto_get_props(R_TaskDefinition)
-    R_TaskDefinition.ContainerDefinitions = ECS_ContainerDefinition()
+    for n, v in getattr(cfg, key).items():
+        if not v.get("IBOX_ENABLED", True):
+            continue
+        mapname = f"{key}{n}"
 
-    add_obj([R_TaskDefinition])
+        # Resources
+        R_TaskDefinition = ecs.TaskDefinition(mapname)
+        auto_get_props(R_TaskDefinition)
+        R_TaskDefinition.ContainerDefinitions = ECS_ContainerDefinition()
+
+        add_obj([R_TaskDefinition])
 
 
 def ECS_Service(key):

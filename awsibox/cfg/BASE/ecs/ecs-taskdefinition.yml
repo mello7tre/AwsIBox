@@ -1,5 +1,4 @@
 Base: &base
-  IBOX_TITLE: TaskDefinition
   ExecutionRoleArn: If('LaunchTypeFarGate', get_expvalue('RoleECSTaskExecution'), Ref('AWS::NoValue'))
   TaskRoleArn: Ref('RoleTask')
   Cpu: If('CpuTask', get_endvalue('Cpu'), Ref('AWS::NoValue'))
@@ -10,7 +9,17 @@ Base: &base
 
 global:
   TaskDefinition:
-    - Base: *base
+    - Base:
+        <<: *base
+        IBOX_TITLE: TaskDefinition
+    - Fargate:
+        <<: *base
+        IBOX_ENABLED: False
+        ExecutionRoleArn: get_expvalue('RoleECSTaskExecution')
+        Cpu: '256'
+        Memory: '512'
+        NetworkMode: awsvpc
+        RequiresCompatibilities: ['FARGATE']
   Parameter:
     - Cpu:
         Description: 'Cpu used by task - empty for default based on env/role'
