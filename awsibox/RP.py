@@ -183,7 +183,10 @@ def build_RP():
                 return work
             keys = dict(list(base.items()) + list(work.items())).keys()
             for k in keys:
-                if isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
+                if k.endswith("**"):
+                    # ** is used to replace existing dict instead of merging it
+                    base[k.replace("**", "")] = work[k]
+                elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
                     base[k] = _merge(base[k], work[k])
                 elif k.endswith("++") and isinstance(work.get(k), list):
                     # ++ is used to append elements to an existing key
@@ -200,7 +203,10 @@ def build_RP():
                 key = replace_not_allowed_char(key)
             if key.endswith("**"):
                 # ** is used to replace existing dict instead of merging it
-                key = key.replace("**", "")
+                f_key = key.replace("**", "")
+                if isinstance(RP.get(f_key), dict):
+                    # replace key only if same key already exist and is a dict
+                    key = f_key
                 merge = False
 
             if merge and isinstance(RP.get(key), dict):
