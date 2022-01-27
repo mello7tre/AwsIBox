@@ -112,16 +112,30 @@ CLF_PATH_PATTERN_REPLACEMENT = {
 BASE_CFGS = {
     "Bucket": {
         "Create": "no",
-        "AccountsRead": {"dev": "none", "stg": "none", "prd": "none",},
-        "AccountsWrite": {"dev": "none", "stg": "none", "prd": "none",},
+        "AccountsRead": {
+            "dev": "none",
+            "stg": "none",
+            "prd": "none",
+        },
+        "AccountsWrite": {
+            "dev": "none",
+            "stg": "none",
+            "prd": "none",
+        },
         "Cors": "no",
         "CloudFrontOriginAccessIdentityExtra": {
             "Dev": "none",
             "Stg": "none",
             "Prd": "none",
         },
-        "PolicyStatementReplica": {"Resource": {}, "Principal": "none",},
-        "Replication": {"Enabled": "no", "ConfigurationRules": {},},
+        "PolicyStatementReplica": {
+            "Resource": {},
+            "Principal": "none",
+        },
+        "Replication": {
+            "Enabled": "no",
+            "ConfigurationRules": {},
+        },
         "Versioning": "Disabled",
     },
     "CloudFrontCacheBehaviors": {
@@ -141,119 +155,104 @@ BASE_CFGS = {
     "Alarm": "IBOX_BASE",
 }
 
-INSTANCE_LIST = [
-    "default",
-    "t2.nano",
-    "t2.micro",
-    "t2.small",
-    "t2.medium",
-    "t2.large",
-    "t2.xlarge",
-    "t2.2xlarge",
-    "m4.large",
-    "m4.xlarge",
-    "m4.2xlarge",
-    "m4.4xlarge",
-    "c4.large",
-    "c4.xlarge",
-    "c4.2xlarge",
-    "c4.4xlarge",
-    "r4.large",
-    "r4.xlarge",
-    "r4.2xlarge",
-    "r4.4xlarge",
-    "g2.2xlarge",
-    "g3s.xlarge",
-    "t3.nano",
-    "t3.micro",
-    "t3.small",
-    "t3.medium",
-    "t3.large",
-    "t3.xlarge",
-    "t3.2xlarge",
-    "m5.large",
-    "m5.xlarge",
-    "m5.2xlarge",
-    "m5.4xlarge",
-    "m5.8xlarge",
-    "m5.12xlarge",
-    "m5.16xlarge",
-    "m5.24xlarge",
-    "c5.large",
-    "c5.xlarge",
-    "c5.2xlarge",
-    "c5.4xlarge",
-    "c5.9xlarge",
-    "c5.12xlarge",
-    "c5.18xlarge",
-    "c5.24xlarge",
-    "r5.large",
-    "r5.xlarge",
-    "r5.2xlarge",
-    "r5.4xlarge",
-    "r5.8xlarge",
-    "r5.12xlarge",
-    "r5.16xlarge",
-    "r5.24xlarge",
-    "a1.medium",
-    "a1.large",
-    "a1.xlarge",
-    "a1.2xlarge",
-    "a1.4xlarge",
-    "m5a.large",
-    "m5a.xlarge",
-    "m5a.2xlarge",
-    "m5a.4xlarge",
-    "m5a.8xlarge",
-    "m5a.12xlarge",
-    "m5a.16xlarge",
-    "m5a.24xlarge",
-    "r5a.large",
-    "r5a.xlarge",
-    "r5a.2xlarge",
-    "r5a.4xlarge",
-    "r5a.8xlarge",
-    "r5a.12xlarge",
-    "r5a.16xlarge",
-    "r5a.24xlarge",
-    "c5a.large",
-    "c5a.xlarge",
-    "c5a.2xlarge",
-    "c5a.4xlarge",
-    "c5a.8xlarge",
-    "c5a.12xlarge",
-    "c5a.16xlarge",
-    "c5a.24xlarge",
-    "t3a.nano",
-    "t3a.micro",
-    "t3a.small",
-    "t3a.medium",
-    "t3a.large",
-    "t3a.xlarge",
-    "t3a.2xlarge",
-    "t4g.nano",
-    "t4g.micro",
-    "t4g.small",
-    "t4g.medium",
-    "t4g.large",
-    "t4g.xlarge",
-    "t4g.2xlarge",
-    "c6g.medium",
-    "c6g.large",
-    "c6g.xlarge",
-    "c6g.2xlarge",
-    "c6g.4xlarge",
-    "c6g.8xlarge",
-    "c6g.12xlarge",
-    "c6g.16xlarge",
-    "m6g.medium",
-    "m6g.large",
-    "m6g.xlarge",
-    "m6g.2xlarge",
-    "m6g.4xlarge",
-    "m6g.8xlarge",
-    "m6g.12xlarge",
-    "m6g.16xlarge",
+INSTANCE_SIZES = [
+    "nano",
+    "micro",
+    "small",
+    "medium",
+    "large",
+    "xlarge",
+    "2xlarge",
+    "4xlarge",
+    "8xlarge",
+    "12xlarge",
+    "16xlarge",
+    "24xlarge",
+    "32xlarge",
+    "48xlarge",
+]
+
+INSTANCE_FAMILY = [
+    {
+        "Name": "t2",
+        "Min": "nano",
+        "Max": "2xlarge",
+    },
+    {
+        "Name": "m4",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "c4",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "r4",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "t3",
+        "Min": "nano",
+        "Max": "2xlarge",
+    },
+    {
+        "Name": "m5",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "c5",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "r5",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "t3a",
+        "Min": "nano",
+        "Max": "2xlarge",
+    },
+    {
+        "Name": "m5a",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "c5a",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "r5a",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "m6i",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "c6i",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "r6i",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "m6a",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
 ]
 
 # override previous cfg with an External one
@@ -262,6 +261,22 @@ try:
         exec(f.read())
 except FileNotFoundError:
     pass
+
+# build instances list
+def build_instance_list():
+    family_instances_list = []
+    for family in INSTANCE_FAMILY:
+        name = family["Name"]
+        min_size = INSTANCE_SIZES.index(family["Min"])
+        max_size = INSTANCE_SIZES.index(family["Max"])
+
+        for s in INSTANCE_SIZES[min_size : max_size + 1]:
+            family_instances_list.append(f"{name}.{s}")
+
+    return family_instances_list
+
+
+INSTANCE_LIST = ["default"] + build_instance_list()
 
 # Order is VERY important do not CHANGE it!
 CFG_TO_FUNC = {
@@ -325,7 +340,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("awslambda", "EventInvokeConfig"),
     },
-    "LoadBalancer": {"module": "loadbalancing", "func": "LB_ElasticLoadBalancing",},
+    "LoadBalancer": {
+        "module": "loadbalancing",
+        "func": "LB_ElasticLoadBalancing",
+    },
     "Alarm": {"module": "joker", "func": ("cloudwatch", "Alarm")},
     "CloudFrontDistribution": {"module": "cloudfront", "func": "CF_CloudFront"},
     "CloudFrontCachePolicy": {"module": "joker", "func": ("cloudfront", "CachePolicy")},
