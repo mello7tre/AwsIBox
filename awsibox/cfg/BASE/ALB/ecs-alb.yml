@@ -1,5 +1,6 @@
 IBoxLoader: !include [
   loadbalancing/loadbalancing-elb.yml,
+  alarms.yml,
 ]
 
 global:
@@ -24,6 +25,13 @@ global:
   Output:
     - LoadBalancerApplication:
         Value: get_endvalue('LoadBalancer', nolist=True)
+  Alarm:
+    - LoadBalancerApplicationExternal5XX:
+        IBOX_ENABLED: True
+        Condition: LoadBalancerApplicationExternal
+    - LoadBalancerApplicationInternal5XX:
+        Condition: LoadBalancerApplicationInternal
+        IBOX_ENABLED: True
   SecurityGroup**:
     - LoadBalancerApplicationExternal:
         IBOX_OUTPUT:

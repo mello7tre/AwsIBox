@@ -31,6 +31,16 @@ AlarmTarget5XX: &target5xx
   TreatMissingData: 'notBreaching'
   Namespace: 'AWS/ApplicationELB'
 
+AlarmLoadBalancerApplication5XX: &alb5xx
+  AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
+  EvaluationPeriods: 2
+  MetricName: HTTPCode_ELB_5XX_Count
+  Statistic: Sum
+  ComparisonOperator: 'GreaterThanThreshold'
+  Threshold: '50'
+  TreatMissingData: 'notBreaching'
+  Namespace: 'AWS/ApplicationELB'
+
 AlarmBackend5XX: &backend5xx
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
   EvaluationPeriods: 2
@@ -175,6 +185,18 @@ global:
           - LoadBalancer:
               Name: LoadBalancerName
               Value: Ref('LoadBalancerClassicInternal')
+    - LoadBalancerApplicationExternal5XX:
+        <<: *alb5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: Sub('${LoadBalancerApplicationExternal.LoadBalancerFullName}')
+    - LoadBalancerApplicationInternal5XX:
+        <<: *alb5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: Sub('${LoadBalancerApplicationInternal.LoadBalancerFullName}')
     - ASGSpotNotAvailable:
         <<: *asgspot
         ComparisonOperator: GreaterThanOrEqualToThreshold
