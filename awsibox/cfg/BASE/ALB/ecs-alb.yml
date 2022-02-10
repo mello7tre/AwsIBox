@@ -22,15 +22,25 @@ global:
           Equals(Ref('LoadBalancer'), 'Internal'),
           Equals(Ref('LoadBalancer'), ''),
         )
+    - AlarmLoadBalancerApplicationExternal5XXEvaluationPeriods:
+        And(
+          Condition('LoadBalancerApplicationExternal'),
+          Condition('AlarmLoadBalancerApplicationExternal5XX'),
+        )
+    - AlarmLoadBalancerApplicationInternal5XXEvaluationPeriods:
+        And(
+          Condition('LoadBalancerApplicationInternal'),
+          Condition('AlarmLoadBalancerApplicationInternal5XX'),
+        )
   Output:
     - LoadBalancerApplication:
         Value: get_endvalue('LoadBalancer', nolist=True)
   Alarm:
     - LoadBalancerApplicationExternal5XX:
         IBOX_ENABLED: True
-        Condition: LoadBalancerApplicationExternal
+        Condition: AlarmLoadBalancerApplicationExternal5XXEvaluationPeriods
     - LoadBalancerApplicationInternal5XX:
-        Condition: LoadBalancerApplicationInternal
+        Condition: AlarmLoadBalancerApplicationInternal5XXEvaluationPeriods
         IBOX_ENABLED: True
   SecurityGroup**:
     - LoadBalancerApplicationExternal:
