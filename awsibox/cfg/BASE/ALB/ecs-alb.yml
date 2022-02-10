@@ -39,9 +39,11 @@ global:
     - LoadBalancerApplicationExternal5XX:
         IBOX_ENABLED: True
         Condition: AlarmLoadBalancerApplicationExternal5XXEvaluationPeriods
+        EvaluationPeriods: 3
     - LoadBalancerApplicationInternal5XX:
         Condition: AlarmLoadBalancerApplicationInternal5XXEvaluationPeriods
         IBOX_ENABLED: True
+        EvaluationPeriods: 3
   SecurityGroup**:
     - LoadBalancerApplicationExternal:
         IBOX_OUTPUT:
