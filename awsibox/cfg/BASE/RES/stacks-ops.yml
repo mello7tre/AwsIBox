@@ -1,6 +1,7 @@
 IBoxLoader:
   - !include
     - iam/iampolicy-update_stack.yml
+    - lambda/layers.yml
 
 global:
   StackName: sss
@@ -27,7 +28,7 @@ global:
           S3Key: 'ibox-tools/stacks-ops/stacks-ops-01.zip'
         Description: 'Stacks Operations'
         Layers:
-          - Sub('arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:LambdaLayerVersionPython37SSM:2')
+          - get_endvalue('LambdaLayerVersionPython37SSM')
         MemorySize: 128
         Runtime: python3.9
         Variables:

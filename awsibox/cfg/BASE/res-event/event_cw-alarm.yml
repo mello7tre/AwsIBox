@@ -1,3 +1,7 @@
+IBoxLoader:
+  - !include
+    - lambda/layers.yml
+
 global:
   EventsRule:
     - CloudWatchAlarmStateChangeToAlarm:
@@ -22,6 +26,8 @@ global:
         Code:
           S3Bucket: Sub(cfg.BucketAppRepository)
           S3Key: ibox-tools/cloudwatch-repeated-notify/cloudwatch-repeated-notify-95241a4.zip
+        Layers:
+          - get_endvalue('LambdaLayerVersionPython37SSM')
         MemorySize: 128
         Runtime: python3.9
         Timeout: 30
@@ -46,3 +52,6 @@ global:
           - 2:
               Action: 'sns:Publish'
               Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+    - ParameterStore:
+        Roles:
+          - Ref('RoleLambdaCloudWatchRepeatedNotify')
