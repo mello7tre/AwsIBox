@@ -1,0 +1,48 @@
+global:
+  EventsRule:
+    - CloudWatchAlarmStateChangeToAlarm:
+        Description: 'Captures all of the alarms state changes to the ALARM event'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            state:
+              value: ['ALARM']
+          detail-type:
+            - CloudWatch Alarm State Change
+          source:
+            - aws.cloudwatch
+        Targets:
+          - LambdaCloudWatchRepeatedNotify:
+              Arn: GetAtt('LambdaCloudWatchRepeatedNotify', 'Arn')
+              Id: TargetFunction-01
+  Lambda:
+    - CloudWatchRepeatedNotify:
+        Architectures: ['arm64']
+        Description: 'CloudWatch Repeated Notify'
+        Code:
+          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Key: ibox-tools/cloudwatch-repeated-notify/cloudwatch-repeated-notify-95241a4.zip
+        MemorySize: 128
+        Runtime: python3.9
+        Timeout: 30
+        Variables:
+          - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+  IAMPolicy:
+    - LambdaCloudWatchRepeatedNotify:
+        Roles:
+          - Ref('RoleLambdaCloudWatchRepeatedNotify')
+        Statement:
+          - 1:
+              Action:
+                - 'cloudwatch:DescribeAlarms'
+                - 'events:DescribeRule'
+                - 'events:PutRule'
+                - 'events:DeleteRule'
+                - 'events:PutTargets'
+                - 'events:RemoveTargets'
+                - 'lambda:AddPermission'
+                - 'lambda:RemovePermission'
+              Resource: '*'
+          - 2:
+              Action: 'sns:Publish'
+              Resource: get_expvalue('SNSTopicCloudWatchAlarm')
