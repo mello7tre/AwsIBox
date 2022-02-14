@@ -190,7 +190,10 @@ def build_RP():
                     base[k] = _merge(base[k], work[k])
                 elif k.endswith("++") and isinstance(work.get(k), list):
                     # ++ is used to append elements to an existing key
-                    base[k.replace("++", "")] += work[k]
+                    try:
+                        base[k.replace("++", "")] += work[k]
+                    except Exception:
+                        base[k.replace("++", "")] = work[k]
                 elif k in work:
                     base[k] = work[k]
             return base

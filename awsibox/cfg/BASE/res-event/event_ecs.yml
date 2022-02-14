@@ -139,5 +139,5 @@ global:
               Action: 'sns:Publish'
               Resource: get_expvalue('SNSTopicCloudWatchAlarm')
     - ParameterStore:
-        Roles:
+        Roles++:
           - Ref('RoleLambdaECSEvents')
