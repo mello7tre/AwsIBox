@@ -19,6 +19,15 @@ global:
           - LambdaCloudWatchRepeatedNotify:
               Arn: GetAtt('LambdaCloudWatchRepeatedNotify', 'Arn')
               Id: TargetFunction-01
+    - CloudWatchRepeatedNotify:
+        Description: 'Schedule check for alarms in ALARM state and notify'
+        State: 'DISABLED'
+        ScheduleExpression.IBOX_AUTO_PO: {}
+        ScheduleExpression: 'rate(5 minutes)'
+        Targets:
+          - LambdaCloudWatchRepeatedNotify:
+              Arn: GetAtt('LambdaCloudWatchRepeatedNotify', 'Arn')
+              Id: TargetFunction-01
   Lambda:
     - CloudWatchRepeatedNotify:
         Architectures: ['arm64']
