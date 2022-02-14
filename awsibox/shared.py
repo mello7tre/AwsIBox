@@ -148,6 +148,7 @@ def get_endvalue(
     strout=False,
     fixedvalues=None,
     mapinlist=False,
+    no_check_for_mappedvalues=False,
 ):
     if not fixedvalues:
         # set default if not defined
@@ -185,8 +186,10 @@ def get_endvalue(
                     else value
                 )
         # ... otherway use mapping
-        else:
+        elif no_check_for_mappedvalues or param in cfg.mappedvalues:
             value = FindInMap(Ref("EnvShort"), Ref("AWS::Region"), param)
+        else:
+            raise ValueError(f"{param} not present in mappedvalues.")
 
         if strout is True and isinstance(value, int):
             value = str(value)
@@ -335,6 +338,9 @@ def get_condition(
         # but multiple values as override parameters
         if mapinlist:
             value1_map = get_endvalue(mapinlist[0], mapinlist=mapinlist[1])
+        elif nomap:
+            # if nomap need to avoid checking that value does exist in mappedvalues
+            value1_map = get_endvalue(key_name, no_check_for_mappedvalues=True)
         else:
             value1_map = get_endvalue(key_name)
 

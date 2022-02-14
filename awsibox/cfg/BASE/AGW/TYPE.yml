@@ -23,4 +23,5 @@ global:
     - Default:
         CustomOriginConfig:
           HTTPSPort: '443'
+          HTTPPort: Ref('AWS::NoValue')
         DomainName:  Sub('${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com')
