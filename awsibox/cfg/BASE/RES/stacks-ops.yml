@@ -28,7 +28,7 @@ global:
           S3Key: 'ibox-tools/stacks-ops/stacks-ops-01.zip'
         Description: 'Stacks Operations'
         Layers:
-          - get_endvalue('LambdaLayerVersionPython37SSM')
+          - LambdaLayerVersionPython37SSM
         MemorySize: 128
         Runtime: python3.9
         Variables:

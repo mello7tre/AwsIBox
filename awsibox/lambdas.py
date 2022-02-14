@@ -96,7 +96,10 @@ class LambdaFunction(lbd.Function):
             key["AtEdge"]
         except Exception as e:
             self.Environment = lbd.Environment(
-                Variables={"Env": Ref("EnvShort"), "EnvRole": Ref("EnvRole"),}
+                Variables={
+                    "Env": Ref("EnvShort"),
+                    "EnvRole": Ref("EnvRole"),
+                }
             )
             if "Variables" in key:
                 self.Environment.Variables.update(
@@ -114,20 +117,19 @@ class LambdaLayerVersionPermission(lbd.LayerVersionPermission):
         self.Principal = Ref("AWS::AccountId")
 
 
-def LambdaLayers(obj, resname, i, value):
-    layername = f"{resname}{i}"
+def LambdaLayers(value):
     # parameters
-    p_Layer = Parameter(layername)
-    p_Layer.Description = layername
+    p_Layer = Parameter(value)
+    p_Layer.Description = value
 
     add_obj(p_Layer)
 
     # condition
-    add_obj(get_condition(layername, "not_equals", ""))
+    add_obj(get_condition(value, "not_equals", ""))
 
     # output
-    o_Layer = Output(layername)
-    o_Layer.Value = get_endvalue(value, condition=layername)
+    o_Layer = Output(value)
+    o_Layer.Value = get_endvalue(value, condition=True)
 
     add_obj(o_Layer)
 
@@ -173,9 +175,7 @@ def LBD_Lambdas(key):
         if "Layers" in v:
             r_Lambda.Layers = []
             for i, j in enumerate(v["Layers"]):
-                r_Lambda.Layers.append(
-                    LambdaLayers(r_Lambda, f"{resname}Layers", i, j)
-                )
+                r_Lambda.Layers.append(LambdaLayers(j))
 
         if "Version" in v:
             versionname = f"{resname}Version"
@@ -208,7 +208,10 @@ def LBD_Lambdas(key):
             }
 
             c_Version = {
-                versionname: Or(Condition(versionnameA), Condition(versionnameB),)
+                versionname: Or(
+                    Condition(versionnameA),
+                    Condition(versionnameB),
+                )
             }
 
             add_obj([c_VersionA, c_VersionB, c_Version])
