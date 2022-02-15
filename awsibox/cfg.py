@@ -351,6 +351,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("cloudfront", "OriginRequestPolicy"),
     },
+    "CloudFrontOriginAccessIdentity": {
+        "module": "joker",
+        "func": ("cloudfront", "CloudFrontOriginAccessIdentity"),
+    },
     "SNSSubscription": {"module": "sns", "func": "SNS_Subscriptions"},
     "SNSTopic": {"module": "sns", "func": "SNS_Topics"},
     "SQSQueue": {"module": "joker", "func": ("sqs", "Queue")},
