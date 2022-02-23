@@ -253,6 +253,11 @@ INSTANCE_FAMILY = [
         "Min": "large",
         "Max": "4xlarge",
     },
+    {
+        "Name": "c6a",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
 ]
 
 # override previous cfg with an External one
