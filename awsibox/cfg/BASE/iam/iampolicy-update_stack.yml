@@ -38,6 +38,7 @@ global:
                 - 'elasticfilesystem:*'
                 - 'waf:GetWebACL'
                 - 'waf:ListWebACLs'
+                - 'servicediscovery:GetService'
               Resource: '*'
           - SSMAmi:
               Action: 'ssm:GetParameter*'
