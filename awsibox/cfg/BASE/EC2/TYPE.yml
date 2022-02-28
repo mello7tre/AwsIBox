@@ -96,14 +96,14 @@ global:
 
 dev: &cfg_dev
   Alarm:
-    - BackendExternal5XX:
-        EvaluationPeriods: 0
-    - BackendInternal5XX:
-        EvaluationPeriods: 0
-    - TargetEC2External5XX:
-        EvaluationPeriods: 0
-    - TargetEC2Internal5XX:
-        EvaluationPeriods: 0
+    BackendExternal5XX:
+      EvaluationPeriods: 0
+    BackendInternal5XX:
+      EvaluationPeriods: 0
+    TargetEC2External5XX:
+      EvaluationPeriods: 0
+    TargetEC2Internal5XX:
+      EvaluationPeriods: 0
 
 stg: *cfg_dev 
 

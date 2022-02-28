@@ -86,17 +86,17 @@ global:
 
 dev: &cfg_dev
   Alarm:
-    - TargetExternal5XX:
-        EvaluationPeriods: 0
-    - TargetInternal5XX:
-        EvaluationPeriods: 0
+    TargetExternal5XX:
+      EvaluationPeriods: 0
+    TargetInternal5XX:
+      EvaluationPeriods: 0
   ScalableTargetScheduledAction:
-    - Down:
-        CapacityMax: k
-        CapacityMin: k
-    - Up:
-        CapacityMax: CapacityMax
-        CapacityMin: CapacityMin
+    Down:
+      CapacityMax: k
+      CapacityMin: k
+    Up:
+      CapacityMax: CapacityMax
+      CapacityMin: CapacityMin
 
 stg: *cfg_dev
 

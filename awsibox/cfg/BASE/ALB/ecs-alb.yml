@@ -81,9 +81,9 @@ global:
 
 dev: &cfg_dev
   Alarm:
-    - LoadBalancerApplicationExternal5XX:
-        EvaluationPeriods: 0
-    - LoadBalancerApplicationInternal5XX:
-        EvaluationPeriods: 0
+    LoadBalancerApplicationExternal5XX:
+      EvaluationPeriods: 0
+    LoadBalancerApplicationInternal5XX:
+      EvaluationPeriods: 0
 
 stg: *cfg_dev

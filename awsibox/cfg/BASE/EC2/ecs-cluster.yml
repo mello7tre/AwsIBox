@@ -141,8 +141,8 @@ global:
 
 dev: &cfg_dev
   ASGLifecycleHook:
-    - ECSDrainInstance:
-        HeartbeatTimeout: 900
+    ECSDrainInstance:
+      HeartbeatTimeout: 900
   LaunchTemplateData:
     ImageId: latest
 
