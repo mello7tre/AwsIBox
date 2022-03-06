@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import boto3
+import argparse
 from math import floor
 from pprint import pprint, pformat
 from datetime import datetime, timezone
@@ -9,6 +10,25 @@ logging.basicConfig()
 logging.getLogger("botocore").setLevel("CRITICAL")
 logger = logging.getLogger("ibox_cluster_autoscale")
 logger.setLevel(logging.INFO)
+
+
+# parse main argumets
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="Autoscale ECS Cluster looking at running tasks"
+    )
+
+    parser.add_argument(
+        "--clusters",
+        "-c",
+        help="Cluster to process - default all",
+        default=[],
+        nargs="+",
+    )
+    parser.add_argument("--reduce", "-r", help="Reduce Cluster", action="store_true")
+
+    args = parser.parse_args()
+    return args
 
 
 def process_containers(cluster, containers, res):
@@ -119,9 +139,7 @@ def process_cluster(c):
     if not run:
         if enabled:
             tag_ecs_count(cluster, 0)
-        try:
-            cmdline
-        except Exception:
+        if lambda_run:
             return
 
     c_name = cluster.split("/")[1]
@@ -147,7 +165,7 @@ def process_cluster(c):
 
     logger.info(pformat(res))
 
-    if not run:
+    if not lambda_run and not args.reduce:
         return
 
     cpu_extra = floor(res["cpu_free"] / res["cpu_base"])
@@ -177,8 +195,11 @@ def process_cluster(c):
 
 
 def do_work():
-    # warning max 100 clusters are returned
-    clusters = client.list_clusters()["clusterArns"]
+    if lambda_run or not args.clusters:
+        # warning max 100 clusters are returned
+        clusters = client.list_clusters()["clusterArns"]
+    else:
+        clusters = args.clusters
     clusters = client.describe_clusters(
         clusters=clusters, include=["TAGS", "STATISTICS"]
     )["clusters"]
@@ -189,6 +210,11 @@ def do_work():
 def lambda_handler(event=None, context=None):
     global client
     global autoscaling
+    global lambda_run
+    global args
+    lambda_run = True if event else False
+
+    args = get_args()
 
     client = boto3.client("ecs")
     autoscaling = boto3.client("autoscaling")
@@ -197,5 +223,4 @@ def lambda_handler(event=None, context=None):
 
 
 if __name__ == "__main__":
-    cmdline = True
     lambda_handler()
