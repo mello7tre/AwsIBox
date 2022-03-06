@@ -136,11 +136,10 @@ def process_cluster(c):
 
     enabled, run, count, n_instaces = need_to_run(c)
 
-    if not run:
-        if enabled:
+    if not run and lambda_run:
+        if count > 0 and enabled:
             tag_ecs_count(cluster, 0)
-        if lambda_run:
-            return
+        return
 
     c_name = cluster.split("/")[1]
 
