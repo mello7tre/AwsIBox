@@ -5,12 +5,12 @@ global:
         Roles:
           - get_expvalue('RoleLambdaECSRunTask')
         Statement:
-          - 1:
+          - RunTask:
               Action:
                 - 'ecs:RunTask'
                 - 'ecs:StartTask'
               Resource: Ref('TaskDefinitionFargate')
-          - 2:
+          - PassRole:
               Action:
                 - 'iam:PassRole'
               Resource: GetAtt('RoleTask', 'Arn')
