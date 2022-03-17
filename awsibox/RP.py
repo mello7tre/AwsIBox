@@ -177,38 +177,27 @@ def build_RP():
 
         return int(key) if key.isdigit() else key
 
-    def merge_dict(base, source):
-        if isinstance(source, (str, list)) or not base:
-            return source
-        keys = dict(list(base.items()) + list(source.items())).keys()
+    def merge_dict(base, work):
+        if isinstance(work, (str, list)) or not base:
+            return work
+        keys = dict(list(base.items()) + list(work.items())).keys()
         for k in keys:
-            if isinstance(base.get(k), dict) and isinstance(source.get(k), dict):
-                base[k] = merge_dict(base[k], source[k])
-            elif k in source:
-                base[k] = source[k]
+            if k.endswith("**"):
+                # ** is used to replace existing dict instead of merging it
+                base[k.replace("**", "")] = work[k]
+            elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
+                base[k] = merge_dict(base[k], work[k])
+            elif k.endswith("++") and isinstance(work.get(k), list):
+                # ++ is used to append elements to an existing key
+                try:
+                    base[k.replace("++", "")] += work[k]
+                except Exception:
+                    base[k.replace("++", "")] = work[k]
+            elif k in work:
+                base[k] = work[k]
         return base
 
     def merge_RP(data):
-        def _merge(base, work):
-            if isinstance(work, (str, list)) or not base:
-                return work
-            keys = dict(list(base.items()) + list(work.items())).keys()
-            for k in keys:
-                if k.endswith("**"):
-                    # ** is used to replace existing dict instead of merging it
-                    base[k.replace("**", "")] = work[k]
-                elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
-                    base[k] = _merge(base[k], work[k])
-                elif k.endswith("++") and isinstance(work.get(k), list):
-                    # ++ is used to append elements to an existing key
-                    try:
-                        base[k.replace("++", "")] += work[k]
-                    except Exception:
-                        base[k.replace("++", "")] = work[k]
-                elif k in work:
-                    base[k] = work[k]
-            return base
-
         def _process(key, data, RP, merge=True):
             key = str(key)
 
@@ -225,7 +214,7 @@ def build_RP():
 
             if merge and isinstance(RP.get(key), dict):
                 # RP[key] already exist as a dict, try merging
-                RP[key] = _merge(RP[key], _recurse(data))
+                RP[key] = merge_dict(RP[key], _recurse(data))
             else:
                 RP[key] = _recurse(data)
 
