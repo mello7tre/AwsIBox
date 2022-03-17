@@ -6,7 +6,7 @@ Distribution: &distribution
       - CloudFrontLogging
       - IBOX_IFVALUE
       - Ref('AWS::NoValue')
-    Bucket: Sub(f'{cfg.BucketLogs}.s3.amazonaws.com')
+    Bucket: Sub(f'{cfg.BucketNameLogs}.s3.amazonaws.com')
     Prefix: Sub('${EnvRole}.${AWS::StackName}/')
   PriceClass: PriceClass_100
   ViewerCertificate:

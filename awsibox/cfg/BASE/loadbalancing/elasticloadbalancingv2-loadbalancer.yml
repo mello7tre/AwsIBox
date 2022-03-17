@@ -13,7 +13,7 @@ LoadBalancerAttributesLogBucket: &attr_log_bucket
     - IBOX_IFVALUE
     - Ref('AWS::NoValue')
   Key: access_logs.s3.bucket
-  Value: Sub(cfg.BucketLogs)
+  Value: Sub(cfg.BucketNameLogs)
 LoadBalancerAttributesLogPrefix: &att_log_prefix
   IBOX_IF:
     - LoadBalancerLog

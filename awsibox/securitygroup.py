@@ -152,7 +152,7 @@ def SG_SecurityGroupsTSK(key):
 
 
 def SG_SecurityGroupRules(groupname, ingresses):
-    if cfg.LoadBalancerNetwork:
+    if cfg.LoadBalancer and cfg.LoadBalancerType == "Network":
         return []
 
     SecurityGroup_Rules = []

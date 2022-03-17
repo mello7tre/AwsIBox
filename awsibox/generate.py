@@ -61,7 +61,7 @@ def generate():
     cfg.func_envrole = cfg.envrole.replace("-", "_")
 
     try:
-        execute_method(cfg.RP_cmm)
+        execute_method(cfg.RP_tree)
     except Exception:
         # in case of error call stack_add_res to empty the cfg Parameters
         # Conditions Mappings Resources Outputs  dicts. This is needed cause

@@ -109,52 +109,6 @@ CLF_PATH_PATTERN_REPLACEMENT = {
     "_": "USCORE",
 }
 
-BASE_CFGS = {
-    "Bucket": {
-        "Create": "no",
-        "AccountsRead": {
-            "dev": "none",
-            "stg": "none",
-            "prd": "none",
-        },
-        "AccountsWrite": {
-            "dev": "none",
-            "stg": "none",
-            "prd": "none",
-        },
-        "Cors": "no",
-        "CloudFrontOriginAccessIdentityExtra": {
-            "Dev": "none",
-            "Stg": "none",
-            "Prd": "none",
-        },
-        "PolicyStatementReplica": {
-            "Resource": {},
-            "Principal": "none",
-        },
-        "Replication": {
-            "Enabled": "no",
-            "ConfigurationRules": {},
-        },
-        "Versioning": "Disabled",
-    },
-    "CloudFrontCacheBehaviors": {
-        "Compress": True,
-        "ForwardedValues": {"QueryString": True, "Headers": []},
-        "ViewerProtocolPolicy": "redirect-to-https",
-    },
-    "CloudFrontOrigins": "IBOX_BASE",
-    "DBInstance": "IBOX_BASE",
-    "ScheduledAction": "IBOX_BASE",
-    "ContainerDefinitions": "IBOX_BASE",
-    "AllowedIp": "IBOX_BASE",
-    "ElasticLoadBalancingV2TargetGroupECS": "IBOX_BASE",
-    "Certificate": "IBOX_BASE",
-    "CloudFrontCachePolicy": "IBOX_BASE",
-    "CloudFrontOriginRequestPolicy": "IBOX_BASE",
-    "Alarm": "IBOX_BASE",
-}
-
 INSTANCE_SIZES = [
     "nano",
     "micro",

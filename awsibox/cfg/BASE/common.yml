@@ -34,5 +34,6 @@ global:
   AllowedIp: [{}]
   CloudWatchAlarmEndpoint: 'mello+aws@ankot.org'
   HostedZoneIdCF: Z2FDTNDATAQYW2
+  LoadBalancer: []
   RecordSet: ['Internal', 'External']
   SecurityGroupsImport: []

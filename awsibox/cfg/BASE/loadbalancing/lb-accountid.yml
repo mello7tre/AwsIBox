@@ -1,4 +1,5 @@
 global:
+  LoadBalancerAccountID: none
 
 us-east-1:
   LoadBalancerAccountID: 127311923021

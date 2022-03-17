@@ -39,7 +39,7 @@ class R53RecordSetNSServiceDiscovery(r53.RecordSetType):
 def R53_RecordSetEC2LoadBalancer():
     # Resources
     # RecordSet External
-    if cfg.RecordSetExternal:
+    if "External" in cfg.RecordSet:
         R_External = r53.RecordSetType("RecordSetExternal")
         auto_get_props(R_External, "R53RecordSetEC2LoadBalancerExternal")
 
@@ -59,7 +59,7 @@ def R53_RecordSetEC2LoadBalancer():
         add_obj([R_External, O_External])
 
     # RecordSet Internal
-    if cfg.RecordSetInternal:
+    if "Internal" in cfg.RecordSet:
         R_Internal = r53.RecordSetType("RecordSetInternal")
         auto_get_props(R_Internal, "R53RecordSetEC2LoadBalancerInternal")
 
@@ -79,14 +79,14 @@ def R53_RecordSetEC2LoadBalancer():
         add_obj([R_Internal, O_Internal])
 
     # fix bad for networkloadbalancer having different HostedZoneId
-    if cfg.LoadBalancerNetwork:
+    if cfg.LoadBalancerType == "Network":
         for r in [R_External, R_Internal]:
             r.AliasTarget.HostedZoneId = get_endvalue("HostedZoneIdLBNET")
 
 
 def R53_RecordSetECSLoadBalancer():
     # Resources
-    if cfg.RecordSetExternal:
+    if "External" in cfg.RecordSet:
         R_External = r53.RecordSetType("RecordSetExternal")
 
         if "External" in cfg.LoadBalancer:
@@ -104,7 +104,7 @@ def R53_RecordSetECSLoadBalancer():
 
         add_obj([R_External, O_External])
 
-    if cfg.RecordSetInternal:
+    if "Internal" in cfg.RecordSet:
         R_Internal = r53.RecordSetType("RecordSetInternal")
 
         if "Internal" in cfg.LoadBalancer:

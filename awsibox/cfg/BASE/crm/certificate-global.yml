@@ -1,3 +1,6 @@
 IBoxLoader: !include [
   crm/certificate.yml,
 ]
+
+global:
+  GlobalCertificateArn: none

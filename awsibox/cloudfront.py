@@ -17,8 +17,8 @@ from .shared import (
 class CFOriginAccessIdentity(clf.CloudFrontOriginAccessIdentity):
     def __init__(self, title, comment, **kwargs):
         super().__init__(title, **kwargs)
-        self.CloudFrontOriginAccessIdentityConfig = clf.CloudFrontOriginAccessIdentityConfig(
-            Comment=comment
+        self.CloudFrontOriginAccessIdentityConfig = (
+            clf.CloudFrontOriginAccessIdentityConfig(Comment=comment)
         )
 
 
@@ -156,7 +156,7 @@ def CF_CloudFront(key):
 
         # Create and Use Condition
         # only if PathPattern Value differ between envs
-        if f"{name}PathPattern" not in cfg.fixedvalues:
+        if f"{name}PathPattern" in cfg.mappedvalues:
             # conditions
             add_obj(get_condition(name, "not_equals", "none", f"{name}PathPattern"))
 

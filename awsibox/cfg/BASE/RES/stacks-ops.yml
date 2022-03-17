@@ -24,7 +24,7 @@ global:
   Lambda:
     - StacksOps:
         Code:
-          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: 'ibox-tools/stacks-ops/stacks-ops-01.zip'
         Description: 'Stacks Operations'
         Layers:

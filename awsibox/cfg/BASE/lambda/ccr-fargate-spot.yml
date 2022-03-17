@@ -3,7 +3,7 @@ global:
     - CCRFargateSpot:
         Export: True
         Code:
-          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: Sub('ibox-tools/ccr-fargate-spot/ccr-fargate-spot.zip')
         Description: 'CCR invoked by stack using Fargate Spot'
         Runtime: python3.7

@@ -21,7 +21,7 @@ Base: &base
       - Ref('AWS::NoValue')
     EmitInterval: get_endvalue('LoadBalancerLog')
     Enabled: true
-    S3BucketName: Sub(cfg.BucketLogs)
+    S3BucketName: Sub(cfg.BucketNameLogs)
     S3BucketPrefix: ''
   ConnectionDrainingPolicy:
     Enabled: true

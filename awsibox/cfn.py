@@ -167,7 +167,11 @@ def cfn_ecs_cluster():
         O_Postfix.Value = get_endvalue("Postfix")
 
         add_obj(
-            [P_Postfix, C_Postfix, O_Postfix,]
+            [
+                P_Postfix,
+                C_Postfix,
+                O_Postfix,
+            ]
         )
 
         init_args["SERVICES"].services = {

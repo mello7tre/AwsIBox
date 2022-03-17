@@ -1,6 +1,7 @@
 IBoxLoader: !include [
   crm/certificate-global.yml,
   cloudfront-distribution.yml,
+  cloudfront/cloudfront-cache-behaviors.yml,
 ]
 
 global:
@@ -33,3 +34,4 @@ global:
   CloudFrontHttpVersion: 'http2'
   CloudFrontLogging: 'no'
   CloudFrontMinimumProtocolVersion: TLSv1
+  CloudFrontWebACLId: none

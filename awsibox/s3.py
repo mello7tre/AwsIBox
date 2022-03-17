@@ -200,7 +200,7 @@ def S3_Buckets(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
         name = n
-        bucket_name = getattr(cfg, resname)
+        bucket_name = getattr(cfg, f"{key}Name{n}")
 
         PolicyReadConditions = []
         PolicyReadPrincipal = []
@@ -395,7 +395,7 @@ def S3_Buckets(key):
                     permname = f"LambdaPermission{resname}"
 
                 r_LambdaPermission = LambdaPermissionS3(
-                    permname, key=lambda_arn, source=resname
+                    permname, key=lambda_arn, source=bucket_name
                 )
 
                 try:

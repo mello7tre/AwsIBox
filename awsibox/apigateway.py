@@ -240,7 +240,9 @@ def AGW_RestApi(key):
         pass
 
     add_obj(
-        [R_RestApi,]
+        [
+            R_RestApi,
+        ]
     )
 
     for n, v in cfg.ApiGatewayResource.items():

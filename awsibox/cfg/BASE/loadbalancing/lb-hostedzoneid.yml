@@ -1,4 +1,6 @@
 global:
+  HostedZoneIdLB: none
+  HostedZoneIdLBNET: none
 
 us-east-2:
   HostedZoneIdLB: Z3AADJGX6KTTL2

@@ -11,7 +11,7 @@ global:
         Timeout: 65
         Variables:
           - RCode: 503
-          - Bucket: Sub(cfg.BucketAppData)
+          - Bucket: Sub(cfg.BucketNameAppData)
   IAMPolicy:
     - ServiceUnavailable:
         Roles:
@@ -19,7 +19,7 @@ global:
         Statement:
           - 1:
               Action: 's3:ListBucket'
-              Resource: Sub('arn:aws:s3:::%s' % cfg.BucketAppData)
+              Resource: Sub('arn:aws:s3:::%s' % cfg.BucketNameAppData)
           - 2:
               Action: 's3:GetObject'
-              Resource: Sub('arn:aws:s3:::%s/service-unavailable/*' % cfg.BucketAppData)
+              Resource: Sub('arn:aws:s3:::%s/service-unavailable/*' % cfg.BucketNameAppData)

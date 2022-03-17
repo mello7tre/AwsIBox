@@ -24,7 +24,7 @@ def build_RP():
     stacktype = cfg.stacktype
     brand = cfg.brand
 
-    RP_base = {"cmm": {"cmm": {}}}
+    RP_base = {}
 
     # dynamically populate RP_base Dict from ENV_BASE and cfg.regions
     for n in cfg.ENV_BASE:
@@ -177,7 +177,18 @@ def build_RP():
 
         return int(key) if key.isdigit() else key
 
-    def get_RP_for_envs(data):
+    def merge_dict(base, source):
+        if isinstance(source, (str, list)) or not base:
+            return source
+        keys = dict(list(base.items()) + list(source.items())).keys()
+        for k in keys:
+            if isinstance(base.get(k), dict) and isinstance(source.get(k), dict):
+                base[k] = merge_dict(base[k], source[k])
+            elif k in source:
+                base[k] = source[k]
+        return base
+
+    def merge_RP(data):
         def _merge(base, work):
             if isinstance(work, (str, list)) or not base:
                 return work
@@ -246,166 +257,150 @@ def build_RP():
         except IOError:
             return {}
 
-    def merge_cfg(cfgs, cfg_key, list_base=None):
-        RP_list = copy.deepcopy(list_base) if list_base else []
+    def RP_to_cfg(key, prefix="", overwrite=True):
+        if hasattr(key, "items"):
+            for k, v in key.items():
+                key_name = f"{prefix}{k}"
+                try:
+                    getattr(cfg, key_name)
+                    exist = True
+                except Exception:
+                    exist = False
+                if not exist or overwrite:
+                    setattr(cfg, key_name, v)
+                    cfg.fixedvalues[key_name] = v
+                # recursively traverse dict
+                # keys name are the concatenation of traversed dict keys
+                if isinstance(v, dict):
+                    for j, w in v.items():
+                        RP_to_cfg({f"{k}{j}": w}, prefix, overwrite)
 
-        def _parse_cfg(cfg, envs=[]):
-            parsed_cfg = {}
-            for value in process_cfg(cfg, envs):
+    def inject_ibox_base(RP):
+        base_key = "IBOX_BASE"
+        for main_key in list(RP.keys()):
+            main_key_value = RP[main_key]
+            if isinstance(main_key_value, dict) and base_key in main_key_value:
+                base_key_value = main_key_value[base_key]
+
+                for resource_key, resource_key_value in main_key_value.items():
+                    if resource_key == base_key:
+                        continue
+                    # inject in cfg key/value
+                    RP_to_cfg(
+                        base_key_value,
+                        prefix=f"{main_key}{resource_key}",
+                        overwrite=False,
+                    )
+
+                    # inject in existing structure
+                    for resource_prop, resource_prop_value in base_key_value.items():
+                        if resource_prop not in resource_key_value:
+                            resource_key_value[resource_prop] = resource_prop_value
+                        # Update existing dicts
+                        elif isinstance(resource_key_value[resource_prop], dict):
+                            # Merge base dict with the existing one
+                            resource_key_value[resource_prop] = merge_dict(
+                                copy.deepcopy(resource_prop_value),
+                                resource_key_value[resource_prop])
+                del RP[main_key][base_key]
+
+    def get_RP(yaml_cfg):
+        cfg_keys = ["IBoxLoader", "IBoxLoaderAfter"]
+
+        def _parse_yaml(conf, envs=[]):
+            parsed_yaml = {}
+            for value in process_cfg(conf, envs):
                 for k, v in value.items():
                     try:
                         # if v is a list of dict and the same key (k) already
                         # exist, final value is the sum of the list (of dicts)
                         if isinstance(v[0], dict):
-                            parsed_cfg[k] = parsed_cfg[k] + v
+                            parsed_yaml[k] = parsed_yaml[k] + v
                         else:
                             raise
                     except Exception:
-                        parsed_cfg[k] = v
-            return parsed_cfg
+                        parsed_yaml[k] = v
+            return parsed_yaml
 
-        for cfg, v in cfgs.items():
-            for c in v:
-                keys = ["IBoxLoader", "IBoxLoaderAfter"] + cfg_key[cfg]
-                RP_list.append(_parse_cfg(c, keys))
+        def get_RP_tree():
+            RP_list = []
 
-        # RP_list is now a list of dict
-        return RP_list
+            for cfg_type, ctv in yaml_cfg.items():
+                for read_yaml in ctv:
+                    parsed_global = _parse_yaml(read_yaml, cfg_keys + ["global"])
+                    RP_list.append(parsed_global)
 
-    def prepend_base_cfgs(cfg_cmm):
-        base_cfgs = {}
-        key_names = {}
-        for c in cfg_cmm:
-            if isinstance(c, dict):
-                for n in list(c):
-                    # need to delete items while iterating
-                    v = c[n]
-                    if n in cfg.BASE_CFGS:
-                        if n not in base_cfgs:
-                            base_cfgs[n] = {}
-                        if n not in key_names:
-                            key_names[n] = []
-                        base_key_value = cfg.BASE_CFGS[n]
-                        for k in list(v):
+            # merge keys value
+            RP = merge_RP(RP_list)
+
+            return RP
+
+        def get_RP_map():
+            RP = copy.deepcopy(RP_base)
+            mapped_keys = []
+
+            # I build the cfg to build the mappings for env/region
+            for env in list(RP):
+                rvalue = RP[env]
+                env_cfg = {}
+                # first the configuration under the env key
+                for cfg_type, ctv in yaml_cfg.items():
+                    for read_yaml in ctv:
+                        env_cfg.update(_parse_yaml(read_yaml, cfg_keys + [env]))
+                # then the one under region + env keys
+                for region in list(rvalue.keys()):
+                    RP[env][region] = copy.deepcopy(env_cfg)
+                    for cfg_type, ctv in yaml_cfg.items():
+                        for read_yaml in ctv:
+                            RP[env][region].update(
+                                _parse_yaml(
+                                    copy.deepcopy(read_yaml), cfg_keys + [env, region]
+                                )
+                            )
+                    # create list of all mapped keys
+                    for key in list(RP[env][region]):
+                        # if value is equal to the global one, delete the key
+                        if hasattr(cfg, key) and RP[env][region][key] == getattr(
+                            cfg, key
+                        ):
+                            del RP[env][region][key]
+                        elif key not in mapped_keys:
+                            # only add if not already present
+                            mapped_keys.append(key)
+                            # delete the fixed one
                             try:
-                                base_value = k[base_key_value]
+                                del cfg.fixedvalues[key]
                             except Exception:
-                                if isinstance(base_key_value, dict):
-                                    # use dict value in cfg.BASE_CFGS
-                                    base_cfgs[n] = base_key_value
-                                key_names[n].extend(list(k.keys()))
-                            else:
-                                # use IBOX_BASE (or values in cfg.BASE_CFGS)
-                                for j, w in base_value.items():
-                                    j_current = base_cfgs[n].get(j)
-                                    if j_current and isinstance(j_current, list):
-                                        # if property is a list extend it
-                                        base_cfgs[n][j].extend(w)
-                                    else:
-                                        base_cfgs[n][j] = w
-                                v.remove(k)
-                        if not c[n]:
-                            del c[n]
+                                pass
 
-        for n, v in key_names.items():
-            values = []
-            # is better "set(v):" but change order so for now keep it
-            for m in v:
-                values.append({m: base_cfgs[n]})
-            if values:
-                cfg_cmm.insert(0, {n: values})
+            cfg.mappedvalues = mapped_keys
+            return RP
 
-    def get_RP(cfgs):
-        RP = copy.deepcopy(RP_base)
+        # RP_tree represent the resources structure and it's configuration.
+        RP_tree = get_RP_tree()
 
-        cfg_key_cmm = {
-            "common": ["global"],
-            "type": ["global"],
-            "role": ["global"],
-        }
+        # Read RP_tree and put a flat key/value configuration in cfg.
+        cfg.fixedvalues = {}
+        RP_to_cfg(RP_tree)
 
-        cfg_merge_cmm = merge_cfg(cfgs, cfg_key_cmm)
+        # Inject IBOX_BASE configurations
+        inject_ibox_base(RP_tree)
 
-        # Prepend base config from awsibox/cfg.py BASE_CFGS
-        prepend_base_cfgs(cfg_merge_cmm)
+        # Create the mapping for env/region.
+        RP_map = get_RP_map()
 
-        RP["cmm"]["cmm"] = get_RP_for_envs(cfg_merge_cmm)
+        return RP_tree, RP_map
 
-        for env, rvalue in RP.items():
-            if env == "cmm":
-                continue
+    # End inner methods and begin of main code.
 
-            cfg_key_env = {
-                "common": [env],
-                "type": [env],
-                "role": [env],
-            }
-
-            cfg_merge_env = merge_cfg(cfgs, cfg_key_env)
-
-            for region in rvalue.keys():
-
-                cfg_key_region = {
-                    "common": [region],
-                    "type": [region],
-                    "role": [region],
-                }
-
-                cfg_key_env_region = {
-                    "common": [env, region],
-                    "type": [env, region],
-                    "role": [env, region],
-                }
-
-                cfg_merge_region = merge_cfg(cfgs, cfg_key_region, cfg_merge_env)
-                cfg_merge_env_region = merge_cfg(
-                    cfgs, cfg_key_env_region, cfg_merge_region
-                )
-
-                RP[env][region] = get_RP_for_envs(cfg_merge_env_region)
-
-        return RP
-
-    def set_cfg():
-        def RP_to_cfg(key):
-            if hasattr(key, "items"):
-                for k, v in key.items():
-                    setattr(cfg, k, v)
-                    # recursively traverse dict
-                    # keys name are the concatenation of traversed dict keys
-                    if isinstance(v, dict):
-                        for j, w in v.items():
-                            RP_to_cfg({f"{k}{j}": w})
-
-        # for n, v in cfg.RP_cmm.items():
-        #     setattr(cfg, n, v)
-        RP_to_cfg(cfg.RP_cmm)
-
-        # set generic attribute based on condition:
-
-        # LoadBalancer
-        for n in ["Classic", "Application", "Network"]:
-            setattr(
-                cfg, f"LoadBalancer{n}", getattr(cfg, "LoadBalancerType", None) == n
-            )
-        try:
-            cfg.LoadBalancer
-        except Exception:
-            cfg.LoadBalancer = []
-
-        # RecordSet
-        for n in ["External", "Internal"]:
-            setattr(cfg, f"RecordSet{n}", True if n in cfg.RecordSet else None)
-
-    # End inner methods
-
-    cfg_role = [
+    # envrole type files must be read first
+    yaml_role = [
         read_yaml(envrole, "BASE", CFG_FILE_INT, stacktype),
         read_yaml(envrole, "BASE", CFG_FILE_EXT, stacktype),
         read_yaml(envrole, brand, CFG_FILE_EXT, stacktype),
     ]
 
-    cfgs = {
+    yaml_cfg = {
         "common": [
             read_yaml("common", "BASE", CFG_FILE_INT),
             read_yaml("common", "BASE", CFG_FILE_EXT),
@@ -416,27 +411,24 @@ def build_RP():
             read_yaml("TYPE", "BASE", CFG_FILE_EXT, stacktype),
             read_yaml("TYPE", brand, CFG_FILE_EXT, stacktype),
         ],
-        "role": cfg_role,
+        "role": yaml_role,
     }
 
-    RP = get_RP(cfgs)
+    cfg.RP_tree, cfg.RP_map = get_RP(yaml_cfg)
 
-    # print(RP['dev']['eu-west-1']['CloudFrontCacheBehaviors']
-    #    [2]['QueryStringCacheKeys'])
     if cfg.debug:
-        print("##########RP#########START#####")
-        pprint(RP)
-        print("##########RP#########END#######")
+        print("########## RP ######### START #####")
+        pprint(cfg.RP_tree)
+        print("########## RP ######### END #######")
 
-        print("##########EXCLUDED#######START#####")
+        print("########## EXCLUDED ####### START #####")
         pprint(LD_EXCLUDED)
-        print("##########EXCLUDED#######END#######")
+        print("########## EXCLUDED ####### END #######")
 
-        print("##########INCLUDED#######START#####")
+        print("########## INCLUDED ####### START #####")
         pprint(LD_INCLUDED)
-        print("##########INCLUDED#######END#######")
+        print("########## INCLUDED ####### END #######")
 
-    cfg.RP = RP
-    cfg.RP_cmm = RP["cmm"]["cmm"]
-
-    set_cfg()
+        print("########## MAPPEDVALUES ######### START #####")
+        pprint(cfg.RP_map)
+        print("########## MAPPEDVALUES ######### END #######")

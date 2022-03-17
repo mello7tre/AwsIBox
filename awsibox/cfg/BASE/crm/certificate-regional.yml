@@ -30,3 +30,4 @@ global:
           - Sub(cfg.HostedZoneNameEnv)
         ValidationMethod: 'EMAIL'
         #ValidationMethod: 'DNS'
+  RegionalCertificateArn: none

@@ -33,7 +33,7 @@ global:
         Architectures: ['arm64']
         Description: 'CloudWatch Repeated Notify'
         Code:
-          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: ibox-tools/cloudwatch-repeated-notify/cloudwatch-repeated-notify-95241a4.zip
         Layers:
           - LambdaLayerVersionPython37SSM

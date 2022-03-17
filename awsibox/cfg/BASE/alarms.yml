@@ -19,7 +19,7 @@ Base: &base
   Condition: IBOX_RESNAME
   ActionsEnabled: true
   Period: 60
-  Dimensions: []
+  Dimensions: {}
 
 AlarmTarget5XX: &target5xx
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]

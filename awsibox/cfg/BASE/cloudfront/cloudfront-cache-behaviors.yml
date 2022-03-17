@@ -1,0 +1,10 @@
+Base: &base
+  Compress: True
+  ForwardedValues:
+    QueryString: True
+    Headers: []
+  ViewerProtocolPolicy: redirect-to-https
+
+global:
+  CloudFrontCacheBehaviors:
+    - IBOX_BASE: *base

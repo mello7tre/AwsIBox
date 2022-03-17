@@ -15,10 +15,10 @@ global:
                 - 's3:Get*'
                 - 's3:List*'
               Resource:
-                - Sub('arn:aws:s3:::%s' % cfg.BucketAppRepository)
-                - Sub('arn:aws:s3:::%s/*' % cfg.BucketAppRepository)
-                - Sub('arn:aws:s3:::%s' % cfg.BucketAppData)
-                - Sub('arn:aws:s3:::%s/*' % cfg.BucketAppData)
+                - Sub('arn:aws:s3:::%s' % cfg.BucketNameAppRepository)
+                - Sub('arn:aws:s3:::%s/*' % cfg.BucketNameAppRepository)
+                - Sub('arn:aws:s3:::%s' % cfg.BucketNameAppData)
+                - Sub('arn:aws:s3:::%s/*' % cfg.BucketNameAppData)
                 - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}')
                 - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}/*')
           - 3:

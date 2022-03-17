@@ -9,7 +9,7 @@ global:
         TargetOriginId: portal-static-error-pages
   CloudFrontOrigins:
     - PortalStaticErrorPages:
-        DomainName: Sub(f'{cfg.BucketPortalStatic}.s3.amazonaws.com')
+        DomainName: Sub(f'{cfg.BucketNamePortalStatic}.s3.amazonaws.com')
         Id: portal-static-error-pages
         OriginCustomHeaders: []
         S3OriginConfig:

@@ -170,7 +170,7 @@ def get_endvalue(
 
     def _get_value():
         # if param in fixedvalues means its value do not changes
-        # based on Env/Region so hardcode the value in json, ...
+        # based on Env/Region so hardcode the value.
         if param in fixedvalues:
             value = fixedvalues[param]
             # check if value start with method and use eval to run code

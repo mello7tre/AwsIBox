@@ -27,7 +27,9 @@ class EVEEcsParameters(eve.EcsParameters):
         super().__init__(title, **kwargs)
         self.LaunchType = get_endvalue("LaunchType")
         self.NetworkConfiguration = If(
-            "NetworkModeAwsVpc", EVENetworkConfiguration(""), Ref("AWS::NoValue"),
+            "NetworkModeAwsVpc",
+            EVENetworkConfiguration(""),
+            Ref("AWS::NoValue"),
         )
         self.TaskDefinitionArn = Ref("TaskDefinition")
 

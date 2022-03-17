@@ -11,7 +11,7 @@ global:
   Lambda:
     - SpotAdvisor:
         Code:
-          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: ibox-tools/spot-advisor/spot-advisor.zip
         Description: 'Advise if ASG is using a spot instance type with a high frequency of interruption'
         MemorySize: 128

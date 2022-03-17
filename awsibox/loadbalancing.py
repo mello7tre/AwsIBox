@@ -77,7 +77,7 @@ def LB_ListenersEC2():
     for n, v in cfg.Listeners.items():
         mapname = f"Listeners{n}"  # Ex ListenersPort5601
 
-        if cfg.LoadBalancerClassic:
+        if cfg.LoadBalancerType == "Classic":
             Listener = elb.Listener(mapname)
             auto_get_props(Listener)
             auto_get_props(Listener, "ListenerClassic")
@@ -87,13 +87,11 @@ def LB_ListenersEC2():
         r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
             f"SecurityGroupIngress{mapname}", listener=mapname
         )
-        if cfg.LoadBalancerNetwork:
+
+        if cfg.LoadBalancerType == "Network":
             r_SGIInstance.CidrIp = "0.0.0.0/0"
             del r_SGIInstance.properties["SourceSecurityGroupId"]
-
-        add_obj(r_SGIInstance)
-
-        if not cfg.LoadBalancerNetwork:
+        else:
             # outputs
             Listener_Output = Output(mapname)
             Listener_Output.Value = Sub(
@@ -104,6 +102,8 @@ def LB_ListenersEC2():
                 },
             )
             add_obj(Listener_Output)
+
+        add_obj(r_SGIInstance)
 
     return Listeners
 
@@ -403,16 +403,18 @@ def LB_ElasticLoadBalancingNetworkEC2():
 
 
 def LB_ElasticLoadBalancingEC2(key):
+    if not cfg.LoadBalancer:
+        return
     # Resources
     R53_RecordSetEC2LoadBalancer()
 
-    if cfg.LoadBalancerClassic:
+    if cfg.LoadBalancerType == "Classic":
         LB_ElasticLoadBalancingClassicEC2()
 
-    if cfg.LoadBalancerApplication:
+    if cfg.LoadBalancerType == "Application":
         LB_ElasticLoadBalancingApplicationEC2()
 
-    if cfg.LoadBalancerNetwork:
+    if cfg.LoadBalancerType == "Network":
         LB_ElasticLoadBalancingNetworkEC2()
 
 
@@ -446,6 +448,8 @@ def LB_ElasticLoadBalancingALB(key):
 
 
 def LB_ElasticLoadBalancingECS(key):
+    if not cfg.LoadBalancer:
+        return
     # Resources
     LB_ListenersV2ECS()
     R53_RecordSetECSLoadBalancer()

@@ -106,8 +106,15 @@ class ASInitConfigSets(cfm.InitConfigSets):
                 CWAGENT,
                 ELBWAITER,
             ],
-            "buildami": ["REPOSITORIES", "PACKAGES",],
-            "buildamifull": ["REPOSITORIES", "PACKAGES", "SETUP",],
+            "buildami": [
+                "REPOSITORIES",
+                "PACKAGES",
+            ],
+            "buildamifull": [
+                "REPOSITORIES",
+                "PACKAGES",
+                "SETUP",
+            ],
         }
 
 
@@ -193,7 +200,7 @@ class ASInitConfigSetup(cfm.InitConfig):
             # '/usr/local/bin/chamber': {
             #     'mode': '000755',
             #     'source': Sub(
-            #         f'https://{cfg.BucketAppRepository}'
+            #         f'https://{cfg.BucketNameAppRepository}'
             #         '.s3.${AWS::Region}.amazonaws.com/ibox-tools/chamber'),
             #     'owner': 'root',
             #     'group': 'root',
@@ -407,7 +414,7 @@ class ASInitConfigApps(cfm.InitConfig):
                 get_subvalue(
                     "https://%s.s3-${AWS::Region}.amazonaws.com/"
                     "${1M}/${1M}-${%s}.tar.gz"
-                    % (cfg.BucketAppRepository, envappversion),
+                    % (cfg.BucketNameAppRepository, envappversion),
                     reponame,
                     "",
                 ),
@@ -605,7 +612,10 @@ def AS_LaunchTemplate():
 
         # parameters
         add_obj(
-            [p_EnvAppVersion, p_AppsRepoName,]
+            [
+                p_EnvAppVersion,
+                p_AppsRepoName,
+            ]
         )
 
         # conditions
@@ -681,17 +691,17 @@ def AS_LaunchTemplate():
     if not getattr(cfg, "IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH", False):
         for lb in cfg.LoadBalancer:
             # LoadBalancerClassic
-            if cfg.LoadBalancerClassic:
+            if cfg.LoadBalancerType == "Classic":
                 InitConfigELB = ASInitConfigELBClassic(scheme=lb)
                 CfmInitArgs["ELBWAITER"] = InitConfigELB
 
             # LoadBalancerApplication
-            if cfg.LoadBalancerApplication:
+            if cfg.LoadBalancerType == "Application":
                 InitConfigELB = ASInitConfigELBApplication(scheme=lb)
                 CfmInitArgs["ELBWAITER"] = InitConfigELB
 
             # LoadBalancerNetwork
-            if cfg.LoadBalancerNetwork:
+            if cfg.LoadBalancerType == "Network":
                 for k in cfg.Listeners:
                     InitConfigELB = ASInitConfigELBApplication(
                         scheme=f"TargetGroupListeners{k}{lb}"
@@ -730,7 +740,9 @@ def AS_LaunchTemplate():
     R_LaunchTemplate.Metadata = cfm.Metadata(
         {
             "CloudFormationInitVersion": If(
-                "CloudFormationInit", Ref("EnvStackVersion"), Ref("AWS::NoValue"),
+                "CloudFormationInit",
+                Ref("EnvStackVersion"),
+                Ref("AWS::NoValue"),
             )
         },
         cfm.Init(InitConfigSets, **CfmInitArgs),
@@ -738,7 +750,7 @@ def AS_LaunchTemplate():
             {
                 "CfnS3Auth": cfm.AuthenticationBlock(
                     type="S3",
-                    buckets=[Sub(cfg.BucketAppRepository), Sub(cfg.BucketAppData)],
+                    buckets=[Sub(cfg.BucketNameAppRepository), Sub(cfg.BucketNameAppData)],
                     roleName=Ref("RoleInstance"),
                 )
             }
@@ -756,13 +768,13 @@ def AS_Autoscaling(key):
     LoadBalancers = []
     TargetGroups = []
     for n in cfg.LoadBalancer:
-        if cfg.LoadBalancerClassic:
+        if cfg.LoadBalancerType == "Classic":
             LoadBalancers.append(Ref(f"LoadBalancerClassic{n}"))
 
-        if cfg.LoadBalancerApplication:
+        if cfg.LoadBalancerType == "Application":
             TargetGroups.append(Ref(f"TargetGroup{n}"))
 
-        if cfg.LoadBalancerNetwork:
+        if cfg.LoadBalancerType == "Network":
             for k in cfg.Listeners:
                 TargetGroups.append(Ref(f"TargetGroupListeners{k}{n}"))
 

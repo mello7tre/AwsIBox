@@ -1,0 +1,27 @@
+Base: &base
+  Create: "no"
+  AccountsRead:
+    dev: none
+    stg: none
+    prd: none
+  AccountsWrite:
+    dev: none
+    stg: none
+    prd: none
+  Cors: "no"
+  CloudFrontOriginAccessIdentityExtra:
+    Dev: none
+    Stg: none
+    Prd: none
+  PolicyStatementReplica:
+    Resource: {}
+    Principal: none
+  Replication:
+    Enabled: "no"
+    ConfigurationRules: {}
+  Versioning: Disabled
+
+
+global:
+  Bucket:
+    - IBOX_BASE: *base

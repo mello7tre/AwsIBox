@@ -33,7 +33,7 @@ class LambdaPermissionS3(LambdaPermission):
         super().__init__(title, **kwargs)
         self.Principal = "s3.amazonaws.com"
         self.FunctionName = key
-        self.SourceArn = Sub("arn:aws:s3:::%s" % getattr(cfg, source))
+        self.SourceArn = Sub("arn:aws:s3:::%s" % source)
 
 
 class LambdaPermissionSNS(LambdaPermission):

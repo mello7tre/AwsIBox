@@ -24,7 +24,7 @@ global:
     - CCRStackReplicator:
         Export: True
         Code:
-          S3Bucket: Sub(cfg.BucketAppRepository)
+          S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: 'ibox-tools/stack-replicator/stack_replicator.zip'
         Description: 'Replicate Stacks'
         MemorySize: 128
