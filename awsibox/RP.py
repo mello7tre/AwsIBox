@@ -249,7 +249,8 @@ def build_RP():
     def RP_to_cfg(key, prefix="", overwrite=True):
         if hasattr(key, "items"):
             for k, v in key.items():
-                key_name = f"{prefix}{k}"
+                # remove both * and + that can be present for special IBOX usage
+                key_name = f"{prefix}{k}".translate("".maketrans({"*": None,"+":None}))
                 try:
                     getattr(cfg, key_name)
                     exist = True
@@ -282,15 +283,11 @@ def build_RP():
                     )
 
                     # inject in existing structure
-                    for resource_prop, resource_prop_value in base_key_value.items():
-                        if resource_prop not in resource_key_value:
-                            resource_key_value[resource_prop] = resource_prop_value
-                        # Update existing dicts
-                        elif isinstance(resource_key_value[resource_prop], dict):
-                            # Merge base dict with the existing one
-                            resource_key_value[resource_prop] = merge_dict(
-                                copy.deepcopy(resource_prop_value),
-                                resource_key_value[resource_prop])
+                    merged = merge_dict(
+                        copy.deepcopy(base_key_value), resource_key_value
+                    )
+                    for n, v in merged.items():
+                        RP[main_key][resource_key][n] = v
                 del RP[main_key][base_key]
 
     def get_RP(yaml_cfg):
@@ -417,6 +414,10 @@ def build_RP():
         print("########## INCLUDED ####### START #####")
         pprint(LD_INCLUDED)
         print("########## INCLUDED ####### END #######")
+
+        print("########## FIXEDVALUES ######### START #####")
+        pprint(cfg.fixedvalues)
+        print("########## FIXEDVALUES ######### END #######")
 
         print("########## MAPPEDVALUES ######### START #####")
         pprint(cfg.RP_map)
