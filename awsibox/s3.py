@@ -509,6 +509,7 @@ def S3_Buckets(key):
         add_obj([r_Bucket, r_Policy, r_IAMPolicyReplica, r_Role])
 
         # outputs
+        o_Bucket = Output(resname)
         outvalue = If(resname, Ref(resname), Sub(bucket_name))
         if "OutputValueRegion" in v:
             condname = f"{resname}OutputValueRegion"
@@ -523,10 +524,10 @@ def S3_Buckets(key):
                 ),
                 outvalue,
             )
-
-        o_Bucket = Output(resname)
-        o_Bucket.Value = outvalue
-        if resname == "BucketAppRepository":
             o_Bucket.Export = Export(resname)
+        else:
+            o_Bucket.Condition = resname
+
+        o_Bucket.Value = outvalue
 
         add_obj([o_Bucket])
