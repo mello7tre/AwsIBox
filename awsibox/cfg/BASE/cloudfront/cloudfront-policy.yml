@@ -22,6 +22,24 @@ global:
               HeaderBehavior: none
             QueryStringsConfig:
               QueryStringBehavior: all
+    - 0QueryStringsHeadersCustom:
+        CachePolicyConfig:
+          Comment: 'Default TTL 0 QueryStrings and Custom Headers'
+          DefaultTTL: 0
+          MaxTTL: 1
+          MinTTL: 0
+          ParametersInCacheKeyAndForwardedToOrigin:
+            CookiesConfig:
+              CookieBehavior: none
+            EnableAcceptEncodingGzip: true
+            EnableAcceptEncodingBrotli: true
+            HeadersConfig:
+              HeaderBehavior: whitelist
+              Headers:
+                - Origin
+                - Authorization
+            QueryStringsConfig:
+              QueryStringBehavior: all
     - 86400None:
         CachePolicyConfig:
           Comment: 'Default TTL 86400 None'
