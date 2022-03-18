@@ -286,6 +286,7 @@ def build_RP():
                     merged = merge_dict(
                         copy.deepcopy(base_key_value), resource_key_value
                     )
+                    # need to do it this way to keep the "link" between existing dict keys and values
                     for n, v in merged.items():
                         RP[main_key][resource_key][n] = v
                 del RP[main_key][base_key]
