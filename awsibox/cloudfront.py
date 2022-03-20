@@ -32,7 +32,6 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
         super().__init__(title, **kwargs)
 
         name = self.title
-        # Look for default values in awsibox/cfg.py [BASE_CFGS]
         auto_get_props(self)
 
         # Use CachePolicyId/OriginRequestPolicyId or legacy mode
