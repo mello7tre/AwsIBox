@@ -31,8 +31,25 @@ Origin: &origin
       - _S3OriginConfigOriginAccessIdentity:
           Description: 'empty for mapped value'
 
+LambdaFunctionAssociations: &lambda_function_association
+  IBOX_PARAMETER:
+    - _LambdaFunctionARN:
+        Description: LambdaAtEdge Version Arn - empty for default - none to disable
+  IBOX_CONDITION:
+    - _LambdaFunctionARN:
+        get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}LambdaFunctionARN')
+  IBOX_OUTPUT:
+    - _LambdaFunctionARN:
+        Value: ${LambdaFunctionARN}
+  Condition: IBOX_RESNAMELambdaFunctionARN
+  EventType: viewer-request
+  LambdaFunctionARN: none
+
+
 global:
   CloudFrontDistribution:
     - IBOX_BASE: *distribution
   CloudFrontOrigins:
     - IBOX_BASE: *origin
+  LambdaFunctionAssociation:
+    - IBOX_BASE: *lambda_function_association

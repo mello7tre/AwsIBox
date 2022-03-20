@@ -13,6 +13,8 @@ Mappings = {}
 Resources = {}
 Outputs = {}
 
+OBJS = {}
+
 PATH_INT = os.path.join(os.path.dirname(os.path.realpath(__file__)), "cfg")
 PATH_INT = os.path.normpath(PATH_INT)
 
@@ -304,6 +306,10 @@ CFG_TO_FUNC = {
         "func": "LB_ElasticLoadBalancing",
     },
     "Alarm": {"module": "joker", "func": ("cloudwatch", "Alarm")},
+    "LambdaFunctionAssociation": {
+        "module": "joker",
+        "func": ("cloudfront", "LambdaFunctionAssociation"),
+    },
     "CloudFrontDistribution": {"module": "cloudfront", "func": "CF_CloudFront"},
     "CloudFrontCachePolicy": {"module": "joker", "func": ("cloudfront", "CachePolicy")},
     "CloudFrontOriginRequestPolicy": {

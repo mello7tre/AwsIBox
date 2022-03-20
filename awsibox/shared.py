@@ -89,7 +89,13 @@ def add_obj(obj):
     elif isinstance(obj, Output):
         cfg.Outputs[obj.title] = obj
     else:
-        cfg.Resources[obj.title] = obj
+        if hasattr(obj, 'resource_type'):
+            # if AWSObject add obj to resources
+            add_to = "Resources"
+        else:
+            # otherway add it to OBJS, usefull to include it later
+            add_to = "OBJS"
+        getattr(cfg, add_to)[obj.title] = obj
 
 
 def add_objoutput(res):

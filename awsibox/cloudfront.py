@@ -49,22 +49,6 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
                 f"CloudFrontCacheBehaviors0TargetOriginId"
             )
 
-        if "LambdaFunctionARN" in key:
-            condname = f"{name}LambdaFunctionARN"
-            eventType = key.get("LambdaEventType", "origin-request")
-            # conditions
-            add_obj(get_condition(condname, "not_equals", "none"))
-
-            self.LambdaFunctionAssociations = [
-                If(
-                    condname,
-                    clf.LambdaFunctionAssociation(
-                        EventType=eventType, LambdaFunctionARN=get_endvalue(condname)
-                    ),
-                    Ref("AWS::NoValue"),
-                )
-            ]
-
 
 class CFCacheBehavior(clf.CacheBehavior, CFDefaultCacheBehavior):
     def __init__(self, title, **kwargs):
