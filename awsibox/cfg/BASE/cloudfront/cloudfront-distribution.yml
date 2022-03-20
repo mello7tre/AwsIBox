@@ -34,7 +34,7 @@ Origin: &origin
 LambdaFunctionAssociations: &lambda_function_association
   IBOX_PARAMETER:
     - _LambdaFunctionARN:
-        Description: LambdaAtEdge Version Arn - empty for default - none to disable
+        Description: LambdaAtEdge Version Arn - empty for mapped value - none to disable
   IBOX_CONDITION:
     - _LambdaFunctionARN:
         get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}LambdaFunctionARN')
