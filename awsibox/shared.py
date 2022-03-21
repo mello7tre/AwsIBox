@@ -89,13 +89,21 @@ def add_obj(obj):
     elif isinstance(obj, Output):
         cfg.Outputs[obj.title] = obj
     else:
-        if hasattr(obj, 'resource_type'):
+        title = obj.title
+        if hasattr(obj, "resource_type"):
             # if AWSObject add obj to resources
             add_to = "Resources"
         else:
             # otherway add it to OBJS, usefull to include it later
             add_to = "OBJS"
-        getattr(cfg, add_to)[obj.title] = obj
+            if hasattr(obj, "Condition"):
+                # Condition is not supported on Resource properties, but use it
+                # to wrap obj in an If Condition - needed for LambdaFunctionAssociation
+                cond_name = obj.Condition
+                del obj.properties["Condition"]
+                obj = If(cond_name, obj, Ref("AWS::NoValue"))
+
+        getattr(cfg, add_to)[title] = obj
 
 
 def add_objoutput(res):
