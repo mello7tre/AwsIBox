@@ -42,13 +42,6 @@ global:
         Export: Export(Sub('Cluster-${AWS::StackName}'))
     - BottleRocket:
         Value: Ref('BottleRocket')
-  AutoScalingGroup.DISABLED:
-    - Base:
-        CreationPolicy:
-          AutoScalingCreationPolicy:
-            MinSuccessfulInstancesPercent: If('BottleRocket', 0, 100)
-          ResourceSignal:
-            Count.IBOX_CODE: If('BottleRocket', 0, get_endvalue('AutoScalingGroupBaseCreationPolicyResourceSignalCount')) 
   Alarm:
     - CPUHigh:
         IBOX_ENABLED: False
@@ -61,7 +54,28 @@ global:
         HeartbeatTimeout: 3600
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
         NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
-        RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance') 
+        RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance')
+  AutoScalingGroup.DISABLED:
+    - Base:
+        CreationPolicy:
+          AutoScalingCreationPolicy:
+            MinSuccessfulInstancesPercent: If('BottleRocket', 0, 100)
+          ResourceSignal:
+            Count.IBOX_CODE: If('BottleRocket', 0, get_endvalue('AutoScalingGroupBaseCreationPolicyResourceSignalCount')) 
+  AutoScalingScalingPolicy:
+    - Custom:
+        IBOX_ENABLED: True
+        EstimatedInstanceWarmup: 60
+        TargetTrackingConfiguration:
+          CustomizedMetricSpecification:
+            MetricName: CPUUtilization
+            Statistic: Maximum
+            Unit: Percent
+          TargetValue: 60
+    - Down:
+        IBOX_ENABLED: False
+    - Up:
+        IBOX_ENABLED: False
   Apps: []
   BottleRocket: 'no'
   BottleRocketUserData:
@@ -99,8 +113,37 @@ global:
                 - Ref('AWS::NoValue')
               Key: IBOX_CLUSTER_AUTO_REDUCE
               Value: 'yes'
+  LaunchTemplate:
+    - Data:
+        BlockDeviceMappings:
+          - Xvda:
+              IBOX_IF:
+                - BottleRocket
+                - Ref('AWS::NoValue')
+                - IBOX_IFVALUE
+              Ebs:
+                VolumeSize: 50
+          - Xvdb:
+              IBOX_IF:
+                - BottleRocket
+                - IBOX_IFVALUE
+                - Ref('AWS::NoValue')
+              DeviceName: /dev/xvdb
+              Ebs:
+                VolumeSize: 30
+                VolumeType: gp3
   Listeners: []
   RecordSet: []
+  Role:
+    - Instance:
+        ManagedPolicyArns++:
+          - get_expvalue('IAMPolicyEcs')
+  ScheduledAction:
+    - Rotate:
+        DesiredSize: CapacityDesired
+        MaxSize: CapacityMax
+        MinSize: CapacityMin
+        Recurrence: '45 5 * * *'
   SecurityGroupIngress:
     - ContainerInstanceExternal:
         FromPort: 32768
@@ -112,32 +155,6 @@ global:
         GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
         SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
         ToPort: 60999
-  Role:
-    - Instance:
-        ManagedPolicyArns++:
-          - get_expvalue('IAMPolicyEcs')
-  AutoScalingScalingPolicy:
-    - Custom:
-        IBOX_ENABLED: True
-        EstimatedInstanceWarmup: 60
-        TargetTrackingConfiguration:
-          CustomizedMetricSpecification:
-            MetricName: CPUUtilization
-            Statistic: Maximum
-            Unit: Percent
-          TargetValue: 60
-    - Down:
-        IBOX_ENABLED: False
-    - Up:
-        IBOX_ENABLED: False
-  ScheduledAction:
-    - Rotate:
-        DesiredSize: CapacityDesired
-        MaxSize: CapacityMax
-        MinSize: CapacityMin
-        Recurrence: '45 5 * * *'
-  LaunchTemplateData:
-    BlockDeviceMappingsXvdaEbsVolumeSize: 100
 
 dev: &cfg_dev
   ASGLifecycleHook:

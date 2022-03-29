@@ -75,7 +75,7 @@ global:
               DeviceName: /dev/xvda
               Ebs:
                 VolumeSize: 8
-                VolumeType: gp2
+                VolumeType: gp3
           - AdditionalStorage:
               IBOX_IF:
                 - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage
@@ -84,7 +84,7 @@ global:
               DeviceName: /dev/xvdx
               Ebs:
                 VolumeSize: 0
-                VolumeType: gp2
+                VolumeType: gp3
               Mount: 'yes'
         IamInstanceProfile:
           Arn: GetAtt('InstanceProfile', 'Arn')
