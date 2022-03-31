@@ -22,6 +22,8 @@ global:
           - '/aws/service/bottlerocket/aws-ecs-1/x86_64/latest/image_id'
           - '/aws/service/bottlerocket/aws-ecs-1/arm64/latest/image_id'
         Type: 'AWS::SSM::Parameter::Value<String>'
+    - LaunchTemplateDataBlockDeviceMappingsXvdbEbsVolumeSize:
+        Description: 'Size of HD in GB - Data Volume used by BottleRocket- empty for default based on env/role'
     - ASGLifecycleHookECSDrainInstanceHeartbeatTimeout:
         Description: 'ECSDrainInstance ASGLifecycleHook and Lambda HeartbeatTimeout - empty for default based on env/role'
     - GPUInstance:
@@ -42,6 +44,9 @@ global:
         Export: Export(Sub('Cluster-${AWS::StackName}'))
     - BottleRocket:
         Value: Ref('BottleRocket')
+    - LaunchTemplateDataBlockDeviceMappingsXvdbEbsVolumeSize:
+        Condition: BottleRocket
+        Value: get_endvalue('LaunchTemplateDataBlockDeviceMappingsXvdbEbsVolumeSize')
   Alarm:
     - CPUHigh:
         IBOX_ENABLED: False
@@ -122,7 +127,7 @@ global:
                 - Ref('AWS::NoValue')
                 - IBOX_IFVALUE
               Ebs:
-                VolumeSize: 50
+                VolumeSize: 40
           - Xvdb:
               IBOX_IF:
                 - BottleRocket
@@ -130,7 +135,7 @@ global:
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdb
               Ebs:
-                VolumeSize: 30
+                VolumeSize: 40
                 VolumeType: gp3
   Listeners: []
   RecordSet: []
