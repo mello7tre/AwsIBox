@@ -2,14 +2,15 @@ global:
   IAMPolicy:
     - ParameterStore:
         Statement:
-          - 1:
+          - Decrypt:
               Action: 'kms:Decrypt'
               Resource: get_expvalue('KeyParameterStore')
-          - 2:
+          - Describe:
               Action: 'ssm:DescribeParameters'
               Resource: Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:*')
-          - 3:
+          - Get:
               Action: 'ssm:GetParameters'
               Resource:
                 - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${EnvRole}/*')
                 - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/${EnvRole}/*')
+                - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/common/*')
