@@ -84,19 +84,23 @@ global:
   Apps: []
   BottleRocket: 'no'
   BottleRocketUserData:
-    - 0:
+    - ecs0:
         Line: '[settings.ecs]'
-    - 1:
+    - ecs1:
         Line: Sub('cluster = "${Cluster}"')
-    - 2:
+    - ecs2:
         Line: enable-spot-instance-draining = true
-    - 3:
+    - ecs3:
+        Line: image-pull-behavior = "once"
+    - ecs4:
+        Line: warm-pools-check = true
+    - clf0:
         Line: '[settings.cloudformation]'
-    - 4:
+    - clf1:
         Line: should-signal = true
-    - 5:
+    - clf2:
         Line: Sub('stack-name = "${AWS::StackName}"')
-    - 6:
+    - clf3:
         Line: logical-resource-id = "AutoScalingGroup"
   ECSCluster:
     - Base:
