@@ -164,18 +164,18 @@ def process_cluster(c):
 
     logger.info(pformat(res))
 
-    if not lambda_run and not args.reduce:
-        return
-
     cpu_extra = floor(res["cpu_free"] / res["cpu_base"])
     ram_extra = floor(res["ram_free"] / res["ram_base"])
     net_extra = floor(res["net_free"] / res["net_base"])
 
-    if cpu_extra > 0 and ram_extra > 0 and net_extra > 0:
-        n_reduce = min(cpu_extra, ram_extra, net_extra)
+    n_reduce = min(cpu_extra, ram_extra, net_extra)
+    logger.info(f"Cluster {c_name} can be reduced of {n_reduce}")
 
+    if not lambda_run and not args.reduce:
+        return
+
+    if cpu_extra > 0 and ram_extra > 0 and net_extra > 0:
         count += 1
-        logger.info(f"Cluster {c_name} can be reduced of {n_reduce}")
         if count < 2:
             tag_ecs_count(cluster, count)
             logger.info(f"Skip terminate count={count}")
