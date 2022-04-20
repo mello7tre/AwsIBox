@@ -408,17 +408,23 @@ def import_lambda(name):
     if not os.path.exists(lambda_file):
         lambda_file = os.path.join(parent_dir_name, "lambdas/%s.code" % name)
     try:
+        lambda_file_trunk = os.path.join(*PurePath(lambda_file).parts[-3:])
         with open(lambda_file, "r") as f:
             fdata = f.read()
 
             try:
                 # try to minify using python_minifier
                 code = python_minifier.minify(fdata)
+                if len(code) > 4096:
+                    logging.warning(
+                        f"{lambda_file_trunk} > 4096, trying to minify it using a more aggressive option [rename_globals=True]"
+                    )
+                    code = python_minifier.minify(fdata, rename_globals=True)
             except Exception:
                 code = fdata
 
             if len(code) > 4096:
-                logging.warning(f"Inline lambda {lambda_file} > 4096")
+                logging.warning(f"Inline lambda {lambda_file_trunk} > 4096")
 
             code_lines = code.splitlines(keepends=True)
 
@@ -444,6 +450,8 @@ def import_lambda(name):
     except IOError:
         logging.warning(f"Lambda code {name} not found")
         exit(1)
+    except Exception as e:
+        logging.error(e)
 
 
 def auto_get_props(

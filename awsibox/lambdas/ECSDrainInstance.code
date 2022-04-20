@@ -116,27 +116,29 @@ def send_message(topic_arn, heartbeat_timeout, msg):
     time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 
     if "EndTime" in msg:
-        if datetime.utcnow() > datetime.strptime(msg["EndTime"], time_format):
-
-            logger.info("End HeartbeatTimeout")
+        endtime = datetime.strptime(msg["EndTime"], time_format)
+        if datetime.utcnow() > endtime:
+            logger.info(f"HeartbeatTimeout Ended: {datetime.utcnow()} > {endtime}")
             return
     else:
-        endtime = datetime.strptime(msg["Time"], time_format)
-        endtime = endtime + timedelta(seconds=heartbeat_timeout)
+        endtime = datetime.strptime(msg["Time"], time_format) + timedelta(
+            seconds=heartbeat_timeout
+        )
         msg["EndTime"] = endtime.strftime(time_format)
+        logger.info(f"HeartbeatTimeout Setting EndTime: {endtime}")
 
     logger.info(
-        f"Tasks running, sleeping for {SLEEP_TIME}sec before posting to SNS topic {topic_arn}"
+        f"Sleeping for {SLEEP_TIME}sec ... posting to SNS {topic_arn}"
     )
     time.sleep(SLEEP_TIME)
 
-    #    sns_resp = aws.sns.publish(
-    #        TopicArn=topic_arn,
-    #        Message=json.dumps(msg),
-    #        Subject="Publishing SNS msg to invoke Lambda again.",
-    #    )
+    sns_resp = aws.sns.publish(
+        TopicArn=topic_arn,
+        Message=json.dumps(msg),
+        Subject="Publishing SNS msg to invoke Lambda again.",
+    )
 
-    logger.info("Successfully posted msg %s to SNS topic." % (sns_resp["MessageId"]))
+    logger.info("Posted msg %s to SNS" % (sns_resp["MessageId"]))
 
 
 def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
@@ -239,30 +241,32 @@ def lambda_handler(event, context):
         complete_lifecycle(asg_name, lifecyclehook_name, instance_id)
 
 
-
 # test by cmd line
-if __name__ == "__main__":
-    message = {
-        "AutoScalingGroupName": "rmq-z-AutoScalingGroup-ZP5HX5UZLDFU",
-        "EC2InstanceId": "i-0c5513e2a13d91170",
-        "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
-        "LifecycleHookName": "rmq-z-ASGLifecycleHookECSDrainInstance-jyqNwkJgVsg8",
-        "Time": "2022-04-30T20:20:20.33Z",
-    }
-    message["ALREADY_DRAINED"] = True
-    message["Cluster"] = "rmq-z-Cluster-FbOYhwfK9szD"
-    message["Tasks"] = [
-        "a312d31b47d446b7ace1c59644724d46",
-        "c4bde60907de411b91e6f9780bab3d1a",
-    ]
-    event = {
-        "Records": [
-            {
-                "Sns": {
-                    "TopicArn": "test topic arn",
-                    "Message": json.dumps(message),
-                }
-            }
-        ]
-    }
-    lambda_handler(event, {})
+# if __name__ == "__main__":
+#    message = {
+#        "AutoScalingGroupName": "rmq-z-AutoScalingGroup-ZP5HX5UZLDFU",
+#        "EC2InstanceId": "i-04208828b4cd76ec1",
+#        "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
+#        "LifecycleHookName": "rmq-z-ASGLifecycleHookECSDrainInstance-jyqNwkJgVsg8",
+#        "Time": "2022-03-30T20:20:20.33Z",
+#    }
+#    # uncomment to test re-sent message workflow
+#    #message["ALREADY_DRAINED"] = True
+#    #message["EndTime"] = "2022-03-30T20:20:20.33Z"
+#    #
+#    message["Cluster"] = "rmq-z-Cluster-FbOYhwfK9szD"
+#    message["Tasks"] = [
+#        "38a0a5b76a744a829a7da5082764276a",
+#        "da0501ef38994fe28f0b9a864915aefd",
+#    ]
+#    event = {
+#        "Records": [
+#            {
+#                "Sns": {
+#                    "TopicArn": "test topic arn",
+#                    "Message": json.dumps(message),
+#                }
+#            }
+#        ]
+#    }
+#    lambda_handler(event, {})

@@ -6,6 +6,7 @@ import copy
 import json
 import logging
 from pprint import pprint, pformat
+from pathlib import PurePath
 from troposphere import validators
 from troposphere.autoscaling import Tags as asgTags
 import troposphere.ssm as ssm
