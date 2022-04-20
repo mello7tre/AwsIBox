@@ -419,7 +419,9 @@ def import_lambda(name):
                     logging.warning(
                         f"{lambda_file_trunk} > 4096, trying to minify it using a more aggressive option [rename_globals=True]"
                     )
-                    code = python_minifier.minify(fdata, rename_globals=True)
+                    code = python_minifier.minify(
+                        fdata, rename_globals=True, preserve_globals=["lambda_handler"]
+                    )
             except Exception:
                 code = fdata
 

@@ -127,9 +127,7 @@ def send_message(topic_arn, heartbeat_timeout, msg):
         msg["EndTime"] = endtime.strftime(time_format)
         logger.info(f"HeartbeatTimeout Setting EndTime: {endtime}")
 
-    logger.info(
-        f"Sleeping for {SLEEP_TIME}sec ... posting to SNS {topic_arn}"
-    )
+    logger.info(f"Sleeping for {SLEEP_TIME}sec ... posting to SNS {topic_arn}")
     time.sleep(SLEEP_TIME)
 
     sns_resp = aws.sns.publish(
