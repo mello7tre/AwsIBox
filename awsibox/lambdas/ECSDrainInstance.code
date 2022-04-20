@@ -11,6 +11,8 @@ logger = logging.getLogger("ECSDrainInstance")
 handler = logging.StreamHandler()
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+logger.propagate = False
+
 
 SLEEP_TIME = 30
 
@@ -95,8 +97,8 @@ def find_container_instance(cluster, instance_id, status=None):
         instance_arn = list_resp["containerInstanceArns"][0]
         logger.info(f"Found Instance_Arn {instance_arn}{status_desc}")
         return instance_arn
-    except Exception as e:
-        logger.warning(f"Could not find Container Instance ID{status_desc}: {e}")
+    except Exception:
+        logger.warning(f"Could not find Container Instance {status_desc}")
         return False
 
 
@@ -150,10 +152,7 @@ def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
     )
 
 
-def drain_instance(cluster, instance_id, instance_arn):
-    if find_container_instance(cluster, instance_id, "DRAINING"):
-        return True
-
+def drain_instance(cluster, instance_arn):
     logger.info(f"Setting container instance {instance_arn} to DRAINING")
     try:
         resp_update = aws.ecs.update_container_instances_state(
@@ -217,7 +216,9 @@ def lambda_handler(event, context):
         instance_arn = find_container_instance(cluster, instance_id)
 
         if cluster and instance_arn:
-            if drain_instance(cluster, instance_id, instance_arn):
+            if find_container_instance(
+                cluster, instance_id, "DRAINING"
+            ) or drain_instance(cluster, instance_arn):
                 # container instance is in DRAINING status
                 runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
                 if runnig_tasks:

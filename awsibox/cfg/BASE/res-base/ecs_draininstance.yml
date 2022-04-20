@@ -9,6 +9,7 @@ global:
               Action:
                 - 'ecs:ListContainerInstances'
                 - 'ecs:ListTasks'
+                - 'ecs:DescribeTasks'
               Resource: '*'
           - 3:
               Action:
