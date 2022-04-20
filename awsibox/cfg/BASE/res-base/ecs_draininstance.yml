@@ -6,7 +6,9 @@ global:
               Action: 'autoscaling:CompleteLifecycleAction'
               Resource: '*'
           - 2:
-              Action: 'ecs:ListContainerInstances'
+              Action:
+                - 'ecs:ListContainerInstances'
+                - 'ecs:ListTasks'
               Resource: '*'
           - 3:
               Action:

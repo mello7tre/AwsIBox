@@ -81,17 +81,22 @@ def get_heartbeat_timeout(asg_name, lifecyclehook_name):
         return heartbeat_timeout
 
 
-def find_container_instance(cluster, instance_id):
-    list_resp = aws.ecs.list_container_instances(
-        cluster=Cluster, filter=f"ec2InstanceId == {instance_id}"
-    )
+def find_container_instance(cluster, instance_id, status=None):
+    status_desc = ""
+    kwargs = {"cluster": cluster, "filter": f"ec2InstanceId == {instance_id}"}
+
+    if status:
+        kwargs["status"] = status
+        status_desc = f" with status {status}"
+
+    list_resp = aws.ecs.list_container_instances(**kwargs)
 
     try:
-        instance_arn = list_resp["containerInstanceArns"][0]["containerInstanceArn"]
-        logger.info(f"Found Instance_Arn {instance_arn} in Cluster {cluster}")
+        instance_arn = list_resp["containerInstanceArns"][0]
+        logger.info(f"Found Instance_Arn {instance_arn}{status_desc}")
         return instance_arn
-    except Exception:
-        logger.warning(f"Could not find Container Instance ID")
+    except Exception as e:
+        logger.warning(f"Could not find Container Instance ID{status_desc}: {e}")
         return False
 
 
@@ -101,13 +106,13 @@ def get_tasks(cluster, instance_arn, status):
     )
     tasks = resp.get("taskArns", [])
     logger.info(
-        f"{len(tasks)} tasks are in status {status} on Instance Arn {instance_arn} in Cluster {cluster}"
+        f"{len(tasks)} tasks are in status {status} on Instance Arn {instance_arn}"
     )
 
     return resp.get("taskArns", [])
 
 
-def send_message(topic_arn, msg):
+def send_message(topic_arn, heartbeat_timeout, msg):
     time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 
     if "EndTime" in msg:
@@ -125,11 +130,11 @@ def send_message(topic_arn, msg):
     )
     time.sleep(SLEEP_TIME)
 
-    sns_resp = aws.sns.publish(
-        TopicArn=topic_arn,
-        Message=json.dumps(msg),
-        Subject="Publishing SNS msg to invoke Lambda again.",
-    )
+    #    sns_resp = aws.sns.publish(
+    #        TopicArn=topic_arn,
+    #        Message=json.dumps(msg),
+    #        Subject="Publishing SNS msg to invoke Lambda again.",
+    #    )
 
     logger.info("Successfully posted msg %s to SNS topic." % (sns_resp["MessageId"]))
 
@@ -145,29 +150,39 @@ def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
     )
 
 
-def drain_instance(cluster, instance_arn):
+def drain_instance(cluster, instance_id, instance_arn):
+    if find_container_instance(cluster, instance_id, "DRAINING"):
+        return True
+
     logger.info(f"Setting container instance {instance_arn} to DRAINING")
-    resp_update = aws.ecs.update_container_instances_state(
-        cluster=cluster, containerInstances=[instance_arn], status="DRAINING"
-    )
+    try:
+        resp_update = aws.ecs.update_container_instances_state(
+            cluster=cluster, containerInstances=[instance_arn], status="DRAINING"
+        )
+        instances = resp_update.get("containerInstances")
+    except Exception as e:
+        logger.error(e)
+    else:
+        if resp_update.get("failures"):
+            logger.error(pformat(resp_update["failures"]))
+        elif instances:
+            return instances[0]["status"] == "DRAINING"
 
-    if resp_update["failures"]:
-        logger.error(pformat(resp_update["failures"]))
 
-
-def tasks_are_running(cluster, tasks_arn, runnig=0):
-    resp = aws.ecs.client.describe_tasks(cluster=cluster, tasks=tasks_arn)
+def tasks_are_running(cluster, tasks_arn, running=0):
+    resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_arn)
     tasks = resp.get("tasks", [])
 
     for t in tasks:
         arn = t["taskArn"]
         status = t["lastStatus"]
         stopped = t.get("stoppedAt")
-        logger.info(f"{taskArn} in {lastStatus} {stopped}")
+        logger.info(f"{arn} in {status} [{stopped}]")
         if not stopped:
             running += 1
 
-    if runnig == 0:
+    if running != 0:
+        logger.info(f"{running} task are still running")
         return True
 
 
@@ -182,36 +197,72 @@ def lambda_handler(event, context):
     instance_id = msg["EC2InstanceId"]
     lifecyclehook_name = msg["LifecycleHookName"]
 
+    # add prefix to log messages
     formatter = logging.Formatter(
-        fmt=f"%(levelname)s:[{asg_name}-{instance_id}]:%(message)s"
+        fmt=f"%(levelname)s:[{instance_id}@{asg_name}]:%(message)s"
     )
     handler.setFormatter(formatter)
 
-    heartbeat_timeout = get_heartbeat_timeout(asg_name, lifecyclehook_name)
-    logger.info(f"HeartBeatTimeout: {heartbeat_timeout}")
+    need_to_send_msg = False
 
     if msg.get("ALREADY_DRAINED"):
         # Workflow triggered by msg sent because tasks are still running on instance
         cluster = msg["Cluster"]
         tasks = msg["Tasks"]
         if tasks_are_running(cluster, tasks):
-            send_message(topic_arn, msg)
-        else:
-            complete_lifecycle(asg_name, lifecyclehook_name, instance_id)
+            need_to_send_msg = True
     else:
         # Workflow triggered by ASG LifeCycleHook
         cluster = find_cluster(asg_name)
         instance_arn = find_container_instance(cluster, instance_id)
 
-        if cluster and container_instance:
-            drain_instance(cluster, instance_arn)
-            runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
-            if runnig_task_arns:
-                msg["ALREADY_DRAINED"] = True
-                msg["Cluster"] = cluster
-                msg["Tasks"] = runnig_tasks
-                send_message(topic_arn, msg)
+        if cluster and instance_arn:
+            if drain_instance(cluster, instance_id, instance_arn):
+                # container instance is in DRAINING status
+                runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
+                if runnig_tasks:
+                    msg["ALREADY_DRAINED"] = True
+                    msg["Cluster"] = cluster
+                    msg["Tasks"] = runnig_tasks
+                    need_to_send_msg = True
             else:
-                complete_lifecycle(asg_name, lifecyclehook_name, instance_id)
+                need_to_send_msg = True
         else:
             logger.warning(f"Unable to find Cluster and Instance Arn")
+            return
+
+    if need_to_send_msg:
+        heartbeat_timeout = get_heartbeat_timeout(asg_name, lifecyclehook_name)
+        logger.info(f"HeartBeatTimeout: {heartbeat_timeout}")
+        send_message(topic_arn, heartbeat_timeout, msg)
+    else:
+        complete_lifecycle(asg_name, lifecyclehook_name, instance_id)
+
+
+
+# test by cmd line
+if __name__ == "__main__":
+    message = {
+        "AutoScalingGroupName": "rmq-z-AutoScalingGroup-ZP5HX5UZLDFU",
+        "EC2InstanceId": "i-0c5513e2a13d91170",
+        "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
+        "LifecycleHookName": "rmq-z-ASGLifecycleHookECSDrainInstance-jyqNwkJgVsg8",
+        "Time": "2022-04-30T20:20:20.33Z",
+    }
+    message["ALREADY_DRAINED"] = True
+    message["Cluster"] = "rmq-z-Cluster-FbOYhwfK9szD"
+    message["Tasks"] = [
+        "a312d31b47d446b7ace1c59644724d46",
+        "c4bde60907de411b91e6f9780bab3d1a",
+    ]
+    event = {
+        "Records": [
+            {
+                "Sns": {
+                    "TopicArn": "test topic arn",
+                    "Message": json.dumps(message),
+                }
+            }
+        ]
+    }
+    lambda_handler(event, {})
