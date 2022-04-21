@@ -27,7 +27,7 @@ global:
         Description: 'Gracefully drain ECS tasks from EC2 instances before the instances are terminated by autoscaling.'
         MemorySize: 128
         Runtime: python3.9
-        Timeout: 60
+        Timeout: 300
         Variables: []
   Role:
     - ASGLifecycleHookECSDrainInstance:

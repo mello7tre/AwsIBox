@@ -2,6 +2,7 @@
 import json
 import time
 import boto3
+import os
 import logging
 from pprint import pprint, pformat
 from datetime import datetime, timedelta
@@ -70,15 +71,18 @@ def find_cluster(asg_name):
 
 
 def get_heartbeat_timeout(asg_name, lifecyclehook_name):
-    try:
-        l_hooks = aws.asg.describe_lifecycle_hooks(
-            AutoScalingGroupName=asg_name, LifecycleHookNames=[lifecyclehook_name]
-        )
-        heartbeat_timeout = l_hooks["LifecycleHooks"][0]["HeartbeatTimeout"]
-    except Exception:
-        heartbeat_timeout = 900
-    finally:
-        return heartbeat_timeout
+    heartbeat_timeout = 900
+
+    resp = aws.asg.describe_lifecycle_hooks(
+        AutoScalingGroupName=asg_name, LifecycleHookNames=[lifecyclehook_name]
+    )
+
+    for l in resp.get("LifecycleHooks", []):
+        if "ECSDrainInstance" in l.get("NotificationTargetARN", ""):
+            heartbeat_timeout = l["HeartbeatTimeout"]
+            break
+
+    return heartbeat_timeout
 
 
 def find_container_instance(cluster, instance_id, status=None):
@@ -100,19 +104,34 @@ def find_container_instance(cluster, instance_id, status=None):
         return False
 
 
+def get_tasks(cluster, instance_arn, status):
+    tasks = []
+    paginator = aws.ecs.get_paginator("list_tasks")
+    response_iter = paginator.paginate(
+        cluster=cluster, containerInstance=instance_arn, desiredStatus=status
+    )
+    for resp in response_iter:
+        for t in resp.get("taskArns", []):
+            tasks.append(os.path.basename(t))
+
+    logger.info(f"{len(tasks)} tasks are in status {status} on {instance_arn}")
+
+    return tasks
+
+
 def send_message(topic_arn, heartbeat_timeout, msg):
     time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 
     if "EndTime" in msg:
         # subsequent sleep time cheking for tasks to stop
-        sleep_time = 10
+        sleep_time = 20
         endtime = datetime.strptime(msg["EndTime"], time_format)
         if datetime.utcnow() > endtime:
             logger.info(f"HeartbeatTimeout Ended: {datetime.utcnow()} > {endtime}")
             return
     else:
         # initial sleep time after drainig container
-        sleep_time = 35
+        sleep_time = 40
         endtime = datetime.strptime(msg["Time"], time_format) + timedelta(
             seconds=heartbeat_timeout
         )
@@ -128,7 +147,7 @@ def send_message(topic_arn, heartbeat_timeout, msg):
         Subject="Publishing SNS msg to invoke Lambda again.",
     )
 
-    logger.info("Posted msg %s" % (sns_resp["MessageId"]))
+    logger.info("Posted msg %s " % (sns_resp["MessageId"]))
 
 
 def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
@@ -158,27 +177,24 @@ def drain_instance(cluster, instance_arn):
             return instances[0]["status"] == "DRAINING"
 
 
-def container_have_task_running(cluster, instance_arn):
-    resp = aws.ecs.describe_container_instances(
-        cluster=cluster, containerInstances=[instance_arn]
-    )
+def tasks_are_running(cluster, tasks_arn, running=0):
+    while tasks_arn:
+        tasks_arn_sub = tasks_arn[0:100]
+        resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_arn_sub)
+        tasks = resp.get("tasks", [])
 
-    if resp.get("containerInstances"):
-        ci = resp["containerInstances"][0]
-        runnig_task = ci["runningTasksCount"]
+        for t in tasks:
+            arn = t["taskArn"]
+            status = t["lastStatus"]
+            stopped = t.get("stoppedAt")
+            logger.debug(f"{cluster} {arn} in {status} [{stopped}]")
+            if not stopped:
+                running += 1
+        del tasks_arn[0:100]
 
-        for r in ci["registeredResources"]:
-            if r["name"] == "CPU":
-                cpu_reg = r["integerValue"]
-                break
-        for r in ci["remainingResources"]:
-            if r["name"] == "CPU":
-                cpu_now = r["integerValue"]
-                break
-        cpu_use = cpu_reg - cpu_now
-
-        logger.info(f"{runnig_task} task are running on {instance_arn} [CPU={cpu_use}]")
-        return cpu_use != 0
+    if running != 0:
+        logger.info(f"{running} task are still running")
+        return True
 
 
 def lambda_handler(event, context):
@@ -203,8 +219,8 @@ def lambda_handler(event, context):
     if msg.get("ALREADY_DRAINED"):
         # Workflow triggered by msg sent because tasks are still running on instance
         cluster = msg["Cluster"]
-        instance_arn = msg["InstanceArn"]
-        if container_have_task_running(cluster, instance_arn):
+        tasks = msg["Tasks"]
+        if tasks_are_running(cluster, tasks):
             need_to_send_msg = True
     else:
         # Workflow triggered by ASG LifeCycleHook
@@ -216,10 +232,11 @@ def lambda_handler(event, context):
                 cluster, instance_id, "DRAINING"
             ) or drain_instance(cluster, instance_arn):
                 # container instance is in DRAINING status
-                if container_have_task_running(cluster, instance_arn):
+                runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
+                if runnig_tasks:
                     msg["ALREADY_DRAINED"] = True
                     msg["Cluster"] = cluster
-                    msg["InstanceArn"] = instance_arn
+                    msg["Tasks"] = runnig_tasks
                     need_to_send_msg = True
             else:
                 need_to_send_msg = True
