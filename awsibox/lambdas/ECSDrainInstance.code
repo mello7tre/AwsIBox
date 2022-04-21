@@ -177,10 +177,10 @@ def drain_instance(cluster, instance_arn):
             return instances[0]["status"] == "DRAINING"
 
 
-def tasks_are_running(cluster, tasks_arn, running=0):
-    while tasks_arn:
-        tasks_arn_sub = tasks_arn[0:100]
-        resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_arn_sub)
+def tasks_are_running(cluster, tasks_id, running=0):
+    while tasks_id:
+        tasks_id_sub = tasks_id[0:100]
+        resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_id_sub)
         tasks = resp.get("tasks", [])
 
         for t in tasks:
@@ -190,7 +190,7 @@ def tasks_are_running(cluster, tasks_arn, running=0):
             logger.debug(f"{cluster} {arn} in {status} [{stopped}]")
             if not stopped:
                 running += 1
-        del tasks_arn[0:100]
+        del tasks_id[0:100]
 
     if running != 0:
         logger.info(f"{running} task are still running")
@@ -219,7 +219,7 @@ def lambda_handler(event, context):
     if msg.get("ALREADY_DRAINED"):
         # Workflow triggered by msg sent because tasks are still running on instance
         cluster = msg["Cluster"]
-        tasks = msg["Tasks"]
+        tasks = list(msg["Tasks"])
         if tasks_are_running(cluster, tasks):
             need_to_send_msg = True
     else:
