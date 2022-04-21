@@ -109,7 +109,8 @@ def get_tasks(cluster, instance_arn, status):
         cluster=cluster, containerInstance=instance_arn, desiredStatus=status
     )
     for resp in response_iter:
-        tasks.extend(resp.get("taskArns", []))
+        for t in resp.get("taskArns", []):
+            tasks.append(os.path.basename(t))
 
     logger.info(
         f"{len(tasks)} tasks are in status {status} on Instance Arn {instance_arn}"
