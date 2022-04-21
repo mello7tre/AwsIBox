@@ -92,16 +92,22 @@ def find_container_instance(cluster, instance_id, status=None):
     if status:
         kwargs["status"] = status
         status_desc = f" with status {status}"
+        range_end = 2
+        sleep_time = 0
+    else:
+        range_end = 6
+        sleep_time = 5
 
-    list_resp = aws.ecs.list_container_instances(**kwargs)
-
-    try:
-        instance_arn = list_resp["containerInstanceArns"][0]
-        logger.info(f"Found {instance_arn}{status_desc}")
-        return instance_arn
-    except Exception:
-        logger.warning(f"Could not find Container Instance{status_desc}")
-        return False
+    # retry only for not DRAINING container as it can begin terminating before joining cluster
+    for n in range(1, range_end):
+        list_resp = aws.ecs.list_container_instances(**kwargs)
+        if list_resp.get("containerInstanceArns"):
+            logger.info(f"Found {instance_arn}{status_desc}")
+            return list_resp["containerInstanceArns"][0]
+        else:
+            logger.warning(f"Could not find Container Instance{status_desc} [{n}]")
+            time.sleep(sleep_time)
+    return False
 
 
 def get_tasks(cluster, instance_arn, status):
