@@ -105,7 +105,7 @@ def find_container_instance(cluster, instance_id, status=None):
             logger.info(f"Found {instance_arn}{status_desc}")
             return list_resp["containerInstanceArns"][0]
         else:
-            logger.warning(f"Could not find Container Instance{status_desc} [{n}]")
+            logger.warning(f"No Container Instance{status_desc} [{n}]")
             time.sleep(sleep_time)
     return False
 
@@ -120,7 +120,7 @@ def get_tasks(cluster, instance_arn, status):
         for t in resp.get("taskArns", []):
             tasks.append(os.path.basename(t))
 
-    logger.info(f"{len(tasks)} tasks are in status {status} on {instance_arn}")
+    logger.info(f"{len(tasks)} tasks {status} on {instance_arn}")
 
     return tasks
 
@@ -142,15 +142,15 @@ def send_message(topic_arn, heartbeat_timeout, msg):
             seconds=heartbeat_timeout
         )
         msg["EndTime"] = endtime.strftime(time_format)
-        logger.info(f"HeartbeatTimeout Setting EndTime: {endtime}")
+        logger.info(f"HeartbeatTimeout EndTime: {endtime}")
 
-    logger.info(f"Sleeping for {sleep_time}sec ... posting to SNS {topic_arn}")
+    logger.info(f"Sleeping {sleep_time}sec...posting to {topic_arn}")
     time.sleep(sleep_time)
 
     sns_resp = aws.sns.publish(
         TopicArn=topic_arn,
         Message=json.dumps(msg),
-        Subject="Publishing SNS msg to invoke Lambda again.",
+        Subject="Re-invoke Lambda",
     )
 
     logger.info("Posted msg %s " % (sns_resp["MessageId"]))
@@ -168,7 +168,7 @@ def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
 
 
 def drain_instance(cluster, instance_arn):
-    logger.info(f"Setting container instance {instance_arn} to DRAINING")
+    logger.info(f"Setting {instance_arn} to DRAINING")
     try:
         resp_update = aws.ecs.update_container_instances_state(
             cluster=cluster, containerInstances=[instance_arn], status="DRAINING"
@@ -199,7 +199,7 @@ def tasks_are_running(cluster, tasks_id, running=0):
         del tasks_id[0:100]
 
     if running != 0:
-        logger.info(f"{running} task are still running")
+        logger.info(f"{running} task running")
         return True
 
 
@@ -247,7 +247,7 @@ def lambda_handler(event, context):
             else:
                 need_to_send_msg = True
         else:
-            logger.warning(f"Unable to find Cluster and Instance Arn")
+            logger.warning(f"No Cluster/Instance")
             return
 
     if need_to_send_msg:
