@@ -14,7 +14,7 @@ logger.setLevel(logging.INFO)
 logger.propagate = False
 
 
-SLEEP_TIME = 30
+SLEEP_TIME = 35
 
 AWS_MAP = {
     "ecs": "ecs",
@@ -103,21 +103,26 @@ def find_container_instance(cluster, instance_id, status=None):
 
 
 def get_tasks(cluster, instance_arn, status):
-    resp = aws.ecs.list_tasks(
+    tasks = []
+    paginator = aws.ecs.get_paginator("list_tasks")
+    response_iter = paginator.paginate(
         cluster=cluster, containerInstance=instance_arn, desiredStatus=status
     )
-    tasks = resp.get("taskArns", [])
+    for resp in response_iter:
+        tasks.extend(resp.get("taskArns", []))
+
     logger.info(
         f"{len(tasks)} tasks are in status {status} on Instance Arn {instance_arn}"
     )
 
-    return resp.get("taskArns", [])
+    return tasks
 
 
 def send_message(topic_arn, heartbeat_timeout, msg):
     time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
 
     if "EndTime" in msg:
+        SLEEP_TIME = 10
         endtime = datetime.strptime(msg["EndTime"], time_format)
         if datetime.utcnow() > endtime:
             logger.info(f"HeartbeatTimeout Ended: {datetime.utcnow()} > {endtime}")
@@ -169,16 +174,19 @@ def drain_instance(cluster, instance_arn):
 
 
 def tasks_are_running(cluster, tasks_arn, running=0):
-    resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_arn)
-    tasks = resp.get("tasks", [])
+    while tasks_arn:
+        tasks_arn_sub = tasks_arn[0:100]
+        resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_arn_sub)
+        tasks = resp.get("tasks", [])
 
-    for t in tasks:
-        arn = t["taskArn"]
-        status = t["lastStatus"]
-        stopped = t.get("stoppedAt")
-        logger.info(f"{arn} in {status} [{stopped}]")
-        if not stopped:
-            running += 1
+        for t in tasks:
+            arn = t["taskArn"]
+            status = t["lastStatus"]
+            stopped = t.get("stoppedAt")
+            logger.info(f"{arn} in {status} [{stopped}]")
+            if not stopped:
+                running += 1
+        del tasks_arn[0:100]
 
     if running != 0:
         logger.info(f"{running} task are still running")
