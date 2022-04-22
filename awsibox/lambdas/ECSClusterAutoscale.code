@@ -168,6 +168,9 @@ def process_cluster(c):
 
     logger.info(pformat(res))
 
+    if n_instances == 0:
+        return
+
     cpu_extra = floor(res["cpu_free"] / res["cpu_base"])
     ram_extra = floor(res["ram_free"] / res["ram_base"])
     net_extra = floor(res["net_free"] / res["net_base"])
