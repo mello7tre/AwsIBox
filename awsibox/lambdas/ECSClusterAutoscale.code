@@ -57,18 +57,22 @@ def process_containers(cluster, containers, res):
 
 
 def populate_free_resources(cluster, res):
+    ci_active = 0
     paginator = client.get_paginator("list_container_instances")
     response_iterator = paginator.paginate(cluster=cluster, status="ACTIVE")
     for s in response_iterator:
         container_instance_arns = s["containerInstanceArns"]
         if not container_instance_arns:
             continue
+        ci_active += len(container_instance_arns)
         # describe_container_instances - only max 100 containerInstances
         while container_instance_arns:
             cia = container_instance_arns[0:100]
             process_containers(cluster, cia, res)
             del container_instance_arns[0:100]
 
+    # update n_instances to take in account only ACTIVE Container Instances (more conservative mode)
+    res["n_instances"] = ci_active
     return res
 
 
@@ -117,11 +121,11 @@ def need_to_run(c):
             if name == "pendingEC2TasksCount" and int(value) > 0:
                 run = False
 
-    n_instaces = c["registeredContainerInstancesCount"]
-    if n_instaces == 0:
+    n_instances = c["registeredContainerInstancesCount"]
+    if n_instances == 0:
         run = False
 
-    return enabled, run, count, n_instaces
+    return enabled, run, count, n_instances
 
 
 def tag_ecs_count(cluster, c):
@@ -134,7 +138,7 @@ def tag_ecs_count(cluster, c):
 def process_cluster(c):
     cluster = c["clusterArn"]
 
-    enabled, run, count, n_instaces = need_to_run(c)
+    enabled, run, count, n_instances = need_to_run(c)
 
     if not run and lambda_run:
         if count > 0 and enabled:
@@ -145,7 +149,7 @@ def process_cluster(c):
 
     res = {
         "cluster": c_name,
-        "n_instances": n_instaces,
+        "n_instances": n_instances,
         "count": count,
         "i_date": datetime.now(timezone.utc),
         "i_id": None,
