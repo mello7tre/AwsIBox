@@ -175,7 +175,7 @@ def drain_instance(cluster, instance_arn, retry=0):
         if failure:
             logger.error(f"{failure} [{retry}]")
             if (
-                failure.get("reason")
+                failure[0].get("reason")
                 == "INVALID_INSTANCE_STATE_TRANSITION"
                 and retry < 5
             ):
