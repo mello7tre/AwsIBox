@@ -100,7 +100,7 @@ def find_container_instance(cluster, instance_id, status=None):
         logger.info(f"Found {instance_arn}{status_desc}")
         return instance_arn
     except Exception:
-        logger.warning(f"Could not find Container Instance{status_desc}")
+        logger.warning(f"No Container Instance{status_desc}")
         return False
 
 
@@ -127,7 +127,7 @@ def send_message(topic_arn, heartbeat_timeout, msg):
         sleep_time = 20
         endtime = datetime.strptime(msg["EndTime"], time_format)
         if datetime.utcnow() > endtime:
-            logger.info(f"HeartbeatTimeout Ended: {datetime.utcnow()} > {endtime}")
+            logger.info(f"HB Ended: {datetime.utcnow()} > {endtime}")
             return
     else:
         # initial sleep time after drainig container
@@ -137,7 +137,7 @@ def send_message(topic_arn, heartbeat_timeout, msg):
         )
         msg["EndTime"] = endtime.strftime(time_format)
 
-    logger.info(f"HeartbeatTimeout EndTime: {msg['EndTime']}")
+    logger.info(f"HB End: {msg['EndTime']} [{heartbeat_timeout}]")
     logger.info(f"Sleeping {sleep_time}sec...posting to {topic_arn}")
     time.sleep(sleep_time)
 
@@ -161,8 +161,8 @@ def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
     )
 
 
-def drain_instance(cluster, instance_arn):
-    logger.info(f"Setting {instance_arn} to DRAINING")
+def drain_instance(cluster, instance_arn, retry=0):
+    logger.info(f"{instance_arn} DRAINING")
     try:
         resp_update = aws.ecs.update_container_instances_state(
             cluster=cluster, containerInstances=[instance_arn], status="DRAINING"
@@ -173,6 +173,14 @@ def drain_instance(cluster, instance_arn):
     else:
         if resp_update.get("failures"):
             logger.error(pformat(resp_update["failures"]))
+            if (
+                resp_update["failures"].get("reason")
+                == "INVALID_INSTANCE_STATE_TRANSITION"
+                and retry < 5
+            ):
+                retry += 1
+                time.sleep(5)
+                return drain_instance(cluster, instance_arn, retry)
         elif instances:
             return instances[0]["status"] == "DRAINING"
 
@@ -247,7 +255,6 @@ def lambda_handler(event, context):
 
     if need_to_send_msg:
         heartbeat_timeout = get_heartbeat_timeout(asg_name, lifecyclehook_name)
-        logger.info(f"HeartBeatTimeout: {heartbeat_timeout}")
         send_message(topic_arn, heartbeat_timeout, msg)
     else:
         complete_lifecycle(asg_name, lifecyclehook_name, instance_id)
