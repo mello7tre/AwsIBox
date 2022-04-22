@@ -136,8 +136,8 @@ def send_message(topic_arn, heartbeat_timeout, msg):
             seconds=heartbeat_timeout
         )
         msg["EndTime"] = endtime.strftime(time_format)
-        logger.info(f"HeartbeatTimeout EndTime: {endtime}")
 
+    logger.info(f"HeartbeatTimeout EndTime: {msg['EndTime']}")
     logger.info(f"Sleeping {sleep_time}sec...posting to {topic_arn}")
     time.sleep(sleep_time)
 
