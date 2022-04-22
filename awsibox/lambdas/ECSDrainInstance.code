@@ -151,7 +151,7 @@ def send_message(topic_arn, heartbeat_timeout, msg):
 
 
 def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
-    logger.info("No tasks running, completing lifecycle")
+    logger.info("Completing lifecycle")
 
     aws.asg.complete_lifecycle_action(
         LifecycleHookName=lifecyclehook_name,
@@ -177,7 +177,8 @@ def drain_instance(cluster, instance_arn):
             return instances[0]["status"] == "DRAINING"
 
 
-def tasks_are_running(cluster, tasks_id, running=0):
+def tasks_are_running(cluster, tasks_msg):
+    tasks_id, running = list(tasks_msg), len(tasks_msg)
     while tasks_id:
         tasks_id_sub = tasks_id[0:100]
         resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_id_sub)
@@ -188,13 +189,14 @@ def tasks_are_running(cluster, tasks_id, running=0):
             status = t["lastStatus"]
             stopped = t.get("stoppedAt")
             logger.debug(f"{cluster} {arn} in {status} [{stopped}]")
-            if not stopped:
-                running += 1
+            if stopped:
+                # task is really stopped reduce running and remove it from tasks msg list
+                running -= 1
+                tasks_msg.remove(os.path.basename(arn))
         del tasks_id[0:100]
 
-    if running != 0:
-        logger.info(f"{running} task running")
-        return True
+    logger.info(f"{running} tasks running")
+    return running != 0
 
 
 def lambda_handler(event, context):
@@ -219,7 +221,7 @@ def lambda_handler(event, context):
     if msg.get("ALREADY_DRAINED"):
         # Workflow triggered by msg sent because tasks are still running on instance
         cluster = msg["Cluster"]
-        tasks = list(msg["Tasks"])
+        tasks = msg["Tasks"]
         if tasks_are_running(cluster, tasks):
             need_to_send_msg = True
     else:
