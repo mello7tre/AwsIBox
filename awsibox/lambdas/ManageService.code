@@ -39,7 +39,7 @@ def change_desired_size(svc, service_arn, variation):
     return True
 
 
-def handler(event, context):
+def lambda_handler(event, context):
     svc = client('ecs')
     service_arn = event['service_arn']
     variation = event['variation']
