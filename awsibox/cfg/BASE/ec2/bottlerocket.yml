@@ -1,0 +1,62 @@
+global:
+  Parameter:
+    - BottleRocket:
+        Description: 'Change user-data for BottleRocket'
+        AllowedValues: ['', 'yes', 'no']
+    - LaunchTemplateDataBlockDeviceMappingsXvdbEbsVolumeSize:
+        Description: 'Size of HD in GB - Data Volume used by BottleRocket- empty for default based on env/role'
+  Condition:
+    - BottleRocket:
+        get_condition('', 'equals', 'yes', 'BottleRocket')
+  Output:
+    - BottleRocket:
+        Value: Ref('BottleRocket')
+    - LaunchTemplateDataBlockDeviceMappingsXvdbEbsVolumeSize:
+        Condition: BottleRocket
+        Value: get_endvalue('LaunchTemplateDataBlockDeviceMappingsXvdbEbsVolumeSize')
+  AutoScalingGroup.DISABLED:
+    - Base:
+        CreationPolicy:
+          AutoScalingCreationPolicy:
+            MinSuccessfulInstancesPercent: If('BottleRocket', 0, 100)
+          ResourceSignal:
+            Count.IBOX_CODE: If('BottleRocket', 0, get_endvalue('AutoScalingGroupBaseCreationPolicyResourceSignalCount'))
+  BottleRocket: 'no'
+  BottleRocketUserData:
+    - ecs0:
+        Line: '[settings.ecs]'
+    - ecs1:
+        Line: Sub('cluster = "${Cluster}"')
+    - ecs2:
+        Line: enable-spot-instance-draining = true
+    - ecs3:
+        Line: image-pull-behavior = "once"
+    - ecs4:
+        Line: warm-pools-check = true
+    - clf0:
+        Line: '[settings.cloudformation]'
+    - clf1:
+        Line: should-signal = true
+    - clf2:
+        Line: Sub('stack-name = "${AWS::StackName}"')
+    - clf3:
+        Line: logical-resource-id = "AutoScalingGroup"
+  LaunchTemplate:
+    - Data:
+        BlockDeviceMappings:
+          - Xvda:
+              IBOX_IF:
+                - BottleRocket
+                - Ref('AWS::NoValue')
+                - IBOX_IFVALUE
+              Ebs:
+                VolumeSize: 40
+          - Xvdb:
+              IBOX_IF:
+                - BottleRocket
+                - IBOX_IFVALUE
+                - Ref('AWS::NoValue')
+              DeviceName: /dev/xvdb
+              Ebs:
+                VolumeSize: 40
+                VolumeType: gp3

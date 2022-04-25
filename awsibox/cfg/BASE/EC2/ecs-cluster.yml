@@ -3,6 +3,7 @@ IBoxLoader:
       #autoscaling/imageid-ecs.yml,
       ecs/capacityprovider.yml,
       ecs/daemon-reserver-cpu.yml,
+      ec2/bottlerocket.yml,
     ]
   - !exclude [
       cloudfront/cloudfront-ios.yml,
@@ -22,31 +23,19 @@ global:
           - '/aws/service/bottlerocket/aws-ecs-1/x86_64/latest/image_id'
           - '/aws/service/bottlerocket/aws-ecs-1/arm64/latest/image_id'
         Type: 'AWS::SSM::Parameter::Value<String>'
-    - LaunchTemplateDataBlockDeviceMappingsXvdbEbsVolumeSize:
-        Description: 'Size of HD in GB - Data Volume used by BottleRocket- empty for default based on env/role'
     - ASGLifecycleHookECSDrainInstanceHeartbeatTimeout:
         Description: 'ECSDrainInstance ASGLifecycleHook and Lambda HeartbeatTimeout - empty for default based on env/role'
     - GPUInstance:
         Description: 'Install Coda and nvidia-docker2'
         AllowedValues: ['yes', 'no']
         Default: 'no'
-    - BottleRocket:
-        Description: 'Change user-data for BottleRocket'
-        AllowedValues: ['', 'yes', 'no']
   Condition:
     - GPUInstance:
         Equals(Ref('GPUInstance'), 'yes')
-    - BottleRocket:
-        get_condition('', 'equals', 'yes', 'BottleRocket')
   Output:
     - Cluster:
         Value: Ref('Cluster')
         Export: Export(Sub('Cluster-${AWS::StackName}'))
-    - BottleRocket:
-        Value: Ref('BottleRocket')
-    - LaunchTemplateDataBlockDeviceMappingsXvdbEbsVolumeSize:
-        Condition: BottleRocket
-        Value: get_endvalue('LaunchTemplateDataBlockDeviceMappingsXvdbEbsVolumeSize')
   Alarm:
     - CPUHigh:
         IBOX_ENABLED: False
@@ -60,13 +49,6 @@ global:
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
         NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
         RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance')
-  AutoScalingGroup.DISABLED:
-    - Base:
-        CreationPolicy:
-          AutoScalingCreationPolicy:
-            MinSuccessfulInstancesPercent: If('BottleRocket', 0, 100)
-          ResourceSignal:
-            Count.IBOX_CODE: If('BottleRocket', 0, get_endvalue('AutoScalingGroupBaseCreationPolicyResourceSignalCount')) 
   AutoScalingScalingPolicy:
     - Custom:
         IBOX_ENABLED: True
@@ -82,26 +64,6 @@ global:
     - Up:
         IBOX_ENABLED: False
   Apps: []
-  BottleRocket: 'no'
-  BottleRocketUserData:
-    - ecs0:
-        Line: '[settings.ecs]'
-    - ecs1:
-        Line: Sub('cluster = "${Cluster}"')
-    - ecs2:
-        Line: enable-spot-instance-draining = true
-    - ecs3:
-        Line: image-pull-behavior = "once"
-    - ecs4:
-        Line: warm-pools-check = true
-    - clf0:
-        Line: '[settings.cloudformation]'
-    - clf1:
-        Line: should-signal = true
-    - clf2:
-        Line: Sub('stack-name = "${AWS::StackName}"')
-    - clf3:
-        Line: logical-resource-id = "AutoScalingGroup"
   ECSCluster:
     - Base:
         IBOX_TITLE: Cluster
@@ -127,21 +89,8 @@ global:
     - Data:
         BlockDeviceMappings:
           - Xvda:
-              IBOX_IF:
-                - BottleRocket
-                - Ref('AWS::NoValue')
-                - IBOX_IFVALUE
               Ebs:
                 VolumeSize: 40
-          - Xvdb:
-              IBOX_IF:
-                - BottleRocket
-                - IBOX_IFVALUE
-                - Ref('AWS::NoValue')
-              DeviceName: /dev/xvdb
-              Ebs:
-                VolumeSize: 40
-                VolumeType: gp3
   Listeners: []
   RecordSet: []
   Role:
