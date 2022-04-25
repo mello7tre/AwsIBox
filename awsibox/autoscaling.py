@@ -38,7 +38,7 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
             "  cd /opt",
             "  curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz | tar zx",
             "  cd aws-cfn-bootstrap-2.0",
-            "  dnf install -y python python-pip3",
+            "  dnf install -y python python3-pip chkconfig",
             "  pip3 install . && cp init/systemd/cfn-hup.service /etc/systemd/system/ && systemctl daemon-reload",
             "fi",
             Sub("".join(UserDataApp)),
