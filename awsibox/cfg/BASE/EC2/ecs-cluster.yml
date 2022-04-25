@@ -108,6 +108,7 @@ global:
         AgentCfg:
           EcsEnableSpotInstanceDraining: true
           EcsImagePullBehavior: once
+          EcsWarmPoolsCheck: true
         ClusterAutoReduceTag.IBOX_AUTO_PO: {}
         ClusterAutoReduceTag.IBOX_PCO:
           IBOX_CONDITION:
