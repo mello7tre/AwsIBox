@@ -30,11 +30,17 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
         auto_get_props(self, "LaunchTemplateData")
         user_data = [
             "#!/bin/bash",
-            "PATH=/opt/aws/bin:$PATH",
+            "PATH=/opt/aws/bin:/usr/local/bin:$PATH",
             "export BASH_ENV=/etc/profile.d/ibox_env.sh",
             "export ENV=$BASH_ENV",
-            "yum -C list installed aws-cfn-bootstrap ||"
-            " yum install -y aws-cfn-bootstrap",
+            "yum -C list installed aws-cfn-bootstrap || yum install -y aws-cfn-bootstrap",
+            "if ( ! which cfn-init );then",
+            "  cd /opt",
+            "  curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz | tar zx",
+            "  cd aws-cfn-bootstrap-2.0",
+            "  dnf install -y python python-pip3",
+            "  pip3 install . && cp init/systemd/cfn-hup.service /etc/systemd/system/ && systemctl daemon-reload",
+            "fi",
             Sub("".join(UserDataApp)),
             Sub(
                 "cfn-init -v --stack ${AWS::StackName} --role ${RoleInstance}"
@@ -750,7 +756,10 @@ def AS_LaunchTemplate():
             {
                 "CfnS3Auth": cfm.AuthenticationBlock(
                     type="S3",
-                    buckets=[Sub(cfg.BucketNameAppRepository), Sub(cfg.BucketNameAppData)],
+                    buckets=[
+                        Sub(cfg.BucketNameAppRepository),
+                        Sub(cfg.BucketNameAppData),
+                    ],
                     roleName=Ref("RoleInstance"),
                 )
             }
