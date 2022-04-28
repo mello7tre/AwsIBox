@@ -43,9 +43,7 @@ global:
           - SSMAmi:
               Action: 'ssm:GetParameter*'
               Resource:
-                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
-                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
-                - 'arn:aws:ssm:*:*:parameter/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+                - 'arn:aws:ssm:*:*:parameter/aws/service/*'
           - SSMEnvAppVersions:
               Action:
                 - 'ssm:GetParameter*'
