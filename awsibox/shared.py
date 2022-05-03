@@ -401,6 +401,46 @@ def get_condition(
     return condition
 
 
+def import_user_data(name):
+    TK_IN_UDATA = "IBOX_CODE_IN_USER_DATA"
+
+    udata_file = os.path.join(os.getcwd(), f"lib/user-data/{name}.sh")
+    if not os.path.exists(udata_file):
+        parent_dir_name = os.path.dirname(os.path.realpath(__file__))
+        udata_file = os.path.join(parent_dir_name, f"user-data/{name}.sh")
+
+    try:
+        with open(udata_file, "r") as f:
+            fdata = f.read()
+            code = fdata
+            code_lines = code.splitlines(keepends=True)
+
+            file_lines = []
+            # parse lambda code for Token IBOX CODE
+            for x in code_lines:
+                if x.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+                    value = eval(x)
+                elif x.startswith(TK_IN_UDATA):
+                    value = '"'
+                elif TK_IN_UDATA in x:
+                    # parse minified code
+                    tks = x.split(TK_IN_UDATA)
+                    file_lines.extend([f"{tks[0]}", eval(tks[1]), tks[2]])
+                    continue
+                else:
+                    value = "".join(x)
+
+                file_lines.append(value)
+
+            return file_lines
+
+    except IOError:
+        raise
+    except Exception as e:
+        logging.error(f"Error importing user-data: {e}")
+        exit(1)
+
+
 def import_lambda(name):
     TK_IN_LBD = "IBOX_CODE_IN_LAMBDA"
     parent_dir_name = os.path.dirname(os.path.realpath(__file__))

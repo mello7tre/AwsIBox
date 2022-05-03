@@ -11,7 +11,7 @@ IBoxLoader:
 global:
   IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA: True
   IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH: True
-  IBOX_CFN_FUNC: cfn_ecs_cluster
+  IBOX_ROLE_EX: ecs-cluster
   Output:
     - StackType:
         Value: ec2 ecs

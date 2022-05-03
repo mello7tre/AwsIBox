@@ -8,6 +8,7 @@ setuptools.setup(
         'awsibox': ['cfg/BASE/*'],
         'awsibox': ['templates/*'],
         'awsibox': ['lambdas/*'],
+        'awsibox': ['user-data/*'],
     },
     install_requires=[
         'troposphere',

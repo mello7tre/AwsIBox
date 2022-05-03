@@ -13,6 +13,7 @@ from .shared import (
     auto_get_props,
     get_condition,
     add_obj,
+    import_user_data,
 )
 from .cfn import *
 from .codedeploy import CD_DeploymentGroup
@@ -58,11 +59,25 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
             "rm /var/lib/cloud/instance/sem/config_scripts_user\n",
         ]
 
+        user_data = Join("\n", user_data)
+
         try:
+            # look for external file
+            user_data = Join(
+                "",
+                import_user_data(getattr(cfg, "IBOX_ROLE_EX", getattr(cfg, "envrole"))),
+            )
+        except Exception:
+            pass
+
+        try:
+            # look for bottlerocket key
             cfg.BottleRocket
         except Exception:
-            self.UserData = Base64(Join("\n", user_data))
+            # use standard cfg
+            self.UserData = Base64(user_data)
         else:
+            # use if condition with both bottlerocket custom and standard cfg
             self.UserData = Base64(
                 Join(
                     "\n",
@@ -736,9 +751,10 @@ def AS_LaunchTemplate():
     # Import role specific cfn definition
     try:
         # Do not use role but direct cfg yaml configuration (ecs + cluster)
-        cfn_envrole = cfg.IBOX_CFN_FUNC
+        cfn_envrole = f"cfn_{cfg.IBOX_ROLE_EX}"
     except Exception:
-        cfn_envrole = f"cfn_{cfg.func_envrole}"
+        cfn_envrole = f"cfn_{cfg.envrole}"
+    cfn_envrole = cfn_envrole.replace("-", "_")
     if cfn_envrole in globals():  # Ex cfn_client_portal
         CfnRole = globals()[cfn_envrole]()
         CfmInitArgs.update(CfnRole)

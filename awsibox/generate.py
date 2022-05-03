@@ -58,8 +58,6 @@ def execute_method(RP_cmm):
 
 
 def generate():
-    cfg.func_envrole = cfg.envrole.replace("-", "_")
-
     try:
         execute_method(cfg.RP_tree)
     except Exception:
