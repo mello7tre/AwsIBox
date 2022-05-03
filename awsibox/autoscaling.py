@@ -79,18 +79,17 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
         else:
             # use if condition with both bottlerocket custom and standard cfg
             self.UserData = Base64(
-                Join(
-                    "\n",
-                    If(
-                        "BottleRocket",
+                If(
+                    "BottleRocket",
+                    Join(
+                        "\n",
                         [
                             get_endvalue(f"BottleRocketUserData{n}Line")
                             for n in cfg.BottleRocketUserData
                         ]
-                        + ["\n"],
-                        user_data,
                     ),
-                )
+                    user_data,
+                ),
             )
 
 
