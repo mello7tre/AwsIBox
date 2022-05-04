@@ -166,6 +166,7 @@ def VPC_VPC(key):
         R_EIPNat.Domain = "vpc"
 
         R_NatGateway = ec2.NatGateway("NatGateway")
+        R_NatGateway.DependsOn = "VPCGatewayAttachment"
         R_NatGateway.AllocationId = GetAtt("EIPNat", "AllocationId")
         R_NatGateway.SubnetId = Ref("SubnetPublicA")
 
@@ -178,6 +179,7 @@ def VPC_VPC(key):
         add_obj([R_NatGateway, R_RouteNatGateway, R_EIPNat, O_EIPNat])
 
     R_RouteInternetGateway = EC2RouteInternetGateway("RouteInternetGateway")
+    R_RouteInternetGateway.DependsOn = "VPCGatewayAttachment"
 
     add_obj(
         [
