@@ -7,8 +7,6 @@ ENVSHORT=IBOX_CODE_IN_USER_DATARef('EnvShort')IBOX_CODE_IN_USER_DATA
 ENVROLE=IBOX_CODE_IN_USER_DATARef('EnvRole')IBOX_CODE_IN_USER_DATA
 BRAND=IBOX_CODE_IN_USER_DATAstr(cfg.BrandDomain)IBOX_CODE_IN_USER_DATA
 
-
-
 signal(){
   case $? in
     0)
@@ -36,7 +34,6 @@ export EnvRole=$ENVROLE
 export EnvBrand=$BRAND
 export EnvStackName=$STACKNAME
 EOF
-
 
 cat >> /etc/ecs/ecs.config << EOF
 ECS_CLUSTER=IBOX_CODE_IN_USER_DATARef('Cluster')IBOX_CODE_IN_USER_DATA
