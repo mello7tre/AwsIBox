@@ -1,17 +1,18 @@
 #!/bin/bash -eu
 STACKNAME=IBOX_CODE_IN_USER_DATARef('AWS::StackName')IBOX_CODE_IN_USER_DATA
+REGION=IBOX_CODE_IN_USER_DATARef('AWS::Region')IBOX_CODE_IN_USER_DATA
 
 signal(){
-  case $? in:
+  case $? in
     0)
      status=SUCCESS
      ;;
     *)
      status=FAILURE
      ;;
- esac
+  esac
   instance_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-  aws cloudformation signal-resource --stack-name $STACKNAME --logical-resource-id AutoScalingGroup --unique-id $instance_id --status $status
+  aws --region $REGION cloudformation signal-resource --stack-name $STACKNAME --logical-resource-id AutoScalingGroup --unique-id $instance_id --status $status
 
 }
 
