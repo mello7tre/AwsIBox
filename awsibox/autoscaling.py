@@ -38,7 +38,7 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
             "if ( ! which cfn-init );then",
             "  yum install -y python3-pip chkconfig",
             "  pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz",
-            "  cp init/systemd/cfn-hup.service /etc/systemd/system/ && systemctl daemon-reload",
+            "  cp /usr/local/init/systemd/cfn-hup.service /etc/systemd/system/ && systemctl daemon-reload",
             "fi",
             Sub("".join(UserDataApp)),
             Sub(
