@@ -84,7 +84,7 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
                         [
                             get_endvalue(f"BottleRocketUserData{n}Line")
                             for n in cfg.BottleRocketUserData
-                        ]
+                        ],
                     ),
                     user_data,
                 ),
