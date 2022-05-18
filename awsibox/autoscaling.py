@@ -61,12 +61,15 @@ class ASLaunchTemplateData(ec2.LaunchTemplateData):
 
         try:
             # look for external file
-            user_data = Join(
-                "",
-                import_user_data(getattr(cfg, "IBOX_ROLE_EX", getattr(cfg, "envrole"))),
+            user_data = import_user_data(
+                getattr(cfg, "IBOX_ROLE_EX", getattr(cfg, "envrole"))
             )
         except Exception:
             pass
+        else:
+            if "cfn-init" not in user_data:
+                cfg.use_cfn_init = False
+            user_data = Join("", user_data)
 
         try:
             # look for bottlerocket key
@@ -604,6 +607,7 @@ def AS_ScalingPolicies(key):
 
 
 def AS_LaunchTemplate():
+    cfg.use_cfn_init = True
     InitConfigSets = ASInitConfigSets()
 
     CfmInitArgs = {}
@@ -756,28 +760,29 @@ def AS_LaunchTemplate():
         CfnRole = globals()[cfn_envrole]()
         CfmInitArgs.update(CfnRole)
 
-    R_LaunchTemplate.Metadata = cfm.Metadata(
-        {
-            "CloudFormationInitVersion": If(
-                "CloudFormationInit",
-                Ref("EnvStackVersion"),
-                Ref("AWS::NoValue"),
-            )
-        },
-        cfm.Init(InitConfigSets, **CfmInitArgs),
-        cfm.Authentication(
+    if cfg.use_cfn_init:
+        R_LaunchTemplate.Metadata = cfm.Metadata(
             {
-                "CfnS3Auth": cfm.AuthenticationBlock(
-                    type="S3",
-                    buckets=[
-                        Sub(cfg.BucketNameAppRepository),
-                        Sub(cfg.BucketNameAppData),
-                    ],
-                    roleName=Ref("RoleInstance"),
+                "CloudFormationInitVersion": If(
+                    "CloudFormationInit",
+                    Ref("EnvStackVersion"),
+                    Ref("AWS::NoValue"),
                 )
-            }
-        ),
-    )
+            },
+            cfm.Init(InitConfigSets, **CfmInitArgs),
+            cfm.Authentication(
+                {
+                    "CfnS3Auth": cfm.AuthenticationBlock(
+                        type="S3",
+                        buckets=[
+                            Sub(cfg.BucketNameAppRepository),
+                            Sub(cfg.BucketNameAppData),
+                        ],
+                        roleName=Ref("RoleInstance"),
+                    )
+                }
+            ),
+        )
 
     add_obj([R_LaunchTemplate, R_InstanceProfile])
 
