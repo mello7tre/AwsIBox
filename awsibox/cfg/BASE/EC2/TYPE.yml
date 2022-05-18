@@ -84,8 +84,8 @@ global:
         GroupDescription: Enable Access from LoadBalancer to Instances and between Instances
   ScheduledAction:
     - Down:
-        DesiredSize: CapacityDesired
-        MaxSize: CapacityMax
+        DesiredSize: k
+        MaxSize: k
         MinSize: CapacityMin
         Recurrence: '00 19 * * *'
     - Up:
