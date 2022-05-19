@@ -5,7 +5,6 @@ IBoxLoader:
     - autoscaling/applicationautoscaling-scalingpolicy.yml
   - !include
     - iam/iampolicy-update_stack.yml
-    - ecs/ecs-and-cluster.yml
 
 global:
   StackName: bkt

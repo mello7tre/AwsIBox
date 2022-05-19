@@ -215,6 +215,9 @@ def build_RP():
             if merge and isinstance(RP.get(key), dict):
                 # RP[key] already exist as a dict, try merging
                 RP[key] = merge_dict(RP[key], _recurse(data))
+            elif isinstance(RP.get(key), str) and RP[key] == "IBOX_SKIP_FUNC":
+                # if key need to be skipped using IBOX_SKIP_FUNC avoid overwriting it
+                pass
             else:
                 RP[key] = _recurse(data)
 
