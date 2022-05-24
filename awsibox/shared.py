@@ -500,11 +500,12 @@ def auto_get_props(
     obj, mapname=None, key=None, rootdict=None, indexname="", remapname=None
 ):
     # IBOX_RESNAME can be used in yaml and resolved inside get_endvalue
-    global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME, IBOX_REMAPNAME
+    global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME, IBOX_REMAPNAME, IBOX_PROPNAME
     IBOX_RESNAME = obj.title
     IBOX_MAPNAME = mapname
     IBOX_REMAPNAME = remapname
     IBOX_INDEXNAME = indexname
+    IBOX_PROPNAME = ""
 
     # create a dict where i will put all property with a flat hierarchy
     # with the name equals to the mapname and the relative value.
@@ -514,6 +515,7 @@ def auto_get_props(
 
     def _iboxif(if_wrapper, mapname, value):
         condname = if_wrapper[0].replace("IBOX_MAPNAME_", mapname)
+        condname = condname.replace("IBOX_PROPNAME_", IBOX_PROPNAME)
         condname = condname.replace("_", IBOX_RESNAME)
         condvalues = []
         for i in if_wrapper[1:3]:
@@ -533,6 +535,7 @@ def auto_get_props(
     def _get_obj(obj, key, obj_propname, mapname):
         props = obj.props
         mapname_obj = f"{mapname}{obj_propname}"
+        global IBOX_PROPNAME
 
         def _get_obj_tags():
             prop_list = []
@@ -598,6 +601,7 @@ def auto_get_props(
             prop_list = []
             prop_class = props[obj_propname][0][0]
             for o, v in key[obj_propname].items():
+                IBOX_PROPNAME = o
                 if o == "IBOX_IF":
                     # element named IBOX_IF must no be parsed
                     # is needed for wrapping whole returned obj in _populate
@@ -640,6 +644,8 @@ def auto_get_props(
                 for n, v in k.items():
                     if IBOX_MAPNAME:
                         n = n.replace("IBOX_MAPNAME", IBOX_MAPNAME)
+                    if IBOX_PROPNAME:
+                        n = n.replace("IBOX_PROPNAME", IBOX_PROPNAME)
                     n = n.replace("{IBOX_INDEXNAME}", IBOX_INDEXNAME)
                     n = n.replace("_", IBOX_RESNAME)
                     condition = {n: eval(v)}

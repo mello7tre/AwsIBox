@@ -338,6 +338,14 @@ CFG_TO_FUNC = {
         "module": "waf",
         "func": ["WAF_GlobalWebAcls", "WAF_RegionalWebAcls"],
     },
+    "WAFv2IPSet": {
+        "module": "joker",
+        "func": ("wafv2", "IPSet"),
+    },
+    "WAFv2WebACL": {
+        "module": "joker",
+        "func": ("wafv2", "WebACL"),
+    },
     "ServiceDiscoveryPublicDnsNamespace": {
         "module": "joker",
         "func": ("servicediscovery", "PublicDnsNamespace"),

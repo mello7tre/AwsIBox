@@ -119,7 +119,7 @@ def build_RP():
             except IOError:
                 pass
 
-    def process_cfg(cfg, envs, check_root=None):
+    def process_cfg(cfg, envs, skip=True):
         if hasattr(cfg, "items"):
             # This method allow to delete items from a dictionary
             # while iterating over it
@@ -136,10 +136,10 @@ def build_RP():
                 if k in envs and isinstance(v, (dict, list)):
                     if k in ["IBoxLoader", "IBoxLoaderAfter"]:
                         # IBoxLoader included dict processed by
-                        # process_cfg have check_root = True
-                        kwargs = {"check_root": True}
+                        # process_cfg keep skip = True
+                        skip = True
                     else:
-                        kwargs = {}
+                        skip = False
                     try:
                         # after descending in env main key
                         # (not the one nested under region) delete key
@@ -149,22 +149,23 @@ def build_RP():
                             del cfg[k]
                     except Exception:
                         pass
-                    for result in process_cfg(v, envs, **kwargs):
+                    for result in process_cfg(v, envs, skip=skip):
                         yield result
-                if check_root:
-                    # Here i do not have yet encountered a envs key in an
-                    # IBoxLoader included dict, skip properties until i find it
+                if skip:
+                    # Here i do not have yet encountered a envs key
+                    # skip properties until i find it.
+                    # Useful for using yaml anchors before global key
                     continue
                 # for recursively descending in dict not in RP_base_keys
                 # (env/region/envrole/stacktype)
                 # (final key is the concatenation of traversed dict keys)
                 if k not in RP_base_keys and isinstance(v, dict):
                     for j, w in v.items():
-                        for result in process_cfg({f"{k}{j}": w}, envs):
+                        for result in process_cfg({f"{k}{j}": w}, envs, skip=skip):
                             yield result
         if isinstance(cfg, list):
             for n in cfg:
-                for result in process_cfg(n, envs, check_root=check_root):
+                for result in process_cfg(n, envs, skip=skip):
                     yield result
 
     def replace_not_allowed_char(s):
