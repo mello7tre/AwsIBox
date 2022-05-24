@@ -25,7 +25,7 @@ def Joker(key, module, cls):
                 )
             )
             add_obj(get_condition(resname, "equals", "yes", f"{resname}Create"))
-            add_obj(Output(resname, Value=Ref(resname)))
+            add_obj(Output(resname, Condition=resname, Value=Ref(resname)))
             res.Condition = resname
 
         add_obj(res)
