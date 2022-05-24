@@ -601,7 +601,9 @@ def auto_get_props(
             prop_list = []
             prop_class = props[obj_propname][0][0]
             for o, v in key[obj_propname].items():
+                # for a list of properties set IBOX_PROPNAME to the name of property
                 IBOX_PROPNAME = o
+
                 if o == "IBOX_IF":
                     # element named IBOX_IF must no be parsed
                     # is needed for wrapping whole returned obj in _populate
@@ -739,6 +741,11 @@ def auto_get_props(
                 ):
                     # replace IBOX_RESNAME string with IBOX_RESNAME value
                     value = key_value.replace("IBOX_RESNAME", IBOX_RESNAME)
+                elif isinstance(key_value, str) and key_value.startswith(
+                    "IBOX_PROPNAME"
+                ):
+                    # replace IBOX_RESNAME string with IBOX_RESNAME value
+                    value = key_value.replace("IBOX_PROPNAME", IBOX_PROPNAME)
                 elif rootdict:
                     # rootdict is needed by lib/efs.py EFS_FileStorage SGIExtra
                     # where is passed as a dictionary to parse for parameters
