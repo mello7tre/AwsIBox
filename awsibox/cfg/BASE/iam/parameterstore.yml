@@ -7,9 +7,7 @@ global:
               Resource: get_expvalue('KeyParameterStore')
           - Describe:
               Action: 'ssm:DescribeParameters'
-              Resource:
-                - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:*')
-                - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EnvAppVersions/*')
+              Resource: Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:*')
           - Get:
               Action: 'ssm:GetParameters'
               Resource:
