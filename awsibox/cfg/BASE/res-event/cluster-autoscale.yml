@@ -13,7 +13,7 @@ global:
         Export: True
         Description: 'Lambda to automatically reduce and ECS Cluster'
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Timeout: 65
   IAMPolicy:
     - LambdaECSClusterAutoscale:

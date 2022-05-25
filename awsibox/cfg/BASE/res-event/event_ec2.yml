@@ -41,14 +41,14 @@ global:
     - EC2StartStopTagged:
         Description: 'Start and Stop EC2 Tagged Instances'
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Timeout: 10
         Variables:
           - TagName: 'AutoStartStop'
     - ServiceDiscovery:
         Description: 'ServiceDiscovery'
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Timeout: 30
         Variables:
           - NameSpaceID: get_expvalue('ServiceDiscoveryPublicDnsNamespaceId')
@@ -57,7 +57,7 @@ global:
     - R53RecordInstanceId:
         Description: 'R53 Record InstanceId Automatic Creation'
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Timeout: 30
         Variables:
           - HostedZoneName: get_endvalue('HostedZoneNamePrivate')

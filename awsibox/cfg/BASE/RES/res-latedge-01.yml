@@ -5,7 +5,7 @@ global:
         AtEdge: True
         Description: 'Lambda@Edge add Headers'
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Timeout: 10
         Version: True
         Variables: []

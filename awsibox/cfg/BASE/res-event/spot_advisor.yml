@@ -15,7 +15,7 @@ global:
           S3Key: ibox-tools/spot-advisor/spot-advisor.zip
         Description: 'Advise if ASG is using a spot instance type with a high frequency of interruption'
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Timeout: 20
         Variables:
           - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')

@@ -7,7 +7,7 @@ global:
     - ServiceUnavailable:
         Description: 'Lambda to serve resource-unavailable pages'
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Timeout: 65
         Variables:
           - RCode: 503

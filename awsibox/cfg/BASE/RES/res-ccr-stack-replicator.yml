@@ -28,6 +28,6 @@ global:
           S3Key: 'ibox-tools/stack-replicator/stack_replicator.zip'
         Description: 'Replicate Stacks'
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Timeout: 300
         Variables: []

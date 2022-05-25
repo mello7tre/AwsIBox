@@ -111,7 +111,7 @@ global:
         Layers:
           - LambdaLayerVersionPython37SSM
         MemorySize: 128
-        Runtime: python3.7
+        Runtime: python3.9
         Timeout: 30
         Variables:
           - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
