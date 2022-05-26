@@ -81,7 +81,6 @@ global:
               Resource:
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
                 - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
-                - 'arn:aws:ssm:*:*:parameter/EnvAppVersions/*'
     - STSAssumeRoleOwn:
         Export: True
         Type: Managed
