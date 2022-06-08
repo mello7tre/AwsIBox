@@ -706,9 +706,8 @@ def AS_LaunchTemplate():
     CfmInitArgs["SETUP"] = InitConfigSetup
     CfmInitArgs["CWAGENT"] = ASInitConfigCloudWatchAgent("")
 
-    if cfg.Apps:
+    if cfg.CodeDeploy:
         CfmInitArgs["CODEDEPLOY"] = InitConfigCodeDeploy
-        CD_DeploymentGroup()
 
     if not getattr(cfg, "IBOX_LAUNCH_TEMPLATE_NO_WAIT_ELB_HEALTH", False):
         for lb in cfg.LoadBalancer:

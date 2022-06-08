@@ -41,7 +41,11 @@ global:
     - CPULow:
         <<: *cpu
         IBOX_ENABLED: True
+  Apps:
+    - IBOX_BASE:
+        IBOX_ENABLED: False
   CustomUserDataScript: init.sh
+  CodeDeploy: False
   DeploymentGroup: 'no'
   LoadBalancerType: Classic
   LoadBalancer:

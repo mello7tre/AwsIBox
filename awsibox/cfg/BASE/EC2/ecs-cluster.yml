@@ -64,7 +64,7 @@ global:
         IBOX_ENABLED: False
     - Up:
         IBOX_ENABLED: False
-  Apps: []
+  Apps: {}
   ECSCluster:
     - Base:
         IBOX_TITLE: Cluster

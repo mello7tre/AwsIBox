@@ -803,6 +803,12 @@ def auto_get_props(
             obj.title = key["IBOX_TITLE"]
         except Exception:
             pass
+        else:
+            obj.title = (
+                eval(obj.title)
+                if obj.title.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
+                else obj.title
+            )
 
     _populate(obj, key, mapname, rootdict)
     return obj

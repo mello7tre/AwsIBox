@@ -82,12 +82,3 @@ def CD_DeploymentGroup():
         R_DeploymentGroup = CDDeploymentGroup("DeploymentGroup", index=1)
 
         add_obj(R_DeploymentGroup)
-
-
-def CD_Applications(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f"{key}{n}"
-        App = cdd.Application(resname)
-        App.ApplicationName = get_endvalue(resname)
-
-        add_obj(App)
