@@ -42,6 +42,10 @@ RDS: &rds
   TTL: '300'
 
 CCH: &cch
+  IBOX_OUTPUT:
+    - _:
+        Value: Ref(IBOX_RESNAME)
+        Condition: CacheEnabled
   Type: CNAME
   Condition: CacheEnabled
   ResourceRecords:
@@ -56,6 +60,10 @@ CCH: &cch
 
 CCHReadOnly: &cchreadonly
   <<: *cch
+  IBOX_OUTPUT:
+    - _:
+        Value: Ref(IBOX_RESNAME)
+        Condition: ReplicationGroup
   Condition: ReplicationGroup
   ResourceRecords:
     - >
@@ -112,13 +120,17 @@ global:
         <<: [*zoneinternal, *rds]
     - CCHExternal:
         <<: [*zoneexternal, *cch]
+        IBOX_RESNAME: RecordSetExternal
     - CCHInternal:
         <<: [*zoneinternal, *cch]
+        IBOX_RESNAME: RecordSetInternal
     - CCHReadOnlyExternal:
         <<: [*zoneexternal, *cchreadonly]
+        IBOX_RESNAME: RecordSetExternalRO
         Name: Sub('${AWS::StackName}.${EnvRole}_ro.%s' % cfg.HostedZoneNameRegionEnv)
     - CCHReadOnlyInternal:
         <<: [*zoneinternal, *cchreadonly]
+        IBOX_RESNAME: RecordSetInternalRO
         Name: Sub('${AWS::StackName}.${EnvRole}_ro.%s' % cfg.HostedZoneNamePrivate)
     - ApiGatewayDomainNameGlobal: *apigatewaydomainnameglobal
     - ApiGatewayDomainNameRegional: *apigatewaydomainnameregional

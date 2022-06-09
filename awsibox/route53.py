@@ -139,29 +139,6 @@ def R53_RecordSetRDS(rds_resname):
         add_obj([r_Record, o_Record])
 
 
-def R53_RecordSetCCH():
-    for n in ["External", "Internal"]:
-        if n not in cfg.RecordSet:
-            continue
-        # resources
-        r_Record = r53.RecordSetType(f"RecordSet{n}")
-        auto_get_props(r_Record, f"R53RecordSetCCH{n}")
-
-        r_RecordReadOnly = r53.RecordSetType(f"RecordSet{n}RO")
-        auto_get_props(r_RecordReadOnly, f"R53RecordSetCCHReadOnly{n}")
-
-        # outputs
-        o_Record = Output(f"RecordSet{n}")
-        o_Record.Value = Ref(f"RecordSet{n}")
-        o_Record.Condition = "CacheEnabled"
-
-        o_RecordReadOnly = Output(f"RecordSet{n}RO")
-        o_RecordReadOnly.Value = Ref(f"RecordSet{n}RO")
-        o_RecordReadOnly.Condition = "ReplicationGroup"
-
-        add_obj([r_Record, r_RecordReadOnly, o_Record, o_RecordReadOnly])
-
-
 def R53_HostedZones(key):
     for n, v in getattr(cfg, key).items():
         mapname = f"{key}{n}"
@@ -211,13 +188,3 @@ def R53_HostedZones(key):
         o_HostedZoneId.Export = Export(output_zoneidname)
 
         add_obj([r_HostedZone, o_HostedZoneName, o_HostedZoneId])
-
-
-def R53_RecordSets(key):
-    for n, v in getattr(cfg, key).items():
-        if not v["IBOX_ENABLED"]:
-            continue
-        resname = f"RecordSet{n}"
-
-        r_Record = r53.RecordSetType(resname)
-        add_obj(auto_get_props(r_Record, f"R53{resname}"))

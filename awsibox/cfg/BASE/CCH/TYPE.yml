@@ -1,90 +1,15 @@
-IBoxLoader: !include [
-  securitygroup.yml,
-  route53/route53-recordset.yml,
-]
+IBoxLoader: !include
+  - securitygroup.yml
+  - route53/route53-recordset.yml
+  - elasticache/cluster-and-replication-group.yml
 
 global:
-  Parameter:
-    - ReplicationGroupBaseAutomaticFailoverEnabled:
-        Description: 'Multi-AZ is enabled for this replication group (only for redis and ReplicationGroup) - empty for default based on env/role'
-        AllowedValues: ['', 'true', 'false']
-    - CacheClusterBaseCacheNodeType:
-        Description: 'Node Type - empty for default based on env/role'
-        AllowedValues: [
-          '', 'cache.t2.micro', 'cache.t2.small', 'cache.t2.medium', 'cache.t2.large',
-          'cache.m3.medium', 'cache.m3.large', 'cache.m3.xlarge', 'cache.m3.2xlarge',
-          'cache.m4.large', 'cache.m4.xlarge', 'cache.m4.2xlarge', 'cache.m4.4xlarge', 'cache.m4.10xlarge',
-          'cache.r3.large', 'cache.r3.xlarge', 'cache.r3.2xlarge', 'cache.r3.4xlarge', 'cache.r3.8xlarge',
-        ]
-    - CacheEnabled:
-        Description: 'Enable or disable cache creation'
-        AllowedValues: [ 'yes', 'no']
-        Default: 'yes'
-    - CacheClusterBaseEngine:
-        Description: 'Engine - empty for default based on env/role'
-        AllowedValues: ['', 'memcached', 'redis']
-    - CacheClusterBaseEngineVersion:
-        Description: 'Engine Version - empty for default based on env/role'
-    - ReplicationGroupBaseNumCacheClusters:
-        Description: 'The number of clusters this replication group initially has - empty for default based on env/role'
-    - CacheClusterBaseNumCacheNodes:
-        Description: 'The number of cache nodes that the cache cluster should have - empty for default based on env/role'
-    - ReplicationGroupBaseEnabled:
-        Description: 'Create a ElastiCache Redis Replication Group instead of a Cache Cluster - empty for default based on env/role'
-        AllowedValues: ['', 'yes', 'no']
-  Condition:
-    - CacheCluster:
-        Or(
-          And(
-            Condition('CacheEnabled'),
-            Condition('EngineMemCached'),
-          ),
-          And(
-            Condition('CacheEnabled'),
-            Condition('EngineRedis'),
-            get_condition('', 'equals', 'no', 'ReplicationGroupBaseEnabled'),
-          )
-        )
-    - CacheEnabled: Equals(Ref('CacheEnabled'), 'yes')
-    - EngineRedis: get_condition('', 'equals', 'redis', 'CacheClusterBaseEngine')
-    - EngineMemCached: get_condition('', 'equals', 'memcached', 'CacheClusterBaseEngine')
-    - ReplicationGroup:
-        And(
-          Condition('CacheEnabled'),
-          Condition('EngineRedis'),
-          get_condition('', 'equals', 'yes', 'ReplicationGroupBaseEnabled'),
-        )
-  Output:
-    - CacheNodeType:
-        Value: get_endvalue('CacheClusterBaseCacheNodeType')
-    - Engine:
-        Value: get_endvalue('CacheClusterBaseEngine')
-    - EngineVersion: 
-        Value: get_endvalue('CacheClusterBaseEngineVersion')
-    - NumCacheNodes:
-        Condition: 'CacheCluster'
-        Value: get_endvalue('CacheClusterBaseNumCacheNodes')
-    - NumCacheClusters:
-        Condition: 'ReplicationGroup'
-        Value: get_endvalue('ReplicationGroupBaseNumCacheClusters')
-  CacheCluster:
-    - Base:
-        Condition: CacheCluster
-        ## Internal
-        CacheSubnetGroupName: get_expvalue(f'CacheSubnetGroupPrivate')
-        VpcSecurityGroupIds: [Ref('SecurityGroupCCH')]
-        ## External
-        #CacheSubnetGroupName: get_expvalue(f'CacheSubnetGroupPublic')
-        #CacheSecurityGroupNames: [Ref('SecurityGroupCCH')]
-        AZMode: single-az
-        AutoMinorVersionUpgrade: true
-        NumCacheNodes: 1
-  ReplicationGroup:
-    - Base:
-        Condition: ReplicationGroup
-        ## Internal
-        SecurityGroupIds: [Ref('SecurityGroupCCH')]
-        Enabled: 'no'
-        AutomaticFailoverEnabled: false
-        NumCacheClusters: 1
-        ReplicationGroupDescription: 'Redis ReplicaGroup'
+  R53RecordSet:
+    - CCHExternal:
+        IBOX_ENABLED: True
+    - CCHInternal:
+        IBOX_ENABLED: True
+    - CCHReadOnlyExternal:
+        IBOX_ENABLED: True
+    - CCHReadOnlyInternal:
+        IBOX_ENABLED: True

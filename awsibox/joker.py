@@ -20,8 +20,18 @@ def Joker(key, module, cls):
         my_module = getattr(mod, module)
         my_class = getattr(my_module, cls)
 
-        res = my_class(resname)
-        auto_get_props(res, mapname=mapname, indexname=n)
+        obj = my_class(resname)
+
+        # use IBOX_SOURCE_OBJ to prepopulate obj
+        ibox_source_obj = v.get("IBOX_SOURCE_OBJ")
+        if ibox_source_obj:
+            ibox_source_obj = ibox_source_obj.replace("{IBOX_INDEXNAME}", n)
+            auto_get_props(obj, mapname=ibox_source_obj, indexname=n)
+            # reset obj title, if changed by IBOX_TITLE key
+            obj.title = resname
+
+        # populate obj
+        auto_get_props(obj, mapname=mapname, indexname=n)
 
         if v.get("Create"):
             add_obj(
@@ -33,6 +43,6 @@ def Joker(key, module, cls):
             )
             add_obj(get_condition(resname, "equals", "yes", f"{resname}Create"))
             add_obj(Output(resname, Condition=resname, Value=Ref(resname)))
-            res.Condition = resname
+            obj.Condition = resname
 
-        add_obj(res)
+        add_obj(obj)

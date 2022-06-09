@@ -283,7 +283,14 @@ CFG_TO_FUNC = {
     "EFSFileSystem": {"module": "efs", "func": "EFS_FileStorage"},
     "EFSAccessPoint": {"module": "joker", "func": ("efs", "AccessPoint")},
     "CacheSubnetGroup": {"module": "joker", "func": ("elasticache", "SubnetGroup")},
-    "CacheCluster": {"module": "elasticache", "func": "CCH_Cache"},
+    "ElastiCacheCacheCluster": {
+        "module": "joker",
+        "func": ("elasticache", "CacheCluster"),
+    },
+    "ElastiCacheReplicationGroup": {
+        "module": "joker",
+        "func": ("elasticache", "ReplicationGroup"),
+    },
     "DynamoDBTable": {"module": "joker", "func": ("dynamodb", "Table")},
     "EventsRule": {"module": "events", "func": "EVE_EventRules"},
     "Role": {"module": "iam", "func": "IAM_Roles"},
@@ -329,7 +336,7 @@ CFG_TO_FUNC = {
     "DBInstance": {"module": "rds", "func": "RDS_DB"},
     "DBSubnetGroup": {"module": "rds", "func": "RDS_SubnetGroups"},
     "HostedZone": {"module": "route53", "func": "R53_HostedZones"},
-    "R53RecordSet": {"module": "route53", "func": "R53_RecordSets"},
+    "R53RecordSet": {"module": "joker", "func": ("route53", "RecordSetType")},
     "WafByteMatchSet": {
         "module": "waf",
         "func": ["WAF_GlobalByteMatchSets", "WAF_RegionalByteMatchSets"],
