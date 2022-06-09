@@ -1,6 +1,6 @@
 AllowedIpBase: &allowedipbase
   IBOX_CONDITION:
-    - "{IBOX_MAPNAME}":
+    - .{IBOX_MAPNAME}:
         get_condition('', 'equals', 'yes', f'{IBOX_MAPNAME}Enabled')
   Enabled: 'yes'
   CidrIp: '127.0.0.1/32'

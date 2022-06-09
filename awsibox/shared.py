@@ -637,20 +637,13 @@ def auto_get_props(
             def _parameter(k):
                 for n, v in k.items():
                     n = parse_ibox_key(n)
-                    #n = n.replace("{IBOX_INDEXNAME}", IBOX_INDEXNAME)
-                    #n = n.replace("_", IBOX_RESNAME)
                     parameter = Parameter(n)
                     _populate(parameter, rootdict=v)
                     add_obj(parameter)
 
             def _condition(k):
                 for n, v in k.items():
-                    if IBOX_MAPNAME:
-                        n = n.replace("{IBOX_MAPNAME}", IBOX_MAPNAME)
-                    if IBOX_PROPNAME:
-                        n = n.replace("{IBOX_PROPNAME}", IBOX_PROPNAME)
-                    n = n.replace("{IBOX_INDEXNAME}", IBOX_INDEXNAME)
-                    n = n.replace("_", IBOX_RESNAME)
+                    n = parse_ibox_key(n)
                     condition = {n: eval(v)}
                     add_obj(condition)
 
@@ -882,6 +875,7 @@ def parse_ibox_key(value):
     # parse as f-string
     value = eval(f'f"{value}"')
     value = value.replace("_", IBOX_RESNAME)
+    value = value.lstrip(".")
 
     return value
 
