@@ -278,7 +278,7 @@ CFG_TO_FUNC = {
     "ApiGatewayStage": {"module": "apigateway", "func": "AGW_Stages"},
     "ApiGatewayUsagePlan": {"module": "apigateway", "func": "AGW_UsagePlans"},
     "ApiGatewayApiKey": {"module": "apigateway", "func": "AGW_ApiKeys"},
-    "LogGroupName": {"module": "logs", "func": "LGS_LogGroup"},
+    "LogsLogGroup": {"module": "joker", "func": ("logs", "LogsLogGroup")},
     "TaskDefinition": {"module": "ecs", "func": "ECS_TaskDefinition"},
     "EFSFileSystem": {"module": "efs", "func": "EFS_FileStorage"},
     "EFSAccessPoint": {"module": "joker", "func": ("efs", "AccessPoint")},
