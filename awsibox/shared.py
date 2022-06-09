@@ -514,8 +514,8 @@ def auto_get_props(
     IBOX_PROPS = {"MAP": {}}
 
     def _iboxif(if_wrapper, mapname, value):
-        condname = if_wrapper[0].replace("IBOX_MAPNAME_", mapname)
-        condname = condname.replace("IBOX_PROPNAME_", IBOX_PROPNAME)
+        condname = if_wrapper[0].replace("{IBOX_MAPNAME}", mapname)
+        condname = condname.replace("{IBOX_PROPNAME}", IBOX_PROPNAME)
         condname = condname.replace("_", IBOX_RESNAME)
         condvalues = []
         for i in if_wrapper[1:3]:
@@ -636,8 +636,9 @@ def auto_get_props(
         def _try_PCO_in_obj(key):
             def _parameter(k):
                 for n, v in k.items():
-                    n = n.replace("{IBOX_INDEXNAME}", IBOX_INDEXNAME)
-                    n = n.replace("_", IBOX_RESNAME)
+                    n = parse_ibox_key(n)
+                    #n = n.replace("{IBOX_INDEXNAME}", IBOX_INDEXNAME)
+                    #n = n.replace("_", IBOX_RESNAME)
                     parameter = Parameter(n)
                     _populate(parameter, rootdict=v)
                     add_obj(parameter)
@@ -645,9 +646,9 @@ def auto_get_props(
             def _condition(k):
                 for n, v in k.items():
                     if IBOX_MAPNAME:
-                        n = n.replace("IBOX_MAPNAME", IBOX_MAPNAME)
+                        n = n.replace("{IBOX_MAPNAME}", IBOX_MAPNAME)
                     if IBOX_PROPNAME:
-                        n = n.replace("IBOX_PROPNAME", IBOX_PROPNAME)
+                        n = n.replace("{IBOX_PROPNAME}", IBOX_PROPNAME)
                     n = n.replace("{IBOX_INDEXNAME}", IBOX_INDEXNAME)
                     n = n.replace("_", IBOX_RESNAME)
                     condition = {n: eval(v)}
@@ -875,6 +876,14 @@ def clf_compute_order(pattern):
     cfg.dbg_clf_compute_order[pattern] = base_ord
 
     return base_ord
+
+
+def parse_ibox_key(value):
+    # parse as f-string
+    value = eval(f'f"{value}"')
+    value = value.replace("_", IBOX_RESNAME)
+
+    return value
 
 
 def camel_to_snake(data):
