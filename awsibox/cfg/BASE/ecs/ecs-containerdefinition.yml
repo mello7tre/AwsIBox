@@ -1,6 +1,6 @@
 Base: &base
   IBOX_PARAMETER:
-    - EnvApp{IBOX_INDEXNAME}Version:
+    - EnvApp.IBOX_INDEXNAME.Version:
         Description: str(f'EnvApp{IBOX_INDEXNAME}Version')
         AllowedPattern: '^[a-zA-Z0-9-_.]*$'
     - _Cpu:
@@ -22,13 +22,13 @@ Base: &base
         get_condition('', 'not_equals', 0, f'{IBOX_RESNAME}ContainerPort')
     - _HostPort:
         get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}HostPort')
-    - EnvApp{IBOX_INDEXNAME}Version:
+    - EnvApp.IBOX_INDEXNAME.Version:
         Not(Equals('', Ref(f'EnvApp{IBOX_INDEXNAME}Version')))
   IBOX_OUTPUT:
-    - EnvApp{IBOX_INDEXNAME}Version:
+    - EnvApp.IBOX_INDEXNAME.Version:
         Value: Ref(f'EnvApp{IBOX_INDEXNAME}Version')
     - _Command:
-        Condition: IBOX_RESNAMECommand
+        Condition: IBOX_RESNAME.Command
         Value: Join(',', get_endvalue(f'{IBOX_RESNAME}Command')) 
     - _Constraints:
         Value: >-

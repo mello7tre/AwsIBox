@@ -1,9 +1,9 @@
 Base: &base
   IBOX_PARAMETER:
-    - ElastiCacheReplicationGroup{IBOX_INDEXNAME}AutomaticFailoverEnabled:
+    - ElastiCacheReplicationGroup.IBOX_INDEXNAME.AutomaticFailoverEnabled:
         Description: 'Multi-AZ is enabled for this replication group (only for redis and ReplicationGroup) - empty for default based on env/role'
         AllowedValues: ['', 'true', 'false']
-    - ElastiCacheCacheCluster{IBOX_INDEXNAME}CacheNodeType:
+    - ElastiCacheCacheCluster.IBOX_INDEXNAME.CacheNodeType:
         Description: 'Node Type - empty for default based on env/role'
         AllowedValues: [
           '', 'cache.t2.micro', 'cache.t2.small', 'cache.t2.medium', 'cache.t2.large',
@@ -15,16 +15,16 @@ Base: &base
         Description: 'Enable or disable cache creation'
         AllowedValues: [ 'yes', 'no']
         Default: 'yes'
-    - ElastiCacheCacheCluster{IBOX_INDEXNAME}Engine:
+    - ElastiCacheCacheCluster.IBOX_INDEXNAME.Engine:
         Description: 'Engine - empty for default based on env/role'
         AllowedValues: ['', 'memcached', 'redis']
-    - ElastiCacheCacheCluster{IBOX_INDEXNAME}EngineVersion:
+    - ElastiCacheCacheCluster.IBOX_INDEXNAME.EngineVersion:
         Description: 'Engine Version - empty for default based on env/role'
-    - ElastiCacheReplicationGroup{IBOX_INDEXNAME}NumCacheClusters:
+    - ElastiCacheReplicationGroup.IBOX_INDEXNAME.NumCacheClusters:
         Description: 'The number of clusters this replication group initially has - empty for default based on env/role'
-    - ElastiCacheCacheCluster{IBOX_INDEXNAME}NumCacheNodes:
+    - ElastiCacheCacheCluster.IBOX_INDEXNAME.NumCacheNodes:
         Description: 'The number of cache nodes that the cache cluster should have - empty for default based on env/role'
-    - ElastiCacheReplicationGroup{IBOX_INDEXNAME}Enabled:
+    - ElastiCacheReplicationGroup.IBOX_INDEXNAME.Enabled:
         Description: 'Create a ElastiCache Redis Replication Group instead of a Cache Cluster - empty for default based on env/role'
         AllowedValues: ['', 'yes', 'no']
   IBOX_CONDITION:

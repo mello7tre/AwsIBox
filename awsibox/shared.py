@@ -4,6 +4,8 @@ import troposphere.policies as pol
 
 from .common import *
 
+IBOX_SPECIAL_KEYS = ("IBOX_RESNAME", "IBOX_MAPNAME", "IBOX_REMAPNAME", "IBOX_INDEXNAME", "IBOX_PROPNAME")
+
 
 # S - PARAMETERS #
 class SSMParameter(ssm.Parameter):
@@ -514,7 +516,7 @@ def auto_get_props(
     IBOX_PROPS = {"MAP": {}}
 
     def _iboxif(if_wrapper, mapname, value):
-        condname = if_wrapper[0].replace("{IBOX_MAPNAME}", mapname)
+        condname = if_wrapper[0].replace("IBOX_MAPNAME", mapname)
         condname = parse_ibox_key(condname)
         condvalues = []
         for i in if_wrapper[1:3]:
@@ -728,16 +730,9 @@ def auto_get_props(
                 if isinstance(key_value, dict):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)
-                elif isinstance(key_value, str) and key_value.startswith(
-                    "IBOX_RESNAME"
-                ):
-                    # replace IBOX_RESNAME string with IBOX_RESNAME value
-                    value = key_value.replace("IBOX_RESNAME", IBOX_RESNAME)
-                elif isinstance(key_value, str) and key_value.startswith(
-                    "IBOX_PROPNAME"
-                ):
-                    # replace IBOX_RESNAME string with IBOX_RESNAME value
-                    value = key_value.replace("IBOX_PROPNAME", IBOX_PROPNAME)
+                elif isinstance(key_value, str) and key_value.startswith(IBOX_SPECIAL_KEYS):
+                    # parse value for IBOX special keys
+                    value = parse_ibox_key(key_value)
                 elif rootdict:
                     # rootdict is needed by lib/efs.py EFS_FileStorage SGIExtra
                     # where is passed as a dictionary to parse for parameters
@@ -792,15 +787,9 @@ def auto_get_props(
 
         # title override
         try:
-            obj.title = key["IBOX_TITLE"]
+            obj.title = parse_ibox_key(key["IBOX_TITLE"])
         except Exception:
             pass
-        else:
-            obj.title = (
-                eval(obj.title)
-                if obj.title.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
-                else obj.title
-            )
 
     _populate(obj, key, mapname, rootdict)
     return obj
@@ -870,10 +859,14 @@ def clf_compute_order(pattern):
 
 
 def parse_ibox_key(value):
-    # parse as f-string
-    value = eval(f'f"{value}"')
+    for key in IBOX_SPECIAL_KEYS:
+        try:
+            value = value.replace(key, globals()[key])
+        except Exception:
+            pass
+    #value = eval(f'f"{value}"')
     value = value.replace("_", IBOX_RESNAME)
-    value = value.lstrip(".")
+    value = value.replace(".", "")
 
     return value
 

@@ -1,6 +1,6 @@
 Base: &base
   IBOX_ENABLED: True
-  IBOX_TITLE: str(f"DeploymentGroup{IBOX_RESNAME}")
+  IBOX_TITLE: 'DeploymentGroup{IBOX_RESNAME}'
   IBOX_CONDITION:
     - DeploymentGroup: And(
         Condition(IBOX_RESNAME),
