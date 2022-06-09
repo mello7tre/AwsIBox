@@ -28,7 +28,7 @@ Base: &base
       S3Location:
         Bucket: Sub(cfg.BucketNameAppRepository)
         BundleType: tgz
-        Key: get_subvalue("${1M}/${1M}-${%s}.tar.gz" % "EnvApp{IBOX_INDEXNAME}Version", f"{IBOX_RESNAME}RepoName")
+        Key: get_subvalue("${1M}/${1M}-${%s}.tar.gz" % f"EnvApp{IBOX_INDEXNAME}Version", f"{IBOX_RESNAME}RepoName")
   DeploymentGroupName: Sub("${AWS::StackName}.${EnvRole}")
   ServiceRoleArn: get_expvalue("RoleCodeDeploy", "")
 
