@@ -16,7 +16,6 @@ from .shared import (
     import_user_data,
 )
 from .cfn import *
-from .codedeploy import CD_DeploymentGroup
 from .iam import IAMInstanceProfile
 
 try:
