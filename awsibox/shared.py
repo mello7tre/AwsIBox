@@ -4,7 +4,13 @@ import troposphere.policies as pol
 
 from .common import *
 
-IBOX_SPECIAL_KEYS = ("IBOX_RESNAME", "IBOX_MAPNAME", "IBOX_REMAPNAME", "IBOX_INDEXNAME", "IBOX_PROPNAME")
+IBOX_SPECIAL_KEYS = (
+    "IBOX_RESNAME",
+    "IBOX_MAPNAME",
+    "IBOX_REMAPNAME",
+    "IBOX_INDEXNAME",
+    "IBOX_PROPNAME",
+)
 
 
 # S - PARAMETERS #
@@ -730,7 +736,9 @@ def auto_get_props(
                 if isinstance(key_value, dict):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)
-                elif isinstance(key_value, str) and key_value.startswith(IBOX_SPECIAL_KEYS):
+                elif isinstance(key_value, str) and key_value.startswith(
+                    IBOX_SPECIAL_KEYS
+                ):
                     # parse value for IBOX special keys
                     value = parse_ibox_key(key_value)
                 elif rootdict:
@@ -864,7 +872,8 @@ def parse_ibox_key(value):
             value = value.replace(key, globals()[key])
         except Exception:
             pass
-    #value = eval(f'f"{value}"')
+    # Old way used eval
+    # value = eval(f'f"{value}"')
     value = value.replace("_", IBOX_RESNAME)
     value = value.replace(".", "")
 
