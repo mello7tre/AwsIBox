@@ -284,6 +284,7 @@ CFG_TO_FUNC = {
     "EFSAccessPoint": {"module": "joker", "func": ("efs", "AccessPoint")},
     "CacheSubnetGroup": {"module": "elasticache", "func": "CCH_SubnetGroups"},
     "CacheCluster": {"module": "elasticache", "func": "CCH_Cache"},
+    "DynamoDBTable": {"module": "joker", "func": ("dynamodb", "Table")},
     "EventsRule": {"module": "events", "func": "EVE_EventRules"},
     "Role": {"module": "iam", "func": "IAM_Roles"},
     "IAMPolicy": {"module": "iam", "func": "IAM_Policies"},

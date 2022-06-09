@@ -1,0 +1,21 @@
+global:
+  DynamoDBTable:
+    - CredStash:
+        AttributeDefinitions:
+          - Name:
+              AttributeName: name
+              AttributeType: S
+          - Version:
+              AttributeName: version
+              AttributeType: S
+        KeySchema:
+          - Name:
+              AttributeName: name
+              KeyType: HASH
+          - Version:
+              AttributeName: version
+              KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: Sub("credential-store-${EnvShort}")
