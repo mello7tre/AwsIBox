@@ -1,16 +1,16 @@
-IBoxLoader: !include [
-  crm/certificate-global.yml,
-  crm/certificate-regional.yml,
-  cloudfront/cloudfront-policy.yml,
-  res-extra/cloudformation_stackset.yml,
-]
+IBoxLoader: !include
+  - crm/certificate-global.yml
+  - crm/certificate-regional.yml
+  - cloudfront/cloudfront-policy.yml
+  - res-extra/cloudformation_stackset.yml
+  - elasticache/subnet-group.yml
+
 
 global:
   StackName: r-extra-01
   MappingClass:
     - AZones:
   ApiGatewayAccount: True
-  CacheSubnetGroup: True
   DBSubnetGroup: True
   EFSFileSystem:
     - EcsCluster:

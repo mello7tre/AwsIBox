@@ -29,10 +29,12 @@ global:
     - LogDriver:
         Value: get_endvalue('LogDriver')
   ClusterStack: ecs-a
-  Log:
-    Driver: awslogs
-    GroupName: Sub('/aws/ecs/${AWS::StackName}')
-    RetentionInDays: 30
+  LogDriver: awslogs
+  LogsLogGroup:
+    - Base:
+        IBOX_TITLE: LogsLogGroup
+        LogGroupName: Sub('/aws/ecs/${AWS::StackName}')
+        RetentionInDays: 30
   IAMPolicy:
     - ParameterStore:
         Roles:

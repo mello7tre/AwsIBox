@@ -1,0 +1,14 @@
+Base: &base
+  IBOX_OUTPUT:
+    - _:
+        Value: Ref(IBOX_RESNAME)
+        Export: Export(IBOX_RESNAME)
+  Description: Sub("${EnvShort}-%s" % IBOX_INDEXNAME)
+  SubnetIds: Split(",", ImportValue(f"Subnets{IBOX_INDEXNAME}"))
+
+
+global:
+  CacheSubnetGroup:
+    - IBOX_BASE: *base
+    - Private: {}
+    - Public: {}

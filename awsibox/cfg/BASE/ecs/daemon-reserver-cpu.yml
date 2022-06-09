@@ -30,9 +30,8 @@ global:
         Roles:
           - Ref('RoleInstance')
   LaunchType: EC2
-  Log:
-    Driver: none
-    GroupName: IBOX_SKIP_FUNC
+  LogDriver: none
+  LogsLogGroup: IBOX_SKIP_FUNC
   Role:
     - Task:
         Condition: DaemonReserveCpu
