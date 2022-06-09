@@ -515,8 +515,7 @@ def auto_get_props(
 
     def _iboxif(if_wrapper, mapname, value):
         condname = if_wrapper[0].replace("{IBOX_MAPNAME}", mapname)
-        condname = condname.replace("{IBOX_PROPNAME}", IBOX_PROPNAME)
-        condname = condname.replace("_", IBOX_RESNAME)
+        condname = parse_ibox_key(condname)
         condvalues = []
         for i in if_wrapper[1:3]:
             if isinstance(i, str) and i.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
@@ -649,8 +648,7 @@ def auto_get_props(
 
             def _output(k):
                 for n, v in k.items():
-                    n = n.replace("{IBOX_INDEXNAME}", IBOX_INDEXNAME)
-                    n = n.replace("_", IBOX_RESNAME)
+                    n = parse_ibox_key(n)
                     output = Output(n)
                     _populate(output, rootdict=v)
                     # alter troposphere obj and add IBOX property
