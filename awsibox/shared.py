@@ -670,7 +670,6 @@ def auto_get_props(
                 for n, v in k.items():
                     n = parse_ibox_key(n)
                     if not eval(v.get("IBOX_CODE_IF", "True")):
-                        pprint(v.get("IBOX_CODE_IF"))
                         continue
                     output = Output(n)
                     _populate(output, rootdict=v)
