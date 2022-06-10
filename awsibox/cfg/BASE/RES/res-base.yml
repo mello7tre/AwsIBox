@@ -1,4 +1,4 @@
-IBoxLoader: !include [
+IBoxLoader: !include
   - loadbalancing/lb-accountid.yml
   - iam/ssm.yml
   - route53/hostedzones.yml
