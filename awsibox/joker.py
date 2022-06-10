@@ -23,7 +23,6 @@ def Joker(key, module, cls):
         obj = my_class(resname)
 
         # use IBOX_SOURCE_OBJ to prepopulate obj
-        # rewrite using try
         ibox_source_obj = v.get("IBOX_SOURCE_OBJ")
         if ibox_source_obj:
             ibox_source_obj = ibox_source_obj.replace("{IBOX_INDEXNAME}", n)

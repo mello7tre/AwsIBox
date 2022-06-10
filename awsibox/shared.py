@@ -868,12 +868,8 @@ def clf_compute_order(pattern):
 
 def parse_ibox_key(value):
     for key in IBOX_SPECIAL_KEYS:
-        try:
-            value = value.replace(key, globals()[key])
-        except Exception:
-            pass
-    # Old way used eval
-    # value = eval(f'f"{value}"')
+        if key in value:
+            value = value.replace(key, globals().get(key, ""))
     value = value.replace("_", IBOX_RESNAME)
     value = value.replace(".", "")
 

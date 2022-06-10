@@ -50,17 +50,20 @@ Base: &base
           get_condition('', 'equals', 'yes', f'ElastiCacheReplicationGroup{IBOX_INDEXNAME}Enabled'),
         )
   IBOX_OUTPUT:
-    - _CacheNodeType:
+    - ElastiCache.IBOX_INDEXNAME.CacheNodeType:
+        Condition: CacheEnabled
         Value: get_endvalue(f'ElastiCacheCacheCluster{IBOX_INDEXNAME}CacheNodeType')
-    - _Engine:
+    - ElastiCache.IBOX_INDEXNAME.Engine:
+        Condition: CacheEnabled
         Value: get_endvalue(f'ElastiCacheCacheCluster{IBOX_INDEXNAME}Engine')
-    - _EngineVersion:
+    - ElastiCache.IBOX_INDEXNAME.EngineVersion:
+        Condition: CacheEnabled
         Value: get_endvalue(f'ElastiCacheCacheCluster{IBOX_INDEXNAME}EngineVersion')
-    - _NumCacheNodes:
-        Condition: 'CacheCluster'
+    - ElastiCache.IBOX_INDEXNAME.NumCacheNodes:
+        Condition: CacheCluster
         Value: get_endvalue(f'ElastiCacheCacheCluster{IBOX_INDEXNAME}NumCacheNodes')
-    - _NumCacheClusters:
-        Condition: 'ReplicationGroup'
+    - ElastiCache.IBOX_INDEXNAME.NumCacheClusters:
+        Condition: ReplicationGroup
         Value: get_endvalue(f'ElastiCacheReplicationGroup{IBOX_INDEXNAME}NumCacheClusters')
 
 
