@@ -1,16 +1,16 @@
 IBoxLoader: !include [
-  loadbalancing/lb-accountid.yml,
-  iam/ssm.yml,
-  route53/hostedzones.yml,
-  securitygroup.yml,
-  res-base/iampolicy.yml,
-  res-base/role.yml,
-  res-base/securitygroup_base.yml,
-  res-base/ecs_draininstance.yml,
-  res-base/ecs_runtask.yml,
-  res-base/cloudwatch_alarm.yml,
-  res-base/servicediscovery.yml,
-]
+  - loadbalancing/lb-accountid.yml
+  - iam/ssm.yml
+  - route53/hostedzones.yml
+  - securitygroup.yml
+  - res-base/iampolicy.yml
+  - res-base/role.yml
+  - res-base/securitygroup_base.yml
+  - res-base/ecs_draininstance.yml
+  - res-base/ecs_runtask.yml
+  - res-base/cloudwatch_alarm.yml
+  - res-base/servicediscovery.yml
+  - kms/key-and-alias.yml
 
 global:
   StackName: r-base
@@ -32,5 +32,4 @@ global:
               Resource: Sub('arn:aws:s3:::${BucketLogs}/*')
               Principal: get_endvalue('LoadBalancerAccountID')
               Sid: AllowLBLogs
-  KMSKey: True
   VPCEndpoint: 'yes'
