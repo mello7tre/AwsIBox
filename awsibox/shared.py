@@ -314,6 +314,10 @@ def get_resvalue(resname, propname):
 def get_dictvalue(key):
     if isinstance(key, list):
         value = [get_dictvalue(k) for k in key]
+    elif isinstance(key, dict) and "IBOX_LIST" in key:
+        # Usefull for KMS policy and other generic dict properties
+        del key["IBOX_LIST"]
+        value = [{i: get_dictvalue(k) for i, k in key.items()}]
     elif isinstance(key, dict):
         value = {i: get_dictvalue(k) for i, k in key.items()}
     else:
@@ -630,6 +634,14 @@ def auto_get_props(
                     prop_list.append(_iboxif(if_wrapper, mapname, prop_obj))
 
             return prop_list
+
+        # Pure dict as KSM Key KeyPolicy
+        elif (
+            isinstance(prop_class, tuple)
+            and isinstance(prop_class[0], type)
+            and prop_class[0].__name__ == "dict"
+        ):
+            return get_dictvalue(key[obj_propname])
 
     def _populate(obj, key=None, mapname=None, rootdict=None):
         if not mapname:

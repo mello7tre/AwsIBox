@@ -20,7 +20,6 @@ from . import (
     kms,
     rds,
     efs,
-    elasticache,
     cloudformation,
     apigateway,
     joker,
