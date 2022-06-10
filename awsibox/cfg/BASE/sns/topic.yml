@@ -1,0 +1,12 @@
+Base: &base
+  DisplayName: Sub("${AWS::StackName}.${EnvRole}-SNS%s" % IBOX_INDEXNAME)
+  Export: False
+  IBOX_OUTPUT:
+    - _:
+        IBOX_CODE_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+        Value: Ref(IBOX_RESNAME)
+        Export: Export(IBOX_RESNAME)
+
+global:
+  SNSTopic:
+    - IBOX_BASE: *base

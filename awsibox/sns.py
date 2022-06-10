@@ -19,35 +19,7 @@ class SNSSubscription(sns.SubscriptionResource):
         super().__init__(title, **kwargs)
         auto_get_props(self)
 
-
-class SNSTopic(sns.Topic):
-    def setup(self, name):
-        self.DisplayName = Sub("${AWS::StackName}.${EnvRole}-SNS%s" % name)
-
-
 ##
-
-
-def SNS_Topics(key):
-    # Resources
-    for n, v in getattr(cfg, key).items():
-        resname = f"{key}{n}"
-        r_Topic = SNSTopic(resname)
-        r_Topic.setup(name=n)
-        if "Condition" in v:
-            r_Topic.Condition = v["Condition"]
-
-        add_obj(r_Topic)
-
-        # outputs
-        if v.get("Export"):
-            o_Topic = Output(resname)
-            o_Topic.Value = Ref(resname)
-            o_Topic.Export = Export(resname)
-            if "Condition" in v:
-                o_Topic.Condition = v["Condition"]
-
-            add_obj(o_Topic)
 
 
 def SNS_Subscriptions(key):

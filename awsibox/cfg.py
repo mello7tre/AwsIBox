@@ -331,7 +331,7 @@ CFG_TO_FUNC = {
         "func": ("cloudfront", "CloudFrontOriginAccessIdentity"),
     },
     "SNSSubscription": {"module": "sns", "func": "SNS_Subscriptions"},
-    "SNSTopic": {"module": "sns", "func": "SNS_Topics"},
+    "SNSTopic": {"module": "joker", "func": ("sns", "Topic")},
     "SQSQueue": {"module": "joker", "func": ("sqs", "Queue")},
     "ASGLifecycleHook": {"module": "joker", "func": ("autoscaling", "LifecycleHook")},
     "DBInstance": {"module": "rds", "func": "RDS_DB"},

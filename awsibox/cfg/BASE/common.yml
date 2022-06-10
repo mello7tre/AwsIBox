@@ -1,3 +1,7 @@
+IBoxLoader:
+  - !include
+    - sns/topic.yml
+
 global:
   Parameter:
     - Env:
