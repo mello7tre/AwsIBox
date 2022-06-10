@@ -17,7 +17,6 @@ from . import (
     s3,
     waf,
     vpc,
-    kms,
     rds,
     efs,
     cloudformation,
