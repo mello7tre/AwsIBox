@@ -817,15 +817,6 @@ def AS_Autoscaling(key):
     add_obj([R_ASG])
 
 
-def AS_ScheduledActioneEC2(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f"{key}{n}"
-
-        r_ScheduledActions = asg.ScheduledAction(resname)
-        auto_get_props(r_ScheduledActions)
-        add_obj(r_ScheduledActions)
-
-
 def AS_ScalableTargetECS(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
