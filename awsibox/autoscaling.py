@@ -815,28 +815,3 @@ def AS_Autoscaling(key):
     R_ASG.Tags += LaunchTemplateTags
 
     add_obj([R_ASG])
-
-
-def AS_ScalableTargetECS(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f"{key}{n}"
-
-        # resources
-        # trick - use fixed name ScalableTarget to avoid changin too much
-        # code for now
-        r_ScalableTarget = aas.ScalableTarget("ScalableTarget")
-        auto_get_props(r_ScalableTarget, f"{key}Service")
-
-        ScheduledActions = []
-        for m, w in cfg.ScalableTargetScheduledAction.items():
-            if not w.get("IBOX_ENABLED", True):
-                continue
-            sc_name = f"ScalableTargetScheduledAction{m}"
-            r_ScheduledAction = aas.ScheduledAction(sc_name)
-            auto_get_props(r_ScheduledAction)
-            ScheduledActions.append(
-                If(f"{sc_name}Disable", Ref("AWS::NoValue"), r_ScheduledAction)
-            )
-        r_ScalableTarget.ScheduledActions = ScheduledActions
-
-        add_obj([r_ScalableTarget])

@@ -611,27 +611,40 @@ def auto_get_props(
         ):
             prop_list = []
             prop_class = props[obj_propname][0][0]
-            for o, v in key[obj_propname].items():
-                # for a list of properties set IBOX_PROPNAME to the name of property
-                IBOX_PROPNAME = o
 
-                if o == "IBOX_IF":
-                    # element named IBOX_IF must no be parsed
-                    # is needed for wrapping whole returned obj in _populate
-                    continue
-                name_o = str(o)
-                mapname_o = f"{mapname_obj}{name_o}"
-                prop_obj = prop_class()
-
-                _populate(prop_obj, key=v, mapname=mapname_o)
-
-                # trick to wrapper single obj in If Condition
-                try:
-                    if_wrapper = v["IBOX_IF"]
-                except Exception:
+            # for sub obj defined elsewhere
+            ibox_sub_obj = key[obj_propname].get("IBOX_SUB_OBJ")
+            if ibox_sub_obj:
+                for o, v in getattr(cfg, ibox_sub_obj).items():
+                    obj_name = f"{ibox_sub_obj}{o}"
+                    prop_obj = prop_class(obj_name)
+                    auto_get_props(prop_obj)
+                    if_wrapper = v.get("IBOX_IF")
+                    if if_wrapper:
+                        prop_obj = _iboxif(if_wrapper, obj_propname, prop_obj)
                     prop_list.append(prop_obj)
-                else:
-                    prop_list.append(_iboxif(if_wrapper, mapname, prop_obj))
+            else:
+                for o, v in key[obj_propname].items():
+                    # for a list of properties set IBOX_PROPNAME to the name of property
+                    IBOX_PROPNAME = o
+
+                    if o == "IBOX_IF":
+                        # element named IBOX_IF must no be parsed
+                        # is needed for wrapping whole returned obj in _populate
+                        continue
+                    name_o = str(o)
+                    mapname_o = f"{mapname_obj}{name_o}"
+                    prop_obj = prop_class()
+
+                    _populate(prop_obj, key=v, mapname=mapname_o)
+
+                    # trick to wrapper single obj in If Condition
+                    try:
+                        if_wrapper = v["IBOX_IF"]
+                    except Exception:
+                        prop_list.append(prop_obj)
+                    else:
+                        prop_list.append(_iboxif(if_wrapper, mapname, prop_obj))
 
             return prop_list
 

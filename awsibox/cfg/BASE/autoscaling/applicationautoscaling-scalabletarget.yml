@@ -40,6 +40,10 @@ ScheduledAction: &scheduledaction
         Value: >-
           CapacityMin= ${ScalableTargetActionMinCapacity} ,CapacityMax= ${ScalableTargetActionMaxCapacity}
           ,Schedule= ${Schedule} ,StartTime= ${StartTime}
+  IBOX_IF:
+    - IBOX_RESNAME.Disable
+    - Ref('AWS::NoValue')
+    - IBOX_IFVALUE
   ScalableTargetAction:
     MinCapacity: If(f'{IBOX_RESNAME}CapacityMinSize',
                     get_endvalue('CapacityMin'),
@@ -54,8 +58,10 @@ ScheduledAction: &scheduledaction
 
 global:
   ScalableTarget:
-    - Service: *ecs
-        
+    - Service:
+        <<: *ecs
+        IBOX_TITLE: ScalableTarget
+        ScheduledActions: {"IBOX_SUB_OBJ": "ScalableTargetScheduledAction"}
   ScalableTargetScheduledAction:
     - Down: *scheduledaction
     - Up: *scheduledaction

@@ -250,7 +250,10 @@ CFG_TO_FUNC = {
     "SecurityGroups": {"module": "securitygroup", "func": "SG_SecurityGroups"},
     "AutoScalingGroup": {"module": "autoscaling", "func": "AS_Autoscaling"},
     "ScheduledAction": {"module": "joker", "func": ("autoscaling", "ScheduledAction")},
-    "ScalableTarget": {"module": "autoscaling", "func": "AS_ScalableTarget"},
+    "ScalableTarget": {
+        "module": "joker",
+        "func": ("applicationautoscaling", "ScalableTarget"),
+    },
     "AutoScalingScalingPolicy": {"module": "autoscaling", "func": "AS_ScalingPolicies"},
     "ApplicationAutoScalingScalingPolicy": {
         "module": "autoscaling",
