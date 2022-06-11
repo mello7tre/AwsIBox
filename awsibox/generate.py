@@ -27,19 +27,28 @@ from . import (
 
 
 def execute_method(RP_cmm):
-    for k, v in cfg.CFG_TO_FUNC.items():
+    processed = []
+
+    def _process(k, v):
         func_name = v["func"]
         module_name = v["module"]
         module = globals()[module_name]
+        dep = v.get("dep", [])
 
         if k in list(RP_cmm.keys()):
+            # process dependency modules first
+            for m in dep:
+                if m in list(RP_cmm.keys()):
+                    _process(m, cfg.CFG_TO_FUNC[m])
+                    processed.append(m)
+
             RP_value = RP_cmm[k]
             if isinstance(RP_value, str) and RP_value == "IBOX_SKIP_FUNC":
-                continue
+                return
             if isinstance(func_name, list):
                 for n in func_name:
                     getattr(module, n)(key=k)
-                continue
+                return
             stacktype_func = f"{func_name}{cfg.stacktype.upper()}"
             if stacktype_func in dir(module):
                 getattr(module, stacktype_func)(key=k)
@@ -48,6 +57,12 @@ def execute_method(RP_cmm):
             elif module_name == "joker":
                 # for resources that can be built using only auto_get_props
                 joker.Joker(key=k, module=func_name[0], cls=func_name[1])
+
+    for k, v in cfg.CFG_TO_FUNC.items():
+        # skip already processed keys
+        if k in processed:
+            continue
+        _process(k, v)
 
     stack_add_res()
 

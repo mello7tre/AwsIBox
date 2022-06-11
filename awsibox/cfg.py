@@ -245,13 +245,10 @@ CFG_TO_FUNC = {
     "Parameter": {"module": "cloudformation", "func": "CFM_Parameters"},
     "Condition": {"module": "cloudformation", "func": "CFM_Conditions"},
     "Mapping": {"module": "cloudformation", "func": "CFM_Mappings"},
-    # SecurityGroups need to stay here because it populate a cfg value
-    # [cfg.SecurityGroupsImport] used later by other keys/modules
-    "SecurityGroups": {"module": "securitygroup", "func": "SG_SecurityGroups"},
-    # LambdaFunctionAssociation must be processed before CloudFrontDistribution
-    "LambdaFunctionAssociation": {
+    "Alarm": {
         "module": "joker",
-        "func": ("cloudfront", "LambdaFunctionAssociation"),
+        "func": ("cloudwatch", "Alarm"),
+        "dep": ["LoadBalancer"],
     },
     "ApiGatewayAccount": {"module": "joker", "func": ("apigateway", "Account")},
     "ApiGatewayApiKey": {"module": "apigateway", "func": "AGW_ApiKeys"},
@@ -263,19 +260,27 @@ CFG_TO_FUNC = {
     "ApiGatewayRestApi": {"module": "apigateway", "func": "AGW_RestApi"},
     "ApiGatewayStage": {"module": "apigateway", "func": "AGW_Stages"},
     "ApiGatewayUsagePlan": {"module": "apigateway", "func": "AGW_UsagePlans"},
-
     "ApplicationAutoScalingScalingPolicy": {
         "module": "autoscaling",
         "func": "AS_ScalingPolicies",
     },
     "Apps": {"module": "joker", "func": ("codedeploy", "DeploymentGroup")},
     "ASGLifecycleHook": {"module": "joker", "func": ("autoscaling", "LifecycleHook")},
-    "AutoScalingGroup": {"module": "autoscaling", "func": "AS_Autoscaling"},
+    "AutoScalingGroup": {
+        "module": "autoscaling",
+        "func": "AS_Autoscaling",
+        "dep": ["SecurityGroups"],
+    },
     "AutoScalingScalingPolicy": {"module": "autoscaling", "func": "AS_ScalingPolicies"},
     "Bucket": {"module": "s3", "func": "S3_Buckets"},
     "Certificate": {"module": "joker", "func": ("certificatemanager", "Certificate")},
     "CacheSubnetGroup": {"module": "joker", "func": ("elasticache", "SubnetGroup")},
     "CloudFrontCachePolicy": {"module": "joker", "func": ("cloudfront", "CachePolicy")},
+    "CloudFrontDistribution": {
+        "module": "cloudfront",
+        "func": "CF_CloudFront",
+        "dep": ["LoadBalancer"],
+    },
     "CloudFrontOriginAccessIdentity": {
         "module": "joker",
         "func": ("cloudfront", "CloudFrontOriginAccessIdentity"),
@@ -304,7 +309,11 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("elasticache", "ReplicationGroup"),
     },
-    "EventsRule": {"module": "events", "func": "EVE_EventRules"},
+    "EventsRule": {
+        "module": "events",
+        "func": "EVE_EventRules",
+        "dep": ["SecurityGroups"],
+    },
     "HostedZone": {"module": "route53", "func": "R53_HostedZones"},
     "IAMGroup": {"module": "iam", "func": "IAM_Groups"},
     "IAMPolicy": {"module": "iam", "func": "IAM_Policies"},
@@ -320,6 +329,11 @@ CFG_TO_FUNC = {
     "LambdaEventSourceMapping": {
         "module": "joker",
         "func": ("awslambda", "EventSourceMapping"),
+    },
+    "LambdaFunctionAssociation": {
+        "module": "joker",
+        "func": ("cloudfront", "LambdaFunctionAssociation"),
+        "dep": ["CloudFrontDistribution"],
     },
     "LambdaLayerVersion": {"module": "lambdas", "func": "LBD_LayerVersions"},
     "LambdaPermission": {"module": "joker", "func": ("awslambda", "Permission")},
@@ -341,7 +355,12 @@ CFG_TO_FUNC = {
         "module": "securitygroup",
         "func": "SG_SecurityGroupIngresses",
     },
-    "Service": {"module": "ecs", "func": "ECS_Service"},
+    "SecurityGroups": {"module": "securitygroup", "func": "SG_SecurityGroups"},
+    "Service": {
+        "module": "ecs",
+        "func": "ECS_Service",
+        "dep": ["SecurityGroups"],
+    },
     "ServiceDiscoveryPublicDnsNamespace": {
         "module": "joker",
         "func": ("servicediscovery", "PublicDnsNamespace"),
@@ -374,10 +393,7 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("wafv2", "WebACL"),
     },
-    # Alarm must be processed after LoadBalancer because it enable the relative one
-    "Alarm": {"module": "joker", "func": ("cloudwatch", "Alarm")},
-    # CloudFrontDistribution need LoadBalancer
-    "CloudFrontDistribution": {"module": "cloudfront", "func": "CF_CloudFront"},
+    # CloudformationCustomResource begin here
     "CCRFargateSpot": {
         "module": "cloudformation",
         "func": "CFM_CustomResourceFargateSpot",
