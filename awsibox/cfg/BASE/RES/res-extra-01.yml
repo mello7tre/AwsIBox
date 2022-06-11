@@ -4,6 +4,7 @@ IBoxLoader: !include
   - cloudfront/cloudfront-policy.yml
   - res-extra/cloudformation_stackset.yml
   - elasticache/subnet-group.yml
+  - rds/db-subnet-group.yml
 
 
 global:
@@ -11,7 +12,6 @@ global:
   MappingClass:
     - AZones:
   ApiGatewayAccount: True
-  DBSubnetGroup: True
   EFSFileSystem:
     - EcsCluster:
         Enabled: 'no'

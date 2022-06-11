@@ -125,18 +125,6 @@ class RDSDBParameterGroup(rds.DBParameterGroup):
         )
 
 
-class RDSDBSubnetGroupPrivate(rds.DBSubnetGroup):
-    def setup(self):
-        self.DBSubnetGroupDescription = Sub("${EnvShort}-Private")
-        self.SubnetIds = Split(",", get_expvalue("SubnetsPrivate"))
-
-
-class RDSDBSubnetGroupPublic(rds.DBSubnetGroup):
-    def setup(self):
-        self.DBSubnetGroupDescription = Sub("${EnvShort}-Public")
-        self.SubnetIds = Split(",", get_expvalue("SubnetsPublic"))
-
-
 def RDS_DB(key):
     for n, v in getattr(cfg, key).items():
         mapname = f"{key}{n}"
@@ -174,23 +162,3 @@ def RDS_DB(key):
         r_PG.Parameters = cfg.DBParameterGroup1
 
         add_obj([r_DB, r_PG])
-
-
-def RDS_SubnetGroups(key):
-    # Resources
-    R_Private = RDSDBSubnetGroupPrivate("DBSubnetGroupPrivate")
-    R_Private.setup()
-
-    R_Public = RDSDBSubnetGroupPublic("DBSubnetGroupPublic")
-    R_Public.setup()
-
-    # Outputs
-    O_Private = Output("DBSubnetGroupPrivate")
-    O_Private.Value = Ref("DBSubnetGroupPrivate")
-    O_Private.Export = Export("DBSubnetGroupPrivate")
-
-    O_Public = Output("DBSubnetGroupPublic")
-    O_Public.Value = Ref("DBSubnetGroupPublic")
-    O_Public.Export = Export("DBSubnetGroupPublic")
-
-    add_obj([R_Private, R_Public, O_Private, O_Public])

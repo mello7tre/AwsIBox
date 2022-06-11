@@ -338,7 +338,7 @@ CFG_TO_FUNC = {
     "SQSQueue": {"module": "joker", "func": ("sqs", "Queue")},
     "ASGLifecycleHook": {"module": "joker", "func": ("autoscaling", "LifecycleHook")},
     "DBInstance": {"module": "rds", "func": "RDS_DB"},
-    "DBSubnetGroup": {"module": "rds", "func": "RDS_SubnetGroups"},
+    "DBSubnetGroup": {"module": "joker", "func": ("rds", "DBSubnetGroup")},
     "HostedZone": {"module": "route53", "func": "R53_HostedZones"},
     "R53RecordSet": {"module": "joker", "func": ("route53", "RecordSetType")},
     "WafByteMatchSet": {
