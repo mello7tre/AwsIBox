@@ -679,14 +679,6 @@ def AS_LaunchTemplate():
 
         Tags_List.append(asg.Tag(envname, Ref(envname), True))
 
-        # resources
-        # FOR MULTIAPP CODEDEPLOY
-        if len(cfg.Apps) > 1:
-            r_DeploymentGroup = CDDeploymentGroup(f"DeploymentGroup{name}")
-            r_DeploymentGroup.setup(index=n)
-
-            add_obj(r_DeploymentGroup)
-
         # outputs
         Output_app = Output(envname)
         Output_app.Value = Ref(envname)
