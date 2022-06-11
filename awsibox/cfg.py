@@ -271,7 +271,7 @@ CFG_TO_FUNC = {
         "func": ("ecs", "ClusterCapacityProviderAssociations"),
     },
     "Service": {"module": "ecs", "func": "ECS_Service"},
-    "ApiGatewayAccount": {"module": "apigateway", "func": "AGW_Account"},
+    "ApiGatewayAccount": {"module": "joker", "func": ("apigateway", "Account")},
     "ApiGatewayDomainName": {"module": "apigateway", "func": "AGW_DomainName"},
     "ApiGatewayRestApi": {"module": "apigateway", "func": "AGW_RestApi"},
     "ApiGatewayBasePathMapping": {

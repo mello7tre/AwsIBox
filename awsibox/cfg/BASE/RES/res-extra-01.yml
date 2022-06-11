@@ -5,13 +5,13 @@ IBoxLoader: !include
   - res-extra/cloudformation_stackset.yml
   - elasticache/subnet-group.yml
   - rds/db-subnet-group.yml
+  - apigateway/account.yml
 
 
 global:
   StackName: r-extra-01
   MappingClass:
     - AZones:
-  ApiGatewayAccount: True
   EFSFileSystem:
     - EcsCluster:
         Enabled: 'no'

@@ -15,12 +15,6 @@ from .lambdas import LambdaPermissionApiGateway
 from .iam import IAMPolicyApiGatewayPrivate
 
 
-class ApiGatewayAccount(agw.Account):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.CloudWatchRoleArn = get_expvalue("RoleApiGatewayCloudWatch")
-
-
 class ApiGatewayResource(agw.Resource):
     def __init__(self, title, key, stage, **kwargs):
         super().__init__(title, **kwargs)
@@ -93,13 +87,6 @@ class ApiGatewayDeployment(agw.Deployment):
         self.DependsOn = f"ApiGatewayResource{lastresource}Method{lastmethod}"
         self.Description = Ref(f"Deployment{name}Description")
         self.RestApiId = Ref("ApiGatewayRestApi")
-
-
-def AGW_Account(key):
-    # Resources
-    R_Account = ApiGatewayAccount("ApiGatewayAccount")
-
-    add_obj([R_Account])
 
 
 def AGW_DomainName(key):
