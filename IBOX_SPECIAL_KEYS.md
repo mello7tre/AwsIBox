@@ -27,10 +27,10 @@
 
 ### Usage ###
 #### IBOX\_AUTO\_P
-Automatically create a default parameter.
+Automatically create a default parameter.\
 To create a parameter for the key "Key" simply prepende the key with:
 `Key.IBOX_AUTO_P: {}`
-Will be created a Parameter named as the full mapname of the key.
+Will be created a Parameter named as the full mapname of the key.\
 Ex base:
 ```
 Field.IBOX_AUTO_P: {}
@@ -43,9 +43,9 @@ Type.IBOX_AUTO_P:
 ```
 
 #### IBOX\_AUTO\_PO
-Same as `IBOX_AUTO_P`, but create a default Output too.
-Output value is named like the key mapname and have the same value.
-As properties key for Parameters and Outputs are not the same, both can be used in the dictionary to use custom values.
+Same as `IBOX_AUTO_P`, but create a default Output too.\
+Output value is named like the key mapname and have the same value.\
+As properties key for Parameters and Outputs are not the same, both can be used in the dictionary to use custom values.\
 Ex extended:
 ```
 Type.IBOX_AUTO_PO:
@@ -55,8 +55,8 @@ Type.IBOX_AUTO_PO:
 ```
 
 #### IBOX\_BASE
-Is used to define a base configuration for a resource or sub-resource.
-Can only be used as dictionary key of a first level node.
+Is used to define a base configuration for a resource or sub-resource.\
+Can only be used as dictionary key of a first level node.\
 Ex:
 ```
 Base: &base
@@ -77,9 +77,9 @@ global:
 Both DBSubnetGroup Private and Public will inherit the `IBOX_BASE` configuration.
 
 #### IBOX\_CODE
-Can be used to set the value of a key using python/cloudformation code.
-If the key is present `IBOX_CODE` must be defined before the key _normal_ value.
-If there is a `IBOX_AUTO_P, IBOX_AUTO_PO, IBOX_PCO` key too, `IBOX_CODE` must be defined as first.
+Can be used to set the value of a key using python/cloudformation code.\
+If the key is present `IBOX_CODE` must be defined before the key _normal_ value.\
+If there is a `IBOX_AUTO_P, IBOX_AUTO_PO, IBOX_PCO` key too, `IBOX_CODE` must be defined as first.\
 Ex:
 ```
 LaunchTemplate:
@@ -90,7 +90,7 @@ LaunchTemplate:
 ```
 This way we can use a single key ImageId to choose between a _real_ imageID or the latest one (from Parameter `LaunchTemplateDataImageIdLatest`).
 
-The relative key can also be missing, put it's name must be a valid object property.
+The relative key can also be missing, put it's name must be a valid object property.\
 Ex:
 ```
 LaunchTemplate:
