@@ -1,5 +1,5 @@
 IBoxLoader: !exclude
-  - autoscaling/applicationautoscaling-scalingpolicy.yml
+  - application-autoscaling/scalingpolicy.yml
   - autoscaling/capacity.yml
   - loadbalancing/loadbalancing.yml
   - ec2/securitygroup.yml

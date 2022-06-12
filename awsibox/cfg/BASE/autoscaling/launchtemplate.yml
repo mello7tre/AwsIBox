@@ -1,7 +1,6 @@
 IBoxLoader: !include [
-  #autoscaling-ephemeral.yml,
+  #ephemeral.yml,
 ]
-
 
 global:
   Parameter:
