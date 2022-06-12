@@ -1,7 +1,7 @@
 # How to use IBOX Special Keys
 
 ## Key List ##
-- IBOX\_AUTO\_P
+- `IBOX_AUTO_P`
 - IBOX\_AUTO\_PO
 - IBOX\_BASE
 - IBOX\_CLUSTER\_AUTO\_REDUCE
@@ -29,3 +29,22 @@
 - IBOX\_SUB\_OBJ
 - IBOX\_TITLE
 
+### Usage ###
+#### IBOX\_AUTO\_P
+Automatically create a default parameter.
+To create a parameter for the key "Key" simply prepende the key with:
+`Key.IBOX_AUTO_P: {}`
+Will be created a Parameter named as the full mapname of the key.
+Ex base:
+```
+Field.IBOX_AUTO_P: {}
+
+```
+Ex extended:
+```
+Type.IBOX_AUTO_P:
+  AllowedValues: ['', 'binpack', 'random', 'spread']
+```
+
+#### IBOX\_AUTO\_PO
+Same as `IBOX_AUTO_P`
