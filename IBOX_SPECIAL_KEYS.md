@@ -1,7 +1,7 @@
 # How to use IBOX Special Keys
 
 ## Key List ##
-- IBOX\_AUTO\_P
+- [IBOX\_AUTO\_P] (user-content-IBOX_AUTO_P)
 - IBOX\_AUTO\_PO
 - IBOX\_BASE
 - IBOX\_CODE
