@@ -78,9 +78,7 @@ Both DBSubnetGroup Private and Public will inherit the `IBOX_BASE` configuration
 
 #### IBOX\_CODE
 Can be used to set the value of a key using python/cloudformation code.
-
 If the key is present `IBOX_CODE` must be defined before the key _normal_ value.
-
 If there is a `IBOX_AUTO_P, IBOX_AUTO_PO, IBOX_PCO` key too, `IBOX_CODE` must be defined as first.
 Ex:
 ```
