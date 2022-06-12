@@ -1,11 +1,10 @@
-IBoxLoader: !exclude [
-  autoscaling/applicationautoscaling-scalingpolicy.yml,
-  autoscaling/capacity.yml,
-  loadbalancing/loadbalancing.yml,
-  securitygroup.yml,
-  alarms.yml,
-  cloudfront/cloudfront-ios.yml,
-]
+IBoxLoader: !exclude
+  - autoscaling/applicationautoscaling-scalingpolicy.yml
+  - autoscaling/capacity.yml
+  - loadbalancing/loadbalancing.yml
+  - ec2/securitygroup.yml
+  - cloudwatch/alarms.yml
+  - cloudfront/cloudfront-ios.yml
 
 global:
   StackName: rsc

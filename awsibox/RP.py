@@ -96,16 +96,14 @@ def build_RP():
                         self._root_base_ext,
                         self._root_brand_ext,
                     ]:
+                        if "/" not in filename and self.root_current_suffix:
+                            # for file in subfolder that include file without a path
+                            # search only in current subfolder
+                            path = os.path.join(path, self.root_current_suffix)
+
                         contents = self.extractFile(filename, path)
                         if contents:
                             result.append(contents)
-                        if self.root_current_suffix:
-                            # search in subfolder too
-                            contents = self.extractFile(
-                                filename, os.path.join(path, self.root_current_suffix)
-                            )
-                            if contents:
-                                result.append(contents)
                 return result
             else:
                 print("Error:: unrecognised node type in !include statement")

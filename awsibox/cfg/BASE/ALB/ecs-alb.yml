@@ -1,7 +1,6 @@
-IBoxLoader: !include [
-  loadbalancing/loadbalancing-elb.yml,
-  alarms.yml,
-]
+IBoxLoader: !include
+  - loadbalancing/loadbalancing-elb.yml
+  - cloudwatch/alarms.yml
 
 global:
   StackName: alb

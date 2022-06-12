@@ -1,6 +1,6 @@
 IBoxLoader: !include [
   rds/db-instance.yml,
-  securitygroup.yml,
+  ec2/securitygroup.yml,
   route53/route53-recordset.yml,
 ]
 

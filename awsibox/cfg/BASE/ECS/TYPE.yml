@@ -1,13 +1,12 @@
-IBoxLoader: !include [
-  autoscaling/capacity.yml,
-  autoscaling/applicationautoscaling-scalingpolicy.yml,
-  autoscaling/applicationautoscaling-scalabletarget.yml,
-  loadbalancing/loadbalancing.yml,
-  alarms.yml,
-  cloudfront/cloudfront-ios.yml,
-  ecs/ecs-task.yml,
-  ecs/ecs-service.yml,
-]
+IBoxLoader: !include
+  - autoscaling/capacity.yml
+  - autoscaling/applicationautoscaling-scalingpolicy.yml
+  - autoscaling/applicationautoscaling-scalabletarget.yml
+  - loadbalancing/loadbalancing.yml
+  - cloudwatch/alarms.yml
+  - cloudfront/cloudfront-ios.yml
+  - ecs/ecs-task.yml
+  - ecs/ecs-service.yml
 
 global:
   Parameter:

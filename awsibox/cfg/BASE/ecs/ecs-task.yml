@@ -3,7 +3,7 @@ IBoxLoader: !include [
   ecs-containerdefinition.yml,
   iam/parameterstore.yml,
   iam/ecs-exec.yml,
-  securitygroup.yml,
+  ec2/securitygroup.yml,
 ]
 
 global:
