@@ -11,6 +11,7 @@ IBoxLoader: !include
   - res-base/cloudwatch_alarm.yml
   - res-base/servicediscovery.yml
   - kms/key-and-alias.yml
+  - ec2/vpc-endpoint.yml
 
 global:
   StackName: r-base
@@ -32,4 +33,3 @@ global:
               Resource: Sub('arn:aws:s3:::${BucketLogs}/*')
               Principal: get_endvalue('LoadBalancerAccountID')
               Sid: AllowLBLogs
-  VPCEndpoint: 'yes'

@@ -63,6 +63,15 @@ AZones = {
 
 AZoneNames = ["A", "B", "C", "D", "E", "F"]
 
+VPC_DEFAULT_CIDR_BLOCK = "10.80.0.0/16"
+VPC_DEFAULT_CIDR_BLOCK_PREFIX = ".".join(VPC_DEFAULT_CIDR_BLOCK.split(".")[0:2])
+VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PRIVATE = [
+    f"{VPC_DEFAULT_CIDR_BLOCK_PREFIX}.{i * 16}.0/20" for i in range(AZones["MAX"])
+]
+VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PUBLIC = [
+    f"{VPC_DEFAULT_CIDR_BLOCK_PREFIX}.{i + 200}.0/24" for i in range(AZones["MAX"])
+]
+
 PARAMETERS_SKIP_OVERRIDE_CONDITION = (
     "Env",
     "UpdateMode",
@@ -293,6 +302,22 @@ CFG_TO_FUNC = {
     "DBInstance": {"module": "rds", "func": "RDS_DB"},
     "DBSubnetGroup": {"module": "joker", "func": ("rds", "DBSubnetGroup")},
     "DynamoDBTable": {"module": "joker", "func": ("dynamodb", "Table")},
+    "EC2EIP": {"module": "joker", "func": ("ec2", "EIP")},
+    "EC2InternetGateway": {"module": "joker", "func": ("ec2", "InternetGateway")},
+    "EC2NatGateway": {"module": "joker", "func": ("ec2", "NatGateway")},
+    "EC2Route": {"module": "joker", "func": ("ec2", "Route")},
+    "EC2RouteTable": {"module": "joker", "func": ("ec2", "RouteTable")},
+    "EC2Subnet": {"module": "ec2", "func": "EC2_Subnet"},
+    "EC2VPC": {"module": "joker", "func": ("ec2", "VPC")},
+    "EC2VPCEndpoint": {"module": "joker", "func": ("ec2", "VPCEndpoint")},
+    "EC2VPCGatewayAttachment": {
+        "module": "joker",
+        "func": ("ec2", "VPCGatewayAttachment"),
+    },
+    "EC2VPCPeeringConnection": {
+        "module": "joker",
+        "func": ("ec2", "VPCPeeringConnection"),
+    },
     "ECSCapacityProvider": {"module": "joker", "func": ("ecs", "CapacityProvider")},
     "ECSCluster": {"module": "joker", "func": ("ecs", "Cluster")},
     "ECSClusterCapacityProviderAssociations": {
@@ -373,8 +398,6 @@ CFG_TO_FUNC = {
     "SNSSubscription": {"module": "sns", "func": "SNS_Subscriptions"},
     "SNSTopic": {"module": "joker", "func": ("sns", "Topic")},
     "TaskDefinition": {"module": "ecs", "func": "ECS_TaskDefinition"},
-    "VPC": {"module": "vpc", "func": "VPC_VPC"},
-    "VPCEndpoint": {"module": "vpc", "func": "VPC_Endpoint"},
     "WafByteMatchSet": {
         "module": "waf",
         "func": ["WAF_GlobalByteMatchSets", "WAF_RegionalByteMatchSets"],

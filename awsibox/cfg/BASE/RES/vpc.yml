@@ -3,7 +3,7 @@ global:
   Parameter:
     - VPCCidrBlock:
         Description: 'CIDR Block for VPC'
-        Default: '10.80.0.0/16'
+        Default: cfg.VPC_DEFAULT_CIDR_BLOCK
     - VPCName:
         Description: 'VPC Tag Name'
   Output:
@@ -18,10 +18,54 @@ global:
         Export: Export('RouteTablePrivate')
   MappingClass:
     - AZones:
-  VPC:
+  EC2EIP:
+    - Nat:
+        IBOX_RESNAME: EIPNat
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+        Domain: vpc
+  EC2NatGateway:
     - Base:
+        IBOX_TITLE: NatGateway
+        DependsOn: VPCGatewayAttachment
+        AllocationId: GetAtt("EIPNat", "AllocationId")
+        SubnetId: Ref("SubnetPublicA")
+  EC2InternetGateway:
+    - Base:
+        IBOX_TITLE: InternetGateway
+        Tags: Tags(Name=Ref("VPCName"))
+  EC2Route:
+    - InternetGateway:
+        IBOX_TITLE: RouteInternetGateway
+        DependsOn: VPCGatewayAttachment
+        DestinationCidrBlock: "0.0.0.0/0"
+        GatewayId: Ref("InternetGateway")
+        RouteTableId: Ref("RouteTablePublic")
+    - NatGateway:
+        IBOX_TITLE: RouteNatGateway
+        DestinationCidrBlock: "0.0.0.0/0"
+        NatGatewayId: Ref("NatGateway")
+        RouteTableId: Ref("RouteTablePrivate")
+  EC2Subnet: {}
+  EC2RouteTable:
+    - Private:
+        IBOX_TITLE: RouteTable.IBOX_INDEXNAME
+        Tags: Tags(Name=Sub("${VPCName}-%s" % IBOX_INDEXNAME))
+        VpcId: Ref("VPC")
+    - Public:
+        IBOX_TITLE: RouteTable.IBOX_INDEXNAME
+        Tags: Tags(Name=Sub("${VPCName}-%s" % IBOX_INDEXNAME))
+        VpcId: Ref("VPC")
+  EC2VPC:
+    - Base:
+        IBOX_TITLE: VPC
         CidrBlock: Ref('VPCCidrBlock')
         EnableDnsSupport: true
         EnableDnsHostnames: true
         Tags: Tags(Name=Ref('VPCName'))
-  NatGateway: True
+  EC2VPCGatewayAttachment:
+    - Base:
+        IBOX_TITLE: VPCGatewayAttachment
+        InternetGatewayId:  Ref("InternetGateway")
+        VpcId: Ref("VPC")
