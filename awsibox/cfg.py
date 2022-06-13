@@ -362,7 +362,7 @@ CFG_TO_FUNC = {
     "LambdaLayerVersion": {"module": "lambdas", "func": "LBD_LayerVersions"},
     "LambdaPermission": {"module": "joker", "func": ("awslambda", "Permission")},
     "LoadBalancer": {
-        "module": "loadbalancing",
+        "module": "elasticloadbalancing",
         "func": "LB_ElasticLoadBalancing",
     },
     "LogsLogGroup": {"module": "joker", "func": ("logs", "LogGroup")},

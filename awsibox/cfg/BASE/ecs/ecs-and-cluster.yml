@@ -1,12 +1,10 @@
 IBoxLoader:
-  - !exclude [
-      ecs/daemon-reserver-cpu.yml,
-      loadbalancing/loadbalancing-elb.yml,
-  ]
-  - !include [
-      EC2/TYPE.yml,
-      EC2/ecs-cluster.yml,
-  ]
+  - !exclude
+      - ecs/daemon-reserver-cpu.yml
+      - elasticloadbalancing/loadbalancer.yml
+  - !include
+      - EC2/TYPE.yml
+      - EC2/ecs-cluster.yml
 
 global:
   IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA: True

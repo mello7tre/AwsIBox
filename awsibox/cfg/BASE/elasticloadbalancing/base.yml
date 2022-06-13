@@ -1,0 +1,21 @@
+IBoxLoader: !include
+  - hostedzoneid.yml
+  - listener.yml
+  - targetgroup.yml
+  - crm/certificate-regional.yml
+  - ec2/securitygroup.yml
+  - route53/route53-recordset.yml
+
+global:
+  HealthCheckIntervalSeconds: 30
+  HealthCheckTimeoutSeconds: 6
+  HealthCheckPath: none
+  HealthCheckTarget: none
+  HealthyThresholdCount: 2
+  UnhealthyThresholdCount: 3
+
+
+IBoxLoaderAfter: !include [
+  #certificate-adhoc.yml,
+]
+

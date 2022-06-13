@@ -1,8 +1,7 @@
-IBoxLoader: !include [
-  loadbalancing.yml,
-  elasticloadbalancing-loadbalancer.yml,
-  elasticloadbalancingv2-loadbalancer.yml,
-]
+IBoxLoader: !include
+  - base.yml
+  - classic-loadbalancer.yml
+  - v2-loadbalancer.yml
 
 global:
   Parameter:

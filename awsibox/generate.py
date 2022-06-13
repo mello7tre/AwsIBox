@@ -14,7 +14,7 @@ from . import (
     iam,
     joker,
     lambdas,
-    loadbalancing,
+    elasticloadbalancing,
     mappings,
     route53,
     rds,

@@ -6,7 +6,7 @@ IBoxLoader:
       - ec2/bottlerocket.yml
   - !exclude
       - cloudfront/for-services.yml
-      - loadbalancing/loadbalancing-elb.yml
+      - elasticloadbalancing/loadbalancer.yml
 
 global:
   StackName: ecs

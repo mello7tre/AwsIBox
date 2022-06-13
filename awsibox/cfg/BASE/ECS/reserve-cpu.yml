@@ -1,7 +1,7 @@
 IBoxLoader: !exclude
   - application-autoscaling/scalingpolicy.yml
   - autoscaling/capacity.yml
-  - loadbalancing/loadbalancing.yml
+  - elasticloadbalancing/base.yml
   - ec2/securitygroup.yml
   - cloudwatch/alarms.yml
   - cloudfront/for-services.yml

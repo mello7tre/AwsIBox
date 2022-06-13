@@ -1,5 +1,5 @@
 IBoxLoader: !include
-  - loadbalancing/loadbalancing-elb.yml
+  - elasticloadbalancing/loadbalancer.yml
   - cloudwatch/alarms.yml
 
 global:
