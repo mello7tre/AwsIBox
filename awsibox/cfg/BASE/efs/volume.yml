@@ -1,6 +1,5 @@
-IBoxLoader: !include [
-  efs_accesspoint.yml,
-]
+IBoxLoader: !include
+  - accesspoint.yml
 
 
 global:
