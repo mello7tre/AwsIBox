@@ -38,7 +38,7 @@ def execute_method(RP_cmm):
         if k in list(RP_cmm.keys()):
             # process dependency modules first
             for m in dep:
-                if m in list(RP_cmm.keys()):
+                if m in list(RP_cmm.keys()) and m not in processed:
                     _process(m, cfg.CFG_TO_FUNC[m])
                     processed.append(m)
 
