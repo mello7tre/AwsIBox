@@ -1,6 +1,6 @@
 IBoxLoader: !include
   - ec2/securitygroup.yml
-  - route53/route53-recordset.yml
+  - route53/recordset.yml
   - elasticache/cluster-and-replication-group.yml
 
 global:

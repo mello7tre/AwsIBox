@@ -4,7 +4,7 @@ IBoxLoader: !include
   - targetgroup.yml
   - crm/certificate-regional.yml
   - ec2/securitygroup.yml
-  - route53/route53-recordset.yml
+  - route53/recordset.yml
 
 global:
   HealthCheckIntervalSeconds: 30
