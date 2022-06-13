@@ -4,7 +4,7 @@ IBoxLoader:
     - elasticloadbalancing/base.yml
     - application-autoscaling/scalingpolicy.yml
   - !include
-    - iam/iampolicy-update_stack.yml
+    - iam/policy-update_stack.yml
 
 global:
   StackName: bkt

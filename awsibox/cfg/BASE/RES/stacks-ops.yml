@@ -1,6 +1,6 @@
 IBoxLoader:
   - !include
-    - iam/iampolicy-update_stack.yml
+    - iam/policy-update_stack.yml
     - lambda/layers.yml
 
 global:
