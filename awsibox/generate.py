@@ -57,6 +57,7 @@ def execute_method(RP_cmm):
             elif module_name == "joker":
                 # for resources that can be built using only auto_get_props
                 joker.Joker(key=k, module=func_name[0], cls=func_name[1])
+            processed.append(k)
 
     for k, v in cfg.CFG_TO_FUNC.items():
         # skip already processed keys

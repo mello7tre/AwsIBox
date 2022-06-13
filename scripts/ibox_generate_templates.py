@@ -47,7 +47,8 @@ def get_template():
     try:
         template = generate.generate()
     finally:
-        # restore base cfg
+        # restore base cfg (every dynamic dict in cfg need to be cleared)
+        cfg.OBJS.clear()
         cfg.__dict__.clear()
         cfg.__dict__.update(cfg_base)
 
