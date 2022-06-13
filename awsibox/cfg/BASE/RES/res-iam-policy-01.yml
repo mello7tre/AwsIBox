@@ -1,6 +1,5 @@
-IBoxLoader: !include [
-  iam/iam-policy.yml,
-]
+IBoxLoader: !include
+  - iam/policy.yml
 
 global:
   StackName: iam-p-01
