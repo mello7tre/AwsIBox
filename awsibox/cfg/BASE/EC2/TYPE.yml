@@ -3,7 +3,7 @@ IBoxLoader: !include
   - loadbalancing/loadbalancing-elb.yml
   - ec2/securitygroup.yml
   - cloudwatch/alarms.yml
-  - cloudfront/cloudfront-ios.yml
+  - cloudfront/for-services.yml
   - iam/parameterstore.yml
 
 global:
@@ -114,7 +114,6 @@ stg: *cfg_dev
 prd:
   #AutoScalingGroupBaseHealthCheckType: ELB
 
-IBoxLoaderAfter: !include [
-  autoscaling/spot-auto.yml,
-  autoscaling/cloudwatch-agent.yml,
-]
+IBoxLoaderAfter: !include
+  - autoscaling/spot-auto.yml
+  - autoscaling/cloudwatch-agent.yml

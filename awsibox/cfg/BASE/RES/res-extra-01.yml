@@ -1,7 +1,7 @@
 IBoxLoader: !include
   - crm/certificate-global.yml
   - crm/certificate-regional.yml
-  - cloudfront/cloudfront-policy.yml
+  - cloudfront/policy.yml
   - res-extra/cloudformation_stackset.yml
   - elasticache/subnet-group.yml
   - rds/db-subnet-group.yml

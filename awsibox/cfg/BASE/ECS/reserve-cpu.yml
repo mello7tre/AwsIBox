@@ -4,7 +4,7 @@ IBoxLoader: !exclude
   - loadbalancing/loadbalancing.yml
   - ec2/securitygroup.yml
   - cloudwatch/alarms.yml
-  - cloudfront/cloudfront-ios.yml
+  - cloudfront/for-services.yml
 
 global:
   StackName: rsc

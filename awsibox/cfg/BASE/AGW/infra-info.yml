@@ -1,6 +1,6 @@
 IBoxLoader:
   - !exclude
-    - cloudfront/cloudfront-ios.yml
+    - cloudfront/for-services.yml
 
 global:
   StackName: iif

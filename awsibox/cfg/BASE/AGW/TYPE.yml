@@ -1,6 +1,5 @@
-IBoxLoader: !include [
-  cloudfront/cloudfront-ios.yml,
-]
+IBoxLoader: !include
+  - cloudfront/for-services.yml
 
 global:
   Output:

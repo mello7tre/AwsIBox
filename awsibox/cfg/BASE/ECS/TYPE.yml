@@ -4,7 +4,7 @@ IBoxLoader: !include
   - application-autoscaling/scalabletarget.yml
   - loadbalancing/loadbalancing.yml
   - cloudwatch/alarms.yml
-  - cloudfront/cloudfront-ios.yml
+  - cloudfront/for-services.yml
   - ecs/ecs-task.yml
   - ecs/ecs-service.yml
 
@@ -103,4 +103,3 @@ stg: *cfg_dev
 IBoxLoaderAfter: !include [
   #ecs-fargate-spot.yml,
 ]
-

@@ -1,8 +1,7 @@
-IBoxLoader: !include [
-  crm/certificate-global.yml,
-  cloudfront-distribution.yml,
-  cloudfront/cloudfront-cache-behaviors.yml,
-]
+IBoxLoader: !include
+  - crm/certificate-global.yml
+  - distribution.yml
+  - cache-behaviors.yml
 
 global:
   Parameter:

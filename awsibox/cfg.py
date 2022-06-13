@@ -288,7 +288,7 @@ CFG_TO_FUNC = {
     "CloudFrontDistribution": {
         "module": "cloudfront",
         "func": "CF_CloudFront",
-        "dep": ["LoadBalancer"],
+        "dep": ["LoadBalancer", "LambdaFunctionAssociation"],
     },
     "CloudFrontOriginAccessIdentity": {
         "module": "joker",
@@ -358,7 +358,6 @@ CFG_TO_FUNC = {
     "LambdaFunctionAssociation": {
         "module": "joker",
         "func": ("cloudfront", "LambdaFunctionAssociation"),
-        "dep": ["CloudFrontDistribution"],
     },
     "LambdaLayerVersion": {"module": "lambdas", "func": "LBD_LayerVersions"},
     "LambdaPermission": {"module": "joker", "func": ("awslambda", "Permission")},

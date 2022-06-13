@@ -1,14 +1,12 @@
 IBoxLoader: 
-  - !include [
-      #autoscaling/imageid-ecs.yml,
-      ecs/capacityprovider.yml,
-      ecs/daemon-reserver-cpu.yml,
-      ec2/bottlerocket.yml,
-    ]
-  - !exclude [
-      cloudfront/cloudfront-ios.yml,
-      loadbalancing/loadbalancing-elb.yml,
-    ]
+  - !include
+      #- autoscaling/imageid-ecs.yml
+      - ecs/capacityprovider.yml
+      - ecs/daemon-reserver-cpu.yml
+      - ec2/bottlerocket.yml
+  - !exclude
+      - cloudfront/for-services.yml
+      - loadbalancing/loadbalancing-elb.yml
 
 global:
   StackName: ecs
