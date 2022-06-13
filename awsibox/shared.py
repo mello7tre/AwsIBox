@@ -107,7 +107,7 @@ def add_obj(obj):
             if hasattr(obj, "Condition"):
                 # Condition is not supported on Resource properties, but use it
                 # to wrap obj in an If Condition - needed for LambdaFunctionAssociation
-                cond_name = obj.Condition
+                cond_name = parse_ibox_key(obj.Condition)
                 del obj.properties["Condition"]
                 obj = If(cond_name, obj, Ref("AWS::NoValue"))
 
