@@ -89,31 +89,6 @@ class ApiGatewayDeployment(agw.Deployment):
         self.RestApiId = Ref("ApiGatewayRestApi")
 
 
-def AGW_DomainName(key):
-    for n, v in getattr(cfg, key).items():
-        if not v["IBOX_ENABLED"]:
-            continue
-
-        resname = f"{key}{n}"
-        # resources
-        r_Domain = agw.DomainName(resname)
-        auto_get_props(r_Domain)
-
-        r_r53 = r53.RecordSetType(resname)
-        if "REGIONAL" in v["EndpointConfiguration"]["Types"]:
-            auto_get_props(r_r53, "R53RecordSetApiGatewayDomainNameRegional")
-        else:
-            auto_get_props(r_r53, "R53RecordSetApiGatewayDomainNameGlobal")
-        r_r53.title = f"RecordSet{resname}"
-
-        # outputs
-        o_Domain = Output(resname)
-        o_Domain.Value = Ref(resname)
-        o_Domain.Export = Export(resname)
-
-        add_obj([r_Domain, r_r53, o_Domain])
-
-
 def AGW_UsagePlans(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"

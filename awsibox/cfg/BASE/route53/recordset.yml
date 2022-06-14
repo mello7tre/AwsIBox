@@ -83,19 +83,19 @@ CCHReadOnly: &cchreadonly
 ApiGatewayDomainName: &apigatewaydomainname
   <<: *zoneexternal
   Type: A
-  Name: Ref(IBOX_RESNAME)
+  Name: Ref(IBOX_INDEXNAME)
 
 ApiGatewayDomainNameGlobal: &apigatewaydomainnameglobal
   <<: *apigatewaydomainname
   AliasTarget:
-    DNSName: GetAtt(IBOX_RESNAME, 'DistributionDomainName')
-    HostedZoneId: GetAtt(IBOX_RESNAME, 'DistributionHostedZoneId')
+    DNSName: GetAtt(IBOX_INDEXNAME, 'DistributionDomainName')
+    HostedZoneId: GetAtt(IBOX_INDEXNAME, 'DistributionHostedZoneId')
 
 ApiGatewayDomainNameRegional: &apigatewaydomainnameregional
   <<: *apigatewaydomainname
   AliasTarget:
-    DNSName: GetAtt(IBOX_RESNAME, 'RegionalDomainName')
-    HostedZoneId: GetAtt(IBOX_RESNAME, 'RegionalHostedZoneId')
+    DNSName: GetAtt(IBOX_INDEXNAME, 'RegionalDomainName')
+    HostedZoneId: GetAtt(IBOX_INDEXNAME, 'RegionalHostedZoneId')
 
 
 global:

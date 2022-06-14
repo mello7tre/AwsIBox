@@ -730,6 +730,20 @@ def auto_get_props(
         # Parameters, Conditions, Outpus in yaml cfg
         _try_PCO_in_obj(key)
 
+        # For linked resources as r53recordset, update their keys conf.
+        # This way they can be enabled or their name can be changed, or so on...
+        ibox_linked_obj = key.get("IBOX_LINKED_OBJ")
+        if ibox_linked_obj:
+            # need to parse it here to have the right IBOX_RESNAME value
+            linked_obj_resname = ibox_linked_obj.get("Name")
+            if linked_obj_resname:
+                ibox_linked_obj["Conf"]["IBOX_RESNAME"] = parse_ibox_key(
+                    linked_obj_resname
+                )
+            getattr(cfg, parse_ibox_key(ibox_linked_obj["Key"])).update(
+                ibox_linked_obj["Conf"]
+            )
+
         for propname in dict(
             list(key.items()) + list(dict.fromkeys(props, None).items())
         ).keys():

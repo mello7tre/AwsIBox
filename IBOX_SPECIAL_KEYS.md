@@ -12,6 +12,7 @@
 - [IBOX\_IFCONDVALUE](#IBOX_IFCONDVALUE)
 - [IBOX\_IFVALUE](#IBOX_IFVALUE)
 - [IBOX\_INDEXNAME](#IBOX_INDEXNAME)
+- [IBOX\_LINKED\_OBJ](#IBOX_LINKED_OBJ)
 - [IBOX\_LIST](#IBOX_LIST)
 - [IBOX\_MAPNAME](#IBOX_MAPNAME)
 - [IBOX\_OUTPUT](#IBOX_OUTPUT)
@@ -192,6 +193,39 @@ EC2RouteTable:
 `IBOX_INDEXNAME` will have as value `Private` inside `EC2RouteTablePrivate` `Public` inside `EC2RouteTablePublic`.\
 (A dot can be used to separate a _normal_ string from the `IBOX_INDEXNAME` one, it's simply used to better read it, during processing any `.` will be removed.)
 
+#### IBOX\_LINKED\_OBJ
+Can be used to _enable_ a resource normally disabled by `IBOX_ENABLE` or to inject a custom configuration in another resource.\
+The resource to be changed must include a `dep` key in `CFG_TO_FUNC` with dependency on the resource where is used, because it need to be processed later.\
+It's value is a dict where `Key` represent the resource mapname to be changed, `Name`, if present, the `IBOX_RESNAME` of the changed resource and `Conf` is a dict used to update the changed resource current configuration.\
+Ex:
+```
+ApiGatewayDomainName:
+  - Regional:
+      IBOX_ENABLED: True
+      IBOX_ENABLED: False
+      IBOX_LINKED_OBJ:
+        Key: R53RecordSetApiGatewayDomainName.IBOX_INDEXNAME
+        Name: RecordSet.IBOX_RESNAME
+        Conf:
+          IBOX_ENABLED: True
+      IBOX_OUTPUT:
+        - _:
+            Value: Ref(IBOX_RESNAME)
+            Export: Export(IBOX_RESNAME)
+      DomainName: Sub('api.%s' % cfg.HostedZoneNameRegionEnv)
+      EndpointConfiguration:
+        Types:
+          - 'REGIONAL'
+      RegionalCertificateArn: get_endvalue('RegionalCertificateArn')
+
+```
+In resource `R53RecordSetApiGatewayDomainNameRegional` will be added the properties keys:
+```
+IBOX_RESNAME: RecordSetApiGatewayDomainNameRegional
+IBOX_ENABLED: True
+```
+Can be subject to change.
+
 #### IBOX\_LIST
 Can be used only for resource processed by the `joker` module.\
 Is used to wrap the resource in a list.\
@@ -265,7 +299,15 @@ global:
     - MYTopic
 
 ```
-`IBOX_RESNAME` will have as value `SNSTopicMYTopic`.
+`IBOX_RESNAME` will have value `SNSTopicMYTopic`.\
+
+For resources using module `joker`, can also be used as key name to change `IBOX_RESNAME`global variable.\
+Ex:
+```
+R53RecordSet:
+  - CCHReadOnlyInternal:
+      IBOX_RESNAME: RecordSetInternalRO
+```
 
 #### IBOX\_ROLE\_EX
 Is used for multi stack type role, it represent the additional stack type to include.
