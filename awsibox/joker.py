@@ -1,5 +1,5 @@
 from .common import *
-from .shared import auto_get_props, add_obj, Parameter, get_condition
+from .shared import auto_get_props, add_obj, Parameter, get_condition, parse_ibox_key
 
 
 def Joker(key, module, cls):
@@ -7,6 +7,7 @@ def Joker(key, module, cls):
         if not v.get("IBOX_ENABLED", True):
             continue
 
+        parse_ibox_key_conf = {"IBOX_INDEXNAME": n}
         mapname = None
         resname = f"{key}{n}"
 
@@ -14,7 +15,7 @@ def Joker(key, module, cls):
         ibox_resname = v.get("IBOX_RESNAME")
         if ibox_resname:
             mapname = resname
-            resname = ibox_resname
+            resname = parse_ibox_key(ibox_resname, parse_ibox_key_conf)
 
         mod = __import__(f"troposphere.{module}")
         my_module = getattr(mod, module)

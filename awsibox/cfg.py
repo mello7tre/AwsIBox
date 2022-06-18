@@ -343,7 +343,6 @@ CFG_TO_FUNC = {
         "func": "EVE_EventRules",
         "dep": ["SecurityGroups"],
     },
-    "HostedZone": {"module": "route53", "func": "R53_HostedZones"},
     "IAMGroup": {"module": "iam", "func": "IAM_Groups"},
     "IAMPolicy": {"module": "iam", "func": "IAM_Policies"},
     "IAMUser": {"module": "iam", "func": "IAM_Users"},
@@ -371,6 +370,7 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("applicationautoscaling", "ScalableTarget"),
     },
+    "R53HostedZone": {"module": "joker", "func": ("route53", "HostedZone")},
     "R53RecordSet": {
         "module": "joker",
         "func": ("route53", "RecordSetType"),

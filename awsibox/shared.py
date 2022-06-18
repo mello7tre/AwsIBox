@@ -139,7 +139,7 @@ def add_objoutput(res):
             # i do this only if Value is not a string
             # i need Condition only if using Ref for getting the resource
             try:
-                res.Condition
+                condition = res.Condition
             except Exception:
                 try:
                     cond = iboxprops[f"{mapname}Condition"][0].Condition
@@ -147,6 +147,10 @@ def add_objoutput(res):
                     pass
                 else:
                     res.Condition = cond
+            else:
+                # Use a fake Condition wih value None in cfg to avoid creating a condition
+                if condition == "None":
+                    del res.properties["Condition"]
 
         del res.properties["IBOX_PROPS"]
 
@@ -907,10 +911,13 @@ def clf_compute_order(pattern):
     return base_ord
 
 
-def parse_ibox_key(value):
+def parse_ibox_key(value, conf={}):
     for key in IBOX_SPECIAL_KEYS:
         if key in value:
-            value = value.replace(key, globals().get(key, ""))
+            if key in conf:
+                value = value.replace(key, conf[key])
+            else:
+                value = value.replace(key, globals().get(key, ""))
     value = value.replace("_", IBOX_RESNAME)
     value = value.replace(".", "")
 
