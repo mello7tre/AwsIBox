@@ -98,5 +98,5 @@ global:
   ElastiCacheReplicationGroup:
     - IBOX_BASE:
         <<: [*base, *replication-group]
-        IBOX_SOURCE_OBJ: 'ElastiCacheCacheCluster{IBOX_INDEXNAME}'
+        IBOX_SOURCE_OBJ: ElastiCacheCacheCluster.IBOX_INDEXNAME
         IBOX_TITLE: ElastiCacheReplicationGroup
