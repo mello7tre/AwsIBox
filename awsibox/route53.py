@@ -26,16 +26,6 @@ class R53RecordSetEFS(r53.RecordSetType):
         self.TTL = "300"
 
 
-class R53RecordSetNSServiceDiscovery(r53.RecordSetType):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.HostedZoneId = Ref("HostedZoneEnv")
-        self.Name = Sub("find.%s" % cfg.HostedZoneNameEnv)
-        self.ResourceRecords = GetAtt("PublicDnsNamespace", "NameServers")
-        self.Type = "NS"
-        self.TTL = "300"
-
-
 def R53_RecordSetEC2LoadBalancer():
     # Resources
     # RecordSet External
