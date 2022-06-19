@@ -194,6 +194,7 @@ EC2RouteTable:
 (A dot can be used to separate a _normal_ string from the `IBOX_INDEXNAME` one, it's simply used to better read it, during processing any `.` will be removed.)
 
 #### IBOX\_LINKED\_OBJ
+###### Change an existing single object
 Can be used to _enable_ a resource normally disabled by `IBOX_ENABLE` or to inject a custom configuration in another resource.\
 The resource to be changed must include a `dep` key in `CFG_TO_FUNC` with dependency on the resource where is used, because it need to be processed later.\
 It's value is a dict where `Key` represent the resource mapname to be changed, `Name`, if present, the `IBOX_RESNAME` of the changed resource and `Conf` is a dict used to update the changed resource current configuration.\
@@ -224,6 +225,7 @@ In resource `R53RecordSetApiGatewayDomainNameRegional` will be added the propert
 IBOX_RESNAME: RecordSetApiGatewayDomainNameRegional
 IBOX_ENABLED: True
 ```
+###### Create multiple objects from already existings ones
 Can also be used to create multiple resource from a single one.\
 As example, you want to create two RecordSet, _External_ and _Internal_, for every resource of type DBInstance.\
 You define a configuration for RecordSet resources to use for RDS External and Internal.\
@@ -245,7 +247,7 @@ Change the object `IBOX_RESNAME` key to `IBOX_RESNAME` value, the one of the _DB
 And finally create/update an `IBOX_TITLE` key with value `Name` + `For` _value_.
 
 In the above example, if having multiple DBInstance alls of them should have RecordSet with the same name and should overwrite it each other.\
-A better example should be using a vlue for name `Name` like: `Name: IBOX_RESNAME` or `Name: RecordSet.IBOX_INDEXNAME`.\
+A better example should be using a vlue for name `Name` like: `Name: IBOX_RESNAME` or `Name: RecordSet.IBOX_INDEXNAME`.
 
 Can be subject to change.
 
