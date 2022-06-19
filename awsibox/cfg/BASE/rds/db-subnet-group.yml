@@ -1,4 +1,5 @@
 Base: &base
+  IBOX_RESNAME: DBSubnetGroup.IBOX_INDEXNAME
   IBOX_OUTPUT:
     - _:
         Value: Ref(IBOX_RESNAME)
@@ -7,7 +8,7 @@ Base: &base
   SubnetIds: Split(",", ImportValue(f"Subnets{IBOX_INDEXNAME}"))
 
 global:
-  DBSubnetGroup:
+  RDSDBSubnetGroup:
     - IBOX_BASE: *base
     - Private: {}
     - Public: {}
