@@ -224,6 +224,30 @@ In resource `R53RecordSetApiGatewayDomainNameRegional` will be added the propert
 IBOX_RESNAME: RecordSetApiGatewayDomainNameRegional
 IBOX_ENABLED: True
 ```
+Can also be used to create multiple resource from a single one.\
+As example, you want to create two RecordSet, _External_ and _Internal_, for every resource of type DBInstance.\
+You define a configuration for RecordSet resources to use for RDS External and Internal.\
+And use `IBOX_LINKED_OBJ` inside the _DBInstance_ configuration.
+Ex:
+```
+IBOX_LINKED_OBJ:
+  Key: Route53RecordSet
+  Name: RecordSet
+  Conf: {}
+  Type: RDS
+  For: ["External", "Internal"]
+
+```
+If `IBOX_LINKED_OBJ` find the `Key` in `CFG_TO_FUNC`.\
+For any value in `For` Look for a already defined object named liked `Route53RecordSet` + `RDS` + `For` _value_ and use its' configuration  for a new object named `TYPE` + `For` _value_.\
+Enable it setting `IBOX_ENABLED` to _True_.\
+Update it using `Conf`.\
+Change the object `IBOX_RESNAME` key to `IBOX_RESNAME` value, the one of the _DBInstance_.\
+And finally create/update an `IBOX_TITLE` key with value `Name` + `For` _value_.\
+
+In the above example, if having multiple DBInstance alls of them should have RecordSet with the same name and should overwrite it each other.\
+A better example should be using a vlue for name `Name` like: `Name: IBOX_RESNAME` or `Name: RecordSet.IBOX_INDEXNAME`.\
+
 Can be subject to change.
 
 #### IBOX\_LIST

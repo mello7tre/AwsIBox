@@ -727,6 +727,43 @@ def auto_get_props(
                 output = {"IBOX_OUTPUT": {f"{mapname}{name}": output_base}}
                 _try_PCO_in_obj(output)
 
+        def _linked_obj():
+            # need to parse it here to have the right IBOX_RESNAME value
+            lo_resname = parse_ibox_key(ibox_linked_obj.get("Name", ""))
+            lo_key = ibox_linked_obj.get("Key")
+            lo_conf = ibox_linked_obj.get("Conf")
+            lo_type = ibox_linked_obj.get("Type")
+            lo_for_cycle = ibox_linked_obj.get("For")
+
+            if lo_resname:
+                lo_conf["IBOX_RESNAME"] = lo_resname
+
+            lo_conf["IBOX_ENABLED"] = True
+
+            if lo_for_cycle and lo_key in cfg.CFG_TO_FUNC:
+                # This way to create multiple resources based on an existing one
+                # Ex for any single RDS DBInstance create RecordSet External and Internal
+                louc_cfg = {}
+                for lo_for_index in lo_for_cycle:
+                    louc_key = f"{lo_type}{lo_for_index}"
+                    # get config from existing object
+                    louc_cfg[louc_key] = getattr(
+                        cfg,
+                        f"{lo_key}{lo_type}{lo_for_index}",
+                    )
+                    # update it with config from IBOX_LINKED_OBJ key
+                    louc_cfg[louc_key].update(lo_conf)
+                    louc_cfg[louc_key]["IBOX_RESNAME"] = key.get(
+                        "IBOX_RESNAME", IBOX_RESNAME
+                    )
+                    louc_cfg[louc_key]["IBOX_TITLE"] = f"{lo_resname}{lo_for_index}"
+
+                # finally update cfg object base key with configuration including mutiple objects Ex. Route53RecordSet
+                getattr(cfg, lo_key).update(louc_cfg)
+            else:
+                # This way to update a single named resource
+                getattr(cfg, parse_ibox_key(lo_key)).update(lo_conf)
+
         # Allowed object properties
         props = list(vars(obj)["propnames"])
         props.extend(vars(obj)["attributes"])
@@ -738,15 +775,7 @@ def auto_get_props(
         # This way they can be enabled or their name can be changed, or so on...
         ibox_linked_obj = key.get("IBOX_LINKED_OBJ")
         if ibox_linked_obj:
-            # need to parse it here to have the right IBOX_RESNAME value
-            linked_obj_resname = ibox_linked_obj.get("Name")
-            if linked_obj_resname:
-                ibox_linked_obj["Conf"]["IBOX_RESNAME"] = parse_ibox_key(
-                    linked_obj_resname
-                )
-            getattr(cfg, parse_ibox_key(ibox_linked_obj["Key"])).update(
-                ibox_linked_obj["Conf"]
-            )
+            _linked_obj()
 
         for propname in dict(
             list(key.items()) + list(dict.fromkeys(props, None).items())
