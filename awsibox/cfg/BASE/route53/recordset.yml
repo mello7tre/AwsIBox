@@ -99,7 +99,7 @@ ApiGatewayDomainNameRegional: &apigatewaydomainnameregional
 
 
 global:
-  R53RecordSet:
+  Route53RecordSet:
     - EC2LoadBalancerExternal:
         <<: [*zoneexternal, *loadbalancer]
     - EC2LoadBalancerInternal:
@@ -114,6 +114,7 @@ global:
         <<: [*zoneinternal, *ecsloadbalancertargetexternal, *loadbalancer]
     - CloudFront:
         <<: *cloudfront
+        IBOX_TITLE: RecordSetCloudFront
     - RDSExternal:
         <<: [*zoneexternal, *rds]
     - RDSInternal:

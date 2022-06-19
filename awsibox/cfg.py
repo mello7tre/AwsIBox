@@ -370,14 +370,14 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("applicationautoscaling", "ScalableTarget"),
     },
-    "R53HostedZone": {"module": "joker", "func": ("route53", "HostedZone")},
-    "R53RecordSet": {
+    "Repository": {"module": "ecr", "func": "ECR_Repositories"},
+    "Role": {"module": "iam", "func": "IAM_Roles"},
+    "Route53HostedZone": {"module": "joker", "func": ("route53", "HostedZone")},
+    "Route53RecordSet": {
         "module": "joker",
         "func": ("route53", "RecordSetType"),
         "dep": ["ApiGatewayDomainName"],
     },
-    "Repository": {"module": "ecr", "func": "ECR_Repositories"},
-    "Role": {"module": "iam", "func": "IAM_Roles"},
     "SecurityGroup": {"module": "securitygroup", "func": "SG_SecurityGroup"},
     "SecurityGroupIngress": {
         "module": "securitygroup",

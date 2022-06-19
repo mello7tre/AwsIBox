@@ -4,7 +4,7 @@ IBoxLoader: !include
   - elasticache/cluster-and-replication-group.yml
 
 global:
-  R53RecordSet:
+  Route53RecordSet:
     - CCHExternal:
         IBOX_ENABLED: True
     - CCHInternal:

@@ -31,7 +31,7 @@ def R53_RecordSetEC2LoadBalancer():
     # RecordSet External
     if "External" in cfg.RecordSet:
         R_External = r53.RecordSetType("RecordSetExternal")
-        auto_get_props(R_External, "R53RecordSetEC2LoadBalancerExternal")
+        auto_get_props(R_External, "Route53RecordSetEC2LoadBalancerExternal")
 
         if "External" in cfg.LoadBalancer:
             R_External.AliasTarget.DNSName = GetAtt(
@@ -51,7 +51,7 @@ def R53_RecordSetEC2LoadBalancer():
     # RecordSet Internal
     if "Internal" in cfg.RecordSet:
         R_Internal = r53.RecordSetType("RecordSetInternal")
-        auto_get_props(R_Internal, "R53RecordSetEC2LoadBalancerInternal")
+        auto_get_props(R_Internal, "Route53RecordSetEC2LoadBalancerInternal")
 
         if "Internal" in cfg.LoadBalancer:
             R_Internal.AliasTarget.DNSName = GetAtt(
@@ -81,11 +81,11 @@ def R53_RecordSetECSLoadBalancer():
 
         if "External" in cfg.LoadBalancer:
             auto_get_props(
-                R_External, "R53RecordSetECSLoadBalancerTargetExternalExternal"
+                R_External, "Route53RecordSetECSLoadBalancerTargetExternalExternal"
             )
         else:
             auto_get_props(
-                R_External, "R53RecordSetECSLoadBalancerTargetInternalExternal"
+                R_External, "Route53RecordSetECSLoadBalancerTargetInternalExternal"
             )
 
         # outputs
@@ -99,11 +99,11 @@ def R53_RecordSetECSLoadBalancer():
 
         if "Internal" in cfg.LoadBalancer:
             auto_get_props(
-                R_Internal, "R53RecordSetECSLoadBalancerTargetInternalInternal"
+                R_Internal, "Route53RecordSetECSLoadBalancerTargetInternalInternal"
             )
         else:
             auto_get_props(
-                R_Internal, "R53RecordSetECSLoadBalancerTargetExternalInternal"
+                R_Internal, "Route53RecordSetECSLoadBalancerTargetExternalInternal"
             )
 
         # outputs
@@ -119,7 +119,7 @@ def R53_RecordSetRDS(rds_resname):
             continue
         # resources
         r_Record = r53.RecordSetType(rds_resname)
-        auto_get_props(r_Record, f"R53RecordSetRDS{n}")
+        auto_get_props(r_Record, f"Route53RecordSetRDS{n}")
         r_Record.title = f"RecordSet{n}"
 
         # outputs

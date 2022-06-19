@@ -46,10 +46,9 @@ global:
               Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)), Ref('AWS::NoValue'))
   CloudFrontAliasZone: none
   RecordSetCloudFront: 'yes'
-  R53RecordSet:
+  Route53RecordSet:
     - CloudFront:
         IBOX_ENABLED: True
-        IBOX_TITLE: RecordSetCloudFront
 
 
 IBoxLoaderAfter: !include [

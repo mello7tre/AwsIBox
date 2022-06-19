@@ -1,7 +1,7 @@
 Base: &base
   IBOX_ENABLED: False
   IBOX_LINKED_OBJ:
-    Key: R53RecordSetApiGatewayDomainName.IBOX_INDEXNAME
+    Key: Route53RecordSetApiGatewayDomainName.IBOX_INDEXNAME
     Name: RecordSet.IBOX_RESNAME 
     Conf:
       IBOX_ENABLED: True
