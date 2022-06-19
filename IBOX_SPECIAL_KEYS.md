@@ -247,7 +247,7 @@ Change the object `IBOX_RESNAME` key to `IBOX_RESNAME` value, the one of the _DB
 And finally create/update an `IBOX_TITLE` key with value `Name` + `For` _value_.
 
 In the above example, if having multiple DBInstance alls of them should have RecordSet with the same name and should overwrite it each other.\
-A better example should be using a vlue for name `Name` like: `Name: IBOX_RESNAME` or `Name: RecordSet.IBOX_INDEXNAME`.
+A better example should be using a value for name `Name` like: `Name: IBOX_RESNAME` or `Name: RecordSet.IBOX_INDEXNAME`.
 
 Can be subject to change.
 
