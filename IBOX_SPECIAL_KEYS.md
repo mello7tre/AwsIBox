@@ -238,12 +238,11 @@ IBOX_LINKED_OBJ:
   For: ["External", "Internal"]
 
 ```
-If `IBOX_LINKED_OBJ` find the `Key` in `CFG_TO_FUNC`.\
-For any value in `For` Look for a already defined object named liked `Route53RecordSet` + `RDS` + `For` _value_ and use its' configuration  for a new object named `TYPE` + `For` _value_.\
+For any value in `For`, look for a already defined object named liked `Route53RecordSet` + `RDS` + `For` _value_ and use its' configuration  for a new object named `TYPE` + `For` _value_.\
 Enable it setting `IBOX_ENABLED` to _True_.\
 Update it using `Conf`.\
 Change the object `IBOX_RESNAME` key to `IBOX_RESNAME` value, the one of the _DBInstance_.\
-And finally create/update an `IBOX_TITLE` key with value `Name` + `For` _value_.\
+And finally create/update an `IBOX_TITLE` key with value `Name` + `For` _value_.
 
 In the above example, if having multiple DBInstance alls of them should have RecordSet with the same name and should overwrite it each other.\
 A better example should be using a vlue for name `Name` like: `Name: IBOX_RESNAME` or `Name: RecordSet.IBOX_INDEXNAME`.\
