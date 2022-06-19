@@ -36,6 +36,9 @@ CloudFront: &cloudfront
   Type: A
 
 RDS: &rds
+  IBOX_OUTPUT:
+    - IBOX_MAPNAME:
+        Value: Ref(IBOX_MAPNAME)
   Type: CNAME
   ResourceRecords:
     - GetAtt(IBOX_RESNAME, 'Endpoint.Address')

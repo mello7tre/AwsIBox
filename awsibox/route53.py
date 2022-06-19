@@ -111,19 +111,3 @@ def R53_RecordSetECSLoadBalancer():
         O_Internal.Value = Ref("RecordSetInternal")
 
         add_obj([R_Internal, O_Internal])
-
-
-def R53_RecordSetRDS(rds_resname):
-    for n in ["External", "Internal"]:
-        if n not in cfg.RecordSet:
-            continue
-        # resources
-        r_Record = r53.RecordSetType(rds_resname)
-        auto_get_props(r_Record, f"Route53RecordSetRDS{n}")
-        r_Record.title = f"RecordSet{n}"
-
-        # outputs
-        o_Record = Output(f"RecordSet{n}")
-        o_Record.Value = Ref(f"RecordSet{n}")
-
-        add_obj([r_Record, o_Record])

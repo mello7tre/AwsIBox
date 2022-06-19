@@ -10,7 +10,6 @@ from .shared import (
     get_condition,
     add_obj,
 )
-from .route53 import R53_RecordSetRDS
 
 
 class RDSDBInstance(rds.DBInstance):
@@ -155,7 +154,6 @@ def RDS_DB(key):
         for m in ["SourceDBInstanceIdentifier", "DBSnapshotIdentifier"]:
             setattr(r_DB, m, If(f"{mapname}{m}", getattr(r_DB, m), Ref("AWS::NoValue")))
 
-        R53_RecordSetRDS(resname)
         # trick fixed name to avoid reboot for now
         # best way should be to use a name like DBParameterGroup{Engine}
         r_PG = RDSDBParameterGroup("DBParameterGroup1", mapname)

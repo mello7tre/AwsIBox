@@ -1,5 +1,11 @@
 Base: &base
   IBOX_ENABLED: False
+  IBOX_LINKED_OBJ:
+    Key: Route53RecordSet
+    Name: RecordSet
+    Conf: {}
+    Type: RDS
+    For: ["External", "Internal"]
   IBOX_PARAMETER:
     - _AllocatedStorage:
         Description: 'Storage Size in GB - empty for mapped value'
