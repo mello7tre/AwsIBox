@@ -32,7 +32,9 @@ def Joker(key, module, cls):
             obj.title = resname
 
         # populate obj
-        auto_get_props(obj, mapname=mapname, indexname=n)
+        auto_get_props(
+            obj, mapname=mapname, indexname=n, remapname=v.get("IBOX_REMAPNAME")
+        )
 
         if v.get("Create"):
             add_obj(
