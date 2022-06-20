@@ -10,7 +10,6 @@ from .shared import (
     get_condition,
     add_obj,
 )
-from .route53 import R53RecordSetEFS
 from .securitygroup import SecurityGroup, SecurityGroupIngress
 
 
