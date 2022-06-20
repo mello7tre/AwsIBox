@@ -10,6 +10,8 @@ IBOX_SPECIAL_KEYS = (
     "IBOX_REMAPNAME",
     "IBOX_INDEXNAME",
     "IBOX_PROPNAME",
+    "IBOX_LINKED_OBJ_NAME",
+    "IBOX_LINKED_OBJ_INDEX",
 )
 
 
@@ -513,15 +515,25 @@ def import_lambda(name):
 
 
 def auto_get_props(
-    obj, mapname=None, key=None, rootdict=None, indexname="", remapname=None
+    obj,
+    mapname=None,
+    key=None,
+    rootdict=None,
+    indexname="",
+    remapname=None,
+    linked_obj_name=None,
+    linked_obj_index=None,
 ):
     # IBOX_RESNAME can be used in yaml and resolved inside get_endvalue
     global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME, IBOX_REMAPNAME, IBOX_PROPNAME
+    global IBOX_LINKED_OBJ_NAME, IBOX_LINKED_OBJ_INDEX
     IBOX_RESNAME = obj.title
     IBOX_MAPNAME = mapname
     IBOX_REMAPNAME = remapname
     IBOX_INDEXNAME = indexname
     IBOX_PROPNAME = ""
+    IBOX_LINKED_OBJ_NAME = linked_obj_name
+    IBOX_LINKED_OBJ_INDEX = linked_obj_index
 
     # create a dict where i will put all property with a flat hierarchy
     # with the name equals to the mapname and the relative value.
@@ -731,12 +743,16 @@ def auto_get_props(
             # need to parse it here to have the right IBOX_RESNAME value
             lo_resname = parse_ibox_key(ibox_linked_obj.get("Name", ""))
             lo_key = ibox_linked_obj.get("Key")
-            lo_conf = ibox_linked_obj.get("Conf")
+            lo_conf = ibox_linked_obj.get("Conf", {})
             lo_type = ibox_linked_obj.get("Type")
             lo_for_cycle = ibox_linked_obj.get("For")
 
             if lo_resname and "IBOX_RESNAME" not in lo_conf:
                 lo_conf["IBOX_RESNAME"] = lo_resname
+
+            # for all lo_conf entries, if their value is a string parse it using parse_ibox_key
+            for loc_entry_key, loc_entry_value in lo_conf.items():
+                lo_conf[loc_entry_key] = parse_ibox_key(loc_entry_value)
 
             lo_conf["IBOX_ENABLED"] = True
 
@@ -941,6 +957,8 @@ def clf_compute_order(pattern):
 
 
 def parse_ibox_key(value, conf={}):
+    if not isinstance(value, str):
+        return value
     for key in IBOX_SPECIAL_KEYS:
         if key in value:
             if key in conf:

@@ -12,20 +12,6 @@ from .shared import (
 )
 
 
-class R53RecordSetEFS(r53.RecordSetType):
-    def __init__(self, title, efsname, **kwargs):
-        super().__init__(title, **kwargs)
-        condname = f"EFSFileSystem{efsname}"
-        self.Condition = condname
-        self.HostedZoneId = Ref("HostedZonePrivate")
-        self.Name = Sub("efs-%s.%s" % (efsname, cfg.HostedZoneNamePrivate))
-        self.ResourceRecords = [
-            Sub("${%s}.efs.${AWS::Region}.amazonaws.com" % condname)
-        ]
-        self.Type = "CNAME"
-        self.TTL = "300"
-
-
 def R53_RecordSetEC2LoadBalancer():
     # Resources
     # RecordSet External

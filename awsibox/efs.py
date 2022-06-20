@@ -14,16 +14,6 @@ from .route53 import R53RecordSetEFS
 from .securitygroup import SecurityGroup, SecurityGroupIngress
 
 
-class EFSFileSystem(efs.FileSystem):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Condition = self.title
-        # by defualt do not encrypt and lower cost performaceMode
-        self.Encrypted = False
-        self.PerformanceMode = "generalPurpose"
-        auto_get_props(self)
-
-
 class EFSMountTarget(efs.MountTarget):
     def __init__(self, title, index, sgname, efsresname, **kwargs):
         super().__init__(title, **kwargs)
@@ -42,7 +32,6 @@ class EFSMountTarget(efs.MountTarget):
 def EFS_FileStorage(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"  # Ex. EFSFileSystemWordPress
-        recordname = f"RecordSetEFS{n}"
         sgservername = f"SecurityGroupEFSServer{n}"
         sgclientname = f"SecurityGroupEFS{n}"
         sginame = f"SecurityGroupIngressEFS{n}"
@@ -71,12 +60,8 @@ def EFS_FileStorage(key):
         add_obj(get_condition(resname, "equals", "yes", f"{resname}Enabled"))
 
         # resources
-        r_File = EFSFileSystem(resname, key=v)
-
-        if v["R53"]:
-            r_Record = R53RecordSetEFS(recordname, efsname=n)
-
-            add_obj(r_Record)
+        r_File = efs.FileSystem(resname)
+        auto_get_props(r_File, indexname=n)
 
         r_SGServer = SecurityGroup(sgservername)
         r_SGServer.Condition = resname

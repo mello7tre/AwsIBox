@@ -1,0 +1,18 @@
+Base: &base
+  IBOX_LINKED_OBJ:
+    Key: Route53RecordSetEFS
+    Name: RecordSetEFS.IBOX_INDEXNAME
+    Conf:
+      IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+      IBOX_LINKED_OBJ_INDEX: IBOX_INDEXNAME
+  Condition: IBOX_RESNAME
+  Enabled: 'no'
+  Encrypted: false
+  PerformanceMode: generalPurpose
+
+
+global:
+  EFSFileSystem:
+    - IBOX_BASE: *base
+    - EcsCluster:
+        Name: EcsCluster

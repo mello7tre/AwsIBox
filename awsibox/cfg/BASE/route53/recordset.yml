@@ -26,6 +26,15 @@ ECSLoadBalancerTargetInternal: &ecsloadbalancertargetinternal
     <<: *loadbalanceraliastarget
     DNSName: get_subvalue('dualstack.${1E}', f'LoadBalancerApplicationInternalDNS', 'LoadBalancerApplicationStack')
 
+EFS: &efs
+  <<: *zoneinternal
+  Condition: IBOX_LINKED_OBJ_NAME
+  Name: Sub("efs-%s.%s" % (IBOX_LINKED_OBJ_INDEX, cfg.HostedZoneNamePrivate))
+  ResourceRecords:
+    - Sub("${%s}.efs.${AWS::Region}.amazonaws.com" % IBOX_LINKED_OBJ_NAME)
+  Type: "CNAME"
+  TTL: '300'
+
 CloudFront: &cloudfront
   <<: *zoneexternal
   Condition: RecordSetCloudFront
@@ -115,6 +124,7 @@ global:
         <<: [*zoneinternal, *ecsloadbalancertargetinternal, *loadbalancer]
     - ECSLoadBalancerTargetExternalInternal:
         <<: [*zoneinternal, *ecsloadbalancertargetexternal, *loadbalancer]
+    - EFS: *efs
     - CloudFront:
         <<: *cloudfront
         IBOX_TITLE: RecordSetCloudFront

@@ -13,6 +13,8 @@
 - [IBOX\_IFVALUE](#IBOX_IFVALUE)
 - [IBOX\_INDEXNAME](#IBOX_INDEXNAME)
 - [IBOX\_LINKED\_OBJ](#IBOX_LINKED_OBJ)
+- [IBOX\_LINKED\_OBJ\_NAME](#IBOX_LINKED_OBJ_NAME)
+- [IBOX\_LINKED\_OBJ\_INDEX](#IBOX_LINKED_OBJ_INDEX)
 - [IBOX\_LIST](#IBOX_LIST)
 - [IBOX\_MAPNAME](#IBOX_MAPNAME)
 - [IBOX\_OUTPUT](#IBOX_OUTPUT)
@@ -250,6 +252,33 @@ In the above example, if having multiple DBInstance alls of them should have Rec
 A better example should be using a value for name `Name` like: `Name: IBOX_RESNAME` or `Name: RecordSet.IBOX_INDEXNAME`.
 
 Can be subject to change.
+
+#### IBOX\_LINKED\_OBJ\_NAME
+Can be used inside `IBOX_LINKED_OBJ` Conf key to propagate a value parsed in the _main_ object to the _linked_ object.\
+Ex:\
+In the main obj conf
+``` 
+IBOX_LINKED_OBJ:
+  Key: Route53RecordSetEFS
+  Name: RecordSetEFS.IBOX_INDEXNAME
+  Conf:
+    IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+    IBOX_LINKED_OBJ_INDEX: IBOX_INDEXNAME
+```
+In the linked obj conf
+```
+EFS:
+  Condition: IBOX_LINKED_OBJ_NAME
+  Name: Sub("efs-%s.%s" % (IBOX_LINKED_OBJ_INDEX, cfg.HostedZoneNamePrivate))
+  ResourceRecords:
+    - Sub("${%s}.efs.${AWS::Region}.amazonaws.com" % IBOX_LINKED_OBJ_NAME)
+  Type: "CNAME"
+  TTL: '300'
+
+```
+
+#### IBOX\_LINKED\_OBJ\_INDEX
+Same as `IBOX_LINKED_OBJ_NAME`.
 
 #### IBOX\_LIST
 Can be used only for resource processed by the `joker` module.\

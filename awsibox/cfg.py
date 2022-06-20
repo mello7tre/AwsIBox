@@ -376,7 +376,7 @@ CFG_TO_FUNC = {
     "Route53RecordSet": {
         "module": "joker",
         "func": ("route53", "RecordSetType"),
-        "dep": ["ApiGatewayDomainName", "DBInstance"],
+        "dep": ["ApiGatewayDomainName", "DBInstance", "EFSFileSystem"],
     },
     "SecurityGroup": {"module": "securitygroup", "func": "SG_SecurityGroup"},
     "SecurityGroupIngress": {

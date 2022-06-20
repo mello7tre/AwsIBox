@@ -17,8 +17,9 @@ def Joker(key, module, cls):
             mapname = resname
             resname = parse_ibox_key(ibox_resname, parse_ibox_key_conf)
 
-        # get and parse IBOX_REMAPNAME, usefull if using IBOX_LINKED_OBJ
-        remapname = parse_ibox_key(v.get("IBOX_REMAPNAME", ""))
+        # get and parse IBOX_LINKED_OBJ keys
+        linked_obj_name = parse_ibox_key(v.get("IBOX_LINKED_OBJ_NAME", ""))
+        linked_obj_index = parse_ibox_key(v.get("IBOX_LINKED_OBJ_INDEX", ""))
 
         mod = __import__(f"troposphere.{module}")
         my_module = getattr(mod, module)
@@ -36,7 +37,11 @@ def Joker(key, module, cls):
 
         # populate obj
         auto_get_props(
-            obj, mapname=mapname, indexname=n, remapname=remapname
+            obj,
+            mapname=mapname,
+            indexname=n,
+            linked_obj_name=linked_obj_name,
+            linked_obj_index=linked_obj_index,
         )
 
         if v.get("Create"):
