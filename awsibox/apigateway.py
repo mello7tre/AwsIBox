@@ -115,13 +115,15 @@ def AGW_ApiKeys(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
         # parameters
-        p_Enabled = Parameter(f"{resname}Enabled")
-        p_Enabled.Description = f"{resname}Enabled - empty for mapped value"
-        p_Enabled.AllowedValues = ["", "yes", "no"]
+        p_Enabled = Parameter(
+            f"{resname}Enabled",
+            Description=f"{resname}Enabled - empty for mapped value",
+            AllowedValues=["", "yes", "no"],
+        )
 
-        p_UsagePlan = Parameter(f"{resname}UsagePlan")
-        p_UsagePlan.Description = (
-            f"{resname}UsagePlan - empty for default based on env/role"
+        p_UsagePlan = Parameter(
+            f"{resname}UsagePlan",
+            Description=f"{resname}UsagePlan - empty for default based on env/role",
         )
 
         add_obj([p_Enabled, p_UsagePlan])
@@ -132,18 +134,19 @@ def AGW_ApiKeys(key):
 
         if "UsagePlan" in v:
             plankey_name = f"{resname}UsagePlan"
-            r_UsagePlanKey = agw.UsagePlanKey(f"ApiGatewayUsagePlan{n}")
-            r_UsagePlanKey.KeyId = Ref(resname)
-            r_UsagePlanKey.KeyType = "API_KEY"
-            r_UsagePlanKey.UsagePlanId = ImportValue(
-                get_subvalue("ApiGatewayUsagePlan${1M}", f"{resname}UsagePlan")
+            r_UsagePlanKey = agw.UsagePlanKey(
+                f"ApiGatewayUsagePlan{n}",
+                KeyId=Ref(resname),
+                KeyType="API_KEY",
+                UsagePlanId=ImportValue(
+                    get_subvalue("ApiGatewayUsagePlan${1M}", f"{resname}UsagePlan")
+                ),
             )
 
             add_obj(r_UsagePlanKey)
 
         # outputs
-        o_ApiKey = Output(resname)
-        o_ApiKey.Value = Ref(resname)
+        o_ApiKey = Output(resname, Value=Ref(resname))
 
         add_obj([r_ApiKey, o_ApiKey])
 
@@ -153,16 +156,16 @@ def AGW_Stages(key):
         resname = f"{key}{n}"
         depname = f"Deployment{n}"
         # parameters
-        p_DeploymentDescription = Parameter(f"{depname}Description")
-        p_DeploymentDescription.Description = f"{depname} Description"
-        p_DeploymentDescription.Default = n
-
-        p_Deployment = Parameter(depname)
-        p_Deployment.Description = (
-            f"{depname} - change between A/B " "to trigger new deploy"
+        p_DeploymentDescription = Parameter(
+            f"{depname}Description", Description=f"{depname} Description", Default=n
         )
-        p_Deployment.AllowedValues = ["A", "B"]
-        p_Deployment.Default = "A"
+
+        p_Deployment = Parameter(
+            depname,
+            Description=f"{depname} - change between A/B " "to trigger new deploy",
+            AllowedValues=["A", "B"],
+            Default="A",
+        )
 
         add_obj([p_DeploymentDescription, p_Deployment])
 
@@ -176,11 +179,13 @@ def AGW_Stages(key):
         # resources
         r_Stage = ApiGatewayStage(resname, name=n, key=v)
 
-        r_DeploymentA = ApiGatewayDeployment(f"ApiGatewayDeployment{n}A", name=n, key=v)
-        r_DeploymentA.Condition = f"{depname}A"
+        r_DeploymentA = ApiGatewayDeployment(
+            f"ApiGatewayDeployment{n}A", name=n, key=v, Condition=f"{depname}A"
+        )
 
-        r_DeploymentB = ApiGatewayDeployment(f"ApiGatewayDeployment{n}B", name=n, key=v)
-        r_DeploymentB.Condition = f"{depname}B"
+        r_DeploymentB = ApiGatewayDeployment(
+            f"ApiGatewayDeployment{n}B", name=n, key=v, Condition=f"{depname}B"
+        )
 
         # output
         o_Deployment = Output(depname)
