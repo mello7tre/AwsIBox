@@ -24,7 +24,8 @@ class Parameter(Parameter):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         self.Type = "String"
-        self.Default = ""
+        if "Default" not in kwargs:
+            self.Default = ""
 
         # Create SSM Parameter for EnvAppXVersion Params to have history of application versions
         if title.startswith("EnvApp") and title.endswith("Version"):
