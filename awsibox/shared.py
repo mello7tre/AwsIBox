@@ -735,7 +735,7 @@ def auto_get_props(
             lo_type = ibox_linked_obj.get("Type")
             lo_for_cycle = ibox_linked_obj.get("For")
 
-            if lo_resname:
+            if lo_resname and "IBOX_RESNAME" not in lo_conf:
                 lo_conf["IBOX_RESNAME"] = lo_resname
 
             lo_conf["IBOX_ENABLED"] = True
