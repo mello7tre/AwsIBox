@@ -26,9 +26,9 @@ def ECS_ContainerDefinition():
             envname = f"{name}Environment{m}"
             envkeyname = w["Name"]
             # parameters
-            p_EnvValue = Parameter(f"{envname}Value")
-            p_EnvValue.Description = (
-                f"{envkeyname} - empty for default based on env/role"
+            p_EnvValue = Parameter(
+                f"{envname}Value",
+                Description=f"{envkeyname} - empty for default based on env/role",
             )
 
             # If key NoParam is present skip adding Parameters
@@ -45,9 +45,11 @@ def ECS_ContainerDefinition():
 
         if len(cfg.ContainerDefinitions) == 1:
             # parameters
-            p_UseTaskCpu = Parameter(f"{name}UseTaskCpu")
-            p_UseTaskCpu.Description = "Empty for mapped value - Use Task Cpu Value, if present, for Container Cpu"
-            p_UseTaskCpu.AllowedValues = ["", "true", "false"]
+            p_UseTaskCpu = Parameter(
+                f"{name}UseTaskCpu",
+                Description="Empty for mapped value - Use Task Cpu Value, if present, for Container Cpu",
+                AllowedValues=["", "true", "false"],
+            )
 
             add_obj(p_UseTaskCpu)
 
@@ -73,8 +75,10 @@ def ECS_ContainerDefinition():
         Containers.append(Container)
 
         # outputs
-        o_EnvValueOut = Output(f"{name}Environment")
-        o_EnvValueOut.Value = Sub(",".join(EnvValue_Out_String), **EnvValue_Out_Map)
+        o_EnvValueOut = Output(
+            f"{name}Environment",
+            Value=Sub(",".join(EnvValue_Out_String), **EnvValue_Out_Map),
+        )
 
         add_obj(o_EnvValueOut)
 

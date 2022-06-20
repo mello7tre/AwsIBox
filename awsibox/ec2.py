@@ -61,17 +61,17 @@ def EC2_Subnet(key):
         zone_cond = f"Zone{zone_name}"
 
         # parameters
-        p_SubnetCidrBlockPrivate = Parameter(f"SubnetCidrBlockPrivate{zone_name}")
-        p_SubnetCidrBlockPrivate.Description = (
-            f"Ip Class Range for Private Subnet in Zone {zone_name}"
+        p_SubnetCidrBlockPrivate = Parameter(
+            f"SubnetCidrBlockPrivate{zone_name}",
+            Description=f"Ip Class Range for Private Subnet in Zone {zone_name}",
+            Default=cfg.VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PRIVATE[i],
         )
-        p_SubnetCidrBlockPrivate.Default = cfg.VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PRIVATE[i]
 
-        p_SubnetCidrBlockPublic = Parameter(f"SubnetCidrBlockPublic{zone_name}")
-        p_SubnetCidrBlockPublic.Description = (
-            f"Ip Class Range for Public Subnet in zone {zone_name}"
+        p_SubnetCidrBlockPublic = Parameter(
+            f"SubnetCidrBlockPublic{zone_name}",
+            Description=f"Ip Class Range for Public Subnet in zone {zone_name}",
+            Default=cfg.VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PUBLIC[i],
         )
-        p_SubnetCidrBlockPublic.Default = cfg.VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PUBLIC[i]
 
         add_obj([p_SubnetCidrBlockPrivate, p_SubnetCidrBlockPublic])
 
@@ -86,21 +86,25 @@ def EC2_Subnet(key):
 
         # resources
 
-        r_SubnetPrivate = EC2SubnetPrivate(f"SubnetPrivate{zone_name}", zone=zone_name)
-        r_SubnetPrivate.Condition = zone_cond
+        r_SubnetPrivate = EC2SubnetPrivate(
+            f"SubnetPrivate{zone_name}", zone=zone_name, Condition=zone_cond
+        )
 
-        r_SubnetPublic = EC2SubnetPublic(f"SubnetPublic{zone_name}", zone=zone_name)
-        r_SubnetPublic.Condition = zone_cond
+        r_SubnetPublic = EC2SubnetPublic(
+            f"SubnetPublic{zone_name}", zone=zone_name, Condition=zone_cond
+        )
 
         r_SubnetRouteTableAssociationPrivate = EC2SubnetRouteTableAssociationPrivate(
-            f"SubnetRouteTableAssociationPrivate{zone_name}", zone=zone_name
+            f"SubnetRouteTableAssociationPrivate{zone_name}",
+            zone=zone_name,
+            Condition=zone_cond,
         )
-        r_SubnetRouteTableAssociationPrivate.Condition = zone_cond
 
         r_SubnetRouteTableAssociationPublic = EC2SubnetRouteTableAssociationPublic(
-            f"SubnetRouteTableAssociationPublic{zone_name}", zone=zone_name
+            f"SubnetRouteTableAssociationPublic{zone_name}",
+            zone=zone_name,
+            Condition=zone_cond,
         )
-        r_SubnetRouteTableAssociationPublic.Condition = zone_cond
 
         add_obj(
             [
@@ -121,12 +125,14 @@ def EC2_Subnet(key):
         )
 
     # Outputs
-    O_SubnetsPrivate = Output("SubnetsPrivate")
-    O_SubnetsPrivate.Value = Join(",", o_subnetprivate)
-    O_SubnetsPrivate.Export = Export("SubnetsPrivate")
+    O_SubnetsPrivate = Output(
+        "SubnetsPrivate",
+        Value=Join(",", o_subnetprivate),
+        Export=Export("SubnetsPrivate"),
+    )
 
-    O_SubnetsPublic = Output("SubnetsPublic")
-    O_SubnetsPublic.Value = Join(",", o_subnetpublic)
-    O_SubnetsPublic.Export = Export("SubnetsPublic")
+    O_SubnetsPublic = Output(
+        "SubnetsPublic", Value=Join(",", o_subnetpublic), Export=Export("SubnetsPublic")
+    )
 
     add_obj([O_SubnetsPrivate, O_SubnetsPublic])

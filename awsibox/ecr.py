@@ -134,8 +134,9 @@ def ECR_Repositories(key):
     # Resources
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
-        Repo = ECRRepositories(resname)
+        Repo = ECRRepositories(
+            resname, LifecyclePolicy=ECRRepositoryLifecyclePolicy("")
+        )
         Repo.RepositoryPolicyText["Statement"].extend(PolicyStatementAccounts)
-        Repo.LifecyclePolicy = ECRRepositoryLifecyclePolicy("")
 
         add_obj(Repo)
