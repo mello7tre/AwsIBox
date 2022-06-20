@@ -599,8 +599,7 @@ def AS_ScalingPolicies(key):
 
     if Out_String:
         # Outputs
-        O_Policy = Output(key)
-        O_Policy.Value = Sub(",".join(Out_String), **Out_Map)
+        O_Policy = Output(key, Value=Sub(",".join(Out_String), **Out_Map))
 
         add_obj(O_Policy)
 
@@ -621,15 +620,17 @@ def AS_LaunchTemplate():
 
         UserDataApp.extend(["#${%s}\n" % envname])
 
-        p_EnvAppVersion = Parameter(envname)
-        p_EnvAppVersion.Description = f"Application {n} version"
-        p_EnvAppVersion.AllowedPattern = "^[a-zA-Z0-9-_.]*$"
-
-        p_AppsRepoName = Parameter(reponame)
-        p_AppsRepoName.Description = (
-            f"App {n} Repo Name - empty for default based on env/role"
+        p_EnvAppVersion = Parameter(
+            envname,
+            Description=f"Application {n} version",
+            AllowedPattern="^[a-zA-Z0-9-_.]*$",
         )
-        p_AppsRepoName.AllowedPattern = "^[a-zA-Z0-9-_.]*$"
+
+        p_AppsRepoName = Parameter(
+            reponame,
+            Description=f"App {n} Repo Name - empty for default based on env/role",
+            AllowedPattern="^[a-zA-Z0-9-_.]*$",
+        )
 
         # parameters
         add_obj(
@@ -680,13 +681,10 @@ def AS_LaunchTemplate():
         Tags_List.append(asg.Tag(envname, Ref(envname), True))
 
         # outputs
-        Output_app = Output(envname)
-        Output_app.Value = Ref(envname)
-        add_obj(Output_app)
+        Output_app = Output(envname, Value=Ref(envname))
+        Output_repo = Output(reponame, Value=get_endvalue(reponame))
 
-        Output_repo = Output(reponame)
-        Output_repo.Value = get_endvalue(reponame)
-        add_obj(Output_repo)
+        add_obj([Output_app, Output_repo])
 
     InitConfigSetup = ASInitConfigSetup()
     InitConfigSetup.ibox_env_app = IBoxEnvApp
@@ -798,9 +796,11 @@ def AS_Autoscaling(key):
     # Resources
     LaunchTemplateTags = AS_LaunchTemplate()
 
-    R_ASG = asg.AutoScalingGroup("AutoScalingGroupBase")
-    R_ASG.LoadBalancerNames = LoadBalancers
-    R_ASG.TargetGroupARNs = TargetGroups
+    R_ASG = asg.AutoScalingGroup(
+        "AutoScalingGroupBase",
+        LoadBalancerNames=LoadBalancers,
+        TargetGroupARNs=TargetGroups,
+    )
 
     auto_get_props(R_ASG)
 
