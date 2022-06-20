@@ -1,4 +1,9 @@
 Base: &base
+  IBOX_OUTPUT:
+    - _:
+        Condition: IBOX_RESNAME
+        Value: Ref(IBOX_RESNAME)
+        Export: Export(IBOX_RESNAME)
   IBOX_LINKED_OBJ:
     Key: Route53RecordSetEFS
     Name: RecordSetEFS.IBOX_INDEXNAME
