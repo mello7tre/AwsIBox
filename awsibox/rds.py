@@ -131,14 +131,12 @@ def RDS_DB(key):
         if not v["IBOX_ENABLED"]:
             continue
 
+        # trick to keep current in use resname and obj.title
         resname = v.get("IBOX_RESNAME", mapname)
 
         # resources
-        r_DB = RDSDBInstance(mapname)
+        r_DB = RDSDBInstance(resname)
         auto_get_props(r_DB, mapname=mapname)
-        # trick to keep current in use resname obj.title - need to be
-        # executed after invoking auto_get_props
-        r_DB.title = resname
         # trick - when providing DBSnapshotIdentifier
         # or SourceDBInstanceIdentifier some props must not exists
         for m in ["DBName", "MasterUsername", "MasterUserPassword"]:
