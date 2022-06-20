@@ -41,12 +41,11 @@ def CFM_Outputs(key):
 def CFM_CustomResourceReplicator(key):
     resname = "CloudFormationCustomResourceStackReplicator"
     # Parameters
-    P_ReplicateRegions = Parameter("CCRReplicateRegions")
-    P_ReplicateRegions.Description = (
-        "Regions where to replicate - none to disable - "
-        "empty for default based on env/role"
+    P_ReplicateRegions = Parameter(
+        "CCRReplicateRegions",
+        Description="Regions where to replicate - none to disable - empty for default based on env/role",
+        Type="CommaDelimitedList",
     )
-    P_ReplicateRegions.Type = "CommaDelimitedList"
 
     add_obj(P_ReplicateRegions)
 
@@ -72,11 +71,11 @@ def CFM_CustomResourceReplicator(key):
 def CFM_CustomResourceLightHouse(key):
     resname = "CloudFormationCustomResourceLightHouse"
     # Parameters
-    P_LightHouse = Parameter("CCRLightHouse")
-    P_LightHouse.Description = (
-        "Enable CustomResource for LightHouse - " "empty for mapped value"
+    P_LightHouse = Parameter(
+        "CCRLightHouse",
+        Description="Enable CustomResource for LightHouse - " "empty for mapped value",
+        AllowedValues=["", "yes", "no"],
     )
-    P_LightHouse.AllowedValues = ["", "yes", "no"]
 
     add_obj(P_LightHouse)
 
@@ -86,27 +85,31 @@ def CFM_CustomResourceLightHouse(key):
     add_obj(C_LightHouse)
 
     # Resources
-    R_LightHouse = cfm.CustomResource(resname)
-    R_LightHouse.Condition = resname
-    R_LightHouse.DependsOn = "Service"
-    R_LightHouse.ServiceToken = get_expvalue("LambdaCCRLightHouse")
-    R_LightHouse.EnvRole = Ref("EnvRole")
-    R_LightHouse.EnvApp1Version = Ref("EnvApp1Version")
-    R_LightHouse.RepoName = get_endvalue("RepoName")
+    R_LightHouse = cfm.CustomResource(
+        resname,
+        Condition=resname,
+        DependsOn="Service",
+        ServiceToken=get_expvalue("LambdaCCRLightHouse"),
+        EnvRole=Ref("EnvRole"),
+        EnvApp1Version=Ref("EnvApp1Version"),
+        RepoName=get_endvalue("RepoName"),
+    )
 
     add_obj(R_LightHouse)
 
 
 def CFM_CustomResourceFargateSpot(key):
     resname = "CloudFormationCustomResourceFargateSpot"
-    R_FargateSpot = cfm.CustomResource(resname)
-    R_FargateSpot.Condition = "FargateSpot"
-    R_FargateSpot.DependsOn = "ServiceSpot"
-    R_FargateSpot.ServiceToken = get_expvalue("LambdaCCRFargateSpot")
-    R_FargateSpot.ServiceArn = Ref("ServiceSpot")
-    R_FargateSpot.ServiceBase = GetAtt("Service", "Name")
-    R_FargateSpot.ServiceSpot = GetAtt("ServiceSpot", "Name")
-    R_FargateSpot.Cluster = get_expvalue("Cluster", "ClusterStack")
-    R_FargateSpot.ScalingPolicy = Ref("ApplicationAutoScalingScalingPolicyCpu")
+    R_FargateSpot = cfm.CustomResource(
+        resname,
+        Condition="FargateSpot",
+        DependsOn="ServiceSpot",
+        ServiceToken=get_expvalue("LambdaCCRFargateSpot"),
+        ServiceArn=Ref("ServiceSpot"),
+        ServiceBase=GetAtt("Service", "Name"),
+        ServiceSpot=GetAtt("ServiceSpot", "Name"),
+        Cluster=get_expvalue("Cluster", "ClusterStack"),
+        ScalingPolicy=Ref("ApplicationAutoScalingScalingPolicyCpu"),
+    )
 
     add_obj(R_FargateSpot)
