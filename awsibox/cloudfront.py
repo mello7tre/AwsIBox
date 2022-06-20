@@ -107,11 +107,15 @@ def CF_CloudFront(key):
     # Resources
     CloudFrontDistribution = clf.Distribution("CloudFrontDistribution")
 
-    DistributionConfig = clf.DistributionConfig("CloudFrontDistributionConfig")
-    auto_get_props(DistributionConfig, "CloudFrontDistributionIBOX_BASE")
-    DistributionConfig.DefaultCacheBehavior = CFDefaultCacheBehavior(
-        "CloudFrontCacheBehaviors0", key=cfg.CloudFrontCacheBehaviors["0"]
+    DistributionConfig = clf.DistributionConfig(
+        "CloudFrontDistributionConfig",
+        Comment=get_endvalue("CloudFrontComment"),
+        CustomErrorResponses=CFCustomErrors(),
+        DefaultCacheBehavior=CFDefaultCacheBehavior(
+            "CloudFrontCacheBehaviors0", key=cfg.CloudFrontCacheBehaviors["0"]
+        ),
     )
+    auto_get_props(DistributionConfig, "CloudFrontDistributionIBOX_BASE")
 
     cachebehaviors = []
     # Skip DefaultBehaviour
@@ -159,8 +163,9 @@ def CF_CloudFront(key):
             continue
 
         # parameters
-        p_Alias = Parameter(name)
-        p_Alias.Description = "Alias extra - " "empty for default based on env/role"
+        p_Alias = Parameter(
+            name, Description="Alias extra - " "empty for default based on env/role"
+        )
 
         add_obj(p_Alias)
 
@@ -170,13 +175,9 @@ def CF_CloudFront(key):
         add_obj(get_condition(name, "not_equals", "none"))
 
     DistributionConfig.Aliases = cloudfrontaliasextra
-    DistributionConfig.CustomErrorResponses = CFCustomErrors()
     CloudFrontDistribution.DistributionConfig = DistributionConfig
 
     CloudFrontDistribution.DistributionConfig.Origins = CFOrigins()
-    CloudFrontDistribution.DistributionConfig.Comment = get_endvalue(
-        "CloudFrontComment"
-    )
 
     try:
         cfg.CloudFrontDistributionCondition
