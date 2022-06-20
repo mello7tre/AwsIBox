@@ -23,7 +23,8 @@ class SSMParameter(ssm.Parameter):
 class Parameter(Parameter):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-        self.Type = "String"
+        if "Type" not in kwargs:
+            self.Type = "String"
         if "Default" not in kwargs:
             self.Default = ""
 
