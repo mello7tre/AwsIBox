@@ -282,7 +282,7 @@ Same as `IBOX_LINKED_OBJ_NAME`.
 
 #### IBOX\_LIST
 Can be used only for resource processed by the `joker` module.\
-Is used to wrap the resource in a list.\
+Is used to wrap the resources in a list.\
 Ex:
 ```
 KMSKey:
@@ -292,16 +292,16 @@ KMSKey:
         Id: key-default-1
         Statement:
           - IBOX_LIST:
-            Action: "kms:*"
-            Effect: "Allow"
-            Principal:
-              AWS: Sub("arn:aws:iam::${AWS::AccountId}:root")
-            Resource: "*"
-            Sid: "Enable IAM User Permissions"
+          - 1:
+              Action: "kms:*"
+              Effect: "Allow"
+              Principal:
+                AWS: Sub("arn:aws:iam::${AWS::AccountId}:root")
+              Resource: "*"
+              Sid: "Enable IAM User Permissions"
 
 ```
-Statement will be a list with a single element.\
-Just one `- IBOX_LIST` is needed, but if you need to have multple element in the list, define the other under different keys (As `- IBOX_LIST1`, `- IBOX_LIST2` etc..).
+Statement will be a list with a single dict element _created_ with the content under `1:`.\
 
 #### IBOX\_MAPNAME
 Can be used as python var or inside other IBOX keys.\

@@ -13,11 +13,12 @@ Base: &base
   AssumeRolePolicyDocument:
     Statement:
       - IBOX_LIST:
-        Action: 'sts:AssumeRole'
-        Effect: Allow
-        Principal:
-          Service:
-            - get_endvalue(f"{IBOX_MAPNAME}Principal")
+      - 1:
+          Action: 'sts:AssumeRole'
+          Effect: Allow
+          Principal:
+            Service:
+              - get_endvalue(f"{IBOX_MAPNAME}Principal")
   Path: "/"
 
 

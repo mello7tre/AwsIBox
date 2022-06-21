@@ -10,12 +10,13 @@ global:
           Id: key-default-1
           Statement:
             - IBOX_LIST:
-              Action: "kms:*"
-              Effect: "Allow"
-              Principal:
-                AWS: Sub("arn:aws:iam::${AWS::AccountId}:root")
-              Resource: "*"
-              Sid: "Enable IAM User Permissions"
+            - 1:
+                Action: "kms:*"
+                Effect: "Allow"
+                Principal:
+                  AWS: Sub("arn:aws:iam::${AWS::AccountId}:root")
+                Resource: "*"
+                Sid: "Enable IAM User Permissions"
   KMSAlias:
     - ParameterStore:
         AliasName: Sub("alias/parameter_store_key")
