@@ -132,26 +132,6 @@ class IAMRoleIBox(iam.Role):
                     break
 
 
-class IAMRole(iam.Role):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-        auto_get_props(self)
-        self.AssumeRolePolicyDocument = {
-            "Statement": [
-                {
-                    "Action": "sts:AssumeRole",
-                    "Effect": "Allow",
-                    "Principal": {
-                        key["PrincipalType"]
-                        if "PrincipalType" in key
-                        else "Service": [get_endvalue(f"{self.title}Principal")]
-                    },
-                }
-            ]
-        }
-        self.Path = "/"
-
-
 class IAMRoleUser(iam.Role):
     def __init__(self, title, key, resnameuser, **kwargs):
         super().__init__(title, **kwargs)
