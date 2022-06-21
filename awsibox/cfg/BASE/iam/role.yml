@@ -1,0 +1,22 @@
+Base: &base
+  IBOX_ENABLED: True
+  IBOX_OUTPUT:
+    - _:
+        IBOX_CODE_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+        Value: GetAtt(IBOX_RESNAME, "Arn")
+        Export: Export(IBOX_RESNAME)
+  Export: False
+  AssumeRolePolicyDocument:
+    Statement:
+      - IBOX_LIST:
+        Action: 'sts:AssumeRole'
+        Effect: Allow
+        Principal:
+          Service:
+            - get_endvalue(f"{IBOX_RESNAME}Principal")
+  Path: "/"
+
+
+global:
+  Role:
+    - IBOX_BASE: *base

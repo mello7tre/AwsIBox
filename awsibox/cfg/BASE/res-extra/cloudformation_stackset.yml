@@ -20,8 +20,13 @@ global:
         Condition: 'RegionAWSCloudFormationStackSetRoles'
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/AdministratorAccess'
+        AssumeRolePolicyDocument:
+          Statement:
+            - IBOX_LIST:
+              Principal**:
+                AWS:
+                  - get_endvalue(f"{IBOX_RESNAME}Principal")
         Principal: GetAtt('RoleAWSCloudFormationStackSetAdministrationRole', 'Arn')
-        PrincipalType: AWS
         RoleName: 'AWSCloudFormationStackSetExecutionRole'
     - AWSCloudFormationStackSetAdministrationRole:
         Condition: 'RegionAWSCloudFormationStackSetRoles'

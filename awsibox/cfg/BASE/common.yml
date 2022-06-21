@@ -1,6 +1,7 @@
 IBoxLoader:
   - !include
     - sns/topic.yml
+    - iam/role.yml
 
 global:
   Parameter:

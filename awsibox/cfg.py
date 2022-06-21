@@ -371,7 +371,7 @@ CFG_TO_FUNC = {
     "RDSDBInstance": {"module": "rds", "func": "RDS_DB"},
     "RDSDBSubnetGroup": {"module": "joker", "func": ("rds", "DBSubnetGroup")},
     "Repository": {"module": "ecr", "func": "ECR_Repositories"},
-    "Role": {"module": "iam", "func": "IAM_Roles"},
+    "Role": {"module": "joker", "func": ("iam", "Role")},
     "Route53HostedZone": {"module": "joker", "func": ("route53", "HostedZone")},
     "Route53RecordSet": {
         "module": "joker",

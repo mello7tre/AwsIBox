@@ -414,29 +414,3 @@ def IAM_Policies(key):
             o_Policy = Output(resname, Value=Ref(resname), Export=Export(resname))
 
             add_obj(o_Policy)
-
-
-def IAM_Roles(key):
-    # Resources
-    for n, v in getattr(cfg, key).items():
-        resname = f"{key}{n}"  # Ex. RoleECSService
-        r_Role = IAMRole(resname, key=v)
-
-        # Add embedded policies if present
-        if "Policies" in v:
-            Policies = []
-            for p, w in v["Policies"].items():
-                Policies.append(IAMPolicyInRole(p, w))
-            r_Role.Policies = Policies
-
-        add_obj(r_Role)
-
-        # outputs
-        if v.get("Export"):
-            o_Role = Output(resname)
-            o_Role.Value = GetAtt(resname, "Arn")
-            o_Role.Export = Export(resname)
-            if "Condition" in v:
-                o_Role.Condition = v["Condition"]
-
-            add_obj(o_Role)

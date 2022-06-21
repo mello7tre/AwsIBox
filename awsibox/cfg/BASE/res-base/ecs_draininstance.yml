@@ -35,10 +35,14 @@ global:
         Principal: autoscaling.amazonaws.com
         Policies:
           - ASGLifecycleHookECSDrainInstance:
-              Statement:
-                - 1:
+              PolicyDocument:
+                Statement:
+                  - IBOX_LIST:
                     Action: 'sns:Publish'
+                    Effect: Allow
                     Resource: Ref('SNSTopicECSDrainInstance')
+                Version: '2012-10-17'
+              PolicyName: ASGLifecycleHookECSDrainInstance
   SNSSubscription:
     - ECSDrainInstanceLambdaECSDrainInstance:
         TopicArn: Ref('SNSTopicECSDrainInstance')
