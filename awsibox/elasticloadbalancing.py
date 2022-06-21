@@ -181,10 +181,9 @@ def LB_ListenerRules():
         mapname = f"ListenerRules{n}"  # Ex. ListenerRules1
 
         # parameters
-        p_Priority = Parameter(f"{mapname}Priority")
-        p_Priority.Description = (
-            "Listener Rule Priority, lesser value = high priority - "
-            "empty for default based on env/role"
+        p_Priority = Parameter(
+            f"{mapname}Priority",
+            Description="Listener Rule Priority, lesser value = high priority - empty for default based on env/role",
         )
 
         add_obj(p_Priority)
@@ -193,10 +192,9 @@ def LB_ListenerRules():
         ListenerRule_Out_Map = {"Priority": get_endvalue(f"{mapname}Priority")}
 
         if "HostHeader" in v:
-            p_HostHeader = Parameter(f"{mapname}HostHeader")
-            p_HostHeader.Description = (
-                "Listener Rule HostHeader Condition - "
-                "empty for default based on env/role"
+            p_HostHeader = Parameter(
+                f"{mapname}HostHeader",
+                Description="Listener Rule HostHeader Condition - empty for default based on env/role",
             )
 
             add_obj(p_HostHeader)
@@ -208,10 +206,9 @@ def LB_ListenerRules():
             )
 
         if "PathPattern" in v:
-            p_PathPattern = Parameter(f"{mapname}PathPattern")
-            p_PathPattern.Description = (
-                "Listener Rule PathPattern Condition - "
-                "empty for default based on env/role"
+            p_PathPattern = Parameter(
+                f"{mapname}PathPattern",
+                Description="Listener Rule PathPattern Condition - empty for default based on env/role",
             )
 
             add_obj(p_PathPattern)
@@ -357,9 +354,11 @@ def LB_TargetGroupsALB():
         )
         r_LambdaPermission.Condition = f"LoadBalancerApplication{n}"
 
-        o_TargetGroup = Output(f"TargetGroupServiceUnavailable{n}")
-        o_TargetGroup.Condition = f"LoadBalancerApplication{n}"
-        o_TargetGroup.Value = Ref(f"TargetGroupServiceUnavailable{n}")
+        o_TargetGroup = Output(
+            f"TargetGroupServiceUnavailable{n}",
+            Condition=f"LoadBalancerApplication{n}",
+            Value=Ref(f"TargetGroupServiceUnavailable{n}"),
+        )
 
         add_obj([r_TG, r_LambdaPermission, o_TargetGroup])
 

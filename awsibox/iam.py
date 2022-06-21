@@ -231,9 +231,7 @@ class IAMRoleBucketReplica(iam.Role):
 
 
 def IAMPolicyInRole(name, key):
-    Policy = iam.Policy("")
-    Policy.PolicyName = name
-    Policy.PolicyDocument = {"Version": "2012-10-17"}
+    Policy = iam.Policy("", PolicyName=name, PolicyDocument={"Version": "2012-10-17"})
     Statement = []
     for n, v in key["Statement"].items():
         Statement.append(IAMPolicyStatement(v))
@@ -275,10 +273,12 @@ def IAM_Users(key):
         resname = f"{key}{n}"  # Ex. IAMUserPincoPalla
 
         # parameters
-        p_Password = Parameter(f"PasswordBase{n}")
-        p_Password.Description = "Base Password, must be changed at first login"
-        p_Password.Default = ""
-        p_Password.NoEcho = True
+        p_Password = Parameter(
+            f"PasswordBase{n}",
+            Description="Base Password, must be changed at first login",
+            Default="",
+            NoEcho=True,
+        )
 
         add_obj(p_Password)
 
@@ -315,20 +315,25 @@ def IAM_Users(key):
                         )
 
         # resources
-        r_Role = IAMRoleUser(f"IAMRole{n}", key=v, resnameuser=resname)
-        r_Role.ManagedPolicyArns = ManagedPolicyArns
-
-        r_User = IAMUser(resname, key=v, name=n)
-        r_User.Groups = RoleGroups
-
-        r_SSMParameter = SSMParameter(f"SSMParameterPassword{n}")
-        r_SSMParameter.Condition = resname
-        r_SSMParameter.Name = Sub(
-            "/iam/PasswordBase/${UserName}",
-            **{"UserName": get_endvalue(f"{resname}UserName")},
+        r_Role = IAMRoleUser(
+            f"IAMRole{n}",
+            key=v,
+            resnameuser=resname,
+            ManagedPolicyArns=ManagedPolicyArns,
         )
-        r_SSMParameter.Value = Ref(f"PasswordBase{n}")
-        r_SSMParameter.AllowedPattern = "^[^ ]{16,}$"
+
+        r_User = IAMUser(resname, key=v, name=n, Groups=RoleGroups)
+
+        r_SSMParameter = SSMParameter(
+            f"SSMParameterPassword{n}",
+            Condition=resname,
+            Name=Sub(
+                "/iam/PasswordBase/${UserName}",
+                **{"UserName": get_endvalue(f"{resname}UserName")},
+            ),
+            Value=Ref(f"PasswordBase{n}"),
+            AllowedPattern="^[^ ]{16,}$",
+        )
 
         add_obj([r_User, r_Role, r_SSMParameter])
 
@@ -355,8 +360,9 @@ def IAM_UserToGroupAdditions(key):
             )
 
         # resources
-        r_GroupAdd = IAMUserToGroupAddition(f"IAMUserToGroupAddition{n}", key=v, name=n)
-        r_GroupAdd.Users = Users
+        r_GroupAdd = IAMUserToGroupAddition(
+            f"IAMUserToGroupAddition{n}", key=v, name=n, Users=Users
+        )
 
         add_obj([r_GroupAdd])
 
@@ -379,8 +385,7 @@ def IAM_Groups(key):
                 ManagedPolicyArns.append(ImportValue(f"IAMPolicy{m}"))
 
         # resources
-        r_Group = IAMGroup(resname, key=v, name=n)
-        r_Group.ManagedPolicyArns = ManagedPolicyArns
+        r_Group = IAMGroup(resname, key=v, name=n, ManagedPolicyArns=ManagedPolicyArns)
 
         add_obj([r_Group])
 
@@ -406,9 +411,7 @@ def IAM_Policies(key):
 
         # outputs
         if v.get("Export"):
-            o_Policy = Output(resname)
-            o_Policy.Value = Ref(resname)
-            o_Policy.Export = Export(resname)
+            o_Policy = Output(resname, Value=Ref(resname), Export=Export(resname))
 
             add_obj(o_Policy)
 

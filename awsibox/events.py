@@ -38,14 +38,16 @@ def EVE_EventRules(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
         # parameters
-        p_State = Parameter(f"{resname}State")
-        p_State.Description = "Events Rule State - empty for default based on env/role"
-        p_State.AllowedValues = ["", "DISABLED", "ENABLED"]
+        p_State = Parameter(
+            f"{resname}State",
+            Description="Events Rule State - empty for default based on env/role",
+            AllowedValues=["", "DISABLED", "ENABLED"],
+        )
 
         if "ScheduleExpression" in v:
-            p_ScheduleExpression = Parameter(f"{resname}ScheduleExpression")
-            p_ScheduleExpression.Description = (
-                "Events Rule Schedule - empty for default based on env/role"
+            p_ScheduleExpression = Parameter(
+                f"{resname}ScheduleExpression",
+                Description="Events Rule Schedule - empty for default based on env/role",
             )
 
             add_obj(p_ScheduleExpression)
@@ -94,12 +96,13 @@ def EVE_EventRules(key):
         r_Rule.Targets = Targets
 
         # outputs
-        o_State = Output(f"{resname}State")
-        o_State.Value = get_endvalue(f"{resname}State")
+        o_State = Output(f"{resname}State", Value=get_endvalue(f"{resname}State"))
 
         if "ScheduleExpression" in v:
-            o_ScheduleExpression = Output(f"{resname}ScheduleExpression")
-            o_ScheduleExpression.Value = get_endvalue(f"{resname}ScheduleExpression")
+            o_ScheduleExpression = Output(
+                f"{resname}ScheduleExpression",
+                Value=get_endvalue(f"{resname}ScheduleExpression"),
+            )
 
             add_obj(o_ScheduleExpression)
 
