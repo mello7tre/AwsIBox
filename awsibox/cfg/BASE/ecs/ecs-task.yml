@@ -39,7 +39,7 @@ global:
     - ParameterStore:
         Roles:
           - Ref('RoleTask')
-  Role:
+  IAMRole:
     - Task:
         ManagedPolicyArns:
           - get_expvalue('IAMPolicyCloudWatchPutMetric')

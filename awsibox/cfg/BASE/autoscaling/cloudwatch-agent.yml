@@ -7,7 +7,7 @@ global:
     - CloudWatchAgent:
         get_condition('', 'equals', 'yes', 'CloudWatchAgent')
   CloudWatchAgent: 'no'
-  Role:
+  IAMRole:
     - Instance:
         ManagedPolicyArns++:
           - If('CloudWatchAgent', 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy', Ref('AWS::NoValue'))

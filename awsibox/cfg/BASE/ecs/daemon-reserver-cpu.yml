@@ -32,7 +32,7 @@ global:
   LaunchType: EC2
   LogDriver: none
   LogsLogGroup: IBOX_SKIP_FUNC
-  Role:
+  IAMRole:
     - Task:
         Condition: DaemonReserveCpu
   Service:

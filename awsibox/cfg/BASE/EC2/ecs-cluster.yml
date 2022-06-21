@@ -92,7 +92,7 @@ global:
                 VolumeSize: 40
   Listeners: []
   RecordSet: []
-  Role:
+  IAMRole:
     - Instance:
         ManagedPolicyArns++:
           - get_expvalue('IAMPolicyEcs')

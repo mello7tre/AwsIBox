@@ -15,7 +15,7 @@ global:
           - 1:
               Action: 'sts:AssumeRole'
               Resource: 'arn:aws:iam::*:role/AWSCloudFormationStackSetExecutionRole'
-  Role:
+  IAMRole:
     - AWSCloudFormationStackSetExecutionRole:
         Condition: 'RegionAWSCloudFormationStackSetRoles'
         ManagedPolicyArns:
@@ -25,7 +25,7 @@ global:
             - IBOX_LIST:
               Principal**:
                 AWS:
-                  - get_endvalue(f"{IBOX_RESNAME}Principal")
+                  - get_endvalue(f"{IBOX_MAPNAME}Principal")
         Principal: GetAtt('RoleAWSCloudFormationStackSetAdministrationRole', 'Arn')
         RoleName: 'AWSCloudFormationStackSetExecutionRole'
     - AWSCloudFormationStackSetAdministrationRole:

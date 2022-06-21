@@ -343,6 +343,7 @@ CFG_TO_FUNC = {
     },
     "IAMGroup": {"module": "iam", "func": "IAM_Groups"},
     "IAMPolicy": {"module": "iam", "func": "IAM_Policies"},
+    "IAMRole": {"module": "joker", "func": ("iam", "Role")},
     "IAMUser": {"module": "iam", "func": "IAM_Users"},
     "IAMUserToGroupAddition": {"module": "iam", "func": "IAM_UserToGroupAdditions"},
     "KMSAlias": {"module": "joker", "func": ("kms", "Alias")},
@@ -371,7 +372,6 @@ CFG_TO_FUNC = {
     "RDSDBInstance": {"module": "rds", "func": "RDS_DB"},
     "RDSDBSubnetGroup": {"module": "joker", "func": ("rds", "DBSubnetGroup")},
     "Repository": {"module": "ecr", "func": "ECR_Repositories"},
-    "Role": {"module": "joker", "func": ("iam", "Role")},
     "Route53HostedZone": {"module": "joker", "func": ("route53", "HostedZone")},
     "Route53RecordSet": {
         "module": "joker",

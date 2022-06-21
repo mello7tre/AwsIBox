@@ -63,7 +63,7 @@ global:
     - ParameterStore:
         Roles:
           - Ref('RoleInstance')
-  Role:
+  IAMRole:
     - Instance:
         ManagedPolicyArns:
           - get_expvalue('IAMPolicyBaseInstance')

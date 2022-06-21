@@ -1,8 +1,12 @@
+# need to use IBOX_MAPNAME in place of IBOX_RESNAME because i already have stacks with the IAMRole resources named with prefix
+# "Role" instaead of "IAMROLE" and this is the only method to keeping the same name and avoid replacing.
+
 Base: &base
   IBOX_ENABLED: True
+  IBOX_RESNAME: Role.IBOX_INDEXNAME
   IBOX_OUTPUT:
     - _:
-        IBOX_CODE_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+        IBOX_CODE_IF: get_endvalue(f"{IBOX_MAPNAME}Export") == True
         Value: GetAtt(IBOX_RESNAME, "Arn")
         Export: Export(IBOX_RESNAME)
   Export: False
@@ -13,10 +17,10 @@ Base: &base
         Effect: Allow
         Principal:
           Service:
-            - get_endvalue(f"{IBOX_RESNAME}Principal")
+            - get_endvalue(f"{IBOX_MAPNAME}Principal")
   Path: "/"
 
 
 global:
-  Role:
+  IAMRole:
     - IBOX_BASE: *base
