@@ -38,9 +38,10 @@ global:
               PolicyDocument:
                 Statement:
                   - IBOX_LIST:
-                    Action: 'sns:Publish'
-                    Effect: Allow
-                    Resource: Ref('SNSTopicECSDrainInstance')
+                  - 1:
+                      Action: 'sns:Publish'
+                      Effect: Allow
+                      Resource: Ref('SNSTopicECSDrainInstance')
                 Version: '2012-10-17'
               PolicyName: ASGLifecycleHookECSDrainInstance
   SNSSubscription:

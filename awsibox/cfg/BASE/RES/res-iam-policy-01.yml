@@ -1,9 +1,9 @@
 IBoxLoader: !include
-  - iam/policy.yml
+  - iam/managed-policy.yml
 
 global:
   StackName: iam-p-01
-  IAMPolicy:
+  IAMManagedPolicy:
     - SSMParameterStoreBase:
         IBOX_ENABLED: True
     - LogRead:
@@ -23,121 +23,124 @@ global:
     - FrontEndDeveloper:
         IBOX_ENABLED: True
     - IAMUserManageOwn:
-        Export: True
-        Type: Managed
         Description: 'Manage Own IAM resources'
-        Statement:
-          - 1:
-              Action:
-                - 'iam:*LoginProfile'
-                - 'iam:*AccessKey*'
-                - 'iam:*AccessKey*'
-                - 'iam:*SSHPublicKey*'
-                - 'iam:GenerateCredentialReport'
-                - 'iam:GenerateServiceLastAccessedDetails'
-                - 'iam:ChangePassword'
-              Resource: 'arn:aws:iam::*:user/${aws:username}'
-          - 2:
-              Action:
-                - 'iam:ListUsers'
-                - 'iam:ListRoles'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'iam:*LoginProfile'
+                  - 'iam:*AccessKey*'
+                  - 'iam:*AccessKey*'
+                  - 'iam:*SSHPublicKey*'
+                  - 'iam:GenerateCredentialReport'
+                  - 'iam:GenerateServiceLastAccessedDetails'
+                  - 'iam:ChangePassword'
+                Effect: Allow
+                Resource: 'arn:aws:iam::*:user/${aws:username}'
+            - 2:
+                Action:
+                  - 'iam:ListUsers'
+                  - 'iam:ListRoles'
+                Effect: Allow
+                Resource: '*'
     - S3ListBuckets:
-        Export: True
-        Type: Managed
         Description: 'List Buckets'
-        Statement:
-          - 1:
-              Action:
-                - 's3:GetBucketLocation'
-                - 's3:ListAllMyBuckets'
-              Resource: 'arn:aws:s3:::*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 's3:GetBucketLocation'
+                  - 's3:ListAllMyBuckets'
+                Effect: Allow
+                Resource: 'arn:aws:s3:::*'
     - PowerUserAccessNoSSM:
-        Export: True
-        Type: Managed
         Description: 'Provides full access apart management of Users and groups, Direct Access to SSM Parameters.'
-        Statement:
-          - IAMAllowed:
-              Action:
-                - 'iam:CreateServiceLinkedRole'
-                - 'iam:DeleteServiceLinkedRole'
-                - 'iam:Get*'
-                - 'iam:List*'
-                - 'iam:SimulateCustomPolicy'
-                - 'iam:SimulatePrincipalPolicy'
-                - 'iam:PassRole'
-                - 'organizations:DescribeOrganization'
-              Resource: '*'
-          - MISCDenied:
-              NotAction:
-                - 'iam:*'
-                - 'organizations:*'
-                - 'ssm:*'
-              Resource: '*'
-          - SSMAllowed:
-              Action:
-                - 'ssm:GetParameter*'
-              Resource:
-                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
-                - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+        PolicyDocument:
+          Statement:
+            - IAMAllowed:
+                Action:
+                  - 'iam:CreateServiceLinkedRole'
+                  - 'iam:DeleteServiceLinkedRole'
+                  - 'iam:Get*'
+                  - 'iam:List*'
+                  - 'iam:SimulateCustomPolicy'
+                  - 'iam:SimulatePrincipalPolicy'
+                  - 'iam:PassRole'
+                  - 'organizations:DescribeOrganization'
+                Effect: Allow
+                Resource: '*'
+            - MISCDenied:
+                NotAction:
+                  - 'iam:*'
+                  - 'organizations:*'
+                  - 'ssm:*'
+                Effect: Allow
+                Resource: '*'
+            - SSMAllowed:
+                Action:
+                  - 'ssm:GetParameter*'
+                Effect: Allow
+                Resource:
+                  - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
+                  - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
     - STSAssumeRoleOwn:
-        Export: True
-        Type: Managed
         Description: 'Assume UserName Role'
-        Statement:
-          - 1:
-              Action:
-                - 'sts:AssumeRole'
-              Resource: 'arn:aws:iam::*:role/${aws:username}'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'sts:AssumeRole'
+                Effect: Allow
+                Resource: 'arn:aws:iam::*:role/${aws:username}'
     - LogFilter:
-        Export: True
-        Type: Managed
         Description: 'Filter CloudWatch Logs'
-        Statement:
-          - 1:
-              Action:
-                - 'logs:PutMetricFilter'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'logs:PutMetricFilter'
+                Effect: Allow
+                Resource: '*'
     - LogGroupsDescribe:
-        Export: True
-        Type: Managed
         Description: 'Describe CloudWatch Log Groups'
-        Statement:
-          - 1:
-              Action:
-                - 'logs:DescribeLogGroups'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'logs:DescribeLogGroups'
+                Effect: Allow
+                Resource: '*'
     - LogReadJoker01:
-        Export: True
-        Type: Managed
         Description: 'Read CloudWatch Logs - Joker'
-        Statement:
-          - 1:
-              Action:
-                - 'logs:Describe*'
-                - 'logs:FilterLogEvents'
-                - 'logs:Get*'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'logs:Describe*'
+                  - 'logs:FilterLogEvents'
+                  - 'logs:Get*'
+                Effect: Allow
+                Resource: '*'
     - MetricWrite:
-        Export: True
-        Type: Managed
         Description: 'Write CloudWatch Custom Metrics'
-        Statement:
-          - 1:
-              Action:
-                - 'cloudwatch:PutMetricData'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'cloudwatch:PutMetricData'
+                Effect: Allow
+                Resource: '*'
     - CloudFrontInvalidate:
-        Export: True
-        Type: Managed
         Description: 'CloudFront Console ReadAccess and Create Invalidations'
-        Statement:
-          - 1:
-              Action:
-                - 'acm:ListCertificates'
-                - 'cloudfront:List*'
-                - 'cloudfront:Get*'
-                - 'cloudfront:CreateInvalidation'
-                - 'waf:GetWebACL'
-                - 'waf:ListWebACLs'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'acm:ListCertificates'
+                  - 'cloudfront:List*'
+                  - 'cloudfront:Get*'
+                  - 'cloudfront:CreateInvalidation'
+                  - 'waf:GetWebACL'
+                  - 'waf:ListWebACLs'
+                Effect: Allow
+                Resource: '*'

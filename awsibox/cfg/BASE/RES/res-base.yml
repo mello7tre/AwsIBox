@@ -3,7 +3,7 @@ IBoxLoader: !include
   - iam/ssm.yml
   - route53/hostedzones.yml
   - ec2/securitygroup.yml
-  - res-base/iampolicy.yml
+  - res-base/iam-managed-policy.yml
   - res-base/role.yml
   - res-base/securitygroup_base.yml
   - res-base/ecs_draininstance.yml

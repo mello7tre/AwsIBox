@@ -2,11 +2,13 @@ SSMParameterStoreBase01: &ssm_parameter_store_base_01
   Action:
     - 'kms:ListAliases'
     - 'ssm:DescribeParameters'
+  Effect: Allow
   Resource: '*'
 SSMParameterStoreBase02: &ssm_parameter_store_base_02
   Action:
     - 'kms:Decrypt'
     - 'kms:Encrypt'
+  Effect: Allow
   Resource: get_expvalue('KeyParameterStore')
 
 LogRead01: &log_read_01
@@ -18,6 +20,7 @@ LogRead01: &log_read_01
     - 'logs:StopQuery'
     - 'logs:TestMetricFilter'
     - 'logs:FilterLogEvents'
+  Effect: Allow
   Resource: '*'
 
 ECRRead01: &ecr_read_01
@@ -25,6 +28,7 @@ ECRRead01: &ecr_read_01
     - 'ecr:GetAuthorizationToken'
     - 'ecr:DescribeRepositories'
     - 'ecr:ListImages'
+  Effect: Allow
   Resource: '*'
 
 MetricRead01: &metric_read_01
@@ -34,6 +38,7 @@ MetricRead01: &metric_read_01
     - 'cloudwatch:GetMetricData'
     - 'cloudwatch:GetMetricStatistics'
     - 'cloudwatch:GetDashboard'
+  Effect: Allow
   Resource: '*'
 
 RDSRead01: &rds_read_01
@@ -51,6 +56,7 @@ RDSRead01: &rds_read_01
     - 'cloudwatch:GetMetricStatistics'
     - 'logs:DescribeLogStreams'
     - 'logs:GetLogEvents'
+  Effect: Allow
   Resource: '*'
 
 EC2Base01: &ec2_base_01
@@ -58,81 +64,72 @@ EC2Base01: &ec2_base_01
     - 'ec2:DescribeSecurityGroups'
     - 'ec2:DescribeSubnets'
     - 'ec2:DescribeVpcs'
+  Effect: Allow
   Resource: '*'
 
 
 global:
-  IAMPolicy:
+  IAMManagedPolicy:
     - SSMParameterStoreBase:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: 'Describe all SSM Parameters and read KMS Key'
-        Statement:
-          - SSMParameterStoreBase01: *ssm_parameter_store_base_01
-          - SSMParameterStoreBase02: *ssm_parameter_store_base_02
+        PolicyDocument:
+          Statement:
+            - SSMParameterStoreBase01: *ssm_parameter_store_base_01
+            - SSMParameterStoreBase02: *ssm_parameter_store_base_02
     - LogRead:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: 'Read CloudWatch Logs'
-        Statement:
-          - LogRead01: *log_read_01
+        PolicyDocument:
+          Statement:
+            - LogRead01: *log_read_01
     - MetricRead:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: 'Read CloudWatch Metrics and DashBoard'
-        Statement:
-          - MetricRead01: *metric_read_01
+        PolicyDocument:
+          Statement:
+            - MetricRead01: *metric_read_01
     - ECRRead:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: 'Read Grant to All Ecr Repos'
-        Statement:
-          - ECRRead01: *ecr_read_01
+        PolicyDocument:
+          Statement:
+            - ECRRead01: *ecr_read_01
     - RDSRead:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: 'AWS Managed AmazonRDSReadOnlyAccess + DownloadDBLogFilePortion'
-        Statement:
-          - RDSRead01: *rds_read_01
+        PolicyDocument:
+          Statement:
+            - RDSRead01: *rds_read_01
     - EC2Base:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: 'EC2 Base policy'
-        Statement:
-          - EC2Base01: *ec2_base_01
+        PolicyDocument:
+          Statement:
+            - EC2Base01: *ec2_base_01
     - Developer:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: "Developer"
-        Statement:
-          - SSMParameterStoreBase01: *ssm_parameter_store_base_01
-          - SSMParameterStoreBase02: *ssm_parameter_store_base_02
-          - LogRead01: *log_read_01
-          - ECRRead01: *ecr_read_01
-          - MetricRead01: *metric_read_01
+        PolicyDocument:
+          Statement:
+            - SSMParameterStoreBase01: *ssm_parameter_store_base_01
+            - SSMParameterStoreBase02: *ssm_parameter_store_base_02
+            - LogRead01: *log_read_01
+            - ECRRead01: *ecr_read_01
+            - MetricRead01: *metric_read_01
     - BackEndTechLead01:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: "BackEndTechLead01"
-        Statement:
-          - RDSRead01: *rds_read_01
+        PolicyDocument:
+          Statement:
+            - RDSRead01: *rds_read_01
     - BackEndDeveloper:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: "BackEndDeveloper"
-        Statement: {}
+        PolicyDocument:
+          Statement: {}
     - FrontEndDeveloper:
         IBOX_ENABLED: False
-        Export: True
-        Type: Managed
         Description: "FrontEndDeveloper"
-        Statement: {}
+        PolicyDocument:
+          Statement: {}

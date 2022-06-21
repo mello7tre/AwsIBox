@@ -1,0 +1,62 @@
+global:
+  IAMManagedPolicy:
+    - BaseInstance:
+        Description: 'Policy common to all instances'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 's3:GetBucketLocation'
+                  - 's3:ListAllMyBuckets'
+                Effect: Allow
+                Resource: 'arn:aws:s3:::*'
+            - 2:
+                Action:
+                  - 's3:Get*'
+                  - 's3:List*'
+                Effect: Allow
+                Resource:
+                  - Sub('arn:aws:s3:::%s' % cfg.BucketNameAppRepository)
+                  - Sub('arn:aws:s3:::%s/*' % cfg.BucketNameAppRepository)
+                  - Sub('arn:aws:s3:::%s' % cfg.BucketNameAppData)
+                  - Sub('arn:aws:s3:::%s/*' % cfg.BucketNameAppData)
+                  - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}')
+                  - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}/*')
+            - 3:
+                Action:
+                  - 'elasticloadbalancing:DescribeInstanceHealth'
+                  - 'elasticloadbalancing:DescribeTargetHealth'
+                  - 'ec2:DescribeInstances'
+                Effect: Allow
+                Resource: '*'
+    - CloudWatchPutMetric:
+        Description: 'Policy for ecs-task to put CW metric data'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'cloudwatch:PutMetricData'
+                Effect: Allow
+                Resource: '*'
+    - Ecs:
+        Description: 'EcsCluster'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:CreateCluster'
+                  - 'ecs:DeregisterContainerInstance'
+                  - 'ecs:DiscoverPollEndpoint'
+                  - 'ecs:Poll'
+                  - 'ecs:RegisterContainerInstance'
+                  - 'ecs:StartTelemetrySession'
+                  - 'ecs:Submit*'
+                  - 'ecs:UpdateContainerInstancesState'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:BatchGetImage'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:GetAuthorizationToken'
+                Effect: Allow
+                Resource: '*'

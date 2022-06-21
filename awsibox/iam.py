@@ -52,17 +52,6 @@ class IAMPolicy(iam.PolicyType):
         }
 
 
-class IAMManagedPolicy(iam.ManagedPolicy):
-    def __init__(self, title, key, name, **kwargs):
-        super().__init__(title, **kwargs)
-
-        auto_get_props(self)
-        self.PolicyDocument = {
-            "Version": "2012-10-17",
-        }
-        self.Description = key["Description"]
-
-
 class IAMPolicyBucketReplica(iam.PolicyType):
     def __init__(self, title, bucket, bucket_name, mapname, key, **kwargs):
         super().__init__(title, **kwargs)
@@ -381,10 +370,7 @@ def IAM_Policies(key):
         for m, w in v["Statement"].items():
             Statement.append(IAMPolicyStatement(w))
 
-        if "Type" in v and v["Type"] == "Managed":
-            r_Policy = IAMManagedPolicy(resname, key=v, name=n)
-        else:
-            r_Policy = IAMPolicy(resname, key=v, name=n)
+        r_Policy = IAMPolicy(resname, key=v, name=n)
         r_Policy.PolicyDocument["Statement"] = Statement
 
         add_obj(r_Policy)
