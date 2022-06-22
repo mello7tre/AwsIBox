@@ -4,16 +4,19 @@ global:
         PolicyName: Sub('LambdaECSRunTaskTrigger_${AWS::StackName}')
         Roles:
           - get_expvalue('RoleLambdaECSRunTask')
-        Statement:
-          - RunTask:
-              Action:
-                - 'ecs:RunTask'
-                - 'ecs:StartTask'
-              Resource: Ref('TaskDefinitionFargate')
-          - PassRole:
-              Action:
-                - 'iam:PassRole'
-              Resource: GetAtt('RoleTask', 'Arn')
+        PolicyDocument:
+          Statement:
+            - RunTask:
+                Action:
+                  - 'ecs:RunTask'
+                  - 'ecs:StartTask'
+                Effect: Allow
+                Resource: Ref('TaskDefinitionFargate')
+            - PassRole:
+                Action:
+                  - 'iam:PassRole'
+                Effect: Allow
+                Resource: GetAtt('RoleTask', 'Arn')
   TaskDefinition:
     - Fargate:
         IBOX_ENABLED: True

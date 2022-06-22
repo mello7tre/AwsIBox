@@ -55,15 +55,17 @@ global:
     - LambdaInfraInfo:
         Roles:
           - Ref('RoleLambdaInfraInfov1')
-        Statement:
-          - 1:
-              Action:
-                - 'cloudformation:DescribeStack*'
-                - 'ecs:ListClusters'
-                - 'ecs:ListServices'
-                - 'ecs:DescribeServices'
-                - 'application-autoscaling:DescribeScalableTargets'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'cloudformation:DescribeStack*'
+                  - 'ecs:ListClusters'
+                  - 'ecs:ListServices'
+                  - 'ecs:DescribeServices'
+                  - 'application-autoscaling:DescribeScalableTargets'
+                Effect: Allow
+                Resource: '*'
   Lambda:
     - InfraInfov1:
         Code:

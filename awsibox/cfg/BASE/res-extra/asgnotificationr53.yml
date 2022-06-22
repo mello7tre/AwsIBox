@@ -3,19 +3,22 @@ global:
     - SQSASGNotificationR53:
         Roles:
           - Ref('RoleInstance')
-        Statement:
-          - 1:
-              Action:
-                - 'sqs:DeleteMessage'
-                - 'sqs:GetQueueUrl'
-                - 'sqs:ListQueues'
-                - 'sqs:ReceiveMessage'
-              Resource: GetAtt('SQSQueueASGNotificationR53', 'Arn')
-          - 2:
-              Action:
-                - 'sqs:GetQueueAttributes'
-                - 'sqs:ListQueues'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'sqs:DeleteMessage'
+                  - 'sqs:GetQueueUrl'
+                  - 'sqs:ListQueues'
+                  - 'sqs:ReceiveMessage'
+                Effect: Allow
+                Resource: GetAtt('SQSQueueASGNotificationR53', 'Arn')
+            - 2:
+                Action:
+                  - 'sqs:GetQueueAttributes'
+                  - 'sqs:ListQueues'
+                Effect: Allow
+                Resource: '*'
   SQSQueue:
     - ASGNotificationR53:
         MessageRetentionPeriod: 360

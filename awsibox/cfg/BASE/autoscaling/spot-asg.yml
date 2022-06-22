@@ -41,18 +41,22 @@ global:
         Condition: SpotASG
         Roles:
           - Ref('RoleInstance')
-        Statement:
-          - 1:
-              Action: 'sns:Publish'
-              Resource: Ref('SNSTopicASGSpot')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action: 'sns:Publish'
+                Effect: Allow
+                Resource: Ref('SNSTopicASGSpot')
     - LambdaASGSpot:
         Condition: SpotASG
         Roles:
           - Ref('RoleLambdaASGSpot')
-        Statement:
-          - 1:
-              Action: 'autoscaling:SetDesiredCapacity'
-              Resource: Sub('arn:aws:autoscaling:*:*:autoScalingGroup:*:autoScalingGroupName/${AutoScalingGroup}')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action: 'autoscaling:SetDesiredCapacity'
+                Effect: Allow
+                Resource: Sub('arn:aws:autoscaling:*:*:autoScalingGroup:*:autoScalingGroupName/${AutoScalingGroup}')
   Lambda:
     - ASGSpot:
         Condition: SpotASG

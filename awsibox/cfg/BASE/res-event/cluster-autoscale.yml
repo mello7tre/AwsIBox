@@ -19,17 +19,20 @@ global:
     - LambdaECSClusterAutoscale:
         Roles:
           - Ref('RoleLambdaECSClusterAutoscale')
-        Statement:
-          - 1:
-              Action: 'autoscaling:TerminateInstanceInAutoScalingGroup'
-              Resource: '*'
-          - 2:
-              Action:
-                - 'ecs:DescribeContainerInstances'
-                - 'ecs:ListContainerInstances'
-                - 'ecs:ListServices'
-                - 'ecs:DescribeServices'
-                - 'ecs:TagResource'
-                - 'ecs:ListClusters'
-                - 'ecs:DescribeClusters'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action: 'autoscaling:TerminateInstanceInAutoScalingGroup'
+                Effect: Allow
+                Resource: '*'
+            - 2:
+                Action:
+                  - 'ecs:DescribeContainerInstances'
+                  - 'ecs:ListContainerInstances'
+                  - 'ecs:ListServices'
+                  - 'ecs:DescribeServices'
+                  - 'ecs:TagResource'
+                  - 'ecs:ListClusters'
+                  - 'ecs:DescribeClusters'
+                Effect: Allow
+                Resource: '*'

@@ -46,21 +46,24 @@ global:
     - LambdaCloudWatchRepeatedNotify:
         Roles:
           - Ref('RoleLambdaCloudWatchRepeatedNotify')
-        Statement:
-          - 1:
-              Action:
-                - 'cloudwatch:DescribeAlarms'
-                - 'events:DescribeRule'
-                - 'events:PutRule'
-                - 'events:DeleteRule'
-                - 'events:PutTargets'
-                - 'events:RemoveTargets'
-                - 'lambda:AddPermission'
-                - 'lambda:RemovePermission'
-              Resource: '*'
-          - 2:
-              Action: 'sns:Publish'
-              Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'cloudwatch:DescribeAlarms'
+                  - 'events:DescribeRule'
+                  - 'events:PutRule'
+                  - 'events:DeleteRule'
+                  - 'events:PutTargets'
+                  - 'events:RemoveTargets'
+                  - 'lambda:AddPermission'
+                  - 'lambda:RemovePermission'
+                Effect: Allow
+                Resource: '*'
+            - 2:
+                Action: 'sns:Publish'
+                Effect: Allow
+                Resource: get_expvalue('SNSTopicCloudWatchAlarm')
     - ParameterStore:
         Roles++:
           - Ref('RoleLambdaCloudWatchRepeatedNotify')

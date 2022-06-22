@@ -12,6 +12,19 @@ ManagedPolicyBase: &managed_policy_base
       - IBOX_LIST: {}
     Version: "2012-10-17"
 
+PolicyBase: &policy_base
+  IBOX_ENABLED: True
+  IBOX_OUTPUT:
+    - _:
+        IBOX_CODE_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+        Value: Ref(IBOX_RESNAME)
+        Export: Export(IBOX_RESNAME)
+  Export: False
+  PolicyName: IBOX_INDEXNAME
+  PolicyDocument:
+    Statement:
+      - IBOX_LIST: {}
+    Version: "2012-10-17"
 
 # need to use IBOX_MAPNAME in place of IBOX_RESNAME because i already have stacks with the IAMRole resources named with prefix
 # "Role" instaead of "IAMROLE" and this is the only method to keeping the same name and avoid replacing.
@@ -37,7 +50,9 @@ RoleBase: &role_base
 
 
 global:
-  IAMRole:
-    - IBOX_BASE: *role_base
   IAMManagedPolicy:
     - IBOX_BASE: *managed_policy_base
+  IAMRole:
+    - IBOX_BASE: *role_base
+  IAMPolicy:
+    - IBOX_BASE: *policy_base

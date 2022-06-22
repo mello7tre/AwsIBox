@@ -345,7 +345,7 @@ CFG_TO_FUNC = {
     },
     "IAMGroup": {"module": "iam", "func": "IAM_Groups"},
     "IAMManagedPolicy": {"module": "joker", "func": ("iam", "ManagedPolicy")},
-    "IAMPolicy": {"module": "iam", "func": "IAM_Policies"},
+    "IAMPolicy": {"module": "joker", "func": ("iam", "PolicyType")},
     "IAMRole": {"module": "joker", "func": ("iam", "Role")},
     "IAMUser": {"module": "iam", "func": "IAM_Users"},
     "IAMUserToGroupAddition": {"module": "iam", "func": "IAM_UserToGroupAdditions"},

@@ -1,17 +1,21 @@
 global:
   IAMPolicy:
     - ParameterStore:
-        Statement:
-          - Decrypt:
-              Action: 'kms:Decrypt'
-              Resource: get_expvalue('KeyParameterStore')
-          - Describe:
-              Action: 'ssm:DescribeParameters'
-              Resource: Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:*')
-          - Get:
-              Action: 'ssm:GetParameters'
-              Resource:
-                - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${EnvRole}/*')
-                - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/${EnvRole}/*')
-                - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EnvAppVersions/*')
-                - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/common/*')
+        PolicyDocument:
+          Statement:
+            - Decrypt:
+                Action: 'kms:Decrypt'
+                Effect: Allow
+                Resource: get_expvalue('KeyParameterStore')
+            - Describe:
+                Action: 'ssm:DescribeParameters'
+                Effect: Allow
+                Resource: Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:*')
+            - Get:
+                Action: 'ssm:GetParameters'
+                Effect: Allow
+                Resource:
+                  - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${EnvRole}/*')
+                  - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/${EnvRole}/*')
+                  - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EnvAppVersions/*')
+                  - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/common/*')

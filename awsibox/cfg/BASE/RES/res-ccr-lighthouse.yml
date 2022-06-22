@@ -12,22 +12,26 @@ global:
     - LambdaCCRLightHouse:
         Roles:
           - Ref('RoleLambdaCCRLightHouse')
-        Statement:
-          - 1:
-              Action:
-                - 'ecs:RunTask'
-                - 'ecs:StartTask'
-              Resource: Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/lth-t-*')
-          - 2:
-              Action:
-                - 'iam:PassRole'
-              Resource:
-                - Sub('arn:aws:iam::${AWS::AccountId}:role/lth-t-*')
-                - get_expvalue('RoleECSTaskExecution')
-          - 3:
-              Action:
-                - 'events:ListTargetsByRule'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:RunTask'
+                  - 'ecs:StartTask'
+                Effect: Allow
+                Resource: Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/lth-t-*')
+            - 2:
+                Action:
+                  - 'iam:PassRole'
+                Effect: Allow
+                Resource:
+                  - Sub('arn:aws:iam::${AWS::AccountId}:role/lth-t-*')
+                  - get_expvalue('RoleECSTaskExecution')
+            - 3:
+                Action:
+                  - 'events:ListTargetsByRule'
+                Effect: Allow
+                Resource: '*'
   Lambda:
     - CCRLightHouse:
         Export: True

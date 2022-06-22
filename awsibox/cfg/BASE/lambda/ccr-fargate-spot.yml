@@ -12,9 +12,11 @@ global:
     - LambdaCCRFargateSpot:
         Roles:
           - Ref('RoleLambdaCCRFargateSpot')
-        Statement:
-          - 1:
-              Action:
-                - 'cloudwatch:DescribeAlarms'
-                - 'cloudwatch:PutMetricAlarm'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'cloudwatch:DescribeAlarms'
+                  - 'cloudwatch:PutMetricAlarm'
+                Effect: Allow
+                Resource: '*'

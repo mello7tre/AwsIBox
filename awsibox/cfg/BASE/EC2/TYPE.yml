@@ -54,12 +54,14 @@ global:
     - CloudFormation:
         Roles:
           - Ref('RoleInstance')
-        Statement:
-          - 1:
-              Action:
-                - 'cloudformation:DescribeStackResource'
-                - 'cloudformation:SignalResource'
-              Resource: Sub('arn:aws:cloudformation:*:*:stack/${AWS::StackName}/*')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'cloudformation:DescribeStackResource'
+                  - 'cloudformation:SignalResource'
+                Effect: Allow
+                Resource: Sub('arn:aws:cloudformation:*:*:stack/${AWS::StackName}/*')
     - ParameterStore:
         Roles:
           - Ref('RoleInstance')

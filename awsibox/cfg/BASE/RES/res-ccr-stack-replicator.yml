@@ -15,11 +15,13 @@ global:
         Condition: 'LambdaCCRStackReplicator'
         Roles:
           - Ref('RoleLambdaCCRStackReplicator')
-        Statement:
-          - 1:
-              Action:
-                - '*'
-              Resource: '*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - '*'
+                Effect: Allow
+                Resource: '*'
   Lambda:
     - CCRStackReplicator:
         Export: True

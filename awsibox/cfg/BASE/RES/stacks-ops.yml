@@ -9,18 +9,22 @@ global:
     - UpdateStack:
         Roles:
           - Ref('RoleLambdaStacksOps')
-        Statement:
-          - SSMEnvRole:
-              Action: 'ssm:GetParameter*'
-              Resource: 'arn:aws:ssm:*:*:parameter/buildkite/*'
-          - SSMRead:
-              Action:
-                - 'ssm:DescribeParameters'
-                - 'kms:ListAliases'
-              Resource: '*'
-          - KMSKey:
-              Action: 'kms:Decrypt'
-              Resource: get_expvalue('KeyParameterStore')
+        PolicyDocument:
+          Statement:
+            - SSMEnvRole:
+                Action: 'ssm:GetParameter*'
+                Effect: Allow
+                Resource: 'arn:aws:ssm:*:*:parameter/buildkite/*'
+            - SSMRead:
+                Action:
+                  - 'ssm:DescribeParameters'
+                  - 'kms:ListAliases'
+                Effect: Allow
+                Resource: '*'
+            - KMSKey:
+                Action: 'kms:Decrypt'
+                Effect: Allow
+                Resource: get_expvalue('KeyParameterStore')
   Lambda:
     - StacksOps:
         Code:

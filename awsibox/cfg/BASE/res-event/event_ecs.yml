@@ -119,25 +119,28 @@ global:
     - LambdaECSEvents:
         Roles:
           - Ref('RoleLambdaECSEvents')
-        Statement:
-          - 1:
-              Action:
-                - 'ecs:DescribeContainerInstances'
-                - 'ecs:DescribeServices'
-                - 'ecs:UpdateService'
-                - 'cloudwatch:SetAlarmState'
-                - 'cloudwatch:DisableAlarmActions'
-                - 'cloudwatch:EnableAlarmActions'
-                - 'events:PutRule'
-                - 'events:DeleteRule'
-                - 'events:PutTargets'
-                - 'events:RemoveTargets'
-                - 'lambda:AddPermission'
-                - 'lambda:RemovePermission'
-              Resource: '*'
-          - 2:
-              Action: 'sns:Publish'
-              Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:DescribeContainerInstances'
+                  - 'ecs:DescribeServices'
+                  - 'ecs:UpdateService'
+                  - 'cloudwatch:SetAlarmState'
+                  - 'cloudwatch:DisableAlarmActions'
+                  - 'cloudwatch:EnableAlarmActions'
+                  - 'events:PutRule'
+                  - 'events:DeleteRule'
+                  - 'events:PutTargets'
+                  - 'events:RemoveTargets'
+                  - 'lambda:AddPermission'
+                  - 'lambda:RemovePermission'
+                Effect: Allow
+                Resource: '*'
+            - 2:
+                Action: 'sns:Publish'
+                Effect: Allow
+                Resource: get_expvalue('SNSTopicCloudWatchAlarm')
     - ParameterStore:
         Roles++:
           - Ref('RoleLambdaECSEvents')

@@ -23,7 +23,9 @@ global:
     - LambdaSpotAdvisor:
         Roles:
           - Ref('RoleLambdaSpotAdvisor')
-        Statement:
-          - 1:
-              Action: 'sns:Publish'
-              Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action: 'sns:Publish'
+                Effect: Allow
+                Resource: get_expvalue('SNSTopicCloudWatchAlarm')

@@ -67,43 +67,51 @@ global:
     - LambdaEC2StartStopTagged:
         Roles:
           - Ref('RoleLambdaEC2StartStopTagged')
-        Statement:
-          - 1:
-              Action:
-                - 'ec2:StartInstances'
-                - 'ec2:StopInstances'
-              Resource: 'arn:aws:ec2:*:*:instance/*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ec2:StartInstances'
+                  - 'ec2:StopInstances'
+                Effect: Allow
+                Resource: 'arn:aws:ec2:*:*:instance/*'
     - LambdaServiceDiscovery:
         Roles:
           - Ref('RoleLambdaServiceDiscovery')
-        Statement:
-          - 1:
-              Action:
-                - 'servicediscovery:ListServices'
-                - 'servicediscovery:CreateService'
-                - 'servicediscovery:DeleteService'
-                - 'servicediscovery:RegisterInstance'
-                - 'servicediscovery:DeRegisterInstance'
-                - 'servicediscovery:GetOperation'
-                - 'servicediscovery:GetNameSpace'
-              Resource: '*'
-          - 2:
-              Action:
-                - 'route53:ChangeResourceRecordSets'
-              Resource: 'arn:aws:route53:::*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'servicediscovery:ListServices'
+                  - 'servicediscovery:CreateService'
+                  - 'servicediscovery:DeleteService'
+                  - 'servicediscovery:RegisterInstance'
+                  - 'servicediscovery:DeRegisterInstance'
+                  - 'servicediscovery:GetOperation'
+                  - 'servicediscovery:GetNameSpace'
+                Effect: Allow
+                Resource: '*'
+            - 2:
+                Action:
+                  - 'route53:ChangeResourceRecordSets'
+                Effect: Allow
+                Resource: 'arn:aws:route53:::*'
     - LambdaR53RecordInstanceId:
         Roles:
           - Ref('RoleLambdaR53RecordInstanceId')
-        Statement:
-          - 1:
-              Action:
-                - 'sns:Publish'
-              Resource: Ref('SNSTopicASGNotificationR53')
-          - 2:
-              Action:
-                - 'route53:ChangeResourceRecordSets'
-                - 'route53:ListResourceRecordSets'
-              Resource: 'arn:aws:route53:::*'
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'sns:Publish'
+                Effect: Allow
+                Resource: Ref('SNSTopicASGNotificationR53')
+            - 2:
+                Action:
+                  - 'route53:ChangeResourceRecordSets'
+                  - 'route53:ListResourceRecordSets'
+                Effect: Allow
+                Resource: 'arn:aws:route53:::*'
   SNSTopic:
     - ASGNotificationR53:
         NOOP: True
