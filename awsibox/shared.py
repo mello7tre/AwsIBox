@@ -779,8 +779,6 @@ def auto_get_props(
                         # automatically add Condition if source obj have it and target not
                         obj_condition = parse_ibox_key(key["Condition"])
                         linked_obj["Condition"] = obj_condition
-                        # need to update fixedvalues too
-                        cfg.fixedvalues[linked_obj_key_name] = obj_condition
 
                     # assign to louc_cfg lo_key
                     louc_cfg[lo_key][f"{lo_type}{lo_for_index}"] = linked_obj
