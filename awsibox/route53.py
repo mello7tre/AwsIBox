@@ -29,8 +29,7 @@ def R53_RecordSetEC2LoadBalancer():
             )
 
         # outputs
-        O_External = Output("RecordSetExternal")
-        O_External.Value = Ref("RecordSetExternal")
+        O_External = Output("RecordSetExternal", Value=Ref("RecordSetExternal"))
 
         add_obj([R_External, O_External])
 
@@ -49,8 +48,7 @@ def R53_RecordSetEC2LoadBalancer():
             )
 
         # outputs
-        O_Internal = Output("RecordSetInternal")
-        O_Internal.Value = Ref("RecordSetInternal")
+        O_Internal = Output("RecordSetInternal", Value=Ref("RecordSetInternal"))
 
         add_obj([R_Internal, O_Internal])
 
@@ -75,8 +73,7 @@ def R53_RecordSetECSLoadBalancer():
             )
 
         # outputs
-        O_External = Output("RecordSetExternal")
-        O_External.Value = Ref("RecordSetExternal")
+        O_External = Output("RecordSetExternal", Value=Ref("RecordSetExternal"))
 
         add_obj([R_External, O_External])
 
@@ -93,7 +90,6 @@ def R53_RecordSetECSLoadBalancer():
             )
 
         # outputs
-        O_Internal = Output("RecordSetInternal")
-        O_Internal.Value = Ref("RecordSetInternal")
+        O_Internal = Output("RecordSetInternal", Value=Ref("RecordSetInternal"))
 
         add_obj([R_Internal, O_Internal])
