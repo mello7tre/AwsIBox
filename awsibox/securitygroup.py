@@ -67,13 +67,12 @@ class SecurityGroupRuleEcsService(SecurityGroupRule):
 
 def SG_SecurityGroupsExtra(Out_String, Out_Map):
     # Parameters
-    P_SecurityGroups = Parameter("SecurityGroups")
-    P_SecurityGroups.Description = (
-        "SecurityGroups List Extra - "
-        f"{SECURITY_GROUPS_DEFAULT} for default based on env/role"
+    P_SecurityGroups = Parameter(
+        "SecurityGroups",
+        Description=f"SecurityGroups List Extra - {SECURITY_GROUPS_DEFAULT} for default based on env/role",
+        AllowedPattern=r"^(\w*,\w*){%s}$" % (MAX_SECURITY_GROUPS - 1),
+        Default=SECURITY_GROUPS_DEFAULT,
     )
-    P_SecurityGroups.AllowedPattern = r"^(\w*,\w*){%s}$" % (MAX_SECURITY_GROUPS - 1)
-    P_SecurityGroups.Default = SECURITY_GROUPS_DEFAULT
 
     add_obj([P_SecurityGroups])
 
@@ -112,10 +111,11 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
         )
 
     # Outputs
-    O_SecurityGroups = Output("SecurityGroups")
-    O_SecurityGroups.Value = Sub(",".join(Out_String), **Out_Map)
+    O_SecurityGroups = Output(
+        "SecurityGroups", Value=Sub(",".join(Out_String), **Out_Map)
+    )
 
-    add_obj([O_SecurityGroups])
+    add_obj(O_SecurityGroups)
 
     cfg.SecurityGroupsImport = SecurityGroups
 
