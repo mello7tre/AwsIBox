@@ -41,17 +41,6 @@ class IAMUserToGroupAddition(iam.UserToGroupAddition):
         self.GroupName = name
 
 
-class IAMPolicy(iam.PolicyType):
-    def __init__(self, title, key, name, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.PolicyName = name
-        auto_get_props(self)
-        self.PolicyDocument = {
-            "Version": "2012-10-17",
-        }
-
-
 class IAMPolicyBucketReplica(iam.PolicyType):
     def __init__(self, title, bucket, bucket_name, mapname, key, **kwargs):
         super().__init__(title, **kwargs)
@@ -357,26 +346,3 @@ def IAM_Groups(key):
         r_Group = IAMGroup(resname, key=v, name=n, ManagedPolicyArns=ManagedPolicyArns)
 
         add_obj([r_Group])
-
-
-def IAM_Policies(key):
-    # Resources
-    for n, v in getattr(cfg, key).items():
-        if not v.get("IBOX_ENABLED", True):
-            continue
-
-        resname = f"{key}{n}"  # Ex. IAMPolicyLambdaR53RecordInstanceId
-        Statement = []
-        for m, w in v["Statement"].items():
-            Statement.append(IAMPolicyStatement(w))
-
-        r_Policy = IAMPolicy(resname, key=v, name=n)
-        r_Policy.PolicyDocument["Statement"] = Statement
-
-        add_obj(r_Policy)
-
-        # outputs
-        if v.get("Export"):
-            o_Policy = Output(resname, Value=Ref(resname), Export=Export(resname))
-
-            add_obj(o_Policy)
