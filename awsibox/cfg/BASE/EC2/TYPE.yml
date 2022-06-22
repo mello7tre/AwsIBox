@@ -5,6 +5,7 @@ IBoxLoader: !include
   - cloudwatch/alarms.yml
   - cloudfront/for-services.yml
   - iam/parameterstore.yml
+  - iam/instance-profile.yml
 
 global:
   Parameter:

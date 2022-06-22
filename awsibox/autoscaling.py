@@ -16,7 +16,6 @@ from .shared import (
     import_user_data,
 )
 from .cfn import *
-from .iam import IAMInstanceProfile
 
 try:
     from cfnExt import *
@@ -735,8 +734,6 @@ def AS_LaunchTemplate():
         SecurityGroups
     )
 
-    R_InstanceProfile = IAMInstanceProfile("InstanceProfile")
-
     # Import role specific cfn definition
     try:
         # Do not use role but direct cfg yaml configuration (ecs + cluster)
@@ -772,7 +769,7 @@ def AS_LaunchTemplate():
             ),
         )
 
-    add_obj([R_LaunchTemplate, R_InstanceProfile])
+    add_obj(R_LaunchTemplate)
 
     Tags = asg.Tags()
     Tags.tags = Tags_List

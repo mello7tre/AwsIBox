@@ -87,13 +87,6 @@ class IAMPolicyBucketReplica(iam.PolicyType):
         self.Roles = [Ref(f"Role{self.Condition}")]  # Ex. RoleBucketImagesReplica
 
 
-class IAMInstanceProfile(iam.InstanceProfile):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Path = "/"
-        self.Roles = [Ref("RoleInstance")]
-
-
 class IAMRoleIBox(iam.Role):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)

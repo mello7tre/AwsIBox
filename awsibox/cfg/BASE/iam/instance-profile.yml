@@ -1,0 +1,7 @@
+global:
+  IAMInstanceProfile:
+    - Base:
+        IBOX_TITLE: InstanceProfile
+        Path: "/"
+        Roles:
+          - Ref("RoleInstance")
