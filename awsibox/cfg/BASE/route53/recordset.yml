@@ -28,7 +28,6 @@ ECSLoadBalancerTargetInternal: &ecsloadbalancertargetinternal
 
 EFS: &efs
   <<: *zoneinternal
-  Condition: IBOX_LINKED_OBJ_NAME
   Name: Sub("efs-%s.%s" % (IBOX_LINKED_OBJ_INDEX, cfg.HostedZoneNamePrivate))
   ResourceRecords:
     - Sub("${%s}.efs.${AWS::Region}.amazonaws.com" % IBOX_LINKED_OBJ_NAME)
