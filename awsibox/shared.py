@@ -3,6 +3,7 @@ import troposphere.ssm as ssm
 import troposphere.policies as pol
 
 from .common import *
+from .RP import RP_to_cfg
 
 IBOX_SPECIAL_KEYS = (
     "IBOX_RESNAME",
@@ -763,15 +764,15 @@ def auto_get_props(
             if lo_for_cycle and lo_key in cfg.CFG_TO_FUNC:
                 # This way to create multiple resources based on an existing one
                 # Ex for any single RDS DBInstance create RecordSet External and Internal
-                louc_cfg = {}
+                # need to define it this way because later i pass the whole object to RP_to_cfg
+                louc_cfg = {lo_key: {}}
                 for lo_for_index in lo_for_cycle:
                     linked_obj_key_name = f"{lo_key}{lo_type}{lo_for_index}"
                     # get existing object
-                    linked_obj = getattr(cfg, linked_obj_key_name)
+                    linked_obj = copy.deepcopy(getattr(cfg, linked_obj_key_name))
                     # update it with config from IBOX_LINKED_OBJ Conf
                     linked_obj.update(lo_conf)
 
-                    linked_obj["IBOX_RESNAME"] = key.get("IBOX_RESNAME", IBOX_RESNAME)
                     linked_obj["IBOX_TITLE"] = f"{lo_resname}{lo_for_index}"
 
                     if "Condition" in key and not "Condition" in linked_obj:
@@ -781,11 +782,13 @@ def auto_get_props(
                         # need to update fixedvalues too
                         cfg.fixedvalues[linked_obj_key_name] = obj_condition
 
-                    # assign to louc_cfg
-                    louc_cfg[f"{lo_type}{lo_for_index}"] = linked_obj
+                    # assign to louc_cfg lo_key
+                    louc_cfg[lo_key][f"{lo_type}{lo_for_index}"] = linked_obj
 
+                # update cfg and fixedvalues
+                RP_to_cfg(louc_cfg)
                 # finally update cfg object base key with configuration including mutiple objects Ex. Route53RecordSet
-                getattr(cfg, lo_key).update(louc_cfg)
+                getattr(cfg, lo_key).update(louc_cfg[lo_key])
             else:
                 # This way to update a single named resource
                 # get existing object

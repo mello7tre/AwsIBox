@@ -10,6 +10,28 @@ from pprint import pprint, pformat
 from . import cfg
 
 
+def RP_to_cfg(key, prefix="", overwrite=True):
+    if hasattr(key, "items"):
+        for k, v in key.items():
+            # remove both * and + that can be present for special IBOX usage
+            key_name = f"{prefix}{k}".translate(
+                "".maketrans({"*": None, "+": None})
+            )
+            try:
+                getattr(cfg, key_name)
+                exist = True
+            except Exception:
+                exist = False
+            if not exist or overwrite:
+                setattr(cfg, key_name, v)
+                cfg.fixedvalues[key_name] = v
+            # recursively traverse dict
+            # keys name are the concatenation of traversed dict keys
+            if isinstance(v, dict):
+                for j, w in v.items():
+                    RP_to_cfg({f"{k}{j}": w}, prefix, overwrite)
+
+
 def build_RP():
     LD_INCLUDED = []
     LD_EXCLUDED = []
@@ -250,27 +272,6 @@ def build_RP():
                 return cfg
         except IOError:
             return {}
-
-    def RP_to_cfg(key, prefix="", overwrite=True):
-        if hasattr(key, "items"):
-            for k, v in key.items():
-                # remove both * and + that can be present for special IBOX usage
-                key_name = f"{prefix}{k}".translate(
-                    "".maketrans({"*": None, "+": None})
-                )
-                try:
-                    getattr(cfg, key_name)
-                    exist = True
-                except Exception:
-                    exist = False
-                if not exist or overwrite:
-                    setattr(cfg, key_name, v)
-                    cfg.fixedvalues[key_name] = v
-                # recursively traverse dict
-                # keys name are the concatenation of traversed dict keys
-                if isinstance(v, dict):
-                    for j, w in v.items():
-                        RP_to_cfg({f"{k}{j}": w}, prefix, overwrite)
 
     def inject_ibox_base(RP):
         base_key = "IBOX_BASE"
