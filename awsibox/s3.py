@@ -285,8 +285,6 @@ def S3_Buckets(key):
         )
 
         # resources
-        BucketPolicyStatement = []
-
         r_Bucket = S3Bucket(resname, key=v)
 
         Replica_Rules = []
@@ -294,11 +292,9 @@ def S3_Buckets(key):
             replica_name = f"{resname}ReplicationConfigurationRules{m}"
 
             # parameters
-            p_replicabucket = Parameter(f"{replica_name}DestinationBucket")
-            p_replicabucket.Description = (
-                "Replica Destination Bucket "
-                "- empty for default based on "
-                "Env/Roles/Region"
+            p_replicabucket = Parameter(
+                f"{replica_name}DestinationBucket",
+                Description="Replica Destination Bucket - empty for default based on Env/Roles/Region",
             )
             add_obj(p_replicabucket)
 
@@ -312,10 +308,9 @@ def S3_Buckets(key):
             )
 
             # resources
-            rule = s3.ReplicationConfigurationRules(replica_name)
+            rule = s3.ReplicationConfigurationRules(replica_name, Status="Enabled")
             auto_get_props(rule)
 
-            rule.Status = "Enabled"
             Replica_Rules.append(
                 If(f"{replica_name}DestinationBucket", rule, Ref("AWS::NoValue"))
             )
@@ -344,9 +339,14 @@ def S3_Buckets(key):
                 )
             )
 
-        r_Policy = S3BucketPolicy(f"BucketPolicy{name}", key=v)
-        r_Policy.Condition = resname
-        r_Policy.Bucket = Ref(resname)
+        BucketPolicyStatement = []
+
+        r_Policy = S3BucketPolicy(
+            f"BucketPolicy{name}",
+            key=v,
+            Condition=resname,
+            Bucket=Ref(resname),
+        )
         r_Policy.PolicyDocument["Statement"] = BucketPolicyStatement
 
         # At least one statement must be always present,
@@ -489,20 +489,15 @@ def S3_Buckets(key):
             )
 
             r_OriginAccessIdentity = CFOriginAccessIdentity(
-                identityresname, comment=identityname
+                identityresname, comment=identityname, Condition=identitycondname
             )
-            r_OriginAccessIdentity.Condition = identitycondname
 
-            add_obj(
-                [
-                    r_OriginAccessIdentity,
-                ]
-            )
+            add_obj(r_OriginAccessIdentity)
 
             # outputs
-            o_OriginAccessIdentity = Output(identityresname)
-            o_OriginAccessIdentity.Value = Ref(identityresname)
-            o_OriginAccessIdentity.Condition = identitycondname
+            o_OriginAccessIdentity = Output(
+                identityresname, Value=Ref(identityresname), Condition=identitycondname
+            )
 
             add_obj(o_OriginAccessIdentity)
 
