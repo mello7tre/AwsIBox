@@ -1,7 +1,7 @@
 IBoxLoader:
   - !include
-    - sns/topic.yml
-    - iam/base.yml
+    - sns/ibox_base.yml
+    - iam/ibox_base.yml
 
 global:
   Parameter:
