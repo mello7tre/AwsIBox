@@ -5,7 +5,8 @@ Base: &base
   IBOX_LINKED_OBJ:
     Key: Route53RecordSet
     Name: RecordSet
-    Conf: {}
+    Conf:
+      IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
     Type: RDS
     For: ["External", "Internal"]
   IBOX_PARAMETER:

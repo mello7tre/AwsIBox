@@ -49,7 +49,7 @@ RDS: &rds
         Value: Ref(IBOX_MAPNAME)
   Type: CNAME
   ResourceRecords:
-    - GetAtt(IBOX_RESNAME, 'Endpoint.Address')
+    - GetAtt(IBOX_LINKED_OBJ_NAME, 'Endpoint.Address')
   TTL: '300'
 
 CCH: &cch
