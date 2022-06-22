@@ -61,12 +61,13 @@ class LambdaPermissionLoadBalancing(LambdaPermission):
 
 class LambdaVersion(lbd.Version):
     def __init__(self, title, name, **kwargs):
-        super(LambdaVersion, self).__init__(title, **kwargs)
+        super().__init__(title, **kwargs)
         self.FunctionName = Ref(name)
 
 
 class LambdaFunction(lbd.Function):
-    def setup(self, key, name):
+    def __init__(self, title, key, name, **kwargs):
+        super().__init__(title, **kwargs)
         import_name = key.get("ImportName", name)
         if "Code" not in key:
             self.Code = lbd.Code()
@@ -80,6 +81,7 @@ class LambdaFunction(lbd.Function):
                 )
         auto_get_props(self)
         self.FunctionName = Sub("${AWS::StackName}-${EnvRole}-%s" % name)
+
         if "Handler" not in key:
             self.Handler = "index.lambda_handler"
         try:
@@ -119,8 +121,7 @@ class LambdaLayerVersionPermission(lbd.LayerVersionPermission):
 
 def LambdaLayers(value):
     # parameters
-    p_Layer = Parameter(value)
-    p_Layer.Description = value
+    p_Layer = Parameter(value, Description=value)
 
     add_obj(p_Layer)
 
@@ -128,8 +129,7 @@ def LambdaLayers(value):
     add_obj(get_condition(value, "not_equals", ""))
 
     # output
-    o_Layer = Output(value)
-    o_Layer.Value = get_endvalue(value, condition=True)
+    o_Layer = Output(value, Value=get_endvalue(value, condition=True))
 
     add_obj(o_Layer)
 
@@ -151,20 +151,13 @@ def LBD_Lambdas(key):
         else:
             s3keyname = f"{resname}CodeS3Key"
             # parameters
-            p_S3Key = Parameter(s3keyname)
-            p_S3Key.Description = f"S3Key Name for lambda {n} Code"
-
-            add_obj(p_S3Key)
+            add_obj(Parameter(s3keyname, Description=f"S3Key Name for lambda {n} Code"))
 
             # outputs
-            o_S3Key = Output(s3keyname)
-            o_S3Key.Value = get_endvalue(s3keyname)
-
-            add_obj(o_S3Key)
+            add_obj(Output(s3keyname, Value=get_endvalue(s3keyname)))
 
         # resources
-        r_Lambda = LambdaFunction(resname)
-        r_Lambda.setup(key=v, name=n)
+        r_Lambda = LambdaFunction(resname, key=v, name=n)
 
         if "Enabled" in v:
             # conditions
@@ -183,12 +176,13 @@ def LBD_Lambdas(key):
             versionnameB = f"{versionname}B"
 
             # parameters
-            p_Version = Parameter(versionname)
-            p_Version.Description = (
-                "LambdaVersion - change between A/B " "to force deploy new version"
+            p_Version = Parameter(
+                versionname,
+                Description="LambdaVersion - change between A/B "
+                "to force deploy new version",
+                AllowedValues=["", "A", "B"],
+                Default="",
             )
-            p_Version.AllowedValues = ["", "A", "B"]
-            p_Version.Default = ""
 
             add_obj(p_Version)
 
@@ -217,16 +211,20 @@ def LBD_Lambdas(key):
             add_obj([c_VersionA, c_VersionB, c_Version])
 
             # resources
-            r_VersionA = LambdaVersion(versionnameA, name=resname)
-            r_VersionA.Condition = versionnameA
+            r_VersionA = LambdaVersion(
+                versionnameA, name=resname, Condition=versionnameA
+            )
 
-            r_VersionB = LambdaVersion(versionnameB, name=resname)
-            r_VersionB.Condition = versionnameB
+            r_VersionB = LambdaVersion(
+                versionnameB, name=resname, Condition=versionnameB
+            )
 
             # outputs
-            o_Version = Output(versionname)
-            o_Version.Value = If(versionnameA, Ref(versionnameA), Ref(versionnameB))
-            o_Version.Condition = versionname
+            o_Version = Output(
+                versionname,
+                Value=If(versionnameA, Ref(versionnameA), Ref(versionnameB)),
+                Condition=versionname,
+            )
 
             add_obj([r_VersionA, r_VersionB, o_Version])
 
@@ -240,9 +238,9 @@ def LBD_Lambdas(key):
         add_obj(r_Lambda)
 
         if v.get("Export"):
-            O_Lambda = Output(resname)
-            O_Lambda.Value = GetAtt(resname, "Arn")
-            O_Lambda.Export = Export(resname)
+            O_Lambda = Output(
+                resname, Value=GetAtt(resname, "Arn"), Export=Export(resname)
+            )
 
             add_obj(O_Lambda)
 
@@ -259,25 +257,21 @@ def LBD_LayerVersions(key):
         else:
             s3keyname = f"{resname}ContentS3Key"
             # parameters
-            p_S3Key = Parameter(s3keyname)
-            p_S3Key.Description = f"S3Key Name for lambda {n} Content"
-
-            add_obj(p_S3Key)
+            add_obj(
+                Parameter(s3keyname, Description=f"S3Key Name for lambda {n} Content")
+            )
 
             # outputs
-            o_S3Key = Output(s3keyname)
-            o_S3Key.Value = get_endvalue(s3keyname)
-
-            add_obj(o_S3Key)
+            add_obj(Output(s3keyname, Value=get_endvalue(s3keyname)))
 
         # resources
         r_Layer = lbd.LayerVersion(resname)
         auto_get_props(r_Layer)
-        r_LayerPermission = LambdaLayerVersionPermission(f"LambdaLayerPermission{n}")
-        r_LayerPermission.LayerVersionArn = Ref(resname)
+        r_LayerPermission = LambdaLayerVersionPermission(
+            f"LambdaLayerPermission{n}", LayerVersionArn=Ref(resname)
+        )
 
         # output
-        o_Layer = Output(resname)
-        o_Layer.Value = Ref(resname)
+        o_Layer = Output(resname, Value=Ref(resname))
 
         add_obj([r_Layer, r_LayerPermission, o_Layer])
