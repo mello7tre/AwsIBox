@@ -743,13 +743,13 @@ def auto_get_props(
                 output = {"IBOX_OUTPUT": {f"{mapname}{name}": output_base}}
                 _try_PCO_in_obj(output)
 
-        def _linked_obj():
+        def _linked_obj(linked_obj):
             # need to parse it here to have the right IBOX_RESNAME value
-            lo_resname = parse_ibox_key(ibox_linked_obj.get("Name", ""))
-            lo_key = ibox_linked_obj.get("Key")
-            lo_conf = ibox_linked_obj.get("Conf", {})
-            lo_type = ibox_linked_obj.get("Type")
-            lo_for_cycle = ibox_linked_obj.get("For")
+            lo_resname = parse_ibox_key(linked_obj.get("Name", ""))
+            lo_key = linked_obj.get("Key")
+            lo_conf = linked_obj.get("Conf", {})
+            lo_type = linked_obj.get("Type")
+            lo_for_cycle = linked_obj.get("For")
 
             if lo_resname and "IBOX_RESNAME" not in lo_conf:
                 lo_conf["IBOX_RESNAME"] = lo_resname
@@ -795,7 +795,11 @@ def auto_get_props(
         # This way they can be enabled or their name can be changed, or so on...
         ibox_linked_obj = key.get("IBOX_LINKED_OBJ")
         if ibox_linked_obj:
-            _linked_obj()
+            if isinstance(ibox_linked_obj, list):
+                for linked_obj in ibox_linked_obj:
+                    _linked_obj(linked_obj)
+            else:
+                _linked_obj(ibox_linked_obj)
 
         for propname in dict(
             list(key.items()) + list(dict.fromkeys(props, None).items())

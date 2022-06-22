@@ -120,6 +120,8 @@ CLF_PATH_PATTERN_REPLACEMENT = {
     "_": "USCORE",
 }
 
+MERGE_RP_KEEP_AS_LIST = ("IBOX_LINKED_OBJ",)
+
 INSTANCE_SIZES = [
     "nano",
     "micro",

@@ -217,6 +217,9 @@ def build_RP():
             elif isinstance(RP.get(key), str) and RP[key] == "IBOX_SKIP_FUNC":
                 # if key need to be skipped using IBOX_SKIP_FUNC avoid overwriting it
                 pass
+            elif key in cfg.MERGE_RP_KEEP_AS_LIST and isinstance(data, list):
+                # this keys need to stay as a list of dicts
+                RP[key] = data
             else:
                 RP[key] = _recurse(data)
 
