@@ -19,6 +19,7 @@ class SNSSubscription(sns.SubscriptionResource):
         super().__init__(title, **kwargs)
         auto_get_props(self)
 
+
 ##
 
 
