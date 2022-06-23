@@ -1,0 +1,8 @@
+PermissionBase: &permission_base
+  IBOX_ENABLED: False
+  Action: "lambda:InvokeFunction"
+
+
+global:
+  LambdaPermission:
+    - IBOX_BASE: *permission_base

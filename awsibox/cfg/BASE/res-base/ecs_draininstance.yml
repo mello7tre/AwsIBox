@@ -46,6 +46,7 @@ global:
               PolicyName: ASGLifecycleHookECSDrainInstance
   SNSSubscription:
     - ECSDrainInstanceLambdaECSDrainInstance:
+        IBOX_SOURCE_OBJ: SNSSubscriptionLambda
         TopicArn: Ref('SNSTopicECSDrainInstance')
         Endpoint: GetAtt('LambdaECSDrainInstance', 'Arn')
         Protocol: lambda

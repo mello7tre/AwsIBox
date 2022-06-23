@@ -6,6 +6,8 @@ IBoxLoader: !include
   - cloudfront/for-services.yml
   - iam/parameterstore.yml
   - iam/instance-profile.yml
+  - sns/subscription.yml
+  - sqs/queue-policy.yml
 
 global:
   Parameter:

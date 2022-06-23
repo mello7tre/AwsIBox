@@ -108,6 +108,7 @@ EVAL_FUNCTIONS_IN_CFG = (
     "Tags(",
     "str(",
     "list(",
+    "getattr(",
     "SG_SecurityGroups",
 )
 
@@ -362,7 +363,11 @@ CFG_TO_FUNC = {
         "func": ("awslambda", "EventSourceMapping"),
     },
     "LambdaLayerVersion": {"module": "lambdas", "func": "LBD_LayerVersions"},
-    "LambdaPermission": {"module": "joker", "func": ("awslambda", "Permission")},
+    "LambdaPermission": {
+        "module": "joker",
+        "func": ("awslambda", "Permission"),
+        "dep": ["SNSSubscription"],
+    },
     "LoadBalancer": {
         "module": "elasticloadbalancing",
         "func": "LB_ElasticLoadBalancing",
@@ -402,7 +407,12 @@ CFG_TO_FUNC = {
         "func": ("servicediscovery", "Service"),
     },
     "SQSQueue": {"module": "joker", "func": ("sqs", "Queue")},
-    "SNSSubscription": {"module": "sns", "func": "SNS_Subscriptions"},
+    "SQSQueuePolicy": {
+        "module": "joker",
+        "func": ("sqs", "QueuePolicy"),
+        "dep": ["SNSSubscription"],
+    },
+    "SNSSubscription": {"module": "joker", "func": ("sns", "SubscriptionResource")},
     "SNSTopic": {"module": "joker", "func": ("sns", "Topic")},
     "TaskDefinition": {"module": "ecs", "func": "ECS_TaskDefinition"},
     "WafByteMatchSet": {

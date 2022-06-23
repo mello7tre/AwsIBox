@@ -1,0 +1,11 @@
+QueuePolicyBase: &queue_policy_base
+  IBOX_ENABLED: False
+  PolicyDocument:
+    Version: "2012-10-17"
+    Statement:
+      - IBOX_LIST:
+
+
+global:
+  SQSQueuePolicy:
+    - IBOX_BASE: *queue_policy_base

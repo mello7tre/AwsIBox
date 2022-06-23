@@ -1,0 +1,20 @@
+global:
+  SNSSubscription:
+    - SQS:
+        IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Name: str(f"{IBOX_INDEXNAME}".replace("SQS", "SNS"))
+          Key: SQSQueuePolicy
+          Type: SNS
+          Conf:
+            IBOX_LINKED_OBJ_NAME: getattr(cfg, f"{IBOX_RESNAME}Endpoint")
+            IBOX_LINKED_OBJ_INDEX: getattr(cfg, f"{IBOX_RESNAME}TopicArn")
+    - Lambda:
+        IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Name: str(f"{IBOX_INDEXNAME}".replace("Lambda", "SNS"))
+          Key: LambdaPermission
+          Type: SNS
+          Conf:
+            IBOX_LINKED_OBJ_NAME: getattr(cfg, f"{IBOX_RESNAME}Endpoint")
+            IBOX_LINKED_OBJ_INDEX: getattr(cfg, f"{IBOX_RESNAME}TopicArn")

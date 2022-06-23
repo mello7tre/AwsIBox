@@ -1,0 +1,16 @@
+global:
+  SQSQueuePolicy:
+    - SNS:
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - "SQS:SendMessage"
+                Condition:
+                  ArnEquals: {"aws:SourceArn": eval(IBOX_LINKED_OBJ_INDEX)}
+                Effect: Allow
+                Principal:
+                  AWS: "*"
+                Resource: "*"
+        Queues:
+          - 'Sub("https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${QueueId}", **{"QueueId": Select("5", Split(":", eval(IBOX_LINKED_OBJ_NAME)))})'

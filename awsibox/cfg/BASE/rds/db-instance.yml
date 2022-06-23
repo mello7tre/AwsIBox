@@ -6,6 +6,7 @@ Base: &base
     Key: Route53RecordSet
     Name: RecordSet
     Conf:
+      IBOX_TITLE: RecordSet
       IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
     Type: RDS
     For: ["External", "Internal"]
