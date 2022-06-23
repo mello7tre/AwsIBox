@@ -748,7 +748,7 @@ def auto_get_props(
 
         def _linked_obj(linked_obj_data):
             # need to parse it here to have the right IBOX_RESNAME value
-            lo_resname = parse_ibox_key(linked_obj_data.get("Name", ""))
+            lo_name = parse_ibox_key(linked_obj_data.get("Name", ""))
             lo_key = parse_ibox_key(linked_obj_data.get("Key", ""))
             lo_conf = linked_obj_data.get("Conf", {})
             lo_type = linked_obj_data.get("Type", "")
@@ -767,19 +767,14 @@ def auto_get_props(
                 louc_cfg = {lo_key: {}}
                 for lo_for_index in lo_for_cycle:
                     linked_obj_key_name = f"{lo_key}{lo_type}{lo_for_index}"
-                    target_name = f"{lo_resname}{lo_for_index}"
+                    target_name = f"{lo_name}{lo_for_index}"
                     # get existing object
                     linked_obj = copy.deepcopy(getattr(cfg, linked_obj_key_name))
                     # update it with config from IBOX_LINKED_OBJ Conf
                     linked_obj.update(lo_conf)
 
-                    if lo_resname and "IBOX_RESNAME" not in lo_conf:
-                        linked_obj["IBOX_RESNAME"] = f"{lo_key}{target_name}"
-
-                    lo_conf_title = lo_conf.get("IBOX_TITLE")
-                    if lo_conf_title:
-                        linked_obj["IBOX_TITLE"] = f"{lo_conf_title}{lo_for_index}"
-                        linked_obj["IBOX_RESNAME"] = f"{lo_conf_title}{lo_for_index}"
+                    lo_resname = lo_conf.get("IBOX_RESNAME", f"{lo_key}{lo_name}")
+                    linked_obj["IBOX_RESNAME"] = f"{lo_resname}{lo_for_index}"
 
                     if "Condition" in key and not "Condition" in linked_obj:
                         # automatically add Condition if source obj have it and target not
@@ -796,8 +791,8 @@ def auto_get_props(
                 pprint(getattr(cfg, lo_key))
             else:
                 # This way to update a single named resource
-                if lo_resname and "IBOX_RESNAME" not in lo_conf:
-                    lo_conf["IBOX_RESNAME"] = lo_resname
+                if lo_name and "IBOX_RESNAME" not in lo_conf:
+                    lo_conf["IBOX_RESNAME"] = lo_name
                 # get existing object
                 linked_obj = getattr(cfg, lo_key)
                 # update it with config from IBOX_LINKED_OBJ Conf
