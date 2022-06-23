@@ -8,7 +8,7 @@ def Joker(key, module, cls):
             continue
 
         parse_ibox_key_conf = {"IBOX_INDEXNAME": n}
-        mapname = None
+        mapname = ""
         resname = f"{key}{n}"
 
         # change resource name using key IBOX_RESNAME
@@ -17,9 +17,9 @@ def Joker(key, module, cls):
             mapname = resname
             resname = parse_ibox_key(ibox_resname, parse_ibox_key_conf)
 
-        # get and parse IBOX_LINKED_OBJ keys
-        linked_obj_name = parse_ibox_key(v.get("IBOX_LINKED_OBJ_NAME", ""))
-        linked_obj_index = parse_ibox_key(v.get("IBOX_LINKED_OBJ_INDEX", ""))
+        # get IBOX_LINKED_OBJ keys
+        linked_obj_name = v.get("IBOX_LINKED_OBJ_NAME", "")
+        linked_obj_index = v.get("IBOX_LINKED_OBJ_INDEX", "")
 
         mod = __import__(f"troposphere.{module}")
         my_module = getattr(mod, module)
