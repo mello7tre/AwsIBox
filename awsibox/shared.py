@@ -674,6 +674,8 @@ def auto_get_props(
             isinstance(prop_class, tuple)
             and isinstance(prop_class[0], type)
             and prop_class[0].__name__ == "dict"
+        ) or (
+            callable(prop_class) and prop_class.__name__ == "policytypes"
         ):
             return get_dictvalue(key[obj_propname])
 
@@ -749,11 +751,8 @@ def auto_get_props(
             lo_resname = parse_ibox_key(linked_obj_data.get("Name", ""))
             lo_key = parse_ibox_key(linked_obj_data.get("Key", ""))
             lo_conf = linked_obj_data.get("Conf", {})
-            lo_type = linked_obj_data.get("Type")
-            lo_for_cycle = linked_obj_data.get("For")
-
-            if lo_resname and "IBOX_RESNAME" not in lo_conf:
-                lo_conf["IBOX_RESNAME"] = lo_resname
+            lo_type = linked_obj_data.get("Type", "")
+            lo_for_cycle = linked_obj_data.get("For", [""])
 
             # for all lo_conf entries, if their value is a string parse it using parse_ibox_key
             for loc_entry_key, loc_entry_value in lo_conf.items():
@@ -761,19 +760,26 @@ def auto_get_props(
 
             lo_conf["IBOX_ENABLED"] = True
 
-            if lo_for_cycle and lo_key in cfg.CFG_TO_FUNC:
+            if lo_type and lo_key in cfg.CFG_TO_FUNC:
                 # This way to create multiple resources based on an existing one
                 # Ex for any single RDS DBInstance create RecordSet External and Internal
                 # need to define it this way because later i pass the whole object to RP_to_cfg
                 louc_cfg = {lo_key: {}}
                 for lo_for_index in lo_for_cycle:
                     linked_obj_key_name = f"{lo_key}{lo_type}{lo_for_index}"
+                    target_name = f"{lo_resname}{lo_for_index}"
                     # get existing object
                     linked_obj = copy.deepcopy(getattr(cfg, linked_obj_key_name))
                     # update it with config from IBOX_LINKED_OBJ Conf
                     linked_obj.update(lo_conf)
 
-                    linked_obj["IBOX_TITLE"] = f"{lo_resname}{lo_for_index}"
+                    if lo_resname and "IBOX_RESNAME" not in lo_conf:
+                        linked_obj["IBOX_RESNAME"] = f"{lo_key}{target_name}"
+
+                    lo_conf_title = lo_conf.get("IBOX_TITLE")
+                    if lo_conf_title:
+                        linked_obj["IBOX_TITLE"] = f"{lo_conf_title}{lo_for_index}"
+                        linked_obj["IBOX_RESNAME"] = f"{lo_conf_title}{lo_for_index}"
 
                     if "Condition" in key and not "Condition" in linked_obj:
                         # automatically add Condition if source obj have it and target not
@@ -781,14 +787,17 @@ def auto_get_props(
                         linked_obj["Condition"] = obj_condition
 
                     # assign to louc_cfg lo_key
-                    louc_cfg[lo_key][f"{lo_type}{lo_for_index}"] = linked_obj
+                    louc_cfg[lo_key][target_name] = linked_obj
 
                 # update cfg and fixedvalues
                 RP_to_cfg(louc_cfg)
                 # finally update cfg object base key with configuration including mutiple objects Ex. Route53RecordSet
                 getattr(cfg, lo_key).update(louc_cfg[lo_key])
+                pprint(getattr(cfg, lo_key))
             else:
                 # This way to update a single named resource
+                if lo_resname and "IBOX_RESNAME" not in lo_conf:
+                    lo_conf["IBOX_RESNAME"] = lo_resname
                 # get existing object
                 linked_obj = getattr(cfg, lo_key)
                 # update it with config from IBOX_LINKED_OBJ Conf
@@ -984,6 +993,8 @@ def clf_compute_order(pattern):
 def parse_ibox_key(value, conf={}):
     if not isinstance(value, str):
         return value
+    if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+        return eval(value)
     for key in IBOX_SPECIAL_KEYS:
         if key in value:
             if key in conf:
