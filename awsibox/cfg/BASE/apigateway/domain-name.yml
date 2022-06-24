@@ -1,9 +1,10 @@
 Base: &base
   IBOX_ENABLED: False
   IBOX_LINKED_OBJ:
-    Key: Route53RecordSetApiGatewayDomainName.IBOX_INDEXNAME
-    Name: RecordSet.IBOX_RESNAME 
-    Conf: {}
+    Key: Route53RecordSet
+    Type: ApiGatewayDomainName.IBOX_INDEXNAME
+    Conf:
+      IBOX_RESNAME: RecordSet.IBOX_RESNAME
   IBOX_OUTPUT:
     - _:
         Value: Ref(IBOX_RESNAME)

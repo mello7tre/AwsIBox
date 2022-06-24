@@ -4,7 +4,6 @@ Base: &base
   IBOX_ENABLED: False
   IBOX_LINKED_OBJ:
     Key: Route53RecordSet
-    Name: RecordSet
     Conf:
       IBOX_RESNAME: RecordSet
       IBOX_LINKED_OBJ_NAME: IBOX_RESNAME

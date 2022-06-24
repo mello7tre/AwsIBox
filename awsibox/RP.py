@@ -10,7 +10,7 @@ from pprint import pprint, pformat
 from . import cfg
 
 
-def RP_to_cfg(key, prefix="", overwrite=True):
+def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
     if hasattr(key, "items"):
         for k, v in key.items():
             # remove both * and + that can be present for special IBOX usage
@@ -24,7 +24,8 @@ def RP_to_cfg(key, prefix="", overwrite=True):
                 exist = False
             if not exist or overwrite:
                 setattr(cfg, key_name, v)
-                cfg.fixedvalues[key_name] = v
+                if key_name not in mappedvalues:
+                    cfg.fixedvalues[key_name] = v
             # recursively traverse dict
             # keys name are the concatenation of traversed dict keys
             if isinstance(v, dict):

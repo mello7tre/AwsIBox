@@ -196,62 +196,50 @@ EC2RouteTable:
 (A dot can be used to separate a _normal_ string from the `IBOX_INDEXNAME` one, it's simply used to better read it, during processing any `.` will be removed.)
 
 #### IBOX\_LINKED\_OBJ
-###### Change an existing single object
-Can be used to _enable_ a resource normally disabled by `IBOX_ENABLE` or to inject a custom configuration in another resource.\
+Can be used to update or create configuration keys of main, root level, objects.\
 The resource to be changed must include a `dep` key in `CFG_TO_FUNC` with dependency on the resource where is used, because it need to be processed later.\
-It's value is a dict where `Key` represent the resource mapname to be changed, `Name`, if present, the `IBOX_RESNAME` of the changed resource and `Conf` is a dict used to update the changed resource current configuration.\
-Ex:
+It's value is a dict where:\
+`Key` represent the name of the _root key_ for the resource object (Ex. Route53RecordSet)\
+`Type` represent the name of the object to be updated or, if creating a new one, the source object from which copy the configuration\
+`Conf` contains conf keys used to update the object\
+`For` is a list of object name to create\
+`Name` represent the name of object to create, if missing default to `IBOX_RESNAME`\
+
+Final object name will be: `Key` + `Name` + `For`index\
+Ex: updating an existing object
 ```
 ApiGatewayDomainName:
   - Regional:
-      IBOX_ENABLED: True
-      IBOX_ENABLED: False
       IBOX_LINKED_OBJ:
-        Key: R53RecordSetApiGatewayDomainName.IBOX_INDEXNAME
-        Name: RecordSet.IBOX_RESNAME
+        Key: Route53RecordSet
+        Type: ApiGatewayDomainName.IBOX_INDEXNAME
         Conf:
-          IBOX_ENABLED: True
-      IBOX_OUTPUT:
-        - _:
-            Value: Ref(IBOX_RESNAME)
-            Export: Export(IBOX_RESNAME)
+          IBOX_RESNAME: RecordSet.IBOX_RESNAME
       DomainName: Sub('api.%s' % cfg.HostedZoneNameRegionEnv)
       EndpointConfiguration:
         Types:
           - 'REGIONAL'
       RegionalCertificateArn: get_endvalue('RegionalCertificateArn')
+```
+Will update existing resource under key `Route53RecordSet` named `ApiGatewayDomainNameRegional`.\
+`IBOX_RESNAME` key in `Conf` will force resource to be name `RecordSetApiGatewayDomainNameRegional`.\
+Without it it will be named `Route53RecordSetApiGatewayDomainNameRegional`.\
 
+Ex: creating multiple objects:
 ```
-In resource `R53RecordSetApiGatewayDomainNameRegional` will be added the properties keys:
+RDSDBInstance:
+  - Base:
+      IBOX_LINKED_OBJ:
+        Key: Route53RecordSet
+        Conf:
+          IBOX_RESNAME: RecordSet
+          IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+        Type: RDS
+        For: ["External", "Internal"]
 ```
-IBOX_RESNAME: RecordSetApiGatewayDomainNameRegional
-IBOX_ENABLED: True
-```
-###### Create multiple objects from already existings ones
-Can also be used to create multiple resource from a single one.\
-As example, you want to create two RecordSet, _External_ and _Internal_, for every resource of type DBInstance.\
-You define a configuration for RecordSet resources to use for RDS External and Internal.\
-And use `IBOX_LINKED_OBJ` inside the _DBInstance_ configuration.
-Ex:
-```
-IBOX_LINKED_OBJ:
-  Key: Route53RecordSet
-  Name: RecordSet
-  Conf: {}
-  Type: RDS
-  For: ["External", "Internal"]
-
-```
-For any value in `For`, look for a already defined object named liked `Route53RecordSet` + `RDS` + `For` _value_ and use its' configuration  for a new object named `TYPE` + `For` _value_.\
-Enable it setting `IBOX_ENABLED` to _True_.\
-Update it using `Conf`.\
-Change the object `IBOX_RESNAME` key to `IBOX_RESNAME` value, the one of the _DBInstance_.\
-And finally create/update an `IBOX_TITLE` key with value `Name` + `For` _value_.
-
-In the above example, if having multiple DBInstance alls of them should have RecordSet with the same name and should overwrite it each other.\
-A better example should be using a value for name `Name` like: `Name: IBOX_RESNAME` or `Name: RecordSet.IBOX_INDEXNAME`.
-
-Can be subject to change.
+Will create multiple resource under key `Route53RecordSet` named `RDSDBInstanceBaseExternal` and `RDSDBInstanceBaseExternal`.\
+They will be based on existing resource under `Route53RecordSet` named `RDSExternal` and `RDSInternal`.\
+Their final name will be `RecordSetExternal` and `RecordSetInternal`.
 
 #### IBOX\_LINKED\_OBJ\_NAME
 Can be used inside `IBOX_LINKED_OBJ` Conf key to propagate a value parsed in the _main_ object to the _linked_ object.\
