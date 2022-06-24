@@ -20,8 +20,6 @@ from . import (
     rds,
     s3,
     securitygroup,
-    sns,
-    sqs,
     waf,
 )
 

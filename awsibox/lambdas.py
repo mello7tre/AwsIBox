@@ -36,14 +36,6 @@ class LambdaPermissionS3(LambdaPermission):
         self.SourceArn = Sub("arn:aws:s3:::%s" % source)
 
 
-class LambdaPermissionSNS(LambdaPermission):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Principal = "sns.amazonaws.com"
-        self.FunctionName = eval(key["Endpoint"])
-        self.SourceArn = eval(key["TopicArn"])
-
-
 class LambdaPermissionApiGateway(LambdaPermission):
     def __init__(self, title, name, source, **kwargs):
         super().__init__(title, **kwargs)
