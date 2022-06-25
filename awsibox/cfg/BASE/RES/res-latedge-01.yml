@@ -1,5 +1,14 @@
 global:
   StackName: r-latedge-01
+  IAMRole:
+    - Lambda:
+        AssumeRolePolicyDocument:
+          Statement:
+            - 1:
+                Principal:
+                  Service:
+                    - lambda.amazonaws.com
+                    - edgelambda.amazonaws.com
   Lambda:
     - AtEdgeAddHeaders:
         AtEdge: True

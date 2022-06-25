@@ -3,5 +3,6 @@ IBoxLoader:
     - s3/bucket.yml
     - sns/subscription.yml
     - lambda/permission.yml
+    - iam/role.yml
 
 global:

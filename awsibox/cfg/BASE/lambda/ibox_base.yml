@@ -2,7 +2,17 @@ PermissionBase: &permission_base
   IBOX_ENABLED: False
   Action: "lambda:InvokeFunction"
 
+FunctionBase: &function_base
+  IBOX_ENABLED: True
+  IBOX_LINKED_OBJ:
+    Key: IAMRole
+    Type: Lambda
+    Conf:
+      IBOX_RESNAME: Role.IBOX_RESNAME
+
 
 global:
   LambdaPermission:
     - IBOX_BASE: *permission_base
+  Lambda:
+    - IBOX_BASE: *function_base

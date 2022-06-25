@@ -1,0 +1,8 @@
+global:
+  IAMRole:
+    - Lambda:
+        IBOX_ENABLED: False
+        Principal: lambda.amazonaws.com
+        ManagedPolicyArns:
+          - "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+          - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"

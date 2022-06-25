@@ -71,7 +71,16 @@ class LambdaFunction(lbd.Function):
                     f"or create file lib/lambas/{import_name}.code "
                     'with lambda code to execute.")'
                 )
-        auto_get_props(self)
+
+        if "Enabled" in key:
+            # conditions
+            add_obj(get_condition(title, "equals", "yes", f"{title}Enabled"))
+            # Need to do it this way so that linked obj "see" the Condition key
+            self.Condition = title
+            getattr(cfg, title)["Condition"] = title
+            getattr(cfg, "mappedvalues").append(f"{title}Condition")
+
+        auto_get_props(self, indexname=name)
         self.FunctionName = Sub("${AWS::StackName}-${EnvRole}-%s" % name)
 
         if "Handler" not in key:
@@ -80,10 +89,6 @@ class LambdaFunction(lbd.Function):
             getattr(self, "Role")
         except Exception:
             self.Role = GetAtt(f"RoleLambda{name}", "Arn")
-
-        if all(k in key for k in ["SecurityGroupIds", "SubnetIds"]):
-            self.VpcConfig = lbd.VPCConfig("")
-            auto_get_props(self.VpcConfig, self.title)
 
         # Variables - skip if atEdge - always set Env, EnvRole
         try:
@@ -151,12 +156,6 @@ def LBD_Lambdas(key):
         # resources
         r_Lambda = LambdaFunction(resname, key=v, name=n)
 
-        if "Enabled" in v:
-            # conditions
-            add_obj(get_condition(resname, "equals", "yes", f"{resname}Enabled"))
-
-            r_Lambda.Condition = resname
-
         if "Layers" in v:
             r_Lambda.Layers = []
             for i, j in enumerate(v["Layers"]):
@@ -220,12 +219,12 @@ def LBD_Lambdas(key):
 
             add_obj([r_VersionA, r_VersionB, o_Version])
 
-        if not v.get("SkipRole"):
-            # Automatically setup a lambda Role with base permissions.
-            r_Role = IAMRoleLambdaBase(f"Role{resname}", key=v)
-            if hasattr(r_Lambda, "Condition"):
-                r_Role.Condition = r_Lambda.Condition
-            add_obj(r_Role)
+        #if not v.get("SkipRole"):
+        #    # Automatically setup a lambda Role with base permissions.
+        #    r_Role = IAMRoleLambdaBase(f"Role{resname}", key=v)
+        #    if hasattr(r_Lambda, "Condition"):
+        #        r_Role.Condition = r_Lambda.Condition
+        #    add_obj(r_Role)
 
         add_obj(r_Lambda)
 
