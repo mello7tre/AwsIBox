@@ -1,29 +1,42 @@
 global:
-  IAMPolicyInRole:
-    - LambdaECSDrainInstance:
-        Statement:
+  IAMRole:
+    - LambdaECSDrainInstance: &iamrole_lambda_ecs_drain_instances_policies
+        Policies:
           - 1:
-              Action: 'autoscaling:CompleteLifecycleAction'
-              Resource: '*'
-          - 2:
-              Action:
-                - 'ecs:ListContainerInstances'
-                - 'ecs:ListTasks'
-                - 'ecs:DescribeTasks'
-              Resource: '*'
-          - 3:
-              Action:
-                - 'ecs:DescribeContainerInstances'
-                - 'ecs:UpdateContainerInstancesState'
-              Resource: '*'
-          - 4:
-              Action: 'sns:Publish'
-              Resource: Ref('SNSTopicECSDrainInstance')
-          - 5:
-              Action: 'cloudformation:ListExports'
-              Resource: '*'
+              PolicyDocument:
+                Statement:
+                  - IBOX_LIST:
+                  - LifeCycle:
+                      Action: 'autoscaling:CompleteLifecycleAction'
+                      Effect: Allow
+                      Resource: '*'
+                  - ecs1:
+                      Action:
+                        - 'ecs:ListContainerInstances'
+                        - 'ecs:ListTasks'
+                        - 'ecs:DescribeTasks'
+                      Effect: Allow
+                      Resource: '*'
+                  - ecs2:
+                      Action:
+                        - 'ecs:DescribeContainerInstances'
+                        - 'ecs:UpdateContainerInstancesState'
+                      Effect: Allow
+                      Resource: '*'
+                  - sns:
+                      Action: 'sns:Publish'
+                      Effect: Allow
+                      Resource: Ref('SNSTopicECSDrainInstance')
+                  - clf:
+                      Action: 'cloudformation:ListExports'
+                      Effect: Allow
+                      Resource: '*'
+                Version: '2012-10-17'
+              PolicyName: LambdaECSDrainInstance
   Lambda:
     - ECSDrainInstance:
+        IBOX_LINKED_OBJ:
+          Conf: *iamrole_lambda_ecs_drain_instances_policies
         Description: 'Gracefully drain ECS tasks from EC2 instances before the instances are terminated by autoscaling.'
         MemorySize: 128
         Runtime: python3.9
