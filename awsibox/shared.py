@@ -778,10 +778,10 @@ def auto_get_props(
                 lo_resname = lo_conf.get("IBOX_RESNAME", f"{lo_key}{lo_name}")
                 linked_obj["IBOX_RESNAME"] = f"{lo_resname}{lo_for_index}"
 
-                if "Condition" in key and not "Condition" in linked_obj:
+                condition = key.get("Condition", getattr(obj, "Condition", None))
+                if condition and not "Condition" in linked_obj:
                     # automatically add Condition if source obj have it and target not
-                    obj_condition = parse_ibox_key(key["Condition"])
-                    linked_obj["Condition"] = obj_condition
+                    linked_obj["Condition"] = parse_ibox_key(condition)
 
                 # assign to louc_cfg lo_key
                 louc_cfg[target_name] = linked_obj

@@ -75,10 +75,7 @@ class LambdaFunction(lbd.Function):
         if "Enabled" in key:
             # conditions
             add_obj(get_condition(title, "equals", "yes", f"{title}Enabled"))
-            # Need to do it this way so that linked obj "see" the Condition key
             self.Condition = title
-            getattr(cfg, title)["Condition"] = title
-            getattr(cfg, "mappedvalues").append(f"{title}Condition")
 
         auto_get_props(self, indexname=name)
         self.FunctionName = Sub("${AWS::StackName}-${EnvRole}-%s" % name)
