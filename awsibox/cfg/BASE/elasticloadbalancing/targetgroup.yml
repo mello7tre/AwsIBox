@@ -59,6 +59,10 @@ ECS: &ecs
   TargetType: If('NetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))
 
 ALB: &alb
+  IBOX_OUTPUT:
+    - TargetGroupServiceUnavailable.IBOX_INDEXNAME:
+        Value: Ref(f"TargetGroupServiceUnavailable{IBOX_INDEXNAME}")
+  Condition: str(f"LoadBalancerApplication{IBOX_INDEXNAME}")
   Targets:
     - ServiceUnavailable:
         Id: get_expvalue(f'LambdaServiceUnavailableArn')

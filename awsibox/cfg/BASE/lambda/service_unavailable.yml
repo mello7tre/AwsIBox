@@ -12,6 +12,11 @@ global:
         Variables:
           - RCode: 503
           - Bucket: Sub(cfg.BucketNameAppData)
+  LambdaPermission:
+    - ServiceUnavailable:
+        IBOX_ENABLED: True
+        FunctionName: GetAtt('LambdaServiceUnavailable', 'Arn')
+        Principal: "elasticloadbalancing.amazonaws.com"
   IAMPolicy:
     - ServiceUnavailable:
         Roles:

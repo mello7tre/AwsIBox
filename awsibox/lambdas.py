@@ -43,19 +43,6 @@ class LambdaPermissionApiGateway(LambdaPermission):
         self.SourceArn = source
 
 
-class LambdaPermissionLoadBalancing(LambdaPermission):
-    def __init__(self, title, name, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Principal = "elasticloadbalancing.amazonaws.com"
-        self.FunctionName = name
-
-
-class LambdaVersion(lbd.Version):
-    def __init__(self, title, name, **kwargs):
-        super().__init__(title, **kwargs)
-        self.FunctionName = Ref(name)
-
-
 class LambdaFunction(lbd.Function):
     def __init__(self, title, key, name, **kwargs):
         super().__init__(title, **kwargs)
@@ -105,17 +92,9 @@ class LambdaFunction(lbd.Function):
                 )
 
 
-class LambdaLayerVersionPermission(lbd.LayerVersionPermission):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Action = "lambda:GetLayerVersion"
-        self.Principal = Ref("AWS::AccountId")
-
-
 def LambdaLayers(value):
     # parameters
     p_Layer = Parameter(value, Description=value)
-
     add_obj(p_Layer)
 
     # condition
@@ -123,7 +102,6 @@ def LambdaLayers(value):
 
     # output
     o_Layer = Output(value, Value=get_endvalue(value, condition=True))
-
     add_obj(o_Layer)
 
     return o_Layer.Value
@@ -198,12 +176,12 @@ def LBD_Lambdas(key):
             add_obj([c_VersionA, c_VersionB, c_Version])
 
             # resources
-            r_VersionA = LambdaVersion(
-                versionnameA, name=resname, Condition=versionnameA
+            r_VersionA = lbd.Version(
+                versionnameA, FunctionName=Ref(resname), Condition=versionnameA
             )
 
-            r_VersionB = LambdaVersion(
-                versionnameB, name=resname, Condition=versionnameB
+            r_VersionB = lbd.Version(
+                versionnameB, FunctionName=Ref(resname), Condition=versionnameB
             )
 
             # outputs
@@ -254,8 +232,11 @@ def LBD_LayerVersions(key):
         # resources
         r_Layer = lbd.LayerVersion(resname)
         auto_get_props(r_Layer)
-        r_LayerPermission = LambdaLayerVersionPermission(
-            f"LambdaLayerPermission{n}", LayerVersionArn=Ref(resname)
+        r_LayerPermission = lbd.LayerVersionPermission(
+            f"LambdaLayerPermission{n}",
+            LayerVersionArn=Ref(resname),
+            Action="lambda:GetLayerVersion",
+            Principal=Ref("AWS::AccountId"),
         )
 
         # output

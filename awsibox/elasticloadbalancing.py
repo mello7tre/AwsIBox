@@ -14,7 +14,6 @@ from .shared import (
 )
 from .route53 import R53_RecordSetEC2LoadBalancer, R53_RecordSetECSLoadBalancer
 from .securitygroup import SecurityGroupIngressInstanceELBPorts
-from .lambdas import LambdaPermissionLoadBalancing
 
 
 # Temporary fix for https://github.com/cloudtools/troposphere/issues/1474
@@ -336,31 +335,16 @@ def LB_TargetGroupsECS():
 
 
 def LB_TargetGroupsALB():
-    lambda_name = "ServiceUnavailable"
-    lambda_arn = get_expvalue(f"Lambda{lambda_name}Arn")
-    perm_name = f"LambdaPermission{lambda_name}LoadBalancerApplication"
-
     for n in cfg.ElasticLoadBalancingV2TargetGroupALB:
         # resources
         if n not in cfg.LoadBalancer:
             continue
         r_TG = elbv2.TargetGroup(f"TargetGroupServiceUnavailable{n}")
-        auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupALB{n}")
-        r_TG.DependsOn = f"{perm_name}{n}"
-        r_TG.Condition = f"LoadBalancerApplication{n}"
-
-        r_LambdaPermission = LambdaPermissionLoadBalancing(
-            f"{perm_name}{n}", name=lambda_arn
-        )
-        r_LambdaPermission.Condition = f"LoadBalancerApplication{n}"
-
-        o_TargetGroup = Output(
-            f"TargetGroupServiceUnavailable{n}",
-            Condition=f"LoadBalancerApplication{n}",
-            Value=Ref(f"TargetGroupServiceUnavailable{n}"),
+        auto_get_props(
+            r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupALB{n}", indexname=n
         )
 
-        add_obj([r_TG, r_LambdaPermission, o_TargetGroup])
+        add_obj(r_TG)
 
 
 def LB_ElasticLoadBalancingClassicEC2():
