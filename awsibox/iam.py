@@ -112,22 +112,6 @@ def IAMPolicyStatement(key):
     return Statement
 
 
-def IAMPolicyApiGatewayPrivate():
-    policy = {
-        "Statement": [
-            {
-                "Action": "execute-api:Invoke",
-                "Effect": "Allow",
-                "Principal": "*",
-                "Resource": "execute-api:/*",
-            }
-        ],
-        "Version": "2012-10-17",
-    }
-
-    return policy
-
-
 def IAM_Users(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"  # Ex. IAMUserPincoPalla

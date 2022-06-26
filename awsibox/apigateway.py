@@ -12,7 +12,6 @@ from .shared import (
     add_obj,
 )
 from .lambdas import LambdaPermissionApiGateway
-from .iam import IAMPolicyApiGatewayPrivate
 
 
 class ApiGatewayResource(agw.Resource):
@@ -198,7 +197,6 @@ def AGW_RestApi(key):
     # Resources
     R_RestApi = agw.RestApi("ApiGatewayRestApi")
     auto_get_props(R_RestApi, f"{key}Base")
-    R_RestApi.Policy = IAMPolicyApiGatewayPrivate()
 
     try:
         condition = cfg.PolicyCondition

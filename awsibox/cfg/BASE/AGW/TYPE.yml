@@ -17,6 +17,15 @@ global:
           Types:
             - REGIONAL
         Name: 'Api-Gateway Name is missing'
+        Policy:
+          Statement:
+            - IBOX_LIST:
+            - 1:
+                Action: "execute-api:Invoke"
+                Effect: Allow
+                Principal: '*'
+                Resource: "execute-api:/*"
+          Version: "2012-10-17"
   CloudFront: 'yes'
   CloudFrontAliasExtra:
     - Cdn: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv)
