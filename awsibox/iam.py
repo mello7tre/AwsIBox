@@ -95,24 +95,6 @@ class IAMRoleUser(iam.Role):
         self.Path = "/"
 
 
-class IAMRoleBucketReplica(iam.Role):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Condition = self.title.replace("Role", "")
-        self.Path = "/"
-        self.AssumeRolePolicyDocument = {
-            "Statement": [
-                {
-                    "Action": "sts:AssumeRole",
-                    "Effect": "Allow",
-                    "Principal": {"Service": ["s3.amazonaws.com"]},
-                }
-            ],
-            "Version": "2012-10-17",
-        }
-
-
 # ############################################
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################

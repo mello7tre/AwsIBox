@@ -348,7 +348,11 @@ CFG_TO_FUNC = {
     "IAMInstanceProfile": {"module": "joker", "func": ("iam", "InstanceProfile")},
     "IAMManagedPolicy": {"module": "joker", "func": ("iam", "ManagedPolicy")},
     "IAMPolicy": {"module": "joker", "func": ("iam", "PolicyType")},
-    "IAMRole": {"module": "joker", "func": ("iam", "Role"), "dep": ["Lambda"]},
+    "IAMRole": {
+        "module": "joker",
+        "func": ("iam", "Role"),
+        "dep": ["Lambda", "Bucket"],
+    },
     "IAMUser": {"module": "iam", "func": "IAM_Users"},
     "IAMUserToGroupAddition": {"module": "iam", "func": "IAM_UserToGroupAdditions"},
     "KMSAlias": {"module": "joker", "func": ("kms", "Alias")},

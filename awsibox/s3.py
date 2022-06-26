@@ -11,7 +11,7 @@ from .shared import (
     add_obj,
     get_dictvalue,
 )
-from .iam import IAMRoleBucketReplica, IAMPolicyBucketReplica, IAMPolicyStatement
+from .iam import IAMPolicyBucketReplica, IAMPolicyStatement
 from .cloudfront import CFOriginAccessIdentity
 from .lambdas import LambdaPermissionS3
 
@@ -357,8 +357,6 @@ def S3_Buckets(key):
             S3BucketPolicyStatementReplica(resname, PolicyStatementReplicaResources)
         )
 
-        r_Role = IAMRoleBucketReplica(f"Role{resname}Replica")
-
         BucketPolicyStatement.extend(
             S3BucketPolicyStatementRead(resname, PolicyReadPrincipal)
         )
@@ -501,7 +499,7 @@ def S3_Buckets(key):
 
             add_obj(o_OriginAccessIdentity)
 
-        add_obj([r_Bucket, r_Policy, r_IAMPolicyReplica, r_Role])
+        add_obj([r_Bucket, r_Policy, r_IAMPolicyReplica])
 
         # outputs
         o_Bucket = Output(resname)
