@@ -215,7 +215,7 @@ def LBD_Lambdas(key):
 
             add_obj([r_VersionA, r_VersionB, o_Version])
 
-        #if not v.get("SkipRole"):
+        # if not v.get("SkipRole"):
         #    # Automatically setup a lambda Role with base permissions.
         #    r_Role = IAMRoleLambdaBase(f"Role{resname}", key=v)
         #    if hasattr(r_Lambda, "Condition"):

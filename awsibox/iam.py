@@ -25,22 +25,6 @@ class IAMUser(iam.User):
         )
 
 
-class IAMGroup(iam.Group):
-    def __init__(self, title, key, name, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Condition = self.title
-        self.GroupName = name
-
-
-class IAMUserToGroupAddition(iam.UserToGroupAddition):
-    def __init__(self, title, key, name, **kwargs):
-        super().__init__(title, **kwargs)
-
-        # self.Condition = name
-        self.GroupName = name
-
-
 class IAMPolicyBucketReplica(iam.PolicyType):
     def __init__(self, title, bucket, bucket_name, mapname, key, **kwargs):
         super().__init__(title, **kwargs)
@@ -254,8 +238,8 @@ def IAM_UserToGroupAdditions(key):
             )
 
         # resources
-        r_GroupAdd = IAMUserToGroupAddition(
-            f"IAMUserToGroupAddition{n}", key=v, name=n, Users=Users
+        r_GroupAdd = iam.UserToGroupAddition(
+            f"IAMUserToGroupAddition{n}", GroupName=n, Users=Users
         )
 
         add_obj([r_GroupAdd])
@@ -279,6 +263,11 @@ def IAM_Groups(key):
                 ManagedPolicyArns.append(ImportValue(f"IAMPolicy{m}"))
 
         # resources
-        r_Group = IAMGroup(resname, key=v, name=n, ManagedPolicyArns=ManagedPolicyArns)
+        r_Group = iam.Group(
+            resname,
+            GroupName=n,
+            Condition=resname,
+            ManagedPolicyArns=ManagedPolicyArns,
+        )
 
         add_obj([r_Group])

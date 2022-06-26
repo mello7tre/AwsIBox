@@ -14,9 +14,7 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
     if hasattr(key, "items"):
         for k, v in key.items():
             # remove both * and + that can be present for special IBOX usage
-            key_name = f"{prefix}{k}".translate(
-                "".maketrans({"*": None, "+": None})
-            )
+            key_name = f"{prefix}{k}".translate("".maketrans({"*": None, "+": None}))
             try:
                 getattr(cfg, key_name)
                 exist = True
