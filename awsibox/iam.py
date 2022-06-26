@@ -87,22 +87,6 @@ class IAMPolicyBucketReplica(iam.PolicyType):
         self.Roles = [Ref(f"Role{self.Condition}")]  # Ex. RoleBucketImagesReplica
 
 
-class IAMRoleIBox(iam.Role):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        # Trick to add a policy from cfg/yml
-        # to a role created from code (Ex. LambdaRoles)
-        try:
-            cfg.IAMPolicyInRole
-        except Exception:
-            pass
-        else:
-            for n, v in cfg.IAMPolicyInRole.items():
-                if self.title.endswith(n):
-                    self.Policies = [IAMPolicyInRole(n, v)]
-                    break
-
-
 class IAMRoleUser(iam.Role):
     def __init__(self, title, key, resnameuser, **kwargs):
         super().__init__(title, **kwargs)
@@ -127,37 +111,6 @@ class IAMRoleUser(iam.Role):
         self.Path = "/"
 
 
-class IAMRoleLambdaBase(IAMRoleIBox):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Path = "/"
-        self.ManagedPolicyArns = [
-            "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess",
-            "arn:aws:iam::aws:policy/service-role/" "AWSLambdaVPCAccessExecutionRole",
-        ]
-        if "RoleManagedPolicyArns" in key:
-            self.ManagedPolicyArns.extend(
-                get_endvalue("RoleManagedPolicyArns", fixedvalues=key)
-            )
-        self.AssumeRolePolicyDocument = {
-            "Statement": [
-                {
-                    "Action": "sts:AssumeRole",
-                    "Principal": {
-                        "Service": [
-                            "lambda.amazonaws.com",
-                            "edgelambda.amazonaws.com"
-                            if "AtEdge" in key
-                            else Ref("AWS::NoValue"),
-                        ]
-                    },
-                    "Effect": "Allow",
-                }
-            ]
-        }
-
-
 class IAMRoleBucketReplica(iam.Role):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -179,16 +132,6 @@ class IAMRoleBucketReplica(iam.Role):
 # ############################################
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################
-
-
-def IAMPolicyInRole(name, key):
-    Policy = iam.Policy("", PolicyName=name, PolicyDocument={"Version": "2012-10-17"})
-    Statement = []
-    for n, v in key["Statement"].items():
-        Statement.append(IAMPolicyStatement(v))
-    Policy.PolicyDocument["Statement"] = Statement
-
-    return Policy
 
 
 def IAMPolicyStatement(key):

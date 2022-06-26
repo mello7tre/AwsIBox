@@ -1,5 +1,7 @@
 IBoxLoader: !include
   - cloudfront/for-services.yml
+  - lambda/permission.yml
+  - iam/role.yml
 
 global:
   Output:

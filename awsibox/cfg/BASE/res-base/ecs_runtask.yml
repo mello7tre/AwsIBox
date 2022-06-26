@@ -1,28 +1,29 @@
+PoliciesLambdaECSRunTask: &policies_iamrole_lamba_ecs_runtask
+  Policies:
+    - 1:
+        PolicyDocument:
+          Statement:
+            - IBOX_LIST:
+            - ecs:
+                Action:
+                  - 'ecs:ListContainerInstances'
+                  - 'ecs:DescribeContainerInstances'
+                Effect: Allow
+                Resource:
+                  - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/*')
+                  - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:container-instance/*')
+            - clf:
+                Action:
+                  - 'cloudformation:Describe*'
+                  - 'cloudformation:List*'
+                  - 'cloudformation:Get*'
+                Effect: Allow
+                Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: LambdaECSRunTask
+
+
 global:
-  IAMRole:
-    - LambdaECSRunTask: &iamrole_lamba_ecs_runtask
-        Policies:
-          - 1:
-              PolicyDocument:
-                Statement:
-                  - IBOX_LIST:
-                  - ecs:
-                      Action:
-                        - 'ecs:ListContainerInstances'
-                        - 'ecs:DescribeContainerInstances'
-                      Effect: Allow
-                      Resource:
-                        - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/*')
-                        - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:container-instance/*')
-                  - clf:
-                      Action:
-                        - 'cloudformation:Describe*'
-                        - 'cloudformation:List*'
-                        - 'cloudformation:Get*'
-                      Effect: Allow
-                      Resource: '*'
-                Version: '2012-10-17'
-              PolicyName: LambdaECSRunTask
   Output:
     - LambdaECSRunTaskArn:
         Value: GetAtt('LambdaECSRunTask', 'Arn')
@@ -33,7 +34,7 @@ global:
   Lambda:
     - ECSRunTask:
         IBOX_LINKED_OBJ:
-          Conf: *iamrole_lamba_ecs_runtask
+          Conf: *policies_iamrole_lamba_ecs_runtask
         Description: 'Run ECS Task'
         MemorySize: 128
         Runtime: python3.9

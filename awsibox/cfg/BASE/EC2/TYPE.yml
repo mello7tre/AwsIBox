@@ -8,6 +8,8 @@ IBoxLoader: !include
   - iam/instance-profile.yml
   - sns/subscription.yml
   - sqs/queue-policy.yml
+  - lambda/permission.yml
+  - iam/role.yml
 
 global:
   Parameter:

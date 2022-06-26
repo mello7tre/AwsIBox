@@ -11,7 +11,6 @@ from .shared import (
     add_obj,
     import_lambda,
 )
-from .iam import IAMRoleLambdaBase
 
 
 class LambdaPermission(lbd.Permission):
