@@ -71,30 +71,6 @@ class IAMPolicyBucketReplica(iam.PolicyType):
         self.Roles = [Ref(f"Role{self.Condition}")]  # Ex. RoleBucketImagesReplica
 
 
-class IAMRoleUser(iam.Role):
-    def __init__(self, title, key, resnameuser, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Condition = f"{resnameuser}RoleAccount"
-        self.RoleName = key["UserName"]
-        self.MaxSessionDuration = 43200
-        self.AssumeRolePolicyDocument = {
-            "Statement": [
-                {
-                    "Action": "sts:AssumeRole",
-                    "Condition": {"StringEquals": {"aws:username": key["UserName"]}},
-                    "Effect": "Allow",
-                    "Principal": {
-                        "AWS": Sub(
-                            "arn:aws:iam::${IdAccount}:root",
-                            **{"IdAccount": get_endvalue(f"{resnameuser}RoleAccount")},
-                        )
-                    },
-                }
-            ]
-        }
-        self.Path = "/"
-
-
 # ############################################
 # ### START STACK META CLASSES AND METHODS ###
 # ############################################
@@ -159,11 +135,12 @@ def IAM_Users(key):
                         )
 
         # resources
-        r_Role = IAMRoleUser(
-            f"IAMRole{n}",
-            key=v,
-            resnameuser=resname,
-            ManagedPolicyArns=ManagedPolicyArns,
+        r_Role = iam.Role(f"IAMRole{n}", ManagedPolicyArns=ManagedPolicyArns)
+        auto_get_props(
+            r_Role,
+            mapname="IAMRoleUser",
+            linked_obj_name=resname,
+            linked_obj_index=v["UserName"],
         )
 
         r_User = IAMUser(resname, key=v, name=n, Groups=RoleGroups)

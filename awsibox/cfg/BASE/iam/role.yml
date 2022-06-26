@@ -11,3 +11,14 @@ global:
         ManagedPolicyArns:
           - "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
           - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+    - User:
+        IBOX_ENABLED: False
+        Condition: IBOX_LINKED_OBJ_NAME.RoleAccount
+        RoleName: str(IBOX_LINKED_OBJ_INDEX)
+        MaxSessionDuration: 43200
+        AssumeRolePolicyDocument:
+          Statement:
+            - 1:
+                Condition: {"StringEquals": {"aws:username": str(IBOX_LINKED_OBJ_INDEX)}}
+                Principal**:
+                  AWS: 'Sub("arn:aws:iam::${IdAccount}:root", **{"IdAccount": get_endvalue(f"{IBOX_LINKED_OBJ_NAME}RoleAccount")})'
