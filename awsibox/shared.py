@@ -325,9 +325,10 @@ def get_dictvalue(key):
         value = [get_dictvalue(k) for k in key]
     elif isinstance(key, dict) and "IBOX_LIST" in key:
         # Usefull for KMS policy and other generic dict properties
-        del key["IBOX_LIST"]
         value = []
         for i, k in key.items():
+            if i == "IBOX_LIST":
+                continue
             value.append({j: get_dictvalue(w) for j, w in k.items()})
     elif isinstance(key, dict):
         value = {i: get_dictvalue(k) for i, k in key.items()}
