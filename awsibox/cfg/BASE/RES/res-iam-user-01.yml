@@ -1,3 +1,6 @@
+IBoxLoader: !include
+  - iam/user.yml
+
 global:
   StackName: iam-u-01
-  IAMUser: {}
+  IAMUser: [{}]

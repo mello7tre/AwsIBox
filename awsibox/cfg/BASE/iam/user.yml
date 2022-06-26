@@ -1,0 +1,9 @@
+global:
+  IAMUser:
+    - Base:
+        IBOX_ENABLED: False
+        Condition: IBOX_RESNAME
+        UserName: str(IBOX_LINKED_OBJ_INDEX)
+        LoginProfile:
+          Password: GetAtt(f"SSMParameterPassword{IBOX_LINKED_OBJ_NAME}", "Value")
+          PasswordResetRequired: True

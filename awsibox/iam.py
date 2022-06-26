@@ -91,6 +91,8 @@ def IAMPolicyStatement(key):
 def IAM_Users(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"  # Ex. IAMUserPincoPalla
+        if not v.get("IBOX_ENABLED", True):
+            continue
 
         # parameters
         p_Password = Parameter(
@@ -143,7 +145,14 @@ def IAM_Users(key):
             linked_obj_index=v["UserName"],
         )
 
-        r_User = IAMUser(resname, key=v, name=n, Groups=RoleGroups)
+        r_User = iam.User(resname, Groups=RoleGroups)
+        auto_get_props(
+            r_User,
+            mapname="IAMUserBase",
+            linked_obj_name=n,
+            linked_obj_index=v["UserName"],
+        )
+        # r_User = IAMUser(resname, key=v, name=n, Groups=RoleGroups)
 
         r_SSMParameter = SSMParameter(
             f"SSMParameterPassword{n}",
