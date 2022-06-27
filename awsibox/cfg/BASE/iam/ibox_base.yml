@@ -48,6 +48,30 @@ RoleBase: &role_base
               - get_endvalue(f"{IBOX_MAPNAME}Principal")
   Path: "/"
 
+UserBase: &user_base
+  IBOX_ENABLED: True
+  IBOX_LINKED_OBJ:
+    Key: SSMParameter
+    Type: UserPasswordBase
+    Conf:
+      IBOX_RESNAME: SSMParameterPassword.IBOX_INDEXNAME
+      IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+      IBOX_LINKED_OBJ_INDEX: IBOX_INDEXNAME
+  IBOX_PARAMETER:
+    - PasswordBase.IBOX_INDEXNAME:
+        Description: "Base Password, must be changed at first login"
+        NoEcho: True
+  IBOX_CONDITION:
+    - _:
+        get_condition("", "equals", "yes", f"{IBOX_RESNAME}Enabled")
+    - _RoleAccount:
+        get_condition("", "not_equals", "none", f"{IBOX_RESNAME}RoleAccount")
+  Condition: IBOX_RESNAME
+  UserName: str(IBOX_REMAPNAME)
+  LoginProfile:
+    Password: GetAtt(f"SSMParameterPassword{IBOX_INDEXNAME}", "Value")
+    PasswordResetRequired: True
+
 
 global:
   IAMManagedPolicy:
@@ -56,3 +80,5 @@ global:
     - IBOX_BASE: *role_base
   IAMPolicy:
     - IBOX_BASE: *policy_base
+  IAMUser:
+    - IBOX_BASE: *user_base

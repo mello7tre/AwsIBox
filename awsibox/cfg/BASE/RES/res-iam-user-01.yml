@@ -1,5 +1,5 @@
 IBoxLoader: !include
-  - iam/user.yml
+  - ssm/parameter.yml
 
 global:
   StackName: iam-u-01

@@ -418,6 +418,7 @@ CFG_TO_FUNC = {
     },
     "SNSSubscription": {"module": "joker", "func": ("sns", "SubscriptionResource")},
     "SNSTopic": {"module": "joker", "func": ("sns", "Topic")},
+    "SSMParameter": {"module": "joker", "func": ("ssm", "Parameter")},
     "TaskDefinition": {"module": "ecs", "func": "ECS_TaskDefinition"},
     "WafByteMatchSet": {
         "module": "waf",

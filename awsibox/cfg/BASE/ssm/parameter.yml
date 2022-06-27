@@ -1,0 +1,8 @@
+global:
+  SSMParameter:
+    - UserPasswordBase:
+        IBOX_ENABLED: False
+        Type: String
+        Name: 'Sub("/iam/PasswordBase/${UserName}", **{"UserName": get_endvalue(f"{IBOX_LINKED_OBJ_NAME}UserName")})'
+        Value: Ref(f"PasswordBase{IBOX_LINKED_OBJ_INDEX}")
+        AllowedPattern: "^[^ ]{16,}$"

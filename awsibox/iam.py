@@ -9,20 +9,7 @@ from .shared import (
     auto_get_props,
     get_condition,
     add_obj,
-    SSMParameter,
 )
-
-
-class IAMUser(iam.User):
-    def __init__(self, title, key, name, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.Condition = self.title
-        self.UserName = key["UserName"]
-        self.LoginProfile = iam.LoginProfile(
-            Password=GetAtt(f"SSMParameterPassword{name}", "Value"),
-            PasswordResetRequired=True,
-        )
 
 
 class IAMPolicyBucketReplica(iam.PolicyType):
@@ -94,23 +81,6 @@ def IAM_Users(key):
         if not v.get("IBOX_ENABLED", True):
             continue
 
-        # parameters
-        p_Password = Parameter(
-            f"PasswordBase{n}",
-            Description="Base Password, must be changed at first login",
-            Default="",
-            NoEcho=True,
-        )
-
-        add_obj(p_Password)
-
-        # conditions
-        c_Enabled = get_condition(resname, "equals", "yes", f"{resname}Enabled")
-
-        c_RoleAccount = get_condition(f"{resname}RoleAccount", "not_equals", "none")
-
-        add_obj([c_Enabled, c_RoleAccount])
-
         ManagedPolicyArns = []
         RoleGroups = []
         if "RoleGroups" in v:
@@ -146,26 +116,9 @@ def IAM_Users(key):
         )
 
         r_User = iam.User(resname, Groups=RoleGroups)
-        auto_get_props(
-            r_User,
-            mapname="IAMUserBase",
-            linked_obj_name=n,
-            linked_obj_index=v["UserName"],
-        )
-        # r_User = IAMUser(resname, key=v, name=n, Groups=RoleGroups)
+        auto_get_props(r_User, indexname=n, remapname=v["UserName"])
 
-        r_SSMParameter = SSMParameter(
-            f"SSMParameterPassword{n}",
-            Condition=resname,
-            Name=Sub(
-                "/iam/PasswordBase/${UserName}",
-                **{"UserName": get_endvalue(f"{resname}UserName")},
-            ),
-            Value=Ref(f"PasswordBase{n}"),
-            AllowedPattern="^[^ ]{16,}$",
-        )
-
-        add_obj([r_User, r_Role, r_SSMParameter])
+        add_obj([r_User, r_Role])
 
 
 def IAM_UserToGroupAdditions(key):
@@ -191,7 +144,7 @@ def IAM_UserToGroupAdditions(key):
 
         # resources
         r_GroupAdd = iam.UserToGroupAddition(
-            f"IAMUserToGroupAddition{n}", GroupName=n, Users=Users
+            resname, GroupName=n, Users=Users
         )
 
         add_obj([r_GroupAdd])
@@ -202,8 +155,7 @@ def IAM_Groups(key):
         resname = f"{key}{n}"  # Ex. IAMGroupBase
 
         # conditions
-        c_Enabled = get_condition(resname, "equals", "yes", f"{resname}Enabled")
-        add_obj(c_Enabled)
+        add_obj(get_condition(resname, "equals", "yes", f"{resname}Enabled"))
 
         ManagedPolicyArns = []
         for m in v["ManagedPolicyArns"]:

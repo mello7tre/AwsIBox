@@ -16,11 +16,6 @@ IBOX_SPECIAL_KEYS = (
 )
 
 
-# S - PARAMETERS #
-class SSMParameter(ssm.Parameter):
-    Type = "String"
-
-
 class Parameter(Parameter):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -34,8 +29,9 @@ class Parameter(Parameter):
             add_obj(
                 [
                     get_condition(title, "not_equals", "", nomap=True),
-                    SSMParameter(
+                    ssm.Parameter(
                         f"SSMParameter{title}",
+                        Type="String",
                         Condition=title,
                         Name=Sub(
                             "/EnvAppVersions/${EnvRole}/${AWS::StackName}/%s" % title
@@ -44,9 +40,6 @@ class Parameter(Parameter):
                     ),
                 ]
             )
-
-
-# E - PARAMETERS #
 
 
 def stack_add_res():
@@ -522,13 +515,13 @@ def import_lambda(name):
 
 def auto_get_props(
     obj,
-    mapname=None,
+    mapname="",
     key=None,
     rootdict=None,
     indexname="",
-    remapname=None,
-    linked_obj_name=None,
-    linked_obj_index=None,
+    remapname="",
+    linked_obj_name="",
+    linked_obj_index="",
 ):
     # IBOX_RESNAME can be used in yaml and resolved inside get_endvalue
     global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME, IBOX_REMAPNAME, IBOX_PROPNAME
