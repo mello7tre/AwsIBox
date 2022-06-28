@@ -772,7 +772,9 @@ def auto_get_props(
                     # copy it, first search for the full name including for index
                     linked_obj = copy.deepcopy(
                         getattr(
-                            cfg, linked_obj_key_name, getattr(cfg, f"{lo_key}{lo_type}")
+                            cfg,
+                            linked_obj_key_name,
+                            getattr(cfg, f"{lo_key}{lo_type}", None),
                         )
                     )
 
