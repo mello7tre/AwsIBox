@@ -980,7 +980,7 @@ def clf_compute_order(pattern):
 def parse_ibox_key(value, conf={}):
     if not isinstance(value, str):
         return value
-    if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+    if value.startswith(cfg.EVAL_PYTHON_FUNCTIONS_IN_CFG):
         return eval(value)
     for key in IBOX_SPECIAL_KEYS:
         if key in value:

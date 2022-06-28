@@ -3,6 +3,7 @@ IBoxLoader: !include
   - apigateway/deployment.yml
   - cloudfront/for-services.yml
   - lambda/permission.yml
+  - lambda/function.yml
   - iam/role.yml
 
 global:
@@ -11,6 +12,7 @@ global:
         Value: Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/%s' % cfg.ApiGatewayRestApi['Base']['Stage'])
   ApiGatewayRestApi:
     - Base:
+        IBOX_TITLE: ApiGatewayRestApi
         ApiKeySourceType: HEADER
         BinaryMediaTypes:
           - '*/*'
@@ -22,7 +24,7 @@ global:
         Policy:
           Statement:
             - IBOX_LIST:
-            - 1:
+            - invoke:
                 Action: "execute-api:Invoke"
                 Effect: Allow
                 Principal: '*'

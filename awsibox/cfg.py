@@ -83,15 +83,9 @@ PARAMETERS_SKIP_OVERRIDE_CONDITION = (
     "VPCName",
 )
 
-EVAL_FUNCTIONS_IN_CFG = (
-    "cfg.",
-    "get_expvalue(",
+EVAL_TROPO_FUNCTIONS_IN_CFG = (
     "Sub(",
     "Ref(",
-    "get_subvalue(",
-    "get_endvalue(",
-    "get_resvalue(",
-    "get_condition(",
     "GetAtt(",
     "Split(",
     "Select(",
@@ -103,14 +97,25 @@ EVAL_FUNCTIONS_IN_CFG = (
     "Equals(",
     "Not(",
     "GetAZs(",
+    "Tags(",
+)
+
+EVAL_PYTHON_FUNCTIONS_IN_CFG = (
+    "cfg.",
+    "get_expvalue(",
+    "get_subvalue(",
+    "get_endvalue(",
+    "get_resvalue(",
+    "get_condition(",
     "dict(",
     "eval(",
-    "Tags(",
     "str(",
     "list(",
     "getattr(",
     "SG_SecurityGroups",
 )
+
+EVAL_FUNCTIONS_IN_CFG = EVAL_PYTHON_FUNCTIONS_IN_CFG + EVAL_TROPO_FUNCTIONS_IN_CFG
 
 CLF_PATH_PATTERN_REPLACEMENT = {
     "/": "SLASH",
@@ -274,7 +279,9 @@ CFG_TO_FUNC = {
         "dep": ["ApiGatewayStage"],
     },
     "ApiGatewayDomainName": {"module": "joker", "func": ("apigateway", "DomainName")},
-    "ApiGatewayRestApi": {"module": "apigateway", "func": "AGW_RestApi"},
+    "ApiGatewayMethod": {"module": "joker", "func": ("apigateway", "Method")},
+    "ApiGatewayRestApi": {"module": "joker", "func": ("apigateway", "RestApi")},
+    "ApiGatewayResource": {"module": "joker", "func": ("apigateway", "Resource")},
     "ApiGatewayStage": {"module": "joker", "func": ("apigateway", "Stage")},
     "ApiGatewayUsagePlan": {"module": "apigateway", "func": "AGW_UsagePlans"},
     "ApplicationAutoScalingScalingPolicy": {

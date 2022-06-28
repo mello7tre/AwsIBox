@@ -10,6 +10,7 @@ from .shared import (
     get_condition,
     add_obj,
     import_lambda,
+    parse_ibox_key,
 )
 
 
@@ -33,14 +34,6 @@ class LambdaPermissionS3(LambdaPermission):
         self.Principal = "s3.amazonaws.com"
         self.FunctionName = key
         self.SourceArn = Sub("arn:aws:s3:::%s" % source)
-
-
-class LambdaPermissionApiGateway(LambdaPermission):
-    def __init__(self, title, name, source, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Principal = "apigateway.amazonaws.com"
-        self.FunctionName = name
-        self.SourceArn = source
 
 
 class LambdaFunction(lbd.Function):
@@ -129,6 +122,11 @@ def LBD_Lambdas(key):
 
         # resources
         r_Lambda = LambdaFunction(resname, key=v, name=n)
+        ibox_source_obj = v.get("IBOX_SOURCE_OBJ")
+        if ibox_source_obj:
+            parse_ibox_key_conf = {"IBOX_INDEXNAME": n}
+            ibox_source_obj = parse_ibox_key(ibox_source_obj, parse_ibox_key_conf)
+            auto_get_props(r_Lambda, mapname=ibox_source_obj, indexname=n)
 
         if "Layers" in v:
             r_Lambda.Layers = []

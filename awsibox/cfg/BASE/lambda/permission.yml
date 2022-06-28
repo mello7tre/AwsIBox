@@ -4,3 +4,7 @@ global:
         Principal: "sns.amazonaws.com"
         FunctionName: eval(IBOX_LINKED_OBJ_NAME)
         SourceArn: eval(IBOX_LINKED_OBJ_INDEX)
+    - ApiGateway:
+        Principal: "apigateway.amazonaws.com"
+        FunctionName: eval(IBOX_LINKED_OBJ_NAME)
+        SourceArn: eval(IBOX_LINKED_OBJ_INDEX)

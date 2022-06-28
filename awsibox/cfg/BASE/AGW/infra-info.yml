@@ -11,35 +11,37 @@ global:
         Stage: v1
         BinaryMediaTypes: ['*/*']
   CloudFront: IBOX_SKIP_FUNC
+  ApiGatewayMethod:
+    - 01ANY:
+        ApiKeyRequired: false
+        AuthorizationType: NONE
+        HttpMethod: ANY
+        Integration:
+          ContentHandling: CONVERT_TO_TEXT
+          IntegrationHttpMethod: POST
+          IntegrationResponses:
+            - 200:
+                ResponseTemplates:
+                  'text/html': '{}'
+                StatusCode: '200'
+          Uri: Sub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaInfraInfo%s.Arn}/invocations' % cfg.ApiGatewayRestApi['Base']['Stage'])
+          PassthroughBehavior: WHEN_NO_MATCH
+          TimeoutInMillis: 29000
+          Type: AWS_PROXY
+        RequestParameters:
+          'method.request.path.proxy': True
+        ResourceId: Ref("ApiGatewayResource01Root")
+        RestApiId: Ref("ApiGatewayRestApi")
   ApiGatewayResource:
     - 01Root:
-        ParentId: GetAtt('ApiGatewayRestApi', 'RootResourceId')
         PathPart: '{proxy+}'
-        Method:
-          - 01ANY:
-              ApiKeyRequired: false
-              AuthorizationType: NONE
-              HttpMethod: ANY
-              Integration:
-                ContentHandling: CONVERT_TO_TEXT
-                IntegrationHttpMethod: POST
-                IntegrationResponses:
-                  - 200:
-                      ResponseTemplates:
-                        dict([
-                          ('text/html', '{}'),
-                        ])
-                      StatusCode: '200'
-                Uri: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaInfraInfo.Arn}/invocations'
-                PassthroughBehavior: WHEN_NO_MATCH
-                TimeoutInMillis: 29000
-                Type: AWS_PROXY
-              RequestParameters:
-                dict([
-                  ('method.request.path.proxy', True),
-                ])
+        ParentId: GetAtt('ApiGatewayRestApi', 'RootResourceId')
+        RestApiId: Ref("ApiGatewayRestApi")
   ApiGatewayStage:
     - v1:
+        IBOX_LINKED_OBJ:
+          Conf:
+            DependsOn: ApiGatewayMethod01ANY
         CacheClusterEnabled: false
         MethodSettings:
           - 1:
@@ -68,6 +70,7 @@ global:
                 Resource: '*'
   Lambda:
     - InfraInfov1:
+        IBOX_SOURCE_OBJ: LambdaFunctionApiGateway
         Code:
           S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: 'ibox-tools/infra-info/infra-info-01.zip'
