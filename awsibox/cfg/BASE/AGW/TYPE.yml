@@ -1,4 +1,6 @@
 IBoxLoader: !include
+  - apigateway/stage.yml
+  - apigateway/deployment.yml
   - cloudfront/for-services.yml
   - lambda/permission.yml
   - iam/role.yml

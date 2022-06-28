@@ -1,0 +1,34 @@
+Stage: &stage
+  IBOX_LINKED_OBJ:
+    Key: ApiGatewayDeployment
+    Type: Base
+    For: ["A", "B"]
+    Conf:
+      IBOX_RESNAME: ApiGatewayDeployment.IBOX_INDEXNAME
+      IBOX_LINKED_OBJ_NAME: IBOX_INDEXNAME.IBOX_LINKED_OBJ_FOR
+      IBOX_LINKED_OBJ_INDEX: IBOX_INDEXNAME
+  IBOX_PARAMETER:
+    - Deployment.IBOX_INDEXNAME.Description:
+        Description: str(f"Deployment{IBOX_INDEXNAME} Description")
+        Default: str(IBOX_INDEXNAME)
+    - Deployment.IBOX_INDEXNAME:
+        Description: str(f"Deployment{IBOX_INDEXNAME} - change between A/B " "to trigger new deploy")
+        AllowedValues: ["A", "B"]
+        Default: "A"
+  IBOX_CONDITION:
+    - Deployment.IBOX_INDEXNAME.A:
+        get_condition("", "equals", "A", f"Deployment{IBOX_INDEXNAME}", nomap=True)
+    - Deployment.IBOX_INDEXNAME.B:
+        get_condition("", "equals", "B", f"Deployment{IBOX_INDEXNAME}", nomap=True)
+  IBOX_OUTPUT:
+    - Deployment.IBOX_INDEXNAME:
+        Value: Ref(f"Deployment{IBOX_INDEXNAME}")
+  DeploymentId: If(
+    f"Deployment{IBOX_INDEXNAME}A", Ref(f"ApiGatewayDeployment{IBOX_INDEXNAME}A"), Ref(f"ApiGatewayDeployment{IBOX_INDEXNAME}B"))
+  RestApiId: Ref("ApiGatewayRestApi")
+  StageName: str(IBOX_INDEXNAME)
+
+
+global:
+  ApiGatewayStage:
+    - IBOX_BASE: *stage

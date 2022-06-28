@@ -13,6 +13,7 @@ IBOX_SPECIAL_KEYS = (
     "IBOX_PROPNAME",
     "IBOX_LINKED_OBJ_NAME",
     "IBOX_LINKED_OBJ_INDEX",
+    "IBOX_LINKED_OBJ_FOR",
 )
 
 
@@ -743,18 +744,21 @@ def auto_get_props(
             lo_name = parse_ibox_key(linked_obj_data.get("Name", IBOX_RESNAME))
             lo_key = parse_ibox_key(linked_obj_data.get("Key", ""))
             lo_type = parse_ibox_key(linked_obj_data.get("Type", ""))
-            lo_conf = linked_obj_data.get("Conf", {})
             # this way even if without key "For", for cycle will run at least one time
             lo_for_cycle = linked_obj_data.get("For", [""])
 
-            # for all lo_conf entries, if their value is a string parse it using parse_ibox_key
-            for loc_entry_key, loc_entry_value in lo_conf.items():
-                lo_conf[loc_entry_key] = parse_ibox_key(loc_entry_value)
-
-            lo_conf["IBOX_ENABLED"] = True
-
             louc_cfg = {}
             for lo_for_index in lo_for_cycle:
+                # need to copy it because it's updated
+                lo_conf = copy.deepcopy(linked_obj_data.get("Conf", {}))
+                lo_conf["IBOX_ENABLED"] = True
+                # for all lo_conf entries, if their value is a string parse it using parse_ibox_key
+                for loc_entry_key, loc_entry_value in lo_conf.items():
+                    lo_conf[loc_entry_key] = parse_ibox_key(loc_entry_value)
+                    lo_conf[loc_entry_key] = parse_ibox_key(
+                        loc_entry_value, conf={"IBOX_LINKED_OBJ_FOR": lo_for_index}
+                    )
+
                 linked_obj_key_name = f"{lo_key}{lo_type}{lo_for_index}"
                 target_name = f"{lo_name}{lo_for_index}"
 
@@ -763,8 +767,12 @@ def auto_get_props(
                     # source and target are the same, so update the object in place
                     linked_obj = getattr(cfg, linked_obj_key_name)
                 else:
-                    # copy it
-                    linked_obj = copy.deepcopy(getattr(cfg, linked_obj_key_name))
+                    # copy it, first search for the full name including for index
+                    linked_obj = copy.deepcopy(
+                        getattr(
+                            cfg, linked_obj_key_name, getattr(cfg, f"{lo_key}{lo_type}")
+                        )
+                    )
 
                 # update it with config from IBOX_LINKED_OBJ Conf
                 linked_obj.update(lo_conf)

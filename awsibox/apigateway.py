@@ -60,22 +60,6 @@ class ApiGatewayMethod(agw.Method):
                 self.Integration.Uri = Sub(f"{before_dot}{stage}{after_dot}")
 
 
-class ApiGatewayStage(agw.Stage):
-    def __init__(self, title, name, key, **kwargs):
-        super().__init__(title, **kwargs)
-        self.StageName = name
-
-        auto_get_props(self)
-
-        self.RestApiId = Ref("ApiGatewayRestApi")
-        self.DeploymentId = Ref(f"ApiGatewayDeployment{name}")
-        self.DeploymentId = If(
-            f"Deployment{name}A",
-            Ref(f"ApiGatewayDeployment{name}A"),
-            Ref(f"ApiGatewayDeployment{name}B"),
-        )
-
-
 class ApiGatewayDeployment(agw.Deployment):
     def __init__(self, title, name, key, **kwargs):
         super().__init__(title, **kwargs)
@@ -154,29 +138,10 @@ def AGW_Stages(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
         depname = f"Deployment{n}"
-        # parameters
-        p_DeploymentDescription = Parameter(
-            f"{depname}Description", Description=f"{depname} Description", Default=n
-        )
-
-        p_Deployment = Parameter(
-            depname,
-            Description=f"{depname} - change between A/B " "to trigger new deploy",
-            AllowedValues=["A", "B"],
-            Default="A",
-        )
-
-        add_obj([p_DeploymentDescription, p_Deployment])
-
-        # conditons
-        c_DeploymentA = get_condition(f"{depname}A", "equals", "A", depname, nomap=True)
-
-        c_DeploymentB = get_condition(f"{depname}B", "equals", "B", depname, nomap=True)
-
-        add_obj([c_DeploymentA, c_DeploymentB])
 
         # resources
-        r_Stage = ApiGatewayStage(resname, name=n, key=v)
+        r_Stage = agw.Stage(resname)
+        auto_get_props(r_Stage, indexname=n)
 
         r_DeploymentA = ApiGatewayDeployment(
             f"ApiGatewayDeployment{n}A", name=n, key=v, Condition=f"{depname}A"
@@ -186,11 +151,8 @@ def AGW_Stages(key):
             f"ApiGatewayDeployment{n}B", name=n, key=v, Condition=f"{depname}B"
         )
 
-        # output
-        o_Deployment = Output(depname)
-        o_Deployment.Value = Ref(depname)
-
-        add_obj([r_Stage, r_DeploymentA, r_DeploymentB, o_Deployment])
+        #add_obj([r_Stage, r_DeploymentA, r_DeploymentB])
+        add_obj([r_Stage])
 
 
 def AGW_RestApi(key):

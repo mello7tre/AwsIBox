@@ -268,9 +268,14 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("apigateway", "BasePathMapping"),
     },
+    "ApiGatewayDeployment": {
+        "module": "joker",
+        "func": ("apigateway", "Deployment"),
+        "dep": ["ApiGatewayStage"],
+    },
     "ApiGatewayDomainName": {"module": "joker", "func": ("apigateway", "DomainName")},
     "ApiGatewayRestApi": {"module": "apigateway", "func": "AGW_RestApi"},
-    "ApiGatewayStage": {"module": "apigateway", "func": "AGW_Stages"},
+    "ApiGatewayStage": {"module": "joker", "func": ("apigateway", "Stage")},
     "ApiGatewayUsagePlan": {"module": "apigateway", "func": "AGW_UsagePlans"},
     "ApplicationAutoScalingScalingPolicy": {
         "module": "autoscaling",
