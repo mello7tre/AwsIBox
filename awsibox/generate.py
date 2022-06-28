@@ -2,7 +2,6 @@ from . import cfg
 from .shared import stack_add_res
 from . import (
     __version__,
-    apigateway,
     autoscaling,
     cloudformation,
     cloudfront,

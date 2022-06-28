@@ -268,7 +268,7 @@ CFG_TO_FUNC = {
         "dep": ["LoadBalancer"],
     },
     "ApiGatewayAccount": {"module": "joker", "func": ("apigateway", "Account")},
-    "ApiGatewayApiKey": {"module": "apigateway", "func": "AGW_ApiKeys"},
+    "ApiGatewayApiKey": {"module": "joker", "func": ("apigateway", "ApiKey")},
     "ApiGatewayBasePathMapping": {
         "module": "joker",
         "func": ("apigateway", "BasePathMapping"),
@@ -283,7 +283,8 @@ CFG_TO_FUNC = {
     "ApiGatewayRestApi": {"module": "joker", "func": ("apigateway", "RestApi")},
     "ApiGatewayResource": {"module": "joker", "func": ("apigateway", "Resource")},
     "ApiGatewayStage": {"module": "joker", "func": ("apigateway", "Stage")},
-    "ApiGatewayUsagePlan": {"module": "apigateway", "func": "AGW_UsagePlans"},
+    "ApiGatewayUsagePlan": {"module": "joker", "func": ("apigateway", "UsagePlan")},
+    "ApiGatewayUsagePlanKey": {"module": "joker", "func": ("apigateway", "UsagePlanKey")},
     "ApplicationAutoScalingScalingPolicy": {
         "module": "autoscaling",
         "func": "AS_ScalingPolicies",
