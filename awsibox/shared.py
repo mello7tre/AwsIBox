@@ -326,8 +326,10 @@ def get_dictvalue(key):
             value.append({j: get_dictvalue(w) for j, w in k.items()})
     elif isinstance(key, dict):
         value = {i: get_dictvalue(k) for i, k in key.items()}
-    else:
+    elif isinstance(key, str):
         value = eval(key) if key.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else key
+    else:
+        value = key
 
     return value
 
