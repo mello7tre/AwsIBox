@@ -6,7 +6,7 @@ TopicBase: &topic_base
   Export: False
   IBOX_OUTPUT:
     - _:
-        IBOX_CODE_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+        IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
         Value: Ref(IBOX_RESNAME)
         Export: Export(IBOX_RESNAME)
 

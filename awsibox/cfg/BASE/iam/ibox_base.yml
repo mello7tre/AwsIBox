@@ -3,7 +3,7 @@ ManagedPolicyBase: &managed_policy_base
   IBOX_ENABLED: True
   IBOX_OUTPUT:
     - _:
-        IBOX_CODE_IF: get_endvalue(f"{IBOX_MAPNAME}Export") == True
+        IBOX_ENABLED_IF: get_endvalue(f"{IBOX_MAPNAME}Export") == True
         Value: Ref(IBOX_RESNAME)
         Export: Export(IBOX_RESNAME)
   Export: True
@@ -16,7 +16,7 @@ PolicyBase: &policy_base
   IBOX_ENABLED: True
   IBOX_OUTPUT:
     - _:
-        IBOX_CODE_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+        IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
         Value: Ref(IBOX_RESNAME)
         Export: Export(IBOX_RESNAME)
   Export: False
@@ -33,7 +33,7 @@ RoleBase: &role_base
   IBOX_RESNAME: Role.IBOX_INDEXNAME
   IBOX_OUTPUT:
     - _:
-        IBOX_CODE_IF: get_endvalue(f"{IBOX_MAPNAME}Export") == True
+        IBOX_ENABLED_IF: get_endvalue(f"{IBOX_MAPNAME}Export") == True
         Value: GetAtt(IBOX_RESNAME, "Arn")
         Export: Export(IBOX_RESNAME)
   Export: False

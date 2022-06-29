@@ -847,6 +847,7 @@ def auto_get_props(
             ibox_auto_p = f"{propname}.IBOX_AUTO_P"
             ibox_pco = f"{propname}.IBOX_PCO"
             ibox_code = f"{propname}.IBOX_CODE"
+            ibox_code_if = f"{propname}.IBOX_CODE_IF"
             ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
 
             # IBOX_AUTO_PO
@@ -861,7 +862,7 @@ def auto_get_props(
                 _try_PCO_in_obj(key[ibox_pco])
 
             # IBOX_CODE
-            if ibox_code in key:
+            if ibox_code in key or (ibox_code_if in key and propname in key):
                 # If there is a key ending with {prop}.IBOX_CODE
                 # eval it and use it as prop value.
                 # Usefull if a str value need to be processed by a code.

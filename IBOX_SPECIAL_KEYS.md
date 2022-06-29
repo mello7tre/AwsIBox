@@ -9,6 +9,7 @@
 - [IBOX\_CONDITION](#IBOX_CONDITION)
 - [IBOX\_CUSTOM\_OBJ](#IBOX_CUSTOM_OBJ)
 - [IBOX\_ENABLED](#IBOX_ENABLED)
+- [IBOX\_ENABLED\_IF](#IBOX_ENABLED_IF)
 - [IBOX\_IF](#IBOX_IFVALUE)
 - [IBOX\_IFCONDVALUE](#IBOX_IFCONDVALUE)
 - [IBOX\_IFVALUE](#IBOX_IFVALUE)
@@ -102,19 +103,8 @@ LaunchTemplate:
         'LaunchTemplateDataImageIdLatest', Ref('LaunchTemplateDataImageIdLatest'), get_endvalue('ImageIdAlternateName'))
 ImageIdAlternateName: latest
 ```
-
 #### IBOX\_CODE\_IF
-Can be used to skip the creation of an Output defined inside an `IBOX_OUTPUT` key.\
-The skip is executed at python level while processing the Outputs.\
-The value of the key is processed using eval and must return True or False.\
-Ex:
-```
-IBOX_OUTPUT:
-  - _:
-      IBOX_CODE_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
-      Value: Ref(IBOX_RESNAME)
-      Export: Export(IBOX_RESNAME)
-```
+Same as `IBOX_CODE` but is processed ONLY if the relative key is present\.
 
 #### IBOX\_CONDITION
 Can be used both as property key of a resource or inside a specific key using `IBOX_PCO`.\
@@ -163,6 +153,19 @@ Each custom object is created with title equals to the list element.
 Is used to skip resource processing by python code.\
 Can have values: `True` or `False`.\
 Not all resource module support this (`joker` module automatically support it).\
+
+#### IBOX\_ENABLED\_IF
+Can be used to skip the creation of an Output defined inside an `IBOX_OUTPUT` key.\
+The skip is executed at python level while processing the Outputs.\
+The value of the key is processed using eval and must return True or False.\
+Ex:
+```
+IBOX_OUTPUT:
+  - _:
+      IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+      Value: Ref(IBOX_RESNAME)
+      Export: Export(IBOX_RESNAME)
+```
 
 #### IBOX\_IF
 Can be used to define a CloudFormation If Condition inside the yaml cfg files.\
