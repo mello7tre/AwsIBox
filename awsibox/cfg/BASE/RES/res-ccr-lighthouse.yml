@@ -42,5 +42,6 @@ global:
         MemorySize: 128
         Runtime: python3.9
         Timeout: 300
-        Variables:
-          - LightHouseTaskStackName: Ref('LightHouseTaskStackName')
+        Environment:
+          Variables:
+            - LightHouseTaskStackName: Ref('LightHouseTaskStackName')

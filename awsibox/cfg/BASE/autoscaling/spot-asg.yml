@@ -60,14 +60,17 @@ global:
   Lambda:
     - ASGSpot:
         Condition: SpotASG
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
         Description: 'Rebalance Spot and OnDeman AutoScalingGroup'
         MemorySize: 128
         ReservedConcurrentExecutions: 1
         Runtime: python3.9
         Timeout: 60
-        Variables:
-          - ASGOnDemand: Ref('AutoScalingGroup')
-          - ASGSpot: Ref('AutoScalingGroupSpot')
+        Environment:
+          Variables:
+            - ASGOnDemand: Ref('AutoScalingGroup')
+            - ASGSpot: Ref('AutoScalingGroupSpot')
   ScalingPolicyTrackings:
     - ASCpu:
         AutoScalingGroupName: If('SpotASG', Ref('AutoScalingGroupSpot'), Ref('AutoScalingGroup'))

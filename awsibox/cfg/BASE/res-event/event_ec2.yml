@@ -39,30 +39,39 @@ global:
               Id: 'TargetFunction-02'
   Lambda:
     - EC2StartStopTagged:
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
         Description: 'Start and Stop EC2 Tagged Instances'
         MemorySize: 128
         Runtime: python3.9
         Timeout: 10
-        Variables:
-          - TagName: 'AutoStartStop'
+        Environment:
+          Variables:
+            - TagName: 'AutoStartStop'
     - ServiceDiscovery:
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
         Description: 'ServiceDiscovery'
         MemorySize: 128
         Runtime: python3.9
         Timeout: 30
-        Variables:
-          - NameSpaceID: get_expvalue('ServiceDiscoveryPublicDnsNamespaceId')
-          - PublicDnsNamespaceName: Sub(f'find.{cfg.HostedZoneNameEnv}')
-          - HostedZoneId: get_expvalue('HostedZoneIdEnv')
+        Environment:
+          Variables:
+            - NameSpaceID: get_expvalue('ServiceDiscoveryPublicDnsNamespaceId')
+            - PublicDnsNamespaceName: Sub(f'find.{cfg.HostedZoneNameEnv}')
+            - HostedZoneId: get_expvalue('HostedZoneIdEnv')
     - R53RecordInstanceId:
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
         Description: 'R53 Record InstanceId Automatic Creation'
         MemorySize: 128
         Runtime: python3.9
         Timeout: 30
-        Variables:
-          - HostedZoneName: get_endvalue('HostedZoneNamePrivate')
-          - HostedZoneId: get_expvalue('HostedZoneIdPrivate')
-          - Topic: Ref('SNSTopicASGNotificationR53')
+        Environment:
+          Variables:
+            - HostedZoneName: get_endvalue('HostedZoneNamePrivate')
+            - HostedZoneId: get_expvalue('HostedZoneIdPrivate')
+            - Topic: Ref('SNSTopicASGNotificationR53')
   IAMPolicy:
     - LambdaEC2StartStopTagged:
         Roles:

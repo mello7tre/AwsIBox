@@ -682,7 +682,10 @@ def auto_get_props(
             isinstance(prop_class, tuple)
             and isinstance(prop_class[0], type)
             and prop_class[0].__name__ == "dict"
-        ) or (callable(prop_class) and prop_class.__name__ == "policytypes"):
+        ) or (
+            callable(prop_class)
+            and prop_class.__name__ in ["policytypes", "validate_variables_name"]
+        ):
             return get_dictvalue(key[obj_propname])
 
     def _populate(obj, key=None, mapname=None, rootdict=None):
@@ -711,7 +714,7 @@ def auto_get_props(
             def _output(k):
                 for n, v in k.items():
                     n = parse_ibox_key(n)
-                    if not eval(v.get("IBOX_CODE_IF", "True")):
+                    if not eval(v.get("IBOX_ENABLED_IF", "True")):
                         continue
                     output = Output(n)
                     _populate(output, rootdict=v)
@@ -861,19 +864,24 @@ def auto_get_props(
                 # If there is a key ending with {prop}.IBOX_PCO process it
                 _try_PCO_in_obj(key[ibox_pco])
 
-            # IBOX_CODE
-            if ibox_code in key or (ibox_code_if in key and propname in key):
+            # IBOX_CODE/_IF
+            if ibox_code in key:
                 # If there is a key ending with {prop}.IBOX_CODE
                 # eval it and use it as prop value.
                 # Usefull if a str value need to be processed by a code.
                 # (like in autoscaling-scheduledactions.yml)
                 value = eval(key[ibox_code])
+            elif ibox_code_if in key and propname in key:
+                # same as above but check that propname does exist
+                value = eval(key[ibox_code_if])
             elif propname in key and propname in props:
                 # there is match between obj prop and a dict key
                 key_value = key[propname]
 
                 # set value
-                if isinstance(key_value, dict):
+                if key_value == "IBOX_SKIP":
+                    continue
+                elif isinstance(key_value, dict):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)
                 elif isinstance(key_value, list) and ibox_custom_obj in key:

@@ -17,8 +17,9 @@ global:
         MemorySize: 128
         Runtime: python3.9
         Timeout: 20
-        Variables:
-          - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+        Environment:
+          Variables:
+            - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
   IAMPolicy:
     - LambdaSpotAdvisor:
         Roles:

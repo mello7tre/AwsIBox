@@ -30,14 +30,15 @@ global:
         MemorySize: 128
         Runtime: python3.9
         Timeout: 10
-        Variables:
-          - Cluster: get_expvalue('Cluster', 'ClusterStack')
-          - ECSInstancesStackName: get_endvalue('ClusterStack')
-          - LaunchType: get_endvalue('LaunchType')
-          - NetworkModeAwsVpc: If('NetworkModeAwsVpc','awsvpc',Ref('AWS::NoValue'))
-          - TaskDefinition: Ref('TaskDefinition')
-          - Subnets: get_expvalue('SubnetsPrivate')
-          - SecurityGroups: Join(' ', cfg.SecurityGroupsImport)
+        Environment:
+          Variables:
+            - Cluster: get_expvalue('Cluster', 'ClusterStack')
+            - ECSInstancesStackName: get_endvalue('ClusterStack')
+            - LaunchType: get_endvalue('LaunchType')
+            - NetworkModeAwsVpc: If('NetworkModeAwsVpc','awsvpc',Ref('AWS::NoValue'))
+            - TaskDefinition: Ref('TaskDefinition')
+            - Subnets: get_expvalue('SubnetsPrivate')
+            - SecurityGroups: Join(' ', cfg.SecurityGroupsImport)
   LaunchType: EC2
   NetworkMode: awsvpc
   IAMPolicy:

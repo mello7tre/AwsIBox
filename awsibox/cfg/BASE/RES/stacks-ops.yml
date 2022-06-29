@@ -35,6 +35,7 @@ global:
           - LambdaLayerVersionPython37SSM
         MemorySize: 128
         Runtime: python3.9
-        Variables:
-          - CloudFormationNotificationArn: get_expvalue('SNSTopicCloudFormationNotification')
+        Environment:
+          Variables:
+            - CloudFormationNotificationArn: get_expvalue('SNSTopicCloudFormationNotification')
         Timeout: 60

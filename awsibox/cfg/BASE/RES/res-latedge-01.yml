@@ -10,12 +10,15 @@ global:
                     - lambda.amazonaws.com
                     - edgelambda.amazonaws.com
   Lambda:
+    - IBOX_BASE:
+        Environment: IBOX_SKIP
     - AtEdgeAddHeaders:
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
         AtEdge: True
         Description: 'Lambda@Edge add Headers'
         MemorySize: 128
         Runtime: python3.9
         Timeout: 10
         Version: True
-        Variables: []
         CacheControl: 31536000

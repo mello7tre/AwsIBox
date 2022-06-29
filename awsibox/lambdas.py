@@ -36,55 +36,6 @@ class LambdaPermissionS3(LambdaPermission):
         self.SourceArn = Sub("arn:aws:s3:::%s" % source)
 
 
-class LambdaFunction(lbd.Function):
-    def __init__(self, title, key, name, **kwargs):
-        super().__init__(title, **kwargs)
-        import_name = key.get("ImportName", name)
-        if "Code" not in key:
-            self.Code = lbd.Code()
-            try:
-                self.Code.ZipFile = Join("", import_lambda(import_name))
-            except Exception:
-                self.Code.ZipFile = (
-                    'print("Use Code parameter in yaml '
-                    f"or create file lib/lambas/{import_name}.code "
-                    'with lambda code to execute.")'
-                )
-
-        if "Enabled" in key:
-            # conditions
-            add_obj(get_condition(title, "equals", "yes", f"{title}Enabled"))
-            self.Condition = title
-
-        auto_get_props(self, indexname=name)
-        self.FunctionName = Sub("${AWS::StackName}-${EnvRole}-%s" % name)
-
-        if "Handler" not in key:
-            self.Handler = "index.lambda_handler"
-        try:
-            getattr(self, "Role")
-        except Exception:
-            self.Role = GetAtt(f"RoleLambda{name}", "Arn")
-
-        # Variables - skip if atEdge - always set Env, EnvRole
-        try:
-            key["AtEdge"]
-        except Exception as e:
-            self.Environment = lbd.Environment(
-                Variables={
-                    "Env": Ref("EnvShort"),
-                    "EnvRole": Ref("EnvRole"),
-                }
-            )
-            if "Variables" in key:
-                self.Environment.Variables.update(
-                    {
-                        varname: get_endvalue(f"{self.title}Variables{varname}")
-                        for varname in key["Variables"]
-                    }
-                )
-
-
 def LBD_Lambdas(key):
     # Resources
     for n, v in getattr(cfg, key).items():
@@ -103,7 +54,8 @@ def LBD_Lambdas(key):
             add_obj(Output(s3keyname, Value=get_endvalue(s3keyname)))
 
         # resources
-        r_Lambda = LambdaFunction(resname, key=v, name=n)
+        r_Lambda = lbd.Function(resname)
+        auto_get_props(r_Lambda, indexname=n) 
         ibox_source_obj = v.get("IBOX_SOURCE_OBJ")
         if ibox_source_obj:
             parse_ibox_key_conf = {"IBOX_INDEXNAME": n}

@@ -1,19 +1,28 @@
-PermissionBase: &permission_base
+Permission: &permission
   IBOX_ENABLED: False
   Action: "lambda:InvokeFunction"
 
-FunctionBase: &function_base
+Function: &function
   IBOX_ENABLED: True
   IBOX_LINKED_OBJ:
     Key: IAMRole
     Type: Lambda
     Conf:
       IBOX_RESNAME: Role.IBOX_RESNAME
+  Code:
+    ZipFile.IBOX_CODE_IF: Join("", import_lambda(get_endvalue(f"{IBOX_RESNAME}CodeZipFile")))
   Layers.IBOX_CUSTOM_OBJ: LambdaLayers
+  Handler: "index.lambda_handler"
+  Role: GetAtt(f"RoleLambda{IBOX_INDEXNAME}", "Arn")
+  FunctionName: Sub("${AWS::StackName}-${EnvRole}-%s" % IBOX_INDEXNAME)
+  Environment:
+    Variables:
+      - Env: Ref('EnvShort')
+      - EnvRole: Ref('EnvRole')
 
 
 global:
   LambdaPermission:
-    - IBOX_BASE: *permission_base
+    - IBOX_BASE: *permission
   Lambda:
-    - IBOX_BASE: *function_base
+    - IBOX_BASE: *function
