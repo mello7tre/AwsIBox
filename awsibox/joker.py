@@ -28,10 +28,12 @@ def Joker(key, module, cls):
         obj = my_class(resname)
 
         # use IBOX_SOURCE_OBJ to prepopulate obj
-        ibox_source_obj = v.get("IBOX_SOURCE_OBJ")
-        if ibox_source_obj:
-            ibox_source_obj = parse_ibox_key(ibox_source_obj, parse_ibox_key_conf)
-            auto_get_props(obj, mapname=ibox_source_obj, indexname=n)
+        ibox_source_obj = v.get("IBOX_SOURCE_OBJ", [])
+        if isinstance(ibox_source_obj, str):
+            ibox_source_obj = [ibox_source_obj]
+        for source_obj in ibox_source_obj:
+            source_obj = parse_ibox_key(source_obj, parse_ibox_key_conf)
+            auto_get_props(obj, mapname=source_obj, indexname=n)
             # reset obj title, if changed by IBOX_TITLE key
             obj.title = resname
 
