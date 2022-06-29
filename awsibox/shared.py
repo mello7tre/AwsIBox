@@ -536,12 +536,17 @@ def auto_get_props(
     global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME, IBOX_REMAPNAME, IBOX_PROPNAME
     global IBOX_LINKED_OBJ_NAME, IBOX_LINKED_OBJ_INDEX
     IBOX_RESNAME = obj.title
-    IBOX_MAPNAME = mapname
-    IBOX_REMAPNAME = remapname
-    IBOX_INDEXNAME = indexname
     IBOX_PROPNAME = ""
-    IBOX_LINKED_OBJ_NAME = linked_obj_name
-    IBOX_LINKED_OBJ_INDEX = linked_obj_index
+    if not "IBOX_MAPNAME" in globals() or mapname:
+        IBOX_MAPNAME = mapname
+    if not "IBOX_REMAPNAME" in globals() or remapname:
+        IBOX_REMAPNAME = remapname
+    if not "IBOX_INDEXNAME" in globals() or indexname:
+        IBOX_INDEXNAME = indexname
+    if not "IBOX_LINKED_OBJ_NAME" in globals() or linked_obj_name:
+        IBOX_LINKED_OBJ_NAME = linked_obj_name
+    if not "IBOX_LINKED_OBJ_INDEX" in globals() or linked_obj_index:
+        IBOX_LINKED_OBJ_INDEX = linked_obj_index
 
     # create a dict where i will put all property with a flat hierarchy
     # with the name equals to the mapname and the relative value.
