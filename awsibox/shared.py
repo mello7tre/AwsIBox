@@ -942,6 +942,9 @@ def auto_get_props(
                 # Automatically create output
                 for n in [f"{propname}.IBOX_AUTO_PO", f"{propname}.IBOX_AUTO_O"]:
                     if n in key:
+                        if "Description" in key[n]:
+                            # avoid parsing Parameter Descrption as output one
+                            del key[n]["Description"]
                         _auto_PO(propname, key[n], "o", value)
 
         # title override
