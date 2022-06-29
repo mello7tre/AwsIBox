@@ -1,2 +1,11 @@
 global:
+  LambdaLayers:
+    - IBOX_CUSTOM_OBJ:
+        IBOX_PARAMETER:
+          - _:
+              Description: str(IBOX_RESNAME)
+        IBOX_OUTPUT:
+          - _:
+              Value: get_endvalue(IBOX_RESNAME)
+        Value: get_endvalue(IBOX_RESNAME)
   LambdaLayerVersionPython37SSM: none

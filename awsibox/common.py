@@ -16,6 +16,7 @@ from troposphere import (
     AWSHelperFn,
     AWSObject,
     AWSProperty,
+    PropsDictType,
     Base64,
     BaseAWSObject,
     Condition,

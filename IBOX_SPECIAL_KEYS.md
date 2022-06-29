@@ -7,6 +7,7 @@
 - [IBOX\_CODE](#IBOX_CODE)
 - [IBOX\_CODE\_IF](#IBOX_CODE_IF)
 - [IBOX\_CONDITION](#IBOX_CONDITION)
+- [IBOX\_CUSTOM\_OBJ](#IBOX_CUSTOM_OBJ)
 - [IBOX\_ENABLED](#IBOX_ENABLED)
 - [IBOX\_IF](#IBOX_IFVALUE)
 - [IBOX\_IFCONDVALUE](#IBOX_IFCONDVALUE)
@@ -131,6 +132,32 @@ Field.IBOX_PCO:
     - _PlacementStrategies0TypeRandom:
         get_condition('', 'equals', 'random', f'{IBOX_RESNAME}PlacementStrategies0Type')
 ```
+
+#### IBOX\_CUSTOM\_OBJ
+Can be used to precess a list of string, Ex LambdaLayers, using a custom class\.
+This way you can have a parameter, output, condition and custom code for every element of the list\.
+Ex:
+```
+LambdaLayers:
+  - IBOX_CUSTOM_OBJ:
+      IBOX_PARAMETER:
+        - _:
+            Description: str(IBOX_RESNAME)
+      IBOX_OUTPUT:
+        - _:
+            Value: get_endvalue(IBOX_RESNAME)
+      Value: get_endvalue(IBOX_RESNAME)
+```
+And in Lambda:
+```
+Layers.IBOX_CUSTOM_OBJ: LambdaLayers
+Layers:
+  - layer1
+  - layer2
+```
+You append at the key name `.IBOX_CUSTOM_OBJ` with as value the name of the main key of the configuration used to process the list elements.\
+Each custom object is created with title equals to the list element.
+
 
 ####  IBOX\_ENABLED
 Is used to skip resource processing by python code.\

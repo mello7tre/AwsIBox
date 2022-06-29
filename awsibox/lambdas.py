@@ -85,24 +85,6 @@ class LambdaFunction(lbd.Function):
                 )
 
 
-def LambdaLayers(value):
-    # parameters
-    p_Layer = Parameter(value, Description=value)
-    add_obj(p_Layer)
-
-    # condition
-    add_obj(get_condition(value, "not_equals", ""))
-
-    # output
-    o_Layer = Output(value, Value=get_endvalue(value, condition=True))
-    add_obj(o_Layer)
-
-    return o_Layer.Value
-
-
-##
-
-
 def LBD_Lambdas(key):
     # Resources
     for n, v in getattr(cfg, key).items():
@@ -127,11 +109,6 @@ def LBD_Lambdas(key):
             parse_ibox_key_conf = {"IBOX_INDEXNAME": n}
             ibox_source_obj = parse_ibox_key(ibox_source_obj, parse_ibox_key_conf)
             auto_get_props(r_Lambda, mapname=ibox_source_obj, indexname=n)
-
-        if "Layers" in v:
-            r_Lambda.Layers = []
-            for i, j in enumerate(v["Layers"]):
-                r_Lambda.Layers.append(LambdaLayers(j))
 
         if "Version" in v:
             versionname = f"{resname}Version"

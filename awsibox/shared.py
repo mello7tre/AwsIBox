@@ -17,6 +17,12 @@ IBOX_SPECIAL_KEYS = (
 )
 
 
+class IBOX_Custom_Obj(AWSProperty):
+    props: PropsDictType = {
+        "Value": (str, True),
+    }
+
+
 class Parameter(Parameter):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
@@ -741,6 +747,17 @@ def auto_get_props(
                 output = {"IBOX_OUTPUT": {f"{mapname}{name}": output_base}}
                 _try_PCO_in_obj(output)
 
+        def _proc_custom_obj(name, key_value):
+            value = []
+            base_rootdict = getattr(cfg, f"{name}IBOX_CUSTOM_OBJ")
+            for n in key_value:
+                rootdict = {"Value": n}
+                rootdict.update(base_rootdict)
+                obj = IBOX_Custom_Obj(n)
+                auto_get_props(obj, rootdict=rootdict)
+                value.append(getattr(obj, "Value"))
+            return value
+
         def _linked_obj(linked_obj_data):
             # need to parse them here to have the right values
             lo_name = parse_ibox_key(linked_obj_data.get("Name", IBOX_RESNAME))
@@ -816,25 +833,29 @@ def auto_get_props(
             else:
                 _linked_obj(ibox_linked_obj)
 
+        # iterate over both obj props and key - using key order
         for propname in dict(
             list(key.items()) + list(dict.fromkeys(props, None).items())
         ).keys():
-            # iterate over both obj props and key - using key order
+            # IBOX KEY TO LOOK FOR
+            ibox_auto_po = f"{propname}.IBOX_AUTO_PO"
+            ibox_auto_p = f"{propname}.IBOX_AUTO_P"
+            ibox_pco = f"{propname}.IBOX_PCO"
+            ibox_code = f"{propname}.IBOX_CODE"
+            ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
 
             # IBOX_AUTO_PO
-            for n in [f"{propname}.IBOX_AUTO_PO", f"{propname}.IBOX_AUTO_P"]:
+            for n in [ibox_auto_po, ibox_auto_p]:
                 if n in key:
                     # Automatically create parameter
                     _auto_PO(propname, key[n], "p")
 
             # IBOX_PCO
-            ibox_pco = f"{propname}.IBOX_PCO"
             if ibox_pco in key:
                 # If there is a key ending with {prop}.IBOX_PCO process it
                 _try_PCO_in_obj(key[ibox_pco])
 
             # IBOX_CODE
-            ibox_code = f"{propname}.IBOX_CODE"
             if ibox_code in key:
                 # If there is a key ending with {prop}.IBOX_CODE
                 # eval it and use it as prop value.
@@ -849,6 +870,9 @@ def auto_get_props(
                 if isinstance(key_value, dict):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)
+                elif isinstance(key_value, list) and ibox_custom_obj in key:
+                    # to process a list like a custom obj
+                    value = _proc_custom_obj(key[ibox_custom_obj], key_value)
                 elif isinstance(key_value, str) and key_value.startswith(
                     IBOX_SPECIAL_KEYS
                 ):

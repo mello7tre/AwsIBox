@@ -9,6 +9,7 @@ FunctionBase: &function_base
     Type: Lambda
     Conf:
       IBOX_RESNAME: Role.IBOX_RESNAME
+  Layers.IBOX_CUSTOM_OBJ: LambdaLayers
 
 
 global:
