@@ -855,7 +855,7 @@ def auto_get_props(
 
             # IBOX_AUTO_PO
             for n in [ibox_auto_po, ibox_auto_p]:
-                if n in key:
+                if n in key and propname in key:
                     # Automatically create parameter
                     _auto_PO(propname, key[n], "p")
 
