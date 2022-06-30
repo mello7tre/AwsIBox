@@ -10,7 +10,6 @@ from .shared import (
     get_condition,
     add_obj,
 )
-from .lambdas import LambdaPermissionEvent
 
 
 class EVENetworkConfiguration(eve.NetworkConfiguration):
@@ -63,13 +62,22 @@ def EVE_EventRules(key):
 
             if m.startswith("Lambda"):
                 permname = "%s%s" % (m.replace("Lambda", "LambdaPermission"), resname)
-                r_LambdaPermission = LambdaPermissionEvent(
-                    permname, key=w, source=resname
-                )
+                # create ad hoc IBOX_LINKED_OBJ
+                ibox_lo_cfg = {
+                    "IBOX_LINKED_OBJ": {
+                        "Key": "LambdaPermission",
+                        "Type": "EventsRule",
+                        "Name": f"LambdaPermission{m}{resname}",
+                        "Conf": {
+                            "IBOX_RESNAME": permname,
+                            "IBOX_LINKED_OBJ_NAME": w['Arn'],
+                            "IBOX_LINKED_OBJ_INDEX": 'GetAtt("IBOX_RESNAME", "Arn")',
+                        },
+                    }
+                }
                 if "Condition" in v:
-                    r_LambdaPermission.Condition = v["Condition"]
-
-                add_obj(r_LambdaPermission)
+                    ibox_lo_cfg["IBOX_LINKED_OBJ"]["Conf"]["Condition"] = v["Condition"]
+                getattr(cfg, targetname).update(ibox_lo_cfg)
             if m.startswith("ECSCluster"):
                 props = {
                     "Arn": get_subvalue(

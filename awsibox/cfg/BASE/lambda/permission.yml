@@ -12,3 +12,7 @@ global:
         Principal: s3.amazonaws.com
         FunctionName: eval(IBOX_LINKED_OBJ_NAME)
         SourceArn: eval(IBOX_LINKED_OBJ_INDEX)
+    - EventsRule:
+        Principal: "events.amazonaws.com"
+        FunctionName: eval(IBOX_LINKED_OBJ_NAME)
+        SourceArn: eval(IBOX_LINKED_OBJ_INDEX)

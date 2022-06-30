@@ -1,6 +1,6 @@
-IBoxLoader: !include [
-  ecs/ecs-task.yml,
-]
+IBoxLoader: !include
+  - ecs/ecs-task.yml
+  - lambda/permission.yml
 
 global:
   Condition:
@@ -11,7 +11,7 @@ global:
         State: 'ENABLED'
         Targets:
           - LambdaECSRunTask:
-              Arn: get_expvalue('LambdaECSRunTaskArn')
+              Arn: ImportValue('LambdaECSRunTaskArn')
               Id: 'TargetFunction-01'
               Input: Join('"', [
                   '{',

@@ -12,7 +12,6 @@ from . import (
     events,
     iam,
     joker,
-    lambdas,
     elasticloadbalancing,
     mappings,
     route53,

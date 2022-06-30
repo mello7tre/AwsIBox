@@ -391,7 +391,7 @@ CFG_TO_FUNC = {
     "LambdaPermission": {
         "module": "joker",
         "func": ("awslambda", "Permission"),
-        "dep": ["SNSSubscription"],
+        "dep": ["SNSSubscription", "Lambda", "EventsRule"],
     },
     "LambdaVersion": {
         "module": "joker",
