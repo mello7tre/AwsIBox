@@ -13,7 +13,6 @@ from .shared import (
 )
 from .iam import IAMPolicyBucketReplica, IAMPolicyStatement
 from .cloudfront import CFOriginAccessIdentity
-from .lambdas import LambdaPermissionS3
 
 
 class S3Bucket(s3.Bucket):
@@ -372,38 +371,6 @@ def S3_Buckets(key):
             mapname=f"{resname}ReplicationConfigurationRules",
             key=v["Replication"]["ConfigurationRules"],
         )
-
-        try:
-            lbd_confs = v["NotificationConfiguration"]["LambdaConfigurations"]
-        except Exception:
-            pass
-        else:
-            for lbd_n, lbd_v in lbd_confs.items():
-                try:
-                    lambda_arn = eval(lbd_v["Function"])
-
-                    if "Fn::GetAtt" in lambda_arn.data:
-                        lambda_name = lambda_arn.data["Fn::GetAtt"][0]
-                        permname = "%s%s" % (
-                            lambda_name.replace("Lambda", "LambdaPermission"),
-                            resname,
-                        )
-                except Exception:
-                    lambda_arn = lbd_v["Function"]
-                    permname = f"LambdaPermission{resname}"
-
-                r_LambdaPermission = LambdaPermissionS3(
-                    permname, key=lambda_arn, source=bucket_name
-                )
-
-                try:
-                    r_LambdaPermission.Condition = getattr(
-                        cfg, f"{lambda_name}Condition"
-                    )
-                except Exception:
-                    pass
-
-                add_obj(r_LambdaPermission)
 
         try:
             bucket_policies = getattr(cfg, "BucketPolicy")

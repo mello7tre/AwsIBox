@@ -1,10 +1,14 @@
 global:
   LambdaPermission:
+    - ApiGateway:
+        Principal: "apigateway.amazonaws.com"
+        FunctionName: eval(IBOX_LINKED_OBJ_NAME)
+        SourceArn: eval(IBOX_LINKED_OBJ_INDEX)
     - SNS:
         Principal: "sns.amazonaws.com"
         FunctionName: eval(IBOX_LINKED_OBJ_NAME)
         SourceArn: eval(IBOX_LINKED_OBJ_INDEX)
-    - ApiGateway:
-        Principal: "apigateway.amazonaws.com"
+    - S3:
+        Principal: s3.amazonaws.com
         FunctionName: eval(IBOX_LINKED_OBJ_NAME)
         SourceArn: eval(IBOX_LINKED_OBJ_INDEX)

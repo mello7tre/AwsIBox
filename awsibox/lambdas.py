@@ -26,11 +26,3 @@ class LambdaPermissionEvent(LambdaPermission):
         self.Principal = "events.amazonaws.com"
         self.FunctionName = eval(key["Arn"])
         self.SourceArn = GetAtt(source, "Arn")
-
-
-class LambdaPermissionS3(LambdaPermission):
-    def __init__(self, title, key, source, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Principal = "s3.amazonaws.com"
-        self.FunctionName = key
-        self.SourceArn = Sub("arn:aws:s3:::%s" % source)
