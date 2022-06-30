@@ -11,6 +11,6 @@ global:
         <<: *base
         IBOX_CONDITION:
           - _: And(
-                 Condition(Lambda{IBOX_INDEXNAME}),
-                 get_condition("", "equals", IBOX_LINKED_OBJ_INDEX, f"Lambda{IBOX_INDEXNAME}Version", nomap=True))
+                 Condition(f"{IBOX_LINKED_OBJ_NAME}"),
+                 get_condition("", "equals", IBOX_LINKED_OBJ_INDEX, f"{IBOX_LINKED_OBJ_NAME}Version", nomap=True))
 

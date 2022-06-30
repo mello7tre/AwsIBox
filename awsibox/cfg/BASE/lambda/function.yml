@@ -1,6 +1,6 @@
 global:
   LambdaFunction:
-    - Versioned:
+    - Versioned: &versioned
         IBOX_ENABLED: False
         IBOX_LINKED_OBJ:
           Key: LambdaVersion
@@ -22,6 +22,16 @@ global:
           - _Version:
               Condition: IBOX_RESNAME.Version
               Value: If(f"{IBOX_RESNAME}VersionA", Ref(f"{IBOX_RESNAME}VersionA"), Ref(f"{IBOX_RESNAME}VersionB"))
+    - VersionedCreate:
+        <<: *versioned
+        IBOX_LINKED_OBJ:
+          Key: LambdaVersion
+          Type: Create
+          For: ["A", "B"]
+          Conf:
+            IBOX_RESNAME: IBOX_RESNAME.Version
+            IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
+            IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
     - ApiGateway:
         IBOX_ENABLED: False
         IBOX_LINKED_OBJ:
