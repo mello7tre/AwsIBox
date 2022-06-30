@@ -56,6 +56,7 @@ def Joker(key, module, cls):
             )
             add_obj(get_condition(resname, "equals", "yes", f"{resname}Create"))
             add_obj(Output(resname, Condition=resname, Value=Ref(resname)))
-            obj.Condition = resname
+            if not hasattr(obj, "Condition"):
+                obj.Condition = resname
 
         add_obj(obj)

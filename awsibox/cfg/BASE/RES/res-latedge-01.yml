@@ -11,6 +11,7 @@ global:
                     - edgelambda.amazonaws.com
   Lambda:
     - IBOX_BASE:
+        IBOX_SOURCE_OBJ: LambdaFunctionVersioned
         Environment: IBOX_SKIP
     - AtEdgeAddHeaders:
         Code:

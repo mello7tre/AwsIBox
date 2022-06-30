@@ -385,6 +385,7 @@ CFG_TO_FUNC = {
         "func": ("awslambda", "Permission"),
         "dep": ["SNSSubscription"],
     },
+    "LambdaVersion": {"module": "joker", "func": ("awslambda", "Version"), "dep": ["Lambda"]},
     "LoadBalancer": {
         "module": "elasticloadbalancing",
         "func": "LB_ElasticLoadBalancing",

@@ -9,8 +9,16 @@ Function: &function
     Type: Lambda
     Conf:
       IBOX_RESNAME: Role.IBOX_RESNAME
+  IBOX_OUTPUT:
+    - _:
+        IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+        Value: GetAtt(IBOX_RESNAME, "Arn")
+        Export: Export(IBOX_RESNAME)
   Code:
     ZipFile.IBOX_CODE_IF: Join("", import_lambda(get_endvalue(f"{IBOX_RESNAME}CodeZipFile")))
+    S3Key.IBOX_AUTO_PO:
+      Description: str(f"S3Key Name for lambda {IBOX_INDEXNAME} Code")
+  Export: False
   Layers.IBOX_CUSTOM_OBJ: LambdaLayers
   Handler: "index.lambda_handler"
   Role: GetAtt(f"RoleLambda{IBOX_INDEXNAME}", "Arn")

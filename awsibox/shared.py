@@ -817,12 +817,12 @@ def auto_get_props(
                 # assign to louc_cfg lo_key
                 louc_cfg[target_name] = linked_obj
 
+            # to be removed
+            pprint(louc_cfg)
             # update cfg and fixedvalues, need to do it this way to avoid overwriting the lo_key and removing all objects
             RP_to_cfg(louc_cfg, prefix=lo_key, mappedvalues=cfg.mappedvalues)
             # finally update cfg object base key with configuration including mutiple objects
             getattr(cfg, lo_key).update(louc_cfg)
-            # to be removed
-            pprint(getattr(cfg, lo_key))
 
         # Allowed object properties
         props = list(vars(obj)["propnames"])

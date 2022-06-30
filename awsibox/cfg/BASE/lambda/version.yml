@@ -1,0 +1,16 @@
+global:
+  LambdaVersion:
+    - Base: &base
+        IBOX_ENABLED: False
+        IBOX_CONDITION:
+          - _:
+              get_condition("", "equals", IBOX_LINKED_OBJ_INDEX, f"{IBOX_INDEXNAME}Version", nomap=True)
+        FunctionName: Ref(IBOX_LINKED_OBJ_NAME)
+        Condition: IBOX_LINKED_OBJ_NAME.Version.IBOX_LINKED_OBJ_INDEX
+    - Create:
+        <<: *base
+        IBOX_CONDITION:
+          - _: And(
+                 Condition(Lambda{IBOX_INDEXNAME}),
+                 get_condition("", "equals", IBOX_LINKED_OBJ_INDEX, f"Lambda{IBOX_INDEXNAME}Version", nomap=True))
+

@@ -41,18 +41,6 @@ def LBD_Lambdas(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
 
-        try:
-            v["Code"]["S3Key"]
-        except Exception:
-            pass
-        else:
-            s3keyname = f"{resname}CodeS3Key"
-            # parameters
-            add_obj(Parameter(s3keyname, Description=f"S3Key Name for lambda {n} Code"))
-
-            # outputs
-            add_obj(Output(s3keyname, Value=get_endvalue(s3keyname)))
-
         # resources
         r_Lambda = lbd.Function(resname)
         auto_get_props(r_Lambda, indexname=n) 
@@ -100,7 +88,7 @@ def LBD_Lambdas(key):
                 )
             }
 
-            add_obj([c_VersionA, c_VersionB, c_Version])
+            #add_obj([c_VersionA, c_VersionB, c_Version])
 
             # resources
             r_VersionA = lbd.Version(
@@ -118,7 +106,7 @@ def LBD_Lambdas(key):
                 Condition=versionname,
             )
 
-            add_obj([r_VersionA, r_VersionB, o_Version])
+            #add_obj([r_VersionA, r_VersionB, o_Version])
 
         # if not v.get("SkipRole"):
         #    # Automatically setup a lambda Role with base permissions.
@@ -134,7 +122,7 @@ def LBD_Lambdas(key):
                 resname, Value=GetAtt(resname, "Arn"), Export=Export(resname)
             )
 
-            add_obj(O_Lambda)
+            #add_obj(O_Lambda)
 
 
 def LBD_LayerVersions(key):

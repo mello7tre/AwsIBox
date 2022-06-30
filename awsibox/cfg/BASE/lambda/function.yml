@@ -1,5 +1,27 @@
 global:
   LambdaFunction:
+    - Versioned:
+        IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Key: LambdaVersion
+          Type: Base
+          For: ["A", "B"]
+          Conf:
+            IBOX_RESNAME: IBOX_RESNAME.Version
+            IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
+            IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+        IBOX_PARAMETER:
+          - _Version:
+              Description: LambdaVersion - change between A/B to force deploy new version
+              AllowedValues: ["", "A", "B"]
+        IBOX_CONDITION:
+          - _Version: Or(
+                        Condition(f"{IBOX_RESNAME}VersionA"),
+                        Condition(f"{IBOX_RESNAME}VersionB"))
+        IBOX_OUTPUT:
+          - _Version:
+              Condition: IBOX_RESNAME.Version
+              Value: If(f"{IBOX_RESNAME}VersionA", Ref(f"{IBOX_RESNAME}VersionA"), Ref(f"{IBOX_RESNAME}VersionB"))
     - ApiGateway:
         IBOX_ENABLED: False
         IBOX_LINKED_OBJ:
