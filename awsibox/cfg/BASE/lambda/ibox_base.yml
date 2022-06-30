@@ -29,9 +29,25 @@ Function: &function
       - Env: Ref('EnvShort')
       - EnvRole: Ref('EnvRole')
 
+LayerVersion: &layer_version
+  IBOX_ENABLED: True
+  IBOX_LINKED_OBJ:
+    Key: LambdaLayerVersionPermission
+    Type: Base
+    Conf:
+      IBOX_RESNAME: LambdaLayerPermission.IBOX_INDEXNAME
+      IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+  IBOX_OUTPUT:
+    - _:
+        Value: Ref(IBOX_RESNAME)
+  Content:
+    S3Key.IBOX_AUTO_PO:
+      Description: str(f"S3Key Name for lambda {IBOX_INDEXNAME} Content")
 
 global:
   LambdaPermission:
     - IBOX_BASE: *permission
   Lambda:
     - IBOX_BASE: *function
+  LambdaLayerVersion:
+    - IBOX_BASE: *layer_version

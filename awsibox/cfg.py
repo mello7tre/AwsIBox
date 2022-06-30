@@ -382,7 +382,12 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("awslambda", "EventSourceMapping"),
     },
-    "LambdaLayerVersion": {"module": "lambdas", "func": "LBD_LayerVersions"},
+    "LambdaLayerVersion": {"module": "joker", "func": ("awslambda", "LayerVersion")},
+    "LambdaLayerVersionPermission": {
+        "module": "joker",
+        "func": ("awslambda", "LayerVersionPermission"),
+        "dep": ["LambdaLayerVersion"],
+    },
     "LambdaPermission": {
         "module": "joker",
         "func": ("awslambda", "Permission"),

@@ -1,0 +1,7 @@
+global:
+  LambdaLayerVersionPermission:
+    - Base:
+        IBOX_ENABLED: False
+        LayerVersionArn: Ref(IBOX_LINKED_OBJ_NAME)
+        Action: "lambda:GetLayerVersion"
+        Principal: Ref("AWS::AccountId")
