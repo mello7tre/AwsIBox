@@ -31,6 +31,9 @@ def get_args():
         choices=["json", "cjson", "yaml"],
         default="yaml",
     )
+    parent_parser.add_argument(
+        "-d", "--Debug", help="Show RP Dict", action="store_true"
+    )
 
     # view parser
     parser_view = subparsers.add_parser(
@@ -42,7 +45,6 @@ def get_args():
         "-r", "--EnvRole", help="Stack EnvRole", required=True, type=str
     )
     parser_view.add_argument("-b", "--Brand", help="Brand", required=True, type=str)
-    parser_view.add_argument("-d", "--Debug", help="Show RP Dict", action="store_true")
 
     # write parser
     parser_write = subparsers.add_parser(
