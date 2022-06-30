@@ -143,9 +143,7 @@ def IAM_UserToGroupAdditions(key):
             )
 
         # resources
-        r_GroupAdd = iam.UserToGroupAddition(
-            resname, GroupName=n, Users=Users
-        )
+        r_GroupAdd = iam.UserToGroupAddition(resname, GroupName=n, Users=Users)
 
         add_obj([r_GroupAdd])
 
