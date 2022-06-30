@@ -3,13 +3,14 @@ global:
     - Versioned: &versioned
         IBOX_ENABLED: False
         IBOX_LINKED_OBJ:
-          Key: LambdaVersion
-          Type: Base
-          For: ["A", "B"]
-          Conf:
-            IBOX_RESNAME: IBOX_RESNAME.Version
-            IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
-            IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+          Version:
+            Key: LambdaVersion
+            Type: Base
+            For: ["A", "B"]
+            Conf:
+              IBOX_RESNAME: IBOX_RESNAME.Version
+              IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
+              IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
         IBOX_PARAMETER:
           - _Version:
               Description: LambdaVersion - change between A/B to force deploy new version
@@ -25,19 +26,11 @@ global:
     - VersionedCreate:
         <<: *versioned
         IBOX_LINKED_OBJ:
-          Key: LambdaVersion
-          Type: Create
-          For: ["A", "B"]
-          Conf:
-            IBOX_RESNAME: IBOX_RESNAME.Version
-            IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
-            IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
-    - ApiGateway:
-        IBOX_ENABLED: False
-        IBOX_LINKED_OBJ:
-          Key: LambdaPermission
-          Type: ApiGateway
-          Conf:
-            IBOX_RESNAME: LambdaPermission.IBOX_INDEXNAME
-            IBOX_LINKED_OBJ_NAME: Ref(f"Lambda.IBOX_INDEXNAME")
-            IBOX_LINKED_OBJ_INDEX: Sub("arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*/*")
+          Version:
+            Key: LambdaVersion
+            Type: Create
+            For: ["A", "B"]
+            Conf:
+              IBOX_RESNAME: IBOX_RESNAME.Version
+              IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
+              IBOX_LINKED_OBJ_NAME: IBOX_RESNAME

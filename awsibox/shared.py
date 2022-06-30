@@ -835,8 +835,11 @@ def auto_get_props(
         # This way they can be enabled or their name can be changed, or so on...
         ibox_linked_obj = key.get("IBOX_LINKED_OBJ")
         if ibox_linked_obj:
-            if isinstance(ibox_linked_obj, list):
-                for linked_obj in ibox_linked_obj:
+            # bad hack to use a dict for ibox_linked_obj, so that i can modify it if needed using the index name
+            # but avoid intercepting the "normal" conf that is a dict too (a key named Type must not exist)
+            if isinstance(ibox_linked_obj, dict) and "Type" not in ibox_linked_obj:
+                for linked_obj in ibox_linked_obj.values():
+                    pprint(linked_obj)
                     _linked_obj(linked_obj)
             else:
                 _linked_obj(ibox_linked_obj)

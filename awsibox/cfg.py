@@ -284,7 +284,10 @@ CFG_TO_FUNC = {
     "ApiGatewayResource": {"module": "joker", "func": ("apigateway", "Resource")},
     "ApiGatewayStage": {"module": "joker", "func": ("apigateway", "Stage")},
     "ApiGatewayUsagePlan": {"module": "joker", "func": ("apigateway", "UsagePlan")},
-    "ApiGatewayUsagePlanKey": {"module": "joker", "func": ("apigateway", "UsagePlanKey")},
+    "ApiGatewayUsagePlanKey": {
+        "module": "joker",
+        "func": ("apigateway", "UsagePlanKey"),
+    },
     "ApplicationAutoScalingScalingPolicy": {
         "module": "autoscaling",
         "func": "AS_ScalingPolicies",
@@ -370,7 +373,7 @@ CFG_TO_FUNC = {
     "IAMUserToGroupAddition": {"module": "iam", "func": "IAM_UserToGroupAdditions"},
     "KMSAlias": {"module": "joker", "func": ("kms", "Alias")},
     "KMSKey": {"module": "joker", "func": ("kms", "Key")},
-    "Lambda": {"module": "lambdas", "func": "LBD_Lambdas"},
+    "Lambda": {"module": "joker", "func": ("awslambda", "Function")},
     "LambdaEventInvokeConfig": {
         "module": "joker",
         "func": ("awslambda", "EventInvokeConfig"),
@@ -385,7 +388,11 @@ CFG_TO_FUNC = {
         "func": ("awslambda", "Permission"),
         "dep": ["SNSSubscription"],
     },
-    "LambdaVersion": {"module": "joker", "func": ("awslambda", "Version"), "dep": ["Lambda"]},
+    "LambdaVersion": {
+        "module": "joker",
+        "func": ("awslambda", "Version"),
+        "dep": ["Lambda"],
+    },
     "LoadBalancer": {
         "module": "elasticloadbalancing",
         "func": "LB_ElasticLoadBalancing",

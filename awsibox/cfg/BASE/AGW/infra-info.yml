@@ -70,7 +70,6 @@ global:
                 Resource: '*'
   Lambda:
     - InfraInfov1:
-        IBOX_SOURCE_OBJ: LambdaFunctionApiGateway
         Code:
           S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: 'ibox-tools/infra-info/infra-info-01.zip'

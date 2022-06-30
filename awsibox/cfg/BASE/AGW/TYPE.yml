@@ -39,3 +39,13 @@ global:
           HTTPSPort: '443'
           HTTPPort: Ref('AWS::NoValue')
         DomainName:  Sub('${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com')
+  Lambda:
+    - IBOX_BASE:
+        IBOX_LINKED_OBJ:
+          Permission:
+            Key: LambdaPermission
+            Type: ApiGateway
+            Conf:
+              IBOX_RESNAME: LambdaPermission.IBOX_INDEXNAME
+              IBOX_LINKED_OBJ_NAME: Ref(f"Lambda.IBOX_INDEXNAME")
+              IBOX_LINKED_OBJ_INDEX: Sub("arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*/*")
