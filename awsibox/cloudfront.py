@@ -42,13 +42,6 @@ class CFDefaultCacheBehavior(clf.DefaultCacheBehavior):
                 except Exception:
                     pass
 
-        if "TargetOriginId" in key:
-            self.TargetOriginId = get_endvalue(f"{name}TargetOriginId")
-        else:
-            self.TargetOriginId = get_endvalue(
-                f"CloudFrontCacheBehaviors0TargetOriginId"
-            )
-
 
 class CFCacheBehavior(clf.CacheBehavior, CFDefaultCacheBehavior):
     def __init__(self, title, **kwargs):
