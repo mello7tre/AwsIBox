@@ -75,10 +75,7 @@ def CFOrigins():
 
         S3OriginConfig = v["S3OriginConfig"]
         if "OriginAccessIdentity" in S3OriginConfig:
-            try:
-                del getattr(cfg, resname)["CustomOriginConfig"]
-            except Exception:
-                pass
+            del getattr(cfg, resname)["CustomOriginConfig"]
         else:
             del getattr(cfg, resname)["S3OriginConfig"]
 
