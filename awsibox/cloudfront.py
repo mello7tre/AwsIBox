@@ -73,18 +73,14 @@ def CFOrigins():
     for n, v in cfg.CloudFrontOrigins.items():
         resname = f"CloudFrontOrigins{n}"
 
-        try:
-            S3OriginConfig = v["S3OriginConfig"]
-        except Exception:
-            pass
+        S3OriginConfig = v["S3OriginConfig"]
+        if "OriginAccessIdentity" in S3OriginConfig:
+            try:
+                del getattr(cfg, resname)["CustomOriginConfig"]
+            except Exception:
+                pass
         else:
-            if "OriginAccessIdentity" in S3OriginConfig:
-                try:
-                    del getattr(cfg, resname)["CustomOriginConfig"]
-                except Exception:
-                    pass
-            else:
-                del getattr(cfg, resname)["S3OriginConfig"]
+            del getattr(cfg, resname)["S3OriginConfig"]
 
         Origins.append(auto_get_props(clf.Origin(resname)))
 
