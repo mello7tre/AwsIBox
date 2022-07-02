@@ -758,10 +758,17 @@ def auto_get_props(
         def _proc_custom_obj(name, key_value):
             value = []
             base_rootdict = getattr(cfg, f"{name}IBOX_CUSTOM_OBJ")
-            for n in key_value:
-                rootdict = {"Value": n}
+            if isinstance(key_value, dict):
+                my_iter = iter(key_value.items())
+                is_dict = True
+            else:
+                my_iter = enumerate(key_value)
+                is_dict = False
+
+            for n, v in my_iter:
+                rootdict = {"Value": v}
                 rootdict.update(base_rootdict)
-                obj = IBOX_Custom_Obj(n)
+                obj = IBOX_Custom_Obj(n if is_dict else v)
                 auto_get_props(obj, rootdict=rootdict)
                 value.append(getattr(obj, "Value"))
             return value
@@ -884,12 +891,12 @@ def auto_get_props(
                 # set value
                 if key_value == "IBOX_SKIP":
                     continue
+                elif isinstance(key_value, (list, dict)) and ibox_custom_obj in key:
+                    # to process a list like a custom obj
+                    value = _proc_custom_obj(key[ibox_custom_obj], key_value)
                 elif isinstance(key_value, dict):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)
-                elif isinstance(key_value, list) and ibox_custom_obj in key:
-                    # to process a list like a custom obj
-                    value = _proc_custom_obj(key[ibox_custom_obj], key_value)
                 elif isinstance(key_value, str) and key_value.startswith(
                     IBOX_SPECIAL_KEYS
                 ):
