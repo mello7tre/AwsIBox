@@ -12,10 +12,10 @@ global:
         BinaryMediaTypes: ['*/*']
   CloudFront: IBOX_SKIP_FUNC
   ApiGatewayMethod:
-    - Resource01RootANY:
+    - Resource01RootGET:
         ApiKeyRequired: false
         AuthorizationType: NONE
-        HttpMethod: ANY
+        HttpMethod: GET
         Integration:
           ContentHandling: CONVERT_TO_TEXT
           IntegrationHttpMethod: POST
@@ -41,7 +41,7 @@ global:
     - v1:
         IBOX_LINKED_OBJ:
           Conf:
-            DependsOn: ApiGatewayMethodResource01RootANY
+            DependsOn: ApiGatewayMethodResource01RootGET
         CacheClusterEnabled: false
         MethodSettings:
           - 1:
