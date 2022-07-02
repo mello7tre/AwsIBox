@@ -24,12 +24,7 @@ global:
         Value: get_endvalue('CloudFrontWebACLId')
     - CloudFrontMinimumProtocolVersion:
         Value: get_resvalue('CloudFrontDistribution', 'DistributionConfig.ViewerCertificate.MinimumProtocolVersion')
-  CloudFrontAliasExtra:
-    - 1: none
-    - 2: none
   CloudFrontAcmCertificate: 'yes'
-  CloudFrontCacheBehaviors:
-    - 0: {}
   CloudFrontHttpVersion: 'http2'
   CloudFrontLogging: 'no'
   CloudFrontMinimumProtocolVersion: TLSv1

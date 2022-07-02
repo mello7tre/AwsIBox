@@ -14,27 +14,30 @@ global:
         OriginCustomHeaders: []
         S3OriginConfig:
           OriginAccessIdentity: ''
-  CloudFrontCustomErrorResponses:
-    - 1:
-        ErrorCode: 404
-        ErrorCachingMinTTL: 0
-    - 2:
-        ErrorCode: 500
-        ErrorCachingMinTTL: 300
-        ResponsePagePath: '/error-pages/500.html'
-        ResponseCode: 500
-    - 3:
-        ErrorCode: 502
-        ErrorCachingMinTTL: 10
-        ResponsePagePath: '/error-pages/502.html'
-        ResponseCode: 502
-    - 4:
-        ErrorCode: 503
-        ErrorCachingMinTTL: 300
-        ResponsePagePath: '/error-pages/503.html'
-        ResponseCode: 503
-    - 5:
-        ErrorCode: 504
-        ErrorCachingMinTTL: 300
-        ResponsePagePath: '/error-pages/504.html'
-        ResponseCode: 504
+  CloudFrontDistribution:
+    - Base:
+        DistributionConfig:
+          CustomErrorResponses:
+            - 404:
+                ErrorCode: 404
+                ErrorCachingMinTTL: 0
+            - 500:
+                ErrorCode: 500
+                ErrorCachingMinTTL: 300
+                ResponsePagePath: '/error-pages/500.html'
+                ResponseCode: 500
+            - 502:
+                ErrorCode: 502
+                ErrorCachingMinTTL: 10
+                ResponsePagePath: '/error-pages/502.html'
+                ResponseCode: 502
+            - 503:
+                ErrorCode: 503
+                ErrorCachingMinTTL: 300
+                ResponsePagePath: '/error-pages/503.html'
+                ResponseCode: 503
+            - 504:
+                ErrorCode: 504
+                ErrorCachingMinTTL: 300
+                ResponsePagePath: '/error-pages/504.html'
+                ResponseCode: 504

@@ -1,21 +1,3 @@
-Distribution: &distribution
-  Enabled: true
-  HttpVersion: get_endvalue('CloudFrontHttpVersion')
-  Logging:
-    IBOX_IF:
-      - CloudFrontLogging
-      - IBOX_IFVALUE
-      - Ref('AWS::NoValue')
-    Bucket: Sub(f'{cfg.BucketNameLogs}.s3.amazonaws.com')
-    Prefix: Sub('${EnvRole}.${AWS::StackName}/')
-  PriceClass: PriceClass_100
-  ViewerCertificate:
-    AcmCertificateArn: If('CloudFrontAcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))
-    CloudFrontDefaultCertificate: If('CloudFrontAcmCertificate', Ref('AWS::NoValue'), True)
-    SslSupportMethod: If('CloudFrontAcmCertificate', 'sni-only', Ref('AWS::NoValue'))
-    MinimumProtocolVersion: If('CloudFrontAcmCertificate', get_endvalue('CloudFrontMinimumProtocolVersion'), Ref('AWS::NoValue'))
-  WebACLId: get_endvalue('CloudFrontWebACLId', condition=True)
-
 Origin: &origin
   IBOX_PARAMETER:
     - _DomainName:
@@ -31,6 +13,13 @@ Origin: &origin
       - _S3OriginConfigOriginAccessIdentity:
           Description: 'empty for mapped value'
 
+CacheBehavior: &cache_behavior
+  Compress: True
+  ForwardedValues:
+    QueryString: True
+    Headers: []
+  ViewerProtocolPolicy: redirect-to-https
+
 CloudFrontLambdaFunctionAssociation: &lambda_function_association
   IBOX_PARAMETER:
     - _LambdaFunctionARN:
@@ -45,10 +34,38 @@ CloudFrontLambdaFunctionAssociation: &lambda_function_association
   EventType: viewer-request
   LambdaFunctionARN: none
 
+DistributionConfig: &distribution_config
+  Aliases.IBOX_CUSTOM_OBJ: CloudFrontDistributionConfigAliases
+  DefaultCacheBehavior: *cache_behavior
+  CacheBehaviors: {"IBOX_SUB_OBJ": "CloudFrontCacheBehaviors"}
+  Enabled: true
+  HttpVersion: get_endvalue('CloudFrontHttpVersion')
+  Logging:
+    IBOX_IF:
+      - CloudFrontLogging
+      - IBOX_IFVALUE
+      - Ref('AWS::NoValue')
+    Bucket: Sub(f'{cfg.BucketNameLogs}.s3.amazonaws.com')
+    Prefix: Sub('${EnvRole}.${AWS::StackName}/')
+  Origins: {"IBOX_SUB_OBJ": "CloudFrontOrigins"}
+  PriceClass: PriceClass_100
+  ViewerCertificate:
+    AcmCertificateArn: If('CloudFrontAcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))
+    CloudFrontDefaultCertificate: If('CloudFrontAcmCertificate', Ref('AWS::NoValue'), True)
+    SslSupportMethod: If('CloudFrontAcmCertificate', 'sni-only', Ref('AWS::NoValue'))
+    MinimumProtocolVersion: If('CloudFrontAcmCertificate', get_endvalue('CloudFrontMinimumProtocolVersion'), Ref('AWS::NoValue'))
+  WebACLId: get_endvalue('CloudFrontWebACLId', condition=True)
+
 
 global:
   CloudFrontDistribution:
-    - IBOX_BASE: *distribution
+    - Base:
+        DistributionConfig: *distribution_config
+  CloudFrontDistributionConfigAliases:
+    - IBOX_CUSTOM_OBJ:
+        Value: get_endvalue(f"CloudFrontDistributionBaseDistributionConfigAliases{IBOX_RESNAME}")
+  CloudFrontCacheBehaviors:
+    - IBOX_BASE: *cache_behavior
   CloudFrontOrigins:
     - IBOX_BASE: *origin
   CloudFrontLambdaFunctionAssociation:
