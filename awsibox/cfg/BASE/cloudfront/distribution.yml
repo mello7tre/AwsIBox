@@ -38,6 +38,7 @@ DistributionConfig: &distribution_config
   Aliases.IBOX_CUSTOM_OBJ: CloudFrontDistributionConfigAliases
   DefaultCacheBehavior: *cache_behavior
   CacheBehaviors: {"IBOX_SUB_OBJ": "CloudFrontCacheBehaviors"}
+  CustomErrorResponses: []
   Enabled: true
   HttpVersion: get_endvalue('CloudFrontHttpVersion')
   Logging:

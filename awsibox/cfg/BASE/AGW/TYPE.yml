@@ -31,8 +31,11 @@ global:
                 Resource: "execute-api:/*"
           Version: "2012-10-17"
   CloudFront: 'yes'
-  CloudFrontAliasExtra:
-    - Cdn: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv)
+  CloudFrontDistribution:
+    - Base:
+        DistributionConfig:
+          Aliases:
+            - Cdn: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv)
   CloudFrontOrigins:
     - Default:
         CustomOriginConfig:

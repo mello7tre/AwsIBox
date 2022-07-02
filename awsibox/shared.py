@@ -755,8 +755,8 @@ def auto_get_props(
                 output = {"IBOX_OUTPUT": {f"{mapname}{name}": output_base}}
                 _try_PCO_in_obj(output)
 
-        def _proc_custom_obj(name, key_value):
-            value = []
+        def _proc_custom_obj(name, key_value, mapname):
+            values = []
             base_rootdict = getattr(cfg, f"{name}IBOX_CUSTOM_OBJ")
             if isinstance(key_value, dict):
                 my_iter = iter(key_value.items())
@@ -770,8 +770,14 @@ def auto_get_props(
                 rootdict.update(base_rootdict)
                 obj = IBOX_Custom_Obj(n if is_dict else v)
                 auto_get_props(obj, rootdict=rootdict)
-                value.append(getattr(obj, "Value"))
-            return value
+                value = getattr(obj, "Value")
+                if v == "IBOX_IFCONDVALUE":
+                    condname = f"{mapname}{n}"
+                    add_obj(get_condition(condname, "not_equals", "IBOX_IFCONDVALUE"))
+                    values.append(If(condname, value, Ref("AWS::NoValue")))
+                else:
+                    values.append(value)
+            return values
 
         def _linked_obj(linked_obj_data):
             # need to parse them here to have the right values
@@ -893,7 +899,9 @@ def auto_get_props(
                     continue
                 elif isinstance(key_value, (list, dict)) and ibox_custom_obj in key:
                     # to process a list like a custom obj
-                    value = _proc_custom_obj(key[ibox_custom_obj], key_value)
+                    value = _proc_custom_obj(
+                        key[ibox_custom_obj], key_value, f"{mapname}{propname}"
+                    )
                 elif isinstance(key_value, dict):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)

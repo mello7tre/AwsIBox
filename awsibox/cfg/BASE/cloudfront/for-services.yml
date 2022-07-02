@@ -10,8 +10,6 @@ global:
     - RecordSetCloudFrontSuffix:
         Description: 'RecordSetCloudFront DNS Name Suffix - empty to disable'
   Condition:
-    - CloudFrontAliasZone:
-        get_condition('', 'not_equals', 'none', 'CloudFrontAliasZone')
     - CloudFrontDistribution:
         get_condition('', 'equals', 'yes', 'CloudFront')
     - RecordSetCloudFront:
@@ -31,11 +29,9 @@ global:
         Condition: CloudFrontDistribution
         DistributionConfig:
           Aliases:
-            Cdn: If('RecordSetCloudFront',
+            - Cdn: If('RecordSetCloudFront',
                 Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv), Ref('RecordSetExternal'))
-            Env:  Sub('${EnvRole}${RecordSetCloudFrontSuffix}.%s' % cfg.HostedZoneNameEnv)
-            Zone: If('CloudFrontAliasZone',
-                Sub('%s.%s' % (get_endvalue('CloudFrontAliasZone'), cfg.HostedZoneNameEnv)), Ref('AWS::NoValue'))
+            - Env:  Sub('${EnvRole}${RecordSetCloudFrontSuffix}.%s' % cfg.HostedZoneNameEnv)
           Comment: Sub('${AWS::StackName}-${EnvRole}')
           DefaultCacheBehavior:
             TargetOriginId: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s' % cfg.HostedZoneNameEnv)
@@ -44,8 +40,8 @@ global:
         CustomOriginConfig:
           HTTPSPort: get_endvalue('ListenerLoadBalancerHttpsPort')
           HTTPPort:  get_endvalue('ListenerLoadBalancerHttpPort')
-        DomainName: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
-        Id: get_endvalue('CloudFrontCacheBehaviors0TargetOriginId')
+        DomainName: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
+        Id: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
   RecordSetCloudFront: 'yes'
   Route53RecordSet:
     - CloudFront:
