@@ -14,7 +14,6 @@ from . import (
     joker,
     elasticloadbalancing,
     mappings,
-    route53,
     rds,
     s3,
     securitygroup,

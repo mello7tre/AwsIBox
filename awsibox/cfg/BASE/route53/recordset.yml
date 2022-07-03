@@ -1,33 +1,55 @@
 Base: &base
   IBOX_ENABLED: False
 
-ZoneExternal: &zoneexternal
+BaseExternal: &base_external
+  IBOX_TITLE: RecordSetExternal
+  IBOX_OUTPUT:
+    - RecordSetExternal:
+        Value: Ref("RecordSetExternal")
+
+BaseInternal: &base_internal
+  IBOX_TITLE: RecordSetInternal
+  IBOX_OUTPUT:
+    - RecordSetInternal:
+        Value: Ref("RecordSetInternal")
+
+ZoneExternal: &zone_external
   <<: *base
   HostedZoneId: get_expvalue('HostedZoneIdEnv')
   Name: Sub('${AWS::StackName}.${EnvRole}.%s' % cfg.HostedZoneNameRegionEnv)
 
-ZoneInternal: &zoneinternal
+ZoneInternal: &zone_internal
   <<: *base
   HostedZoneId: get_expvalue('HostedZoneIdPrivate')
   Name: Sub('${AWS::StackName}.${EnvRole}.%s' % cfg.HostedZoneNamePrivate)
 
 LoadBalancer: &loadbalancer
-  AliasTarget: &loadbalanceraliastarget
-    HostedZoneId: get_endvalue('HostedZoneIdLB')
+  AliasTarget: &loadbalancer_alias_target
+    HostedZoneId: get_endvalue('HostedZoneIdLBNET' if cfg.LoadBalancerType == "Network" else 'HostedZoneIdLB')
   Type: A
 
-ECSLoadBalancerTargetExternal: &ecsloadbalancertargetexternal
+EC2LoadBalancerTargetExternal: &ec2_loadbalancer_target_external
   AliasTarget:
-    <<: *loadbalanceraliastarget
+    <<: *loadbalancer_alias_target
+    DNSName: GetAtt(f"LoadBalancer{cfg.LoadBalancerType}External", "DNSName")
+
+EC2LoadBalancerTargetInternal: &ec2_loadbalancer_target_internal
+  AliasTarget:
+    <<: *loadbalancer_alias_target
+    DNSName: GetAtt(f"LoadBalancer{cfg.LoadBalancerType}Internal", "DNSName")
+
+ECSLoadBalancerTargetExternal: &ecs_loadbalancer_target_external
+  AliasTarget:
+    <<: *loadbalancer_alias_target
     DNSName: get_subvalue('dualstack.${1E}', f'LoadBalancerApplicationExternalDNS', 'LoadBalancerApplicationStack')
 
-ECSLoadBalancerTargetInternal: &ecsloadbalancertargetinternal
+ECSLoadBalancerTargetInternal: &ecs_loadbalancer_target_internal
   AliasTarget:
-    <<: *loadbalanceraliastarget
+    <<: *loadbalancer_alias_target
     DNSName: get_subvalue('dualstack.${1E}', f'LoadBalancerApplicationInternalDNS', 'LoadBalancerApplicationStack')
 
 EFS: &efs
-  <<: *zoneinternal
+  <<: *zone_internal
   Name: Sub("efs-%s.%s" % (IBOX_LINKED_OBJ_INDEX, cfg.HostedZoneNamePrivate))
   ResourceRecords:
     - Sub("${%s}.efs.${AWS::Region}.amazonaws.com" % IBOX_LINKED_OBJ_NAME)
@@ -35,7 +57,7 @@ EFS: &efs
   TTL: '300'
 
 CloudFront: &cloudfront
-  <<: *zoneexternal
+  <<: *zone_external
   Condition: RecordSetCloudFront
   AliasTarget:
     DNSName: GetAtt('CloudFrontDistribution', 'DomainName')
@@ -92,7 +114,7 @@ CCHReadOnly: &cchreadonly
         })
 
 ApiGatewayDomainName: &apigatewaydomainname
-  <<: *zoneexternal
+  <<: *zone_external
   Type: A
   Name: Ref(IBOX_INDEXNAME)
 
@@ -111,38 +133,42 @@ ApiGatewayDomainNameRegional: &apigatewaydomainnameregional
 
 global:
   Route53RecordSet:
-    - EC2LoadBalancerExternal:
-        <<: [*zoneexternal, *loadbalancer]
-    - EC2LoadBalancerInternal:
-        <<: [*zoneinternal, *loadbalancer]
-    - ECSLoadBalancerTargetExternalExternal:
-        <<: [*zoneexternal, *ecsloadbalancertargetexternal, *loadbalancer]
-    - ECSLoadBalancerTargetInternalExternal:
-        <<: [*zoneexternal, *ecsloadbalancertargetinternal, *loadbalancer]
-    - ECSLoadBalancerTargetInternalInternal:
-        <<: [*zoneinternal, *ecsloadbalancertargetinternal, *loadbalancer]
-    - ECSLoadBalancerTargetExternalInternal:
-        <<: [*zoneinternal, *ecsloadbalancertargetexternal, *loadbalancer]
+    - EC2ExternalLoadBalancerExternal:
+        <<: [*zone_external, *ec2_loadbalancer_target_external, *loadbalancer, *base_external]
+    - EC2ExternalLoadBalancerInternal:
+        <<: [*zone_external, *ec2_loadbalancer_target_internal, *loadbalancer, *base_external]
+    - EC2InternalLoadBalancerInternal:
+        <<: [*zone_internal, *ec2_loadbalancer_target_internal, *loadbalancer, *base_internal]
+    - EC2InternalLoadBalancerExternal:
+        <<: [*zone_internal, *ec2_loadbalancer_target_external, *loadbalancer, *base_internal]
+    - ECSExternalLoadBalancerExternal:
+        <<: [*zone_external, *ecs_loadbalancer_target_external, *loadbalancer, *base_external]
+    - ECSExternalLoadBalancerInternal:
+        <<: [*zone_external, *ecs_loadbalancer_target_internal, *loadbalancer, *base_external]
+    - ECSInternalLoadBalancerInternal:
+        <<: [*zone_internal, *ecs_loadbalancer_target_internal, *loadbalancer, *base_internal]
+    - ECSInternalLoadBalancerExternal:
+        <<: [*zone_internal, *ecs_loadbalancer_target_external, *loadbalancer, *base_internal]
     - EFS: *efs
     - CloudFront:
         <<: *cloudfront
         IBOX_TITLE: RecordSetCloudFront
     - RDSExternal:
-        <<: [*zoneexternal, *rds]
+        <<: [*zone_external, *rds]
     - RDSInternal:
-        <<: [*zoneinternal, *rds]
+        <<: [*zone_internal, *rds]
     - CCHExternal:
-        <<: [*zoneexternal, *cch]
+        <<: [*zone_external, *cch]
         IBOX_RESNAME: RecordSetExternal
     - CCHInternal:
-        <<: [*zoneinternal, *cch]
+        <<: [*zone_internal, *cch]
         IBOX_RESNAME: RecordSetInternal
     - CCHReadOnlyExternal:
-        <<: [*zoneexternal, *cchreadonly]
+        <<: [*zone_external, *cchreadonly]
         IBOX_RESNAME: RecordSetExternalRO
         Name: Sub('${AWS::StackName}.${EnvRole}_ro.%s' % cfg.HostedZoneNameRegionEnv)
     - CCHReadOnlyInternal:
-        <<: [*zoneinternal, *cchreadonly]
+        <<: [*zone_internal, *cchreadonly]
         IBOX_RESNAME: RecordSetInternalRO
         Name: Sub('${AWS::StackName}.${EnvRole}_ro.%s' % cfg.HostedZoneNamePrivate)
     - ApiGatewayDomainNameGlobal: *apigatewaydomainnameglobal

@@ -12,7 +12,6 @@ from .shared import (
     get_condition,
     add_obj,
 )
-from .route53 import R53_RecordSetEC2LoadBalancer, R53_RecordSetECSLoadBalancer
 from .securitygroup import SecurityGroupIngressInstanceELBPorts
 
 
@@ -68,6 +67,22 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
 
 
 # E - V2 LOAD BALANCING #
+
+
+def enable_recordset(rtype):
+    prefix = f"Route53RecordSet"
+    if "External" in cfg.RecordSet:
+        if "External" in cfg.LoadBalancer:
+            record = getattr(cfg, f"{prefix}{rtype}ExternalLoadBalancerExternal")
+        else:
+            record = getattr(cfg, f"{prefix}{rtype}ExternalLoadBalancerInternal")
+        record["IBOX_ENABLED"] = True
+    if "Internal" in cfg.RecordSet:
+        if "Internal" in cfg.LoadBalancer:
+            record = getattr(cfg, f"{prefix}{rtype}InternalLoadBalancerInternal")
+        else:
+            record = getattr(cfg, f"{prefix}{rtype}InternalLoadBalancerExternal")
+        record["IBOX_ENABLED"] = True
 
 
 def LB_ListenersEC2():
@@ -388,8 +403,7 @@ def LB_ElasticLoadBalancingNetworkEC2():
 def LB_ElasticLoadBalancingEC2(key):
     if not cfg.LoadBalancer:
         return
-    # Resources
-    R53_RecordSetEC2LoadBalancer()
+    enable_recordset("EC2")
 
     if cfg.LoadBalancerType == "Classic":
         LB_ElasticLoadBalancingClassicEC2()
@@ -435,4 +449,4 @@ def LB_ElasticLoadBalancingECS(key):
         return
     # Resources
     LB_ListenersV2ECS()
-    R53_RecordSetECSLoadBalancer()
+    enable_recordset("ECS")
