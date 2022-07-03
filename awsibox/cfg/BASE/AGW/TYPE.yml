@@ -32,7 +32,7 @@ global:
           Version: "2012-10-17"
   CloudFront: 'yes'
   CloudFrontDistribution:
-    - Base:
+    - IBOX_BASE:
         DistributionConfig:
           Aliases:
             - Cdn: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv)

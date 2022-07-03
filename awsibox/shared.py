@@ -830,8 +830,8 @@ def auto_get_props(
                 # assign to louc_cfg lo_key
                 louc_cfg[target_name] = linked_obj
 
-            # to be removed
-            pprint(louc_cfg)
+            if cfg.debug:
+                pprint(louc_cfg)
             # update cfg and fixedvalues, need to do it this way to avoid overwriting the lo_key and removing all objects
             RP_to_cfg(louc_cfg, prefix=lo_key, mappedvalues=cfg.mappedvalues)
             # finally update cfg object base key with configuration including mutiple objects
@@ -852,7 +852,6 @@ def auto_get_props(
             # but avoid intercepting the "normal" conf that is a dict too (a key named Type must not exist)
             if isinstance(ibox_linked_obj, dict) and "Type" not in ibox_linked_obj:
                 for linked_obj in ibox_linked_obj.values():
-                    pprint(linked_obj)
                     _linked_obj(linked_obj)
             else:
                 _linked_obj(ibox_linked_obj)

@@ -15,7 +15,7 @@ global:
         S3OriginConfig:
           OriginAccessIdentity: ''
   CloudFrontDistribution:
-    - Base:
+    - IBOX_BASE:
         DistributionConfig:
           CustomErrorResponses:
             - 404:

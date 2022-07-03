@@ -70,7 +70,7 @@ def EVE_EventRules(key):
                         "Name": f"LambdaPermission{m}{resname}",
                         "Conf": {
                             "IBOX_RESNAME": permname,
-                            "IBOX_LINKED_OBJ_NAME": w['Arn'],
+                            "IBOX_LINKED_OBJ_NAME": w["Arn"],
                             "IBOX_LINKED_OBJ_INDEX": 'GetAtt("IBOX_RESNAME", "Arn")',
                         },
                     }

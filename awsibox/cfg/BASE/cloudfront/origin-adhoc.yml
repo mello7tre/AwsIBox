@@ -3,7 +3,7 @@ global:
     - CloudFrontOriginAdHoc:
         get_condition('', 'equals', 'yes', 'CloudFrontOriginAdHoc')
   CloudFrontDistribution:
-    - Base:
+    - IBOX_BASE:
         DistributionConfig:
           DefaultCacheBehavior:
             TargetOriginId:

@@ -25,7 +25,7 @@ global:
         Value: Sub('${RecordSetCloudFront} --> ${CloudFrontDistribution.DomainName}')
   CloudFront: 'no'
   CloudFrontDistribution:
-    - Base:
+    - IBOX_BASE:
         Condition: CloudFrontDistribution
         DistributionConfig:
           Aliases:

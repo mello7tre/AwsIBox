@@ -1,7 +1,6 @@
 IBoxLoader: !include
   - crm/certificate-global.yml
   - distribution.yml
-  - cache-behaviors.yml
 
 global:
   Parameter:
@@ -24,6 +23,8 @@ global:
         Value: get_endvalue('CloudFrontWebACLId')
     - CloudFrontMinimumProtocolVersion:
         Value: get_resvalue('CloudFrontDistribution', 'DistributionConfig.ViewerCertificate.MinimumProtocolVersion')
+  CloudFrontDistribution:
+    - Base: {}
   CloudFrontAcmCertificate: 'yes'
   CloudFrontHttpVersion: 'http2'
   CloudFrontLogging: 'no'

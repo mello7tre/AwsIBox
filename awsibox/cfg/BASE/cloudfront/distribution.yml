@@ -60,7 +60,7 @@ DistributionConfig: &distribution_config
 
 global:
   CloudFrontDistribution:
-    - Base:
+    - IBOX_BASE:
         DistributionConfig: *distribution_config
   CloudFrontDistributionConfigAliases:
     - IBOX_CUSTOM_OBJ:
