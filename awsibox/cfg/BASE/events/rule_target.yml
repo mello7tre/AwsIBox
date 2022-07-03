@@ -1,0 +1,17 @@
+global:
+  EventsRuleTarget:
+    - ECSCluster:
+        Arn: 'get_subvalue("arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${1E}", "Cluster", stack="ClusterStack")'
+        EcsParameters:
+          LaunchType: get_endvalue("LaunchType")
+          NetworkConfiguration:
+            IBOX_IF:
+              - NetworkModeAwsVpc
+              - IBOX_IFVALUE
+              - Ref("AWS::NoValue")
+            AwsVpcConfiguration:
+              SecurityGroups: cfg.SecurityGroupsImport
+              Subnets: Split(",", get_expvalue("SubnetsPrivate"))
+          TaskDefinitionArn: Ref("TaskDefinition")
+        RoleArn: get_expvalue("RoleECSEvents")
+        Id: str(f"Target{IBOX_INDEXNAME}")

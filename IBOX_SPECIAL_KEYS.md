@@ -22,6 +22,7 @@
 - [IBOX\_OUTPUT](#IBOX_OUTPUT)
 - [IBOX\_PARAMETER](#IBOX_PARAMETER)
 - [IBOX\_PCO](#IBOX_PCO)
+- [IBOX\_PCO\_IF](#IBOX_PCO_IF)
 - [IBOX\_RESNAME](#IBOX_RESNAME)
 - [IBOX\_ROLE\_EX](#IBOX_ROLE_EX)
 - [IBOX\_SKIP\_FUNC](#IBOX_SKIP_FUNC)
@@ -349,6 +350,9 @@ Same as `IBOX_CONDITION`.
 #### IBOX\_PCO
 Represent the key suffix used to specify `IBOX_CONDITION`, `IBOX_PARAMETER`, `IBOX_OUTPUT` for a specific key.\
 Look at `IBOX_CONDITION`.
+
+#### IBOX\_PCO\_IF
+Same as `IBOX_PCO` but is processed ONLY if the relative key is present.
 
 #### IBOX\_RESNAME
 Can be used as python var or inside other IBOX keys.\

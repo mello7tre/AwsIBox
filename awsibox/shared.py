@@ -864,6 +864,7 @@ def auto_get_props(
             ibox_auto_po = f"{propname}.IBOX_AUTO_PO"
             ibox_auto_p = f"{propname}.IBOX_AUTO_P"
             ibox_pco = f"{propname}.IBOX_PCO"
+            ibox_pco_if = f"{propname}.IBOX_PCO_IF"
             ibox_code = f"{propname}.IBOX_CODE"
             ibox_code_if = f"{propname}.IBOX_CODE_IF"
             ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
@@ -874,10 +875,12 @@ def auto_get_props(
                     # Automatically create parameter
                     _auto_PO(propname, key[n], "p")
 
-            # IBOX_PCO
+            # IBOX_PCO/_IF
             if ibox_pco in key:
                 # If there is a key ending with {prop}.IBOX_PCO process it
                 _try_PCO_in_obj(key[ibox_pco])
+            elif ibox_pco_if in key and propname in key:
+                _try_PCO_in_obj(key[ibox_pco_if])
 
             # IBOX_CODE/_IF
             if ibox_code in key:

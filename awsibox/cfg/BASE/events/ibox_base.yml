@@ -1,0 +1,19 @@
+Base: &base
+  IBOX_PARAMETER:
+    - _State:
+        Description: "Events Rule State - empty for default based on mappings"
+        AllowedValues: ["", "DISABLED", "ENABLED"]
+  IBOX_OUTPUT:
+    - _State:
+        Value: get_endvalue(f"{IBOX_RESNAME}State")
+  ScheduleExpression.IBOX_PCO_IF:
+    IBOX_PARAMETER:
+      - _ScheduleExpression:
+          Description: "Events Rule Schedule - empty for default based on mapping"
+    IBOX_OUTPUT:
+      - _ScheduleExpression:
+          Value: get_endvalue(f"{IBOX_RESNAME}ScheduleExpression")
+
+global:
+  EventsRule:
+    - IBOX_BASE: *base

@@ -12,27 +12,6 @@ from .shared import (
 )
 
 
-class EVENetworkConfiguration(eve.NetworkConfiguration):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.AwsVpcConfiguration = eve.AwsVpcConfiguration(
-            SecurityGroups=cfg.SecurityGroupsImport,
-            Subnets=Split(",", get_expvalue("SubnetsPrivate")),
-        )
-
-
-class EVEEcsParameters(eve.EcsParameters):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.LaunchType = get_endvalue("LaunchType")
-        self.NetworkConfiguration = If(
-            "NetworkModeAwsVpc",
-            EVENetworkConfiguration(""),
-            Ref("AWS::NoValue"),
-        )
-        self.TaskDefinitionArn = Ref("TaskDefinition")
-
-
 def EVE_EventRules(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
@@ -55,7 +34,6 @@ def EVE_EventRules(key):
 
         # resources
         Targets = []
-        need_ecsEventsRole = None
         for m, w in v["Targets"].items():
             targetname = f"{resname}Targets{m}"
             Target = eve.Target(targetname)
@@ -79,20 +57,8 @@ def EVE_EventRules(key):
                     ibox_lo_cfg["IBOX_LINKED_OBJ"]["Conf"]["Condition"] = v["Condition"]
                 getattr(cfg, targetname).update(ibox_lo_cfg)
             if m.startswith("ECSCluster"):
-                props = {
-                    "Arn": get_subvalue(
-                        "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:" "cluster/${1E}",
-                        "Cluster",
-                        stack="ClusterStack",
-                    ),
-                    "EcsParameters": EVEEcsParameters(""),
-                    "RoleArn": get_expvalue("RoleECSEvents"),
-                    "Id": f"Target{m}",
-                }
-                need_ecsEventsRole = True
-
                 # add common "fixed" props
-                auto_get_props(Target, rootdict=props)
+                auto_get_props(Target, mapname="EventsRuleTargetECSCluster", indexname=m)
 
             # add props found in yaml cfg
             auto_get_props(Target)
