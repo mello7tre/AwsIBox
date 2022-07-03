@@ -4,6 +4,7 @@ IBoxLoader:
     - iam/ibox_base.yml
     - sqs/ibox_base.yml
     - lambda/ibox_base.yml
+    - events/ibox_base.yml
 
 global:
   Parameter:

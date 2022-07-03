@@ -6,6 +6,7 @@ Base: &base
   IBOX_OUTPUT:
     - _State:
         Value: get_endvalue(f"{IBOX_RESNAME}State")
+  Name: Sub("${AWS::StackName}-${EnvRole}-" f"Rule{IBOX_INDEXNAME}")
   ScheduleExpression.IBOX_PCO_IF:
     IBOX_PARAMETER:
       - _ScheduleExpression:
@@ -13,6 +14,7 @@ Base: &base
     IBOX_OUTPUT:
       - _ScheduleExpression:
           Value: get_endvalue(f"{IBOX_RESNAME}ScheduleExpression")
+
 
 global:
   EventsRule:
