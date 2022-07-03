@@ -16,6 +16,10 @@ def EVE_EventRules(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
 
+        ibox_lo_cfg = v.get("IBOX_LINKED_OBJ", {})
+        if isinstance(ibox_lo_cfg, str):
+            ibox_lo_cfg = {"Base": ibox_lo_cfg}
+
         # resources
         Targets = []
         for m, w in v["Targets"].items():
@@ -25,29 +29,28 @@ def EVE_EventRules(key):
             if m.startswith("Lambda"):
                 permname = "%s%s" % (m.replace("Lambda", "LambdaPermission"), resname)
                 # create ad hoc IBOX_LINKED_OBJ
-                ibox_lo_cfg = {
-                    "IBOX_LINKED_OBJ": {
-                        "Key": "LambdaPermission",
-                        "Type": "EventsRule",
-                        "Name": f"LambdaPermission{m}{resname}",
-                        "Conf": {
-                            "IBOX_RESNAME": permname,
-                            "IBOX_LINKED_OBJ_NAME": w["Arn"],
-                            "IBOX_LINKED_OBJ_INDEX": 'GetAtt("IBOX_RESNAME", "Arn")',
-                        },
-                    }
+                lo_cfg = {
+                    "Key": "LambdaPermission",
+                    "Type": "EventsRule",
+                    "Name": f"LambdaPermission{m}{resname}",
+                    "Conf": {
+                        "IBOX_RESNAME": permname,
+                        "IBOX_LINKED_OBJ_NAME": w["Arn"],
+                        "IBOX_LINKED_OBJ_INDEX": f"GetAtt('{resname}', 'Arn')",
+                    },
                 }
-                if "Condition" in v:
-                    ibox_lo_cfg["IBOX_LINKED_OBJ"]["Conf"]["Condition"] = v["Condition"]
-                getattr(cfg, targetname).update(ibox_lo_cfg)
+                ibox_lo_cfg[m] = lo_cfg
             if m.startswith("ECSCluster"):
                 # add common "fixed" props
-                auto_get_props(Target, mapname="EventsRuleTargetECSCluster", indexname=m)
+                auto_get_props(
+                    Target, mapname="EventsRuleTargetECSCluster", indexname=m
+                )
 
             # add props found in yaml cfg
             auto_get_props(Target)
             Targets.append(Target)
 
+        getattr(cfg, resname).update({"IBOX_LINKED_OBJ": ibox_lo_cfg})
         r_Rule = eve.Rule(resname)
         auto_get_props(r_Rule, indexname=n)
         r_Rule.Targets = Targets
