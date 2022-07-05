@@ -111,10 +111,11 @@ Same as `IBOX_CODE` but is processed ONLY if the relative key is present\.
 Can be used both as property key of a resource or inside a specific key using `IBOX_PCO`.\
 Ex as resource key:
 ```
-Condition:
-  - EnableExecuteCommand:
-      get_condition('', 'equals', True, f'EnableExecuteCommand')
-
+RDSDBInstance:
+  - IBOX_BASE:
+      IBOX_CONDITION:
+        - IBOX_MAPNAME.DBSnapshotIdentifier:
+	    get_condition('', 'not_equals', 'none', f'{IBOX_MAPNAME}DBSnapshotIdentifier')
 ```
 Ex using `IBOX_PCO`
 ```
