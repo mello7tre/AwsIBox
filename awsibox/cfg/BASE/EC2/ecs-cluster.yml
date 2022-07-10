@@ -70,6 +70,9 @@ global:
           EcsEnableSpotInstanceDraining: true
           EcsImagePullBehavior: once
           EcsWarmPoolsCheck: true
+          EcsEngineTaskCleanupWaitDuration: 3h
+          EcsImageCleanupInterval: 30m
+          EcsImageMinimumCleanupAge: 1h
         ClusterAutoReduceTag.IBOX_AUTO_PO: {}
         ClusterAutoReduceTag.IBOX_PCO:
           IBOX_CONDITION:
@@ -118,6 +121,11 @@ dev: &cfg_dev
   ASGLifecycleHook:
     ECSDrainInstance:
       HeartbeatTimeout: 900
+  ECSClusterBase:
+    AgentCfg:
+      EcsEngineTaskCleanupWaitDuration: 9m
+      EcsImageCleanupInterval: 10m
+      EcsImageMinimumCleanupAge: 5m
   LaunchTemplateData:
     ImageId: latest
 

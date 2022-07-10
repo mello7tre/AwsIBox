@@ -428,7 +428,7 @@ def get_condition(
 
 
 def import_user_data(name):
-    TK_IN_UDATA = "IBOX_CODE_IN_USER_DATA"
+    TK_IN_UDATA = "_IBOX_CIUD_"
 
     udata_file = os.path.join(os.getcwd(), f"lib/user-data/{name}.sh")
     if not os.path.exists(udata_file):
