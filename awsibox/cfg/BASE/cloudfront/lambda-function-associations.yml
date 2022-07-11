@@ -1,0 +1,18 @@
+Base: &base
+  IBOX_PARAMETER:
+    - _LambdaFunctionARN:
+        Description: LambdaAtEdge Version Arn - empty for mapped value - none to disable
+  IBOX_CONDITION:
+    - _LambdaFunctionARN:
+        get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}LambdaFunctionARN')
+  IBOX_OUTPUT:
+    - _LambdaFunctionARN:
+        Value: ${LambdaFunctionARN}
+  Condition: IBOX_RESNAME.LambdaFunctionARN
+  EventType: viewer-request
+  LambdaFunctionARN: none
+
+
+global:
+  CloudFrontLambdaFunctionAssociation:
+    - IBOX_BASE: *base

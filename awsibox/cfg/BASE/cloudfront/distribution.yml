@@ -20,20 +20,6 @@ CacheBehavior: &cache_behavior
     Headers: []
   ViewerProtocolPolicy: redirect-to-https
 
-CloudFrontLambdaFunctionAssociation: &lambda_function_association
-  IBOX_PARAMETER:
-    - _LambdaFunctionARN:
-        Description: LambdaAtEdge Version Arn - empty for mapped value - none to disable
-  IBOX_CONDITION:
-    - _LambdaFunctionARN:
-        get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}LambdaFunctionARN')
-  IBOX_OUTPUT:
-    - _LambdaFunctionARN:
-        Value: ${LambdaFunctionARN}
-  Condition: IBOX_RESNAME.LambdaFunctionARN
-  EventType: viewer-request
-  LambdaFunctionARN: none
-
 DistributionConfig: &distribution_config
   Aliases.IBOX_CUSTOM_OBJ: CloudFrontDistributionConfigAliases
   DefaultCacheBehavior: *cache_behavior
@@ -69,5 +55,3 @@ global:
     - IBOX_BASE: *cache_behavior
   CloudFrontOrigins:
     - IBOX_BASE: *origin
-  CloudFrontLambdaFunctionAssociation:
-    - IBOX_BASE: *lambda_function_association
