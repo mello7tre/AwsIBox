@@ -1,19 +1,6 @@
 #!/bin/bash -eu
-STACKNAME=_IBOX_CIUD_Ref('AWS::StackName')_IBOX_CIUD_
-REGION=_IBOX_CIUD_Ref('AWS::Region')_IBOX_CIUD_
-ACCOUNTID=_IBOX_CIUD_Ref('AWS::AccountId')_IBOX_CIUD_
-ENV=_IBOX_CIUD_Ref('Env')_IBOX_CIUD_
-ENVSHORT=_IBOX_CIUD_Ref('EnvShort')_IBOX_CIUD_
-ENVROLE=_IBOX_CIUD_Ref('EnvRole')_IBOX_CIUD_
-BRAND=_IBOX_CIUD_str(cfg.BrandDomain)_IBOX_CIUD_
-ECS_CLUSTER=_IBOX_CIUD_Ref('Cluster')_IBOX_CIUD_
-ECS_NUM_IMAGES_DELETE_PER_CYCLE=_IBOX_CIUD_get_endvalue('ECSClusterBaseAgentCfgEcsNumImagesDeletePerCycle')_IBOX_CIUD_
-ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=_IBOX_CIUD_get_endvalue('ECSClusterBaseAgentCfgEcsEngineTaskCleanupWaitDuration')_IBOX_CIUD_
-ECS_IMAGE_CLEANUP_INTERVAL=_IBOX_CIUD_get_endvalue('ECSClusterBaseAgentCfgEcsImageCleanupInterval')_IBOX_CIUD_
-ECS_IMAGE_MINIMUM_CLEANUP_AGE=_IBOX_CIUD_get_endvalue('ECSClusterBaseAgentCfgEcsImageMinimumCleanupAge')_IBOX_CIUD_
-ECS_ENABLE_UNTRACKED_IMAGE_CLEANUP=_IBOX_CIUD_get_endvalue('ECSClusterBaseAgentCfgEcsEnableUntrackedImageCleanup')_IBOX_CIUD_
-NON_ECS_IMAGE_MINIMUM_CLEANUP_AGE=_IBOX_CIUD_get_endvalue('ECSClusterBaseAgentCfgNonEcsImageMinimumCleanupAge')_IBOX_CIUD_
-
+STACKNAME=_IBOX_CODE_Ref('AWS::StackName')_IBOX_CODE_
+REGION=_IBOX_CODE_Ref('AWS::Region')_IBOX_CODE_
 
 signal(){
   case $? in
@@ -34,24 +21,24 @@ trap signal EXIT
 
 cat >> /etc/profile.d/ibox_env.sh << EOF
 #setup ibox environment variables
-export Env=$ENV
-export EnvAbbr=$ENVSHORT
-export EnvRegion=$REGION
-export EnvAccountId=$ACCOUNTID
-export EnvRole=$ENVROLE
-export EnvBrand=$BRAND
 export EnvStackName=$STACKNAME
+export EnvRegion=$REGION
+export Env=_IBOX_CODE_Ref('Env')_IBOX_CODE_
+export EnvAbbr=_IBOX_CODE_Ref('EnvShort')_IBOX_CODE_
+export EnvAccountId=_IBOX_CODE_Ref('AWS::AccountId')_IBOX_CODE_
+export EnvRole=_IBOX_CODE_Ref('EnvRole')_IBOX_CODE_
+export EnvBrand=_IBOX_CODE_str(cfg.BrandDomain)_IBOX_CODE_
 EOF
 
 cat >> /etc/ecs/ecs.config << EOF
-ECS_CLUSTER=$ECS_CLUSTER
+ECS_CLUSTER=_IBOX_CODE_Ref('Cluster')_IBOX_CODE_
 ECS_ENABLE_SPOT_INSTANCE_DRAINING=true
 ECS_IMAGE_PULL_BEHAVIOR=once
 ECS_WARM_POOLS_CHECK=true
-ECS_NUM_IMAGES_DELETE_PER_CYCLE=$ECS_NUM_IMAGES_DELETE_PER_CYCLE
-ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=$ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION
-ECS_IMAGE_CLEANUP_INTERVAL=$ECS_IMAGE_CLEANUP_INTERVAL
-ECS_IMAGE_MINIMUM_CLEANUP_AGE=$ECS_IMAGE_MINIMUM_CLEANUP_AGE
-ECS_ENABLE_UNTRACKED_IMAGE_CLEANUP=$ECS_ENABLE_UNTRACKED_IMAGE_CLEANUP
-NON_ECS_IMAGE_MINIMUM_CLEANUP_AGE=$NON_ECS_IMAGE_MINIMUM_CLEANUP_AGE
+ECS_NUM_IMAGES_DELETE_PER_CYCLE=_IBOX_CODE_get_endvalue('ECSClusterBaseAgentCfgEcsNumImagesDeletePerCycle')_IBOX_CODE_
+ECS_ENGINE_TASK_CLEANUP_WAIT_DURATION=_IBOX_CODE_get_endvalue('ECSClusterBaseAgentCfgEcsEngineTaskCleanupWaitDuration')_IBOX_CODE_
+ECS_IMAGE_CLEANUP_INTERVAL=_IBOX_CODE_get_endvalue('ECSClusterBaseAgentCfgEcsImageCleanupInterval')_IBOX_CODE_
+ECS_IMAGE_MINIMUM_CLEANUP_AGE=_IBOX_CODE_get_endvalue('ECSClusterBaseAgentCfgEcsImageMinimumCleanupAge')_IBOX_CODE_
+ECS_ENABLE_UNTRACKED_IMAGE_CLEANUP=_IBOX_CODE_get_endvalue('ECSClusterBaseAgentCfgEcsEnableUntrackedImageCleanup')_IBOX_CODE_
+NON_ECS_IMAGE_MINIMUM_CLEANUP_AGE=_IBOX_CODE_get_endvalue('ECSClusterBaseAgentCfgNonEcsImageMinimumCleanupAge')_IBOX_CODE_
 EOF
