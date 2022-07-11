@@ -70,9 +70,12 @@ global:
           EcsEnableSpotInstanceDraining: true
           EcsImagePullBehavior: once
           EcsWarmPoolsCheck: true
-          EcsEngineTaskCleanupWaitDuration: 3h
-          EcsImageCleanupInterval: 30m
-          EcsImageMinimumCleanupAge: 1h
+          EcsNumImagesDeletePerCycle: 10
+          EcsEngineTaskCleanupWaitDuration: 7m
+          EcsImageCleanupInterval: 10m
+          EcsImageMinimumCleanupAge: 5m
+          EcsEnableUntrackedImageCleanup: true
+          NonEcsImageMinimumCleanupAge: 15m
         ClusterAutoReduceTag.IBOX_AUTO_PO: {}
         ClusterAutoReduceTag.IBOX_PCO:
           IBOX_CONDITION:
@@ -92,7 +95,7 @@ global:
         BlockDeviceMappings:
           - Xvda:
               Ebs:
-                VolumeSize: 40
+                VolumeSize: 30
   Listeners: []
   RecordSet: []
   IAMRole:
@@ -121,11 +124,6 @@ dev: &cfg_dev
   ASGLifecycleHook:
     ECSDrainInstance:
       HeartbeatTimeout: 900
-  ECSClusterBase:
-    AgentCfg:
-      EcsEngineTaskCleanupWaitDuration: 9m
-      EcsImageCleanupInterval: 10m
-      EcsImageMinimumCleanupAge: 5m
   LaunchTemplateData:
     ImageId: latest
 

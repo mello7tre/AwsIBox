@@ -49,8 +49,6 @@ global:
                 - BottleRocket
                 - Ref('AWS::NoValue')
                 - IBOX_IFVALUE
-              Ebs:
-                VolumeSize: 40
           - Xvdb:
               IBOX_IF:
                 - BottleRocket
@@ -58,5 +56,5 @@ global:
                 - Ref('AWS::NoValue')
               DeviceName: /dev/xvdb
               Ebs:
-                VolumeSize: 40
+                VolumeSize: 30
                 VolumeType: gp3

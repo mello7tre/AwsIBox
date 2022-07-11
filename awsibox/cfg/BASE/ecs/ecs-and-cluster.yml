@@ -58,23 +58,12 @@ global:
         AutoScalingGroupProvider:
           ManagedScaling:
             TargetCapacity: 100
-  ECSCluster:
-    - Base:
-        AgentCfg:
-          EcsReservedMemory: 64
   IAMPolicy:
     - ParameterStore:
         Roles:
           - Ref('RoleTask')
   LaunchTemplate:
     - Data:
-        BlockDeviceMappings:
-          - Xvda:
-              Ebs:
-                VolumeSize: 20
-          - Xvdb:
-              Ebs:
-                VolumeSize: 20
         NetworkInterfaces:
           - eth0:
               Groups++:
