@@ -48,7 +48,7 @@ def CF_CloudFront(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
         # Resources
-        R_CloudFrontDistribution = clf.Distribution("CloudFrontDistribution")
+        R_CloudFrontDistribution = clf.Distribution(resname)
 
         # process cache_behavior and origin
         cache_behavior_process()
@@ -70,5 +70,5 @@ def CF_CloudFront(key):
                 print(f"{n} {v}\n")
             print("##########CLF_COMPUTE_ORDER#########END#######")
 
-        auto_get_props(R_CloudFrontDistribution, mapname=resname)
+        auto_get_props(R_CloudFrontDistribution)
         add_obj(R_CloudFrontDistribution)
