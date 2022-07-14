@@ -76,6 +76,7 @@ global:
           EcsImageMinimumCleanupAge: 5m
           EcsEnableUntrackedImageCleanup: true
           NonEcsImageMinimumCleanupAge: 15m
+          EcsExcludeUntrackedImage: '{}'
         ClusterAutoReduceTag.IBOX_AUTO_PO: {}
         ClusterAutoReduceTag.IBOX_PCO:
           IBOX_CONDITION:
