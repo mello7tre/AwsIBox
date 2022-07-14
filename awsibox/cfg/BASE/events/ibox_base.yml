@@ -7,7 +7,7 @@ Base: &base
     - _State:
         Value: get_endvalue(f"{IBOX_RESNAME}State")
   Name: Sub("${AWS::StackName}-${EnvRole}-" f"Rule{IBOX_INDEXNAME}")
-  ScheduleExpression.IBOX_PCO_IF:
+  ScheduleExpression.IBOX_PCO:
     IBOX_PARAMETER:
       - _ScheduleExpression:
           Description: "Events Rule Schedule - empty for default based on mapping"

@@ -755,6 +755,22 @@ def auto_get_props(
                 output = {"IBOX_OUTPUT": {f"{mapname}{name}": output_base}}
                 _try_PCO_in_obj(output)
 
+        def _process_ibox_auto_pco_key(propname):
+            ibox_auto_po = f"{propname}.IBOX_AUTO_PO"
+            ibox_auto_p = f"{propname}.IBOX_AUTO_P"
+            ibox_pco = f"{propname}.IBOX_PCO"
+
+            # IBOX_AUTO_PO
+            for n in [ibox_auto_po, ibox_auto_p]:
+                if n in key:
+                    # Automatically create parameter
+                    _auto_PO(propname, key[n], "p")
+
+            # IBOX_PCO
+            if ibox_pco in key:
+                # If there is a key ending with {propname}.IBOX_PCO process it
+                _try_PCO_in_obj(key[ibox_pco])
+
         def _proc_custom_obj(name, key_value, mapname):
             values = []
             base_rootdict = getattr(cfg, f"{name}IBOX_CUSTOM_OBJ")
@@ -860,45 +876,32 @@ def auto_get_props(
         for propname in dict(
             list(key.items()) + list(dict.fromkeys(props, None).items())
         ).keys():
+            if key.get(propname) == "IBOX_SKIP":
+                continue
+
             # IBOX KEY TO LOOK FOR
             ibox_auto_po = f"{propname}.IBOX_AUTO_PO"
-            ibox_auto_p = f"{propname}.IBOX_AUTO_P"
-            ibox_pco = f"{propname}.IBOX_PCO"
-            ibox_pco_if = f"{propname}.IBOX_PCO_IF"
             ibox_code = f"{propname}.IBOX_CODE"
-            ibox_code_if = f"{propname}.IBOX_CODE_IF"
+            ibox_code_key = f"{propname}.IBOX_CODE_KEY"
             ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
 
-            # IBOX_AUTO_PO
-            for n in [ibox_auto_po, ibox_auto_p]:
-                if n in key and propname in key:
-                    # Automatically create parameter
-                    _auto_PO(propname, key[n], "p")
-
-            # IBOX_PCO/_IF
-            if ibox_pco in key:
-                # If there is a key ending with {prop}.IBOX_PCO process it
-                _try_PCO_in_obj(key[ibox_pco])
-            elif ibox_pco_if in key and propname in key:
-                _try_PCO_in_obj(key[ibox_pco_if])
-
-            # IBOX_CODE/_IF
-            if ibox_code in key:
-                # If there is a key ending with {prop}.IBOX_CODE
-                # eval it and use it as prop value.
-                # Usefull if a str value need to be processed by a code.
-                # (like in autoscaling-scheduledactions.yml)
+            # IBOX_CODE
+            if ibox_code in key and propname in props:
+                # If there is a key ending with {prop}.IBOX_CODE  eval it and use it as prop value.
+                # First process IBOX_AUTO_PO and IBOX_PCO keys
+                _process_ibox_auto_pco_key(propname)
                 value = eval(key[ibox_code])
-            elif ibox_code_if in key and propname in key:
-                # same as above but check that propname does exist
-                value = eval(key[ibox_code_if])
             elif propname in key and propname in props:
                 # there is match between obj prop and a dict key
                 key_value = key[propname]
 
+                # Process IBOX_AUTO_PO and IBOX_PCO keys
+                _process_ibox_auto_pco_key(propname)
+
+                # IBOX_CODE_KEY - like IBOX_CODE but only if propname is in key too
+                if ibox_code_key in key:
+                    value = eval(key[ibox_code_key])
                 # set value
-                if key_value == "IBOX_SKIP":
-                    continue
                 elif isinstance(key_value, (list, dict)) and ibox_custom_obj in key:
                     # to process a list like a custom obj
                     value = _proc_custom_obj(
@@ -960,12 +963,12 @@ def auto_get_props(
                 IBOX_PROPS[f"{mapname}{propname}"] = (obj, propname)
 
                 # Automatically create output
-                for n in [f"{propname}.IBOX_AUTO_PO", f"{propname}.IBOX_AUTO_O"]:
-                    if n in key:
-                        if "Description" in key[n]:
-                            # avoid parsing Parameter Descrption as output one
-                            del key[n]["Description"]
-                        _auto_PO(propname, key[n], "o", value)
+                if ibox_auto_po in key:
+                    ibox_auto_po_value = key[ibox_auto_po]
+                    if "Description" in ibox_auto_po_value:
+                        # avoid parsing Parameter Descrption as output one
+                        del ibox_auto_po_value["Description"]
+                    _auto_PO(propname, ibox_auto_po_value, "o", value)
 
         # title override
         try:

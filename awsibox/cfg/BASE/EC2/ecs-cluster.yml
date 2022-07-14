@@ -66,6 +66,12 @@ global:
   ECSCluster:
     - Base:
         IBOX_TITLE: Cluster
+        IBOX_PARAMETER:
+          - _ClusterAutoReduceTag:
+              Description: Empty for mapped value
+        IBOX_CONDITION:
+          - _ClusterAutoReduceTag:
+              get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}ClusterAutoReduceTag')
         AgentCfg:
           EcsEnableSpotInstanceDraining: true
           EcsImagePullBehavior: once
@@ -77,11 +83,6 @@ global:
           EcsEnableUntrackedImageCleanup: true
           NonEcsImageMinimumCleanupAge: 15m
           EcsExcludeUntrackedImage: '{}'
-        ClusterAutoReduceTag.IBOX_AUTO_PO: {}
-        ClusterAutoReduceTag.IBOX_PCO:
-          IBOX_CONDITION:
-            - _ClusterAutoReduceTag:
-                get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}ClusterAutoReduceTag')
         ClusterAutoReduceTag: 'no'
         Tags:
           - ClusterAutoReduce:

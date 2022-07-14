@@ -16,7 +16,7 @@ Function: &function
         Value: GetAtt(IBOX_RESNAME, "Arn")
         Export: Export(IBOX_RESNAME)
   Code:
-    ZipFile.IBOX_CODE_IF: Join("", import_lambda(get_endvalue(f"{IBOX_RESNAME}CodeZipFile")))
+    ZipFile.IBOX_CODE_KEY: Join("", import_lambda(get_endvalue(f"{IBOX_RESNAME}CodeZipFile")))
     S3Key.IBOX_AUTO_PO:
       Description: str(f"S3Key Name for lambda {IBOX_INDEXNAME} Code")
   Export: False

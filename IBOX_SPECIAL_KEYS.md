@@ -5,7 +5,7 @@
 - [IBOX\_AUTO\_PO](#IBOX_AUTO_PO)
 - [IBOX\_BASE](#IBOX_BASE)
 - [IBOX\_CODE](#IBOX_CODE)
-- [IBOX\_CODE\_IF](#IBOX_CODE_IF)
+- [IBOX\_CODE\_KEY](#IBOX_CODE_KEY)
 - [IBOX\_CONDITION](#IBOX_CONDITION)
 - [IBOX\_CUSTOM\_OBJ](#IBOX_CUSTOM_OBJ)
 - [IBOX\_ENABLED](#IBOX_ENABLED)
@@ -22,7 +22,6 @@
 - [IBOX\_OUTPUT](#IBOX_OUTPUT)
 - [IBOX\_PARAMETER](#IBOX_PARAMETER)
 - [IBOX\_PCO](#IBOX_PCO)
-- [IBOX\_PCO\_IF](#IBOX_PCO_IF)
 - [IBOX\_RESNAME](#IBOX_RESNAME)
 - [IBOX\_ROLE\_EX](#IBOX_ROLE_EX)
 - [IBOX\_SKIP\_FUNC](#IBOX_SKIP_FUNC)
@@ -36,6 +35,7 @@ Automatically create a default parameter.\
 To create a parameter for the key "Key" simply prepende the key with:
 `Key.IBOX_AUTO_P: {}`
 Will be created a Parameter named as the full mapname of the key.\
+Is processed only if the "relative" key is present, unless there is a relative `IBOX_CODE` key, in that case is always processed.\
 Ex base:
 ```
 Field.IBOX_AUTO_P: {}
@@ -51,6 +51,7 @@ Type.IBOX_AUTO_P:
 Same as `IBOX_AUTO_P`, but create a default Output too.\
 Output value is named like the key mapname and have the same value.\
 As properties key for Parameters and Outputs are not the same, both can be used in the dictionary to use custom values.\
+Is processed only if the "relative" key is present, unless there is a relative `IBOX_CODE` key, in that case is always processed.\
 Ex extended:
 ```
 Type.IBOX_AUTO_PO:
@@ -104,7 +105,7 @@ LaunchTemplate:
         'LaunchTemplateDataImageIdLatest', Ref('LaunchTemplateDataImageIdLatest'), get_endvalue('ImageIdAlternateName'))
 ImageIdAlternateName: latest
 ```
-#### IBOX\_CODE\_IF
+#### IBOX\_CODE\_KEY
 Same as `IBOX_CODE` but is processed ONLY if the relative key is present\.
 
 #### IBOX\_CONDITION
@@ -350,6 +351,7 @@ Same as `IBOX_CONDITION`.
 
 #### IBOX\_PCO
 Represent the key suffix used to specify `IBOX_CONDITION`, `IBOX_PARAMETER`, `IBOX_OUTPUT` for a specific key.\
+Is processed only if the "relative" key is present, unless there is a relative `IBOX_CODE` key, in that case is always processed.\
 Look at `IBOX_CONDITION`.
 
 #### IBOX\_PCO\_IF

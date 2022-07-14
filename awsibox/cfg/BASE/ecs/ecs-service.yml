@@ -35,19 +35,11 @@ Base: &base
   TaskDefinition: Ref('TaskDefinition')
 
 Replica: &replica
-  IBOX_PARAMETER:
-    - _DeploymentConfigurationMaximumPercent:
-        Description: 'empty for mapped value'
-    - _DeploymentConfigurationMinimumHealthyPercent:
-        Description: 'empty for mapped value'
-  IBOX_OUTPUT:
-    - _DeploymentConfigurationMaximumPercent:
-        Value: get_endvalue(f'{IBOX_RESNAME}DeploymentConfigurationMaximumPercent')
-    - _DeploymentConfigurationMinimumHealthyPercent:
-        Value: get_endvalue(f'{IBOX_RESNAME}DeploymentConfigurationMinimumHealthyPercent')
   DesiredCount: get_endvalue('CapacityDesired')
   DeploymentConfiguration:
+    MaximumPercent.IBOX_AUTO_PO: {}
     MaximumPercent: 200
+    MinimumHealthyPercent.IBOX_AUTO_PO: {}
     MinimumHealthyPercent: 100
   LaunchType: If('LaunchTypeFarGate', get_endvalue('LaunchType'), Ref('AWS::NoValue'))
   PlacementStrategies:
