@@ -82,7 +82,7 @@ global:
           EcsImageMinimumCleanupAge: 5m
           EcsEnableUntrackedImageCleanup: true
           NonEcsImageMinimumCleanupAge: 15m
-          EcsExcludeUntrackedImage: '{}'
+          EcsExcludeUntrackedImage: ''
         ClusterAutoReduceTag: 'no'
         Tags:
           - ClusterAutoReduce:
