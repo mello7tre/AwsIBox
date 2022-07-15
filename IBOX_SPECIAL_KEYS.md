@@ -155,7 +155,7 @@ Each custom object is created with title equals to the list element.
 ####  IBOX\_ENABLED
 Is used to skip resource processing by python code.\
 Can have values: `True` or `False`.\
-Not all resource module support this (`joker` module automatically support it).\
+Not all resource module support this (`joker` module automatically support it).
 
 #### IBOX\_ENABLED\_IF
 Can be used to skip the creation of an Output defined inside an `IBOX_OUTPUT` key.\
@@ -256,7 +256,7 @@ ApiGatewayDomainName:
 ```
 Will update existing resource under key `Route53RecordSet` named `ApiGatewayDomainNameRegional`.\
 `IBOX_RESNAME` key in `Conf` will force resource to be name `RecordSetApiGatewayDomainNameRegional`.\
-Without it it will be named `Route53RecordSetApiGatewayDomainNameRegional`.\
+Without it it will be named `Route53RecordSetApiGatewayDomainNameRegional`.
 
 Ex: creating multiple objects:
 ```
@@ -322,7 +322,7 @@ KMSKey:
               Sid: "Enable IAM User Permissions"
 
 ```
-Statement will be a list with a single dict element _created_ with the content under `1:`.\
+Statement will be a list with a single dict element _created_ with the content under `1:`.
 
 #### IBOX\_MAPNAME
 Can be used as python var or inside other IBOX keys.\
@@ -378,7 +378,7 @@ global:
     - MYTopic
 
 ```
-`IBOX_RESNAME` will have value `SNSTopicMYTopic`.\
+`IBOX_RESNAME` will have value `SNSTopicMYTopic`.
 
 For resources using module `joker`, can also be used as key name to change `IBOX_RESNAME`global variable.\
 Ex:
@@ -415,7 +415,7 @@ ElastiCacheReplicationGroup:
   - Base: {}
 ```
 `ElastiCacheReplicationGroupBase` object will be pre-processed using the relative key `ElastiCacheCacheClusterBase`.\
-All properties defined for `ElastiCacheCacheCluster` that are used for `ElastiCacheReplicationGroup` too, will be assigned.\
+All properties defined for `ElastiCacheCacheCluster` that are used for `ElastiCacheReplicationGroup` too, will be assigned.
 
 #### IBOX\_SUB\_OBJ
 Is used to process another key and include the result as value of the current one.\
