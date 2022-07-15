@@ -10,7 +10,7 @@ from .shared import (
     get_condition,
     add_obj,
 )
-from .securitygroup import SecurityGroup, SecurityGroupIngress
+from .ec2 import SecurityGroup, SecurityGroupIngress
 
 
 class EFSMountTarget(efs.MountTarget):

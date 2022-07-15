@@ -10,7 +10,7 @@ from .shared import (
     get_condition,
     add_obj,
 )
-from .securitygroup import SecurityGroupEcsService, SecurityGroupRuleEcsService
+from .ec2 import SecurityGroupEcsService, SecurityGroupRuleEcsService
 
 
 def ECS_ContainerDefinition():

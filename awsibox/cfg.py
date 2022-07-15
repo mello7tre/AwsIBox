@@ -417,12 +417,12 @@ CFG_TO_FUNC = {
         "func": ("route53", "RecordSetType"),
         "dep": ["ApiGatewayDomainName", "DBInstance", "EFSFileSystem", "LoadBalancer"],
     },
-    "SecurityGroup": {"module": "securitygroup", "func": "SG_SecurityGroup"},
+    "SecurityGroup": {"module": "ec2", "func": "SG_SecurityGroup"},
     "SecurityGroupIngress": {
-        "module": "securitygroup",
+        "module": "ec2",
         "func": "SG_SecurityGroupIngresses",
     },
-    "SecurityGroups": {"module": "securitygroup", "func": "SG_SecurityGroups"},
+    "SecurityGroups": {"module": "ec2", "func": "SG_SecurityGroups"},
     "Service": {
         "module": "ecs",
         "func": "ECS_Service",

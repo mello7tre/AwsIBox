@@ -12,7 +12,7 @@ from .shared import (
     get_condition,
     add_obj,
 )
-from .securitygroup import SecurityGroupIngressInstanceELBPorts
+from .ec2 import SecurityGroupIngressInstanceELBPorts
 
 
 # Temporary fix for https://github.com/cloudtools/troposphere/issues/1474
