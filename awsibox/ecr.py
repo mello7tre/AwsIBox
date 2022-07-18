@@ -79,7 +79,7 @@ def ECR_Repositories(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
         Repo = ecr.Repository(resname)
-        auto_get_props(Repo, mapname="ECRRepositoryBase")
+        auto_get_props(Repo, indexname=n)
         Repo.RepositoryPolicyText["Statement"].extend(PolicyStatementAccounts)
 
         add_obj(Repo)

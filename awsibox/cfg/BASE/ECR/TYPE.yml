@@ -1,5 +1,5 @@
 IBoxLoader: !include
-  - ecr/repository.yml
+  - ecr/ibox_base.yml
 
 global:
   EcrAccount:

@@ -339,6 +339,7 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("ec2", "VPCPeeringConnection"),
     },
+    "ECRRepository": {"module": "ecr", "func": "ECR_Repositories"},
     "ECSCapacityProvider": {"module": "joker", "func": ("ecs", "CapacityProvider")},
     "ECSCluster": {"module": "joker", "func": ("ecs", "Cluster")},
     "ECSClusterCapacityProviderAssociations": {
@@ -410,7 +411,6 @@ CFG_TO_FUNC = {
     },
     "RDSDBInstance": {"module": "rds", "func": "RDS_DB"},
     "RDSDBSubnetGroup": {"module": "joker", "func": ("rds", "DBSubnetGroup")},
-    "Repository": {"module": "ecr", "func": "ECR_Repositories"},
     "Route53HostedZone": {"module": "joker", "func": ("route53", "HostedZone")},
     "Route53RecordSet": {
         "module": "joker",

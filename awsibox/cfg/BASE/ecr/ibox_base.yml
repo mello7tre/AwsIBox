@@ -1,7 +1,7 @@
 global:
   ECRRepository:
-    - Base:
-        RepositoryName: get_endvalue(IBOX_RESNAME)
+    - IBOX_BASE:
+        IBOX_TITLE: Repository.IBOX_INDEXNAME
         LifecyclePolicy:
           LifecyclePolicyText:
             rules:
