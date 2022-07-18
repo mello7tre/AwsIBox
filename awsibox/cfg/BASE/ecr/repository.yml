@@ -1,0 +1,39 @@
+global:
+  ECRRepository:
+    - Base:
+        RepositoryName: get_endvalue(IBOX_RESNAME)
+        LifecyclePolicy:
+          LifecyclePolicyText:
+            rules:
+              - IBOX_LIST:
+              - base:
+                  action:
+                    type: expire
+                  rulePriority: 1
+                  selection:
+                    countNumber: 9500
+                    countType: imageCountMoreThan
+                    tagStatus: any
+                  description: "Images are sorted on pushed_at_time (desc), images greater than specified count are expired."
+          RegistryId: Ref("AWS::AccountId")
+        RepositoryPolicyText:
+          Version: "2012-10-17"
+          Statement:
+            - IBOX_LIST:
+            - AllowPushPull:
+                Action:
+                  - "ecr:GetDownloadUrlForLayer"
+                  - "ecr:BatchGetImage"
+                  - "ecr:BatchCheckLayerAvailability"
+                  - "ecr:PutImage"
+                  - "ecr:InitiateLayerUpload"
+                  - "ecr:UploadLayerPart"
+                  - "ecr:CompleteLayerUpload"
+                  - "ecr:ListImages"
+                  - "ecr:DescribeRepositories"
+                  - "ecr:DescribeImages"
+                Effect: Allow
+                Principal:
+                  AWS:
+                    - Sub("arn:aws:iam::${AWS::AccountId}:root")
+                Sid: AllowPushPull

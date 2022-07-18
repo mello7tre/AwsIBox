@@ -623,6 +623,9 @@ def auto_get_props(
                 prop_obj = get_dictvalue(key[obj_propname])
             elif prop_class.__name__ == "Tags":
                 prop_obj = _get_obj_tags()
+            elif prop_class.__name__ == "str" and obj_propname == "LifecyclePolicyText":
+                # str but can be represented as dict Ex. ECR LifecyclePolicyText
+                prop_obj = json.dumps(get_dictvalue(key[obj_propname]))
 
             return prop_obj
 

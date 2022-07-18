@@ -12,62 +12,6 @@ from .shared import (
 )
 
 
-class ECRRepositories(ecr.Repository):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-
-        self.RepositoryName = get_endvalue(self.title)
-        self.RepositoryPolicyText = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Action": [
-                        "ecr:GetDownloadUrlForLayer",
-                        "ecr:BatchGetImage",
-                        "ecr:BatchCheckLayerAvailability",
-                        "ecr:PutImage",
-                        "ecr:InitiateLayerUpload",
-                        "ecr:UploadLayerPart",
-                        "ecr:CompleteLayerUpload",
-                        "ecr:ListImages",
-                        "ecr:DescribeRepositories",
-                        "ecr:DescribeImages",
-                    ],
-                    "Effect": "Allow",
-                    "Principal": {"AWS": [Sub("arn:aws:iam::${AWS::AccountId}:root")]},
-                    "Sid": "AllowPushPull",
-                },
-            ],
-        }
-
-
-# ############################################
-# ### START STACK META CLASSES AND METHODS ###
-# ############################################
-
-
-class ECRRepositoryLifecyclePolicy(ecr.LifecyclePolicy):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        LifecyclePolicyText = {
-            "rules": [
-                {
-                    "action": {"type": "expire"},
-                    "rulePriority": 1,
-                    "selection": {
-                        "countNumber": 9500,
-                        "countType": "imageCountMoreThan",
-                        "tagStatus": "any",
-                    },
-                    "description": "Images are sorted on pushed_at_time "
-                    "(desc), images greater than specified count are expired.",
-                }
-            ]
-        }
-        self.LifecyclePolicyText = json.dumps(LifecyclePolicyText)
-        self.RegistryId = Ref("AWS::AccountId")
-
-
 def ECRRepositoryPolicyStatementAccountPull(name):
     policy = {
         "Action": [
@@ -134,9 +78,8 @@ def ECR_Repositories(key):
     # Resources
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
-        Repo = ECRRepositories(
-            resname, LifecyclePolicy=ECRRepositoryLifecyclePolicy("")
-        )
+        Repo = ecr.Repository(resname)
+        auto_get_props(Repo, mapname="ECRRepositoryBase")
         Repo.RepositoryPolicyText["Statement"].extend(PolicyStatementAccounts)
 
         add_obj(Repo)
