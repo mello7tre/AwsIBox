@@ -8,6 +8,7 @@ Base: &base
     Conf:
       IBOX_RESNAME: Role.IBOX_RESNAME.Replica
       Condition: IBOX_RESNAME.Replica
+  Condition: IBOX_RESNAME
   Create: "no"
   AccountsRead:
     dev: none

@@ -352,7 +352,7 @@ def get_dictvalue(key):
             if_wrapper = k.pop("IBOX_IF", [])
             prop_obj = {j: get_dictvalue(w) for j, w in k.items()}
             if if_wrapper:
-                 value.append(iboxif(if_wrapper, "", prop_obj))
+                value.append(iboxif(if_wrapper, "", prop_obj))
             else:
                 value.append(prop_obj)
     elif isinstance(key, dict):

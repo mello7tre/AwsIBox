@@ -143,7 +143,7 @@ def S3_Buckets(key):
         )
 
         # resources
-        r_Bucket = s3.Bucket(resname, Condition=resname, BucketName=Sub(bucket_name))
+        r_Bucket = s3.Bucket(resname, BucketName=Sub(bucket_name))
         auto_get_props(r_Bucket)
 
         Replica_Rules = []
@@ -207,10 +207,17 @@ def S3_Buckets(key):
         base_statements = cfg.S3BucketPolicyBasePolicyDocumentStatement
         # At least one statement must be always present, create a simple one with no conditions
         base_statements["AllowReplica"]["Resource"] = PolicyStatementReplicaResources
-        base_statements["AllowListBucketGetObject"]["Principal"]["AWS"] = PolicyReadPrincipal
+        base_statements["AllowListBucketGetObject"]["Principal"][
+            "AWS"
+        ] = PolicyReadPrincipal
         base_statements["AllowPut"]["Principal"]["AWS"] = PolicyWritePrincipal
         base_statements["AllowDelete"]["Principal"]["AWS"] = PolicyDeletePrincipal
-        auto_get_props(r_Policy, mapname="S3BucketPolicyBase", linked_obj_name=bucket_name, linked_obj_index=resname)
+        auto_get_props(
+            r_Policy,
+            mapname="S3BucketPolicyBase",
+            linked_obj_name=bucket_name,
+            linked_obj_index=resname,
+        )
 
         BucketPolicyStatement = r_Policy.PolicyDocument["Statement"]
 
