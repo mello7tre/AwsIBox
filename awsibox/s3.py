@@ -59,138 +59,98 @@ class S3BucketPolicy(s3.BucketPolicy):
 
 
 def S3BucketPolicyStatementBase(bucket):
-    statements = []
-    statements.append(
-        {
-            "Action": ["s3:GetBucketLocation"],
-            "Effect": "Allow",
-            "Resource": Sub("arn:aws:s3:::%s" % bucket_name),
-            "Principal": {"AWS": Sub("arn:aws:iam::${AWS::AccountId}:root")},
-            "Sid": "Base",
-        }
-    )
+    statement = {
+        "Action": ["s3:GetBucketLocation"],
+        "Effect": "Allow",
+        "Resource": Sub("arn:aws:s3:::%s" % bucket_name),
+        "Principal": {"AWS": Sub("arn:aws:iam::${AWS::AccountId}:root")},
+        "Sid": "Base",
+    }
 
-    return statements
+    return statement
 
 
 def S3BucketPolicyStatementReplica(bucket, resource):
-    statements = []
-    if_statements = []
-    condition = f"{bucket}PolicyStatementReplicaPrincipal"
-    statements.append(
-        {
-            "Action": [
-                "s3:ReplicateObject",
-                "s3:ReplicateDelete",
-                "s3:ObjectOwnerOverrideToBucketOwner",
-            ],
-            "Effect": "Allow",
-            "Resource": resource,
-            "Principal": {
-                "AWS": [
-                    get_subvalue(
-                        "arn:aws:iam::${1M}:root",
-                        f"{bucket}PolicyStatementReplicaPrincipal",
-                    )
-                ]
-            },
-            "Sid": "AllowReplica",
-        }
+    statement = {
+        "Action": [
+            "s3:ReplicateObject",
+            "s3:ReplicateDelete",
+            "s3:ObjectOwnerOverrideToBucketOwner",
+        ],
+        "Effect": "Allow",
+        "Resource": resource,
+        "Principal": {
+            "AWS": [
+                get_subvalue(
+                    "arn:aws:iam::${1M}:root",
+                    f"{bucket}PolicyStatementReplicaPrincipal",
+                )
+            ]
+        },
+        "Sid": "AllowReplica",
+    }
+
+    return If(
+        f"{bucket}PolicyStatementReplicaPrincipal", statement, Ref("AWS::NoValue")
     )
-
-    for s in statements:
-        if_statements.append(If(condition, s, Ref("AWS::NoValue")))
-
-    return if_statements
 
 
 def S3BucketPolicyStatementAllowGetObject(bucket, principal, sid):
-    statements = []
-    statements.append(
-        {
-            "Action": ["s3:GetObject"],
-            "Effect": "Allow",
-            "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
-            "Principal": {"AWS": principal},
-            "Sid": sid,
-        },
-    )
+    statement = {
+        "Action": ["s3:GetObject"],
+        "Effect": "Allow",
+        "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
+        "Principal": {"AWS": principal},
+        "Sid": sid,
+    }
 
-    return statements
-
-
-def S3BucketPolicyStatementSes(bucket):
-    statements = []
-    statements.append(
-        {
-            "Action": ["s3:PutObject"],
-            "Effect": "Allow",
-            "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
-            "Principal": {"Service": "ses.amazonaws.com"},
-            "Condition": {
-                "StringEquals": {"aws:Referer": Ref("AWS::AccountId")},
-            },
-            "Sid": "AllowSES",
-        },
-    )
-
-    return statements
+    return statement
 
 
 def S3BucketPolicyStatementRead(bucket, principal):
-    statements = []
-    if_statements = []
-    condition = f"{bucket}PolicyRead"
-    statements.append(
-        {
-            "Action": [
-                "s3:ListBucket",
-                "s3:GetBucketLocation",
-                "s3:ListBucketMultipartUploads",
-                "s3:ListBucketVersions",
-            ],
-            "Effect": "Allow",
-            "Resource": [Sub("arn:aws:s3:::%s" % bucket_name)],
-            "Principal": {"AWS": principal},
-            "Sid": "AllowListBucket",
-        }
-    )
-    statements.append(
-        {
-            "Action": ["s3:GetObject", "s3:ListMultipartUploadParts"],
-            "Effect": "Allow",
-            "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
-            "Principal": {"AWS": principal},
-            "Sid": "AllowGetObject",
-        }
-    )
+    statement = {
+        "Action": [
+            "s3:ListBucket",
+            "s3:GetBucketLocation",
+            "s3:ListBucketMultipartUploads",
+            "s3:ListBucketVersions",
+            "s3:GetObject",
+            "s3:ListMultipartUploadParts",
+        ],
+        "Effect": "Allow",
+        "Resource": [
+            Sub("arn:aws:s3:::%s" % bucket_name),
+            Sub("arn:aws:s3:::%s/*" % bucket_name),
+        ],
+        "Principal": {"AWS": principal},
+        "Sid": "AllowListBucketGetObject",
+    }
 
-    for s in statements:
-        if_statements.append(If(condition, s, Ref("AWS::NoValue")))
-
-    return if_statements
+    return If(f"{bucket}PolicyRead", statement, Ref("AWS::NoValue"))
 
 
 def S3BucketPolicyStatementWrite(bucket, principal):
-    statements = []
-    if_statements = []
-    condition = f"{bucket}PolicyWrite"
-    statements.append(
-        {
-            "Action": [
-                "s3:Put*",
-            ],
-            "Effect": "Allow",
-            "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
-            "Principal": {"AWS": principal},
-            "Sid": "AllowPut",
-        }
-    )
+    statement = {
+        "Action": ["s3:Put*"],
+        "Effect": "Allow",
+        "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
+        "Principal": {"AWS": principal},
+        "Sid": "AllowPut",
+    }
 
-    for s in statements:
-        if_statements.append(If(condition, s, Ref("AWS::NoValue")))
+    return If(f"{bucket}PolicyWrite", statement, Ref("AWS::NoValue"))
 
-    return if_statements
+
+def S3BucketPolicyStatementDelete(bucket, principal):
+    statement = {
+        "Action": ["s3:DeleteObject*"],
+        "Effect": "Allow",
+        "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
+        "Principal": {"AWS": principal},
+        "Sid": "AllowDelete",
+    }
+
+    return If(f"{bucket}PolicyDelete", statement, Ref("AWS::NoValue"))
 
 
 def S3_Buckets(key):
@@ -201,9 +161,9 @@ def S3_Buckets(key):
         name = n
         bucket_name = getattr(cfg, f"{key}Name{n}")
 
+        ## Policy Read
         PolicyReadConditions = []
         PolicyReadPrincipal = []
-
         for m, w in v["AccountsRead"].items():
             accountread_name = f"{resname}AccountsRead{m}"
             # conditions
@@ -217,7 +177,6 @@ def S3_Buckets(key):
                     Ref("AWS::NoValue"),
                 )
             )
-
         # conditions
         if PolicyReadConditions:
             c_PolicyRead = {
@@ -228,9 +187,9 @@ def S3_Buckets(key):
         else:
             c_PolicyRead = {f"{resname}PolicyRead": Equals("True", "False")}
 
+        ## Policy Write
         PolicyWriteConditions = []
         PolicyWritePrincipal = []
-
         for m, w in v["AccountsWrite"].items():
             accountwrite_name = f"{resname}AccountsWrite{m}"
             # conditions
@@ -244,7 +203,6 @@ def S3_Buckets(key):
                     Ref("AWS::NoValue"),
                 )
             )
-
         # conditions
         if PolicyWriteConditions:
             c_PolicyWrite = {
@@ -254,6 +212,32 @@ def S3_Buckets(key):
             }
         else:
             c_PolicyWrite = {f"{resname}PolicyWrite": Equals("True", "False")}
+
+        ## Policy Delete
+        PolicyDeleteConditions = []
+        PolicyDeletePrincipal = []
+        for m, w in v["AccountsDelete"].items():
+            accountwrite_name = f"{resname}AccountsDelete{m}"
+            # conditions
+            add_obj(get_condition(accountwrite_name, "not_equals", "none"))
+
+            PolicyDeleteConditions.append(Condition(accountwrite_name))
+            PolicyDeletePrincipal.append(
+                If(
+                    accountwrite_name,
+                    get_subvalue("arn:aws:iam::${1M}:root", accountwrite_name),
+                    Ref("AWS::NoValue"),
+                )
+            )
+        # conditions
+        if PolicyDeleteConditions:
+            c_PolicyDelete = {
+                f"{resname}PolicyDelete": Or(
+                    Equals("1", "0"), Equals("1", "0"), *PolicyDeleteConditions
+                )
+            }
+        else:
+            c_PolicyDelete = {f"{resname}PolicyDelete": Equals("True", "False")}
 
         c_Create = get_condition(resname, "equals", "yes", f"{resname}Create")
 
@@ -275,6 +259,7 @@ def S3_Buckets(key):
             [
                 c_PolicyRead,
                 c_PolicyWrite,
+                c_PolicyDelete,
                 c_Create,
                 c_Versioning,
                 c_Cors,
@@ -348,20 +333,17 @@ def S3_Buckets(key):
         )
         r_Policy.PolicyDocument["Statement"] = BucketPolicyStatement
 
-        # At least one statement must be always present,
-        # create a simple one with no conditions
-        BucketPolicyStatement.extend(S3BucketPolicyStatementBase(resname))
-
         BucketPolicyStatement.extend(
-            S3BucketPolicyStatementReplica(resname, PolicyStatementReplicaResources)
-        )
-
-        BucketPolicyStatement.extend(
-            S3BucketPolicyStatementRead(resname, PolicyReadPrincipal)
-        )
-
-        BucketPolicyStatement.extend(
-            S3BucketPolicyStatementWrite(resname, PolicyWritePrincipal)
+            [
+                # At least one statement must be always present, create a simple one with no conditions
+                S3BucketPolicyStatementBase(resname),
+                S3BucketPolicyStatementReplica(
+                    resname, PolicyStatementReplicaResources
+                ),
+                S3BucketPolicyStatementRead(resname, PolicyReadPrincipal),
+                S3BucketPolicyStatementWrite(resname, PolicyWritePrincipal),
+                S3BucketPolicyStatementDelete(resname, PolicyDeletePrincipal),
+            ]
         )
 
         r_IAMPolicyReplica = IAMPolicyBucketReplica(
@@ -396,7 +378,7 @@ def S3_Buckets(key):
             BucketPolicyStatement.extend(FixedStatements)
 
         if "PolicyStatementExGetObjectPrincipal" in v:
-            BucketPolicyStatement.extend(
+            BucketPolicyStatement.append(
                 S3BucketPolicyStatementAllowGetObject(
                     resname,
                     get_endvalue(f"{resname}PolicyStatementExGetObjectPrincipal"),
@@ -445,7 +427,7 @@ def S3_Buckets(key):
             add_obj(c_identity)
 
             # resources
-            BucketPolicyStatement.extend(
+            BucketPolicyStatement.append(
                 S3BucketPolicyStatementAllowGetObject(
                     resname,
                     PolicyCloudFrontOriginAccessIdentityPrincipal,
