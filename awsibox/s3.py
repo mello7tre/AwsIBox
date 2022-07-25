@@ -15,86 +15,6 @@ from .iam import IAMPolicyBucketReplica, IAMPolicyStatement
 from .cloudfront import CFOriginAccessIdentity
 
 
-class S3Bucket(s3.Bucket):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title  # Ex. BucketStatic
-        # need to specify key cause there is a problem regarind Bucket Names
-        # key in common.yml and Bucket dict (RP_to_cfg)
-        auto_get_props(self, key=key)
-        self.Condition = name
-        self.BucketName = Sub(bucket_name)
-        self.CorsConfiguration = If(
-            f"{name}Cors",
-            s3.CorsConfiguration(
-                CorsRules=[
-                    s3.CorsRules(
-                        AllowedHeaders=["Authorization"],
-                        AllowedMethods=["GET"],
-                        AllowedOrigins=["*"],
-                        MaxAge=3000,
-                    )
-                ]
-            ),
-            Ref("AWS::NoValue"),
-        )
-
-        self.VersioningConfiguration = If(
-            f"{name}Versioning",
-            s3.VersioningConfiguration(Status=get_endvalue(f"{name}Versioning")),
-            Ref("AWS::NoValue"),
-        )
-
-
-class S3BucketPolicy(s3.BucketPolicy):
-    def __init__(self, title, key, **kwargs):
-        super().__init__(title, **kwargs)
-
-        if "Condition" in key:
-            self.Condition = key["Condition"]
-        self.PolicyDocument = {
-            "Version": "2012-10-17",
-        }
-
-
-def S3BucketPolicyStatementBase(bucket):
-    statement = {
-        "Action": ["s3:GetBucketLocation"],
-        "Effect": "Allow",
-        "Resource": Sub("arn:aws:s3:::%s" % bucket_name),
-        "Principal": {"AWS": Sub("arn:aws:iam::${AWS::AccountId}:root")},
-        "Sid": "Base",
-    }
-
-    return statement
-
-
-def S3BucketPolicyStatementReplica(bucket, resource):
-    statement = {
-        "Action": [
-            "s3:ReplicateObject",
-            "s3:ReplicateDelete",
-            "s3:ObjectOwnerOverrideToBucketOwner",
-        ],
-        "Effect": "Allow",
-        "Resource": resource,
-        "Principal": {
-            "AWS": [
-                get_subvalue(
-                    "arn:aws:iam::${1M}:root",
-                    f"{bucket}PolicyStatementReplicaPrincipal",
-                )
-            ]
-        },
-        "Sid": "AllowReplica",
-    }
-
-    return If(
-        f"{bucket}PolicyStatementReplicaPrincipal", statement, Ref("AWS::NoValue")
-    )
-
-
 def S3BucketPolicyStatementAllowGetObject(bucket, principal, sid):
     statement = {
         "Action": ["s3:GetObject"],
@@ -105,52 +25,6 @@ def S3BucketPolicyStatementAllowGetObject(bucket, principal, sid):
     }
 
     return statement
-
-
-def S3BucketPolicyStatementRead(bucket, principal):
-    statement = {
-        "Action": [
-            "s3:ListBucket",
-            "s3:GetBucketLocation",
-            "s3:ListBucketMultipartUploads",
-            "s3:ListBucketVersions",
-            "s3:GetObject",
-            "s3:ListMultipartUploadParts",
-        ],
-        "Effect": "Allow",
-        "Resource": [
-            Sub("arn:aws:s3:::%s" % bucket_name),
-            Sub("arn:aws:s3:::%s/*" % bucket_name),
-        ],
-        "Principal": {"AWS": principal},
-        "Sid": "AllowListBucketGetObject",
-    }
-
-    return If(f"{bucket}PolicyRead", statement, Ref("AWS::NoValue"))
-
-
-def S3BucketPolicyStatementWrite(bucket, principal):
-    statement = {
-        "Action": ["s3:Put*"],
-        "Effect": "Allow",
-        "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
-        "Principal": {"AWS": principal},
-        "Sid": "AllowPut",
-    }
-
-    return If(f"{bucket}PolicyWrite", statement, Ref("AWS::NoValue"))
-
-
-def S3BucketPolicyStatementDelete(bucket, principal):
-    statement = {
-        "Action": ["s3:DeleteObject*"],
-        "Effect": "Allow",
-        "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
-        "Principal": {"AWS": principal},
-        "Sid": "AllowDelete",
-    }
-
-    return If(f"{bucket}PolicyDelete", statement, Ref("AWS::NoValue"))
 
 
 def S3_Buckets(key):
@@ -269,7 +143,8 @@ def S3_Buckets(key):
         )
 
         # resources
-        r_Bucket = S3Bucket(resname, key=v)
+        r_Bucket = s3.Bucket(resname, Condition=resname, BucketName=Sub(bucket_name))
+        auto_get_props(r_Bucket)
 
         Replica_Rules = []
         for m, w in v["Replication"]["ConfigurationRules"].items():
@@ -323,28 +198,21 @@ def S3_Buckets(key):
                 )
             )
 
-        BucketPolicyStatement = []
-
-        r_Policy = S3BucketPolicy(
+        r_Policy = s3.BucketPolicy(
             f"BucketPolicy{name}",
-            key=v,
             Condition=resname,
             Bucket=Ref(resname),
         )
-        r_Policy.PolicyDocument["Statement"] = BucketPolicyStatement
+        # BucketPolicy Statements are read from yaml cfg, so update it with dynamic data
+        base_statements = cfg.S3BucketPolicyBasePolicyDocumentStatement
+        # At least one statement must be always present, create a simple one with no conditions
+        base_statements["AllowReplica"]["Resource"] = PolicyStatementReplicaResources
+        base_statements["AllowListBucketGetObject"]["Principal"]["AWS"] = PolicyReadPrincipal
+        base_statements["AllowPut"]["Principal"]["AWS"] = PolicyWritePrincipal
+        base_statements["AllowDelete"]["Principal"]["AWS"] = PolicyDeletePrincipal
+        auto_get_props(r_Policy, mapname="S3BucketPolicyBase", linked_obj_name=bucket_name, linked_obj_index=resname)
 
-        BucketPolicyStatement.extend(
-            [
-                # At least one statement must be always present, create a simple one with no conditions
-                S3BucketPolicyStatementBase(resname),
-                S3BucketPolicyStatementReplica(
-                    resname, PolicyStatementReplicaResources
-                ),
-                S3BucketPolicyStatementRead(resname, PolicyReadPrincipal),
-                S3BucketPolicyStatementWrite(resname, PolicyWritePrincipal),
-                S3BucketPolicyStatementDelete(resname, PolicyDeletePrincipal),
-            ]
-        )
+        BucketPolicyStatement = r_Policy.PolicyDocument["Statement"]
 
         r_IAMPolicyReplica = IAMPolicyBucketReplica(
             f"IAMPolicyReplicaBucket{name}",

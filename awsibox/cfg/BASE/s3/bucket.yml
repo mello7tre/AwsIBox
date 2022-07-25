@@ -1,3 +1,6 @@
+IBoxLoader: !include
+  - bucket-policy.yml
+
 Base: &base
   IBOX_LINKED_OBJ:
     Key: IAMRole
@@ -19,6 +22,17 @@ Base: &base
     stg: none
     prd: none
   Cors: "no"
+  CorsConfiguration:
+    IBOX_IF:
+      - _Cors
+      - IBOX_IFVALUE
+      - Ref("AWS::NoValue")
+    CorsRules:
+      - 0:
+          AllowedHeaders: ["Authorization"]
+          AllowedMethods: ["GET"]
+          AllowedOrigins: ["*"]
+          MaxAge: 3000
   CloudFrontOriginAccessIdentityExtra:
     Dev: none
     Stg: none
@@ -30,6 +44,12 @@ Base: &base
     Enabled: "no"
     ConfigurationRules: {}
   Versioning: Disabled
+  VersioningConfiguration:
+    IBOX_IF:
+      - _Versioning
+      - IBOX_IFVALUE
+      - Ref("AWS::NoValue")
+    Status: get_endvalue(f"{IBOX_RESNAME}Versioning")
 
 
 global:
