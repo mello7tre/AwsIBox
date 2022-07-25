@@ -320,16 +320,41 @@ def get_resvalue(resname, propname):
     return getattr(res, propname)
 
 
+def iboxif(if_wrapper, mapname, value):
+    condname = if_wrapper[0].replace("IBOX_MAPNAME", mapname)
+    condname = parse_ibox_key(condname)
+    condvalues = []
+    for i in if_wrapper[1:3]:
+        if isinstance(i, str) and i.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+            v = eval(i)
+        else:
+            v = i
+        condvalues.append(v)
+
+    if condvalues[0] == "IBOX_IFVALUE":
+        value = If(condname, value, condvalues[1])
+    else:
+        value = If(condname, condvalues[0], value)
+
+    return value
+
+
 def get_dictvalue(key):
     if isinstance(key, list):
         value = [get_dictvalue(k) for k in key]
     elif isinstance(key, dict) and "IBOX_LIST" in key:
         # Usefull for KMS policy and other generic dict properties
         value = []
-        for i, k in key.items():
+        for i, k in copy.deepcopy(key).items():
             if i == "IBOX_LIST":
                 continue
-            value.append({j: get_dictvalue(w) for j, w in k.items()})
+            # parse IBOX_IF
+            if_wrapper = k.pop("IBOX_IF", [])
+            prop_obj = {j: get_dictvalue(w) for j, w in k.items()}
+            if if_wrapper:
+                 value.append(iboxif(if_wrapper, "", prop_obj))
+            else:
+                value.append(prop_obj)
     elif isinstance(key, dict):
         value = {i: get_dictvalue(k) for i, k in key.items()}
     elif isinstance(key, str):
@@ -554,24 +579,6 @@ def auto_get_props(
     # IBOX_OUTPUT
     IBOX_PROPS = {"MAP": {}}
 
-    def _iboxif(if_wrapper, mapname, value):
-        condname = if_wrapper[0].replace("IBOX_MAPNAME", mapname)
-        condname = parse_ibox_key(condname)
-        condvalues = []
-        for i in if_wrapper[1:3]:
-            if isinstance(i, str) and i.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
-                v = eval(i)
-            else:
-                v = i
-            condvalues.append(v)
-
-        if condvalues[0] == "IBOX_IFVALUE":
-            value = If(condname, value, condvalues[1])
-        else:
-            value = If(condname, condvalues[0], value)
-
-        return value
-
     def _get_obj(obj, key, obj_propname, mapname):
         props = obj.props
         mapname_obj = f"{mapname}{obj_propname}"
@@ -593,7 +600,7 @@ def auto_get_props(
                     pass
                 else:
                     del v["IBOX_IF"]
-                    v = _iboxif(if_wrapper, mapname, v)
+                    v = iboxif(if_wrapper, mapname, v)
 
                 prop_list.append(v)
 
@@ -653,7 +660,7 @@ def auto_get_props(
                     auto_get_props(prop_obj)
                     if_wrapper = v.get("IBOX_IF")
                     if if_wrapper:
-                        prop_obj = _iboxif(if_wrapper, obj_propname, prop_obj)
+                        prop_obj = iboxif(if_wrapper, obj_propname, prop_obj)
                     prop_list.append(prop_obj)
             else:
                 for o, v in key[obj_propname].items():
@@ -676,7 +683,7 @@ def auto_get_props(
                     except Exception:
                         prop_list.append(prop_obj)
                     else:
-                        prop_list.append(_iboxif(if_wrapper, mapname, prop_obj))
+                        prop_list.append(iboxif(if_wrapper, mapname, prop_obj))
 
             return prop_list
 
@@ -946,7 +953,7 @@ def auto_get_props(
                 except Exception:
                     pass
                 else:
-                    value = _iboxif(if_wrapper, mapname, value)
+                    value = iboxif(if_wrapper, mapname, value)
 
                 if propname == "Condition" and not isinstance(value, str):
                     # Avoid intercepting a Template Condition
