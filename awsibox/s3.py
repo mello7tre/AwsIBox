@@ -113,34 +113,7 @@ def S3_Buckets(key):
         else:
             c_PolicyDelete = {f"{resname}PolicyDelete": Equals("True", "False")}
 
-        c_Create = get_condition(resname, "equals", "yes", f"{resname}Create")
-
-        c_Versioning = get_condition(f"{resname}Versioning", "equals", "Enabled")
-
-        c_Cors = get_condition(f"{resname}Cors", "equals", "yes")
-
-        c_Replica = {
-            f"{resname}Replica": And(
-                Condition(resname),
-                get_condition("", "equals", "yes", f"{resname}ReplicationEnabled"),
-            )
-        }
-        c_ReplicaPolicyStatement = get_condition(
-            f"{resname}PolicyStatementReplicaPrincipal", "not_equals", "none"
-        )
-
-        add_obj(
-            [
-                c_PolicyRead,
-                c_PolicyWrite,
-                c_PolicyDelete,
-                c_Create,
-                c_Versioning,
-                c_Cors,
-                c_Replica,
-                c_ReplicaPolicyStatement,
-            ]
-        )
+        add_obj([c_PolicyRead, c_PolicyWrite, c_PolicyDelete])
 
         # resources
         r_Bucket = s3.Bucket(resname)

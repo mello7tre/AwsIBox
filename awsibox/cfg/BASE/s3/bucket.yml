@@ -8,6 +8,17 @@ Base: &base
     Conf:
       IBOX_RESNAME: Role.IBOX_RESNAME.Replica
       Condition: IBOX_RESNAME.Replica
+  IBOX_CONDITION:
+    - _:
+        get_condition("", "equals", "yes", f"{IBOX_RESNAME}Create")
+    - _Cors:
+        get_condition("", "equals", "yes", f"{IBOX_RESNAME}Cors")
+    - _PolicyStatementReplicaPrincipal:
+        get_condition("", "not_equals", "none", f"{IBOX_RESNAME}PolicyStatementReplicaPrincipal")
+    - _Replica:
+        And(Condition(IBOX_RESNAME), get_condition("", "equals", "yes", f"{IBOX_RESNAME}ReplicationEnabled"))
+    - _Versioning:
+        get_condition("", "equals", "Enabled", f"{IBOX_RESNAME}Versioning")
   IBOX_OUTPUT:
     - _:
         Value: If(IBOX_RESNAME, Ref(IBOX_RESNAME), Sub(IBOX_REMAPNAME))
