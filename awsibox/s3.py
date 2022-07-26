@@ -202,37 +202,10 @@ def S3_Buckets(key):
             key=v["Replication"]["ConfigurationRules"],
         )
 
-        try:
-            bucket_policies = getattr(cfg, "BucketPolicy")
-        except Exception:
-            pass
-        else:
-            for policy_name, policy_value in bucket_policies.items():
-                BucketPolicyStatement.append(get_dictvalue(policy_value))
-
-        if "WebsiteConfiguration" in v:
-            r_Bucket.WebsiteConfiguration = s3.WebsiteConfiguration(
-                f"{resname}WebsiteConfiguration"
-            )
-            auto_get_props(r_Bucket.WebsiteConfiguration)
-
-        if "PolicyStatement" in v:
-            FixedStatements = []
-            for fsn, fsv in v["PolicyStatement"].items():
-                FixedStatement = IAMPolicyStatement(fsv)
-                FixedStatement["Principal"] = {"AWS": eval(fsv["Principal"])}
-                FixedStatement["Sid"] = fsv["Sid"]
-                FixedStatements.append(FixedStatement)
-            BucketPolicyStatement.extend(FixedStatements)
-
-        if "PolicyStatementExGetObjectPrincipal" in v:
-            BucketPolicyStatement.append(
-                S3BucketPolicyStatementAllowGetObject(
-                    resname,
-                    get_endvalue(f"{resname}PolicyStatementExGetObjectPrincipal"),
-                    "AllowGetObjectExPrincipal",
-                )
-            )
+        # BucketPolicy key
+        bucket_policy = getattr(cfg, f"BucketPolicy{name}", {})
+        if bucket_policy:
+            BucketPolicyStatement.append(get_dictvalue(bucket_policy))
 
         PolicyCloudFrontOriginAccessIdentityPrincipal = []
         if "CloudFrontOriginAccessIdentity" in v:

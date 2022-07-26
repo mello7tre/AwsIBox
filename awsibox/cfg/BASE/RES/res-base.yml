@@ -12,6 +12,7 @@ IBoxLoader: !include
   - res-base/servicediscovery.yml
   - kms/key-and-alias.yml
   - ec2/vpc-endpoint.yml
+  - res-s3/logs.yml
 
 global:
   StackName: r-base
@@ -19,17 +20,3 @@ global:
     - AppRepository:
         OutputValueRegion: 'AWSRegion'
         Versioning: Enabled
-    - Logs:
-        Create: 'yes'
-        LifecycleConfiguration:
-            Rules:
-              - 1:
-                  Id: delete
-                  ExpirationInDays: 30
-                  Status: Enabled
-        PolicyStatement:
-          - 1:
-              Action: 's3:PutObject'
-              Resource: Sub('arn:aws:s3:::${BucketLogs}/*')
-              Principal: get_endvalue('LoadBalancerAccountID')
-              Sid: AllowLBLogs
