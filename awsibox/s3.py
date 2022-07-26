@@ -18,7 +18,6 @@ from .cloudfront import CFOriginAccessIdentity
 def S3_Buckets(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
-        name = n
         bucket_name = getattr(cfg, f"{key}Name{n}")
 
         ## Policy Read
@@ -158,7 +157,7 @@ def S3_Buckets(key):
             )
 
         r_Policy = s3.BucketPolicy(
-            f"BucketPolicy{name}",
+            f"BucketPolicy{n}",
             Condition=resname,
             Bucket=Ref(resname),
         )
@@ -181,7 +180,7 @@ def S3_Buckets(key):
         BucketPolicyStatement = r_Policy.PolicyDocument["Statement"]
 
         r_IAMPolicyReplica = IAMPolicyBucketReplica(
-            f"IAMPolicyReplicaBucket{name}",
+            f"IAMPolicyReplicaBucket{n}",
             bucket=resname,
             bucket_name=bucket_name,
             mapname=f"{resname}ReplicationConfigurationRules",
