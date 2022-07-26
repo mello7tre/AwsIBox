@@ -16,8 +16,6 @@ from .cloudfront import CFOriginAccessIdentity
 
 
 def S3_Buckets(key):
-    global bucket_name
-
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
         name = n
