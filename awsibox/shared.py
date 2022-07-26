@@ -766,8 +766,8 @@ def auto_get_props(
                 _try_PCO_in_obj(output)
 
         def _process_ibox_auto_pco_key(propname):
-            ibox_auto_po = f"{propname}.IBOX_AUTO_PO"
             ibox_auto_p = f"{propname}.IBOX_AUTO_P"
+            ibox_auto_po = f"{propname}.IBOX_AUTO_PO"
             ibox_pco = f"{propname}.IBOX_PCO"
 
             # IBOX_AUTO_PO
@@ -890,10 +890,23 @@ def auto_get_props(
                 continue
 
             # IBOX KEY TO LOOK FOR
+            ibox_auto_p = f"{propname}.IBOX_AUTO_P"
             ibox_auto_po = f"{propname}.IBOX_AUTO_PO"
+            ibox_pco = f"{propname}.IBOX_PCO"
             ibox_code = f"{propname}.IBOX_CODE"
             ibox_code_key = f"{propname}.IBOX_CODE_KEY"
             ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
+
+            # IBOX_PCO for Custom Key ONLY
+            # process ibox_pco for custom key not present in obj props
+            # but only if there is not a relative ibox_auto_p/o or ibox_code key
+            if (
+                ibox_pco in key
+                and propname in key
+                and propname not in props
+                and all(n not in key for n in [ibox_auto_p, ibox_auto_po, ibox_code])
+            ):
+                _try_PCO_in_obj(key[ibox_pco])
 
             # IBOX_CODE
             if ibox_code in key and propname in props:
