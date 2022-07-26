@@ -8,7 +8,25 @@ Base: &base
     Conf:
       IBOX_RESNAME: Role.IBOX_RESNAME.Replica
       Condition: IBOX_RESNAME.Replica
+  IBOX_OUTPUT:
+    - _:
+        Value: If(IBOX_RESNAME, Ref(IBOX_RESNAME), Sub(IBOX_REMAPNAME))
+  OutputValueRegion.IBOX_PCO:
+    IBOX_CONDITION:
+      - _OutputValueRegion:
+          get_condition("", "not_equals", "AWSRegion", f"{IBOX_RESNAME}OutputValueRegion")
+    IBOX_OUTPUT:
+      - _:
+          Condition: None
+          Export: Export(IBOX_RESNAME)
+          Value: >-
+            If(f"{IBOX_RESNAME}OutputValueRegion",
+               Sub("${Region}-%s" % IBOX_REMAPNAME.replace("${AWS::Region}-", "", 1),
+                   **{"Region": get_endvalue(f"{IBOX_RESNAME}OutputValueRegion")}),
+               If(IBOX_RESNAME, Ref(IBOX_RESNAME), Sub(IBOX_REMAPNAME))
+            )
   Condition: IBOX_RESNAME
+  BucketName: Sub(IBOX_REMAPNAME)
   Create: "no"
   AccountsRead:
     dev: none

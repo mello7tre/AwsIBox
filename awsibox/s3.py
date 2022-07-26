@@ -143,8 +143,8 @@ def S3_Buckets(key):
         )
 
         # resources
-        r_Bucket = s3.Bucket(resname, BucketName=Sub(bucket_name))
-        auto_get_props(r_Bucket)
+        r_Bucket = s3.Bucket(resname)
+        auto_get_props(r_Bucket, remapname=bucket_name)
 
         Replica_Rules = []
         for m, w in v["Replication"]["ConfigurationRules"].items():
@@ -324,27 +324,3 @@ def S3_Buckets(key):
             add_obj(o_OriginAccessIdentity)
 
         add_obj([r_Bucket, r_Policy, r_IAMPolicyReplica])
-
-        # outputs
-        o_Bucket = Output(resname)
-        outvalue = If(resname, Ref(resname), Sub(bucket_name))
-        if "OutputValueRegion" in v:
-            condname = f"{resname}OutputValueRegion"
-            # conditions
-            add_obj(get_condition(condname, "not_equals", "AWSRegion"))
-
-            outvalue = If(
-                condname,
-                Sub(
-                    "${Region}-%s" % bucket_name.replace("${AWS::Region}-", "", 1),
-                    **{"Region": get_endvalue(condname)},
-                ),
-                outvalue,
-            )
-            o_Bucket.Export = Export(resname)
-        else:
-            o_Bucket.Condition = resname
-
-        o_Bucket.Value = outvalue
-
-        add_obj([o_Bucket])
