@@ -1,6 +1,14 @@
 global:
   Bucket:
     - Logs:
+        BucketPolicy:
+          - AllowLBLogs:
+              Action: 's3:PutObject'
+              Effect: Allow
+              Resource: Sub('arn:aws:s3:::${BucketLogs}/*')
+              Principal:
+                AWS: get_endvalue('LoadBalancerAccountID')
+              Sid: AllowLBLogs
         Create: 'yes'
         LifecycleConfiguration:
             Rules:
@@ -8,11 +16,3 @@ global:
                   Id: delete
                   ExpirationInDays: 30
                   Status: Enabled
-  BucketPolicy:
-    - Logs:
-        Action: 's3:PutObject'
-        Effect: Allow
-        Resource: Sub('arn:aws:s3:::${BucketLogs}/*')
-        Principal:
-          AWS: get_endvalue('LoadBalancerAccountID')
-        Sid: AllowLBLogs

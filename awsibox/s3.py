@@ -189,9 +189,9 @@ def S3_Buckets(key):
         )
 
         # BucketPolicy key
-        bucket_policy = getattr(cfg, f"BucketPolicy{name}", {})
-        if bucket_policy:
-            BucketPolicyStatement.append(get_dictvalue(bucket_policy))
+        if "BucketPolicy" in v:
+            for _, bp in v["BucketPolicy"].items():
+                BucketPolicyStatement.append(get_dictvalue(bp))
 
         PolicyCloudFrontOriginAccessIdentityPrincipal = []
         if "CloudFrontOriginAccessIdentity" in v:
