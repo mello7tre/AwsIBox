@@ -15,18 +15,6 @@ from .iam import IAMPolicyBucketReplica, IAMPolicyStatement
 from .cloudfront import CFOriginAccessIdentity
 
 
-def S3BucketPolicyStatementAllowGetObject(bucket, principal, sid):
-    statement = {
-        "Action": ["s3:GetObject"],
-        "Effect": "Allow",
-        "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
-        "Principal": {"AWS": principal},
-        "Sid": sid,
-    }
-
-    return statement
-
-
 def S3_Buckets(key):
     global bucket_name
 
@@ -249,11 +237,13 @@ def S3_Buckets(key):
 
             # resources
             BucketPolicyStatement.append(
-                S3BucketPolicyStatementAllowGetObject(
-                    resname,
-                    PolicyCloudFrontOriginAccessIdentityPrincipal,
-                    "AllowCFAccess",
-                )
+                {
+                    "Action": ["s3:GetObject"],
+                    "Effect": "Allow",
+                    "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
+                    "Principal": {"AWS": PolicyCloudFrontOriginAccessIdentityPrincipal},
+                    "Sid": "AllowCFAccess",
+                }
             )
 
             r_OriginAccessIdentity = CFOriginAccessIdentity(
