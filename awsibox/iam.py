@@ -63,18 +63,6 @@ class IAMPolicyBucketReplica(iam.PolicyType):
 # ############################################
 
 
-def IAMPolicyStatement(key):
-    Statement = {
-        "Effect": key.get("Effect", "Allow"),
-    }
-
-    for k in ["Action", "NotAction", "Resource", "NotResource", "Condition"]:
-        if k in key:
-            Statement.update({k: get_endvalue(k, fixedvalues=key)})
-
-    return Statement
-
-
 def IAM_Users(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"  # Ex. IAMUserPincoPalla
