@@ -11,7 +11,7 @@ from .shared import (
     add_obj,
     get_dictvalue,
 )
-from .iam import IAMPolicyBucketReplica, IAMPolicyStatement
+from .iam import IAMPolicyBucketReplica
 from .cloudfront import CFOriginAccessIdentity
 
 
