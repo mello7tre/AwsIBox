@@ -272,9 +272,10 @@ def build_RP():
         except IOError:
             return {}
 
-    def inject_ibox_base(RP):
+    def inject_ibox_base(RP, root=""):
         base_key = "IBOX_BASE"
         for main_key in list(RP.keys()):
+            main_key_full = f"{root}{main_key}"
             main_key_value = RP[main_key]
             if isinstance(main_key_value, dict) and base_key in main_key_value:
                 base_key_value = main_key_value[base_key]
@@ -285,7 +286,7 @@ def build_RP():
                     # inject in cfg key/value
                     RP_to_cfg(
                         base_key_value,
-                        prefix=f"{main_key}{resource_key}",
+                        prefix=f"{main_key_full}{resource_key}",
                         overwrite=False,
                     )
 
@@ -297,6 +298,9 @@ def build_RP():
                     for n, v in merged.items():
                         RP[main_key][resource_key][n] = v
                 del RP[main_key][base_key]
+
+            if isinstance(main_key_value, dict):
+                inject_ibox_base(main_key_value, root=main_key_full)
 
     def get_RP(yaml_cfg):
         cfg_keys = ["IBoxLoader", "IBoxLoaderAfter"]

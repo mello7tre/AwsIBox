@@ -70,6 +70,13 @@ Base: &base
   PolicyStatementReplica:
     Resource: {}
     Principal: none
+  ReplicationConfiguration:
+    Role: GetAtt(f"Role{IBOX_RESNAME}Replica", "Arn")
+    Rules:
+      - IBOX_BASE:
+          Destination:
+            Bucket.IBOX_AUTO_P: {}
+          Status: Enabled
   Replication:
     Enabled: "no"
     ConfigurationRules: {}
