@@ -104,42 +104,6 @@ def S3_Buckets(key):
         r_Bucket = s3.Bucket(resname)
         auto_get_props(r_Bucket, remapname=bucket_name)
 
-        Replica_Rules = []
-        for m, w in v["Replication"]["ConfigurationRules"].items():
-            replica_name = f"{resname}ReplicationConfigurationRules{m}"
-
-            # parameters
-            p_replicabucket = Parameter(
-                f"{replica_name}DestinationBucket",
-                Description="Replica Destination Bucket - empty for default based on Env/Roles/Region",
-            )
-            add_obj(p_replicabucket)
-
-            # conditions
-            add_obj(
-                [
-                    get_condition(
-                        f"{replica_name}DestinationBucket", "not_equals", "none"
-                    )
-                ]
-            )
-
-            # resources
-            rule = s3.ReplicationConfigurationRules(replica_name, Status="Enabled")
-            auto_get_props(rule)
-
-            Replica_Rules.append(
-                If(f"{replica_name}DestinationBucket", rule, Ref("AWS::NoValue"))
-            )
-
-        if Replica_Rules:
-            ReplicationConfiguration = s3.ReplicationConfiguration(
-                "", Role=GetAtt(f"Role{resname}Replica", "Arn"), Rules=Replica_Rules
-            )
-            r_Bucket.ReplicationConfiguration = If(
-                f"{resname}Replica", ReplicationConfiguration, Ref("AWS::NoValue")
-            )
-
         PolicyStatementReplicaResources = []
         for m, w in v["PolicyStatementReplica"]["Resource"].items():
             polstatname = f"{resname}PolicyStatementReplicaResource{m}"
@@ -184,7 +148,7 @@ def S3_Buckets(key):
             bucket=resname,
             bucket_name=bucket_name,
             mapname=f"{resname}ReplicationConfigurationRules",
-            key=v["Replication"]["ConfigurationRules"],
+            key=v["ReplicationConfiguration"]["Rules"],
         )
 
         # BucketPolicy key
