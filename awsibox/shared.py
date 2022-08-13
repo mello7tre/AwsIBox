@@ -626,6 +626,12 @@ def auto_get_props(
 
             if prop_class.__bases__[0].__name__ in ["AWSProperty", "AWSAttribute"]:
                 _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
+                # Check for incomplete AWSProperty object and set obj to None to skip it
+                try:
+                    prop_obj.to_dict()
+                except Exception as e:
+                    # logging.warning(f"Resource with missing properties: {obj_propname}\n\t\t{e}")
+                    prop_obj = None
             elif prop_class.__name__ == "dict":
                 prop_obj = get_dictvalue(key[obj_propname])
             elif prop_class.__name__ == "Tags":
@@ -685,7 +691,8 @@ def auto_get_props(
                     else:
                         prop_list.append(iboxif(if_wrapper, mapname, prop_obj))
 
-            return prop_list
+            if prop_list or ibox_sub_obj:
+                return prop_list
 
         # Pure dict as KSM Key KeyPolicy
         elif (
@@ -933,6 +940,8 @@ def auto_get_props(
                 elif isinstance(key_value, dict):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)
+                    if value is None:
+                        continue
                 elif isinstance(key_value, str) and key_value.startswith(
                     IBOX_SPECIAL_KEYS
                 ):

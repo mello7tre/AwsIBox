@@ -71,11 +71,25 @@ Base: &base
     Resource: {}
     Principal: none
   ReplicationConfiguration:
+    IBOX_IF:
+      - _Replica
+      - IBOX_IFVALUE
+      - Ref("AWS::NoValue")
     Role: GetAtt(f"Role{IBOX_RESNAME}Replica", "Arn")
     Rules:
       - IBOX_BASE:
+          IBOX_IF:
+            - _ReplicationConfigurationRules.IBOX_PROPNAME.DestinationBucket
+            - IBOX_IFVALUE
+            - Ref("AWS::NoValue")
           Destination:
-            Bucket.IBOX_AUTO_P: {}
+            Bucket.IBOX_PCO:
+              IBOX_PARAMETER:
+                - _ReplicationConfigurationRules.IBOX_PROPNAME.DestinationBucket:
+                    Description: "Replica Destination Bucket - empty for default based on Env/Roles/Region"
+              IBOX_CONDITION:
+                - _ReplicationConfigurationRules.IBOX_PROPNAME.DestinationBucket:
+                    get_condition("", "not_equals", "none", f"{IBOX_RESNAME}ReplicationConfigurationRules{IBOX_PROPNAME}DestinationBucket")
           Status: Enabled
   Replication:
     Enabled: "no"
