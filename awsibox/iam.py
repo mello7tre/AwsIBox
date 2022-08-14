@@ -12,57 +12,6 @@ from .shared import (
 )
 
 
-class IAMPolicyBucketReplica(iam.PolicyType):
-    def __init__(self, title, bucket, bucket_name, mapname, key, **kwargs):
-        super().__init__(title, **kwargs)
-
-        name = self.title  # Ex. IAMPolicyReplicaBucketElasticSearch
-        self.Condition = f"{bucket}Replica"
-        self.PolicyName = self.title
-        self.PolicyDocument = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Action": ["s3:GetReplicationConfiguration", "s3:ListBucket"],
-                    "Effect": "Allow",
-                    "Resource": [Sub(f"arn:aws:s3:::{bucket_name}")],
-                },
-                {
-                    "Action": [
-                        "s3:GetObjectVersion",
-                        "s3:GetObjectVersionAcl",
-                        "s3:GetObjectVersionTagging",
-                    ],
-                    "Effect": "Allow",
-                    "Resource": [Sub(f"arn:aws:s3:::{bucket_name}/*")],
-                },
-                {
-                    "Action": [
-                        "s3:ReplicateObject",
-                        "s3:ReplicateDelete",
-                        "s3:ReplicateTags",
-                        "s3:ObjectOwnerOverrideToBucketOwner",
-                    ],
-                    "Effect": "Allow",
-                    "Resource": [
-                        If(
-                            f"{mapname}{n}DestinationBucket",
-                            get_subvalue("${1M}/*", f"{mapname}{n}DestinationBucket"),
-                            Ref("AWS::NoValue"),
-                        )
-                        for n in key
-                    ],
-                },
-            ],
-        }
-        self.Roles = [Ref(f"Role{self.Condition}")]  # Ex. RoleBucketImagesReplica
-
-
-# ############################################
-# ### START STACK META CLASSES AND METHODS ###
-# ############################################
-
-
 def IAM_Users(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"  # Ex. IAMUserPincoPalla

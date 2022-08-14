@@ -1,0 +1,40 @@
+global:
+  IAMPolicy:
+    - BucketReplica:
+        IBOX_ENABLED: False
+        Condition: IBOX_LINKED_OBJ_INDEX.Replica
+        PolicyName: IBOX_RESNAME
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - "s3:GetReplicationConfiguration"
+                  - "s3:ListBucket"
+                Effect: Allow
+                Resource:
+                  - Sub(f"arn:aws:s3:::{IBOX_LINKED_OBJ_NAME}")
+            - 2:
+                Action:
+                  - "s3:GetObjectVersion"
+                  - "s3:GetObjectVersionAcl"
+                  - "s3:GetObjectVersionTagging"
+                Effect: Allow
+                Resource:
+                  - Sub(f"arn:aws:s3:::{IBOX_LINKED_OBJ_NAME}/*")
+            - 3:
+                Action:
+                  - "s3:ReplicateObject"
+                  - "s3:ReplicateDelete"
+                  - "s3:ReplicateTags"
+                  - "s3:ObjectOwnerOverrideToBucketOwner"
+                Effect: Allow
+                Resource: >-
+                    list([
+                      If(
+                         f"{IBOX_LINKED_OBJ_INDEX}ReplicationConfigurationRules{n}DestinationBucket",
+                         get_subvalue("${1M}/*", f"{IBOX_LINKED_OBJ_INDEX}ReplicationConfigurationRules{n}DestinationBucket"),
+                         Ref("AWS::NoValue"),
+                      ) for n in getattr(cfg, IBOX_LINKED_OBJ_INDEX)["ReplicationConfiguration"]["Rules"]
+                    ])
+        Roles:
+          - Ref(f"Role{IBOX_LINKED_OBJ_INDEX}Replica")

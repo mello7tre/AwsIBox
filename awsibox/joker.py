@@ -8,14 +8,16 @@ def Joker(key, module, cls):
             continue
 
         parse_ibox_key_conf = {"IBOX_INDEXNAME": n}
-        mapname = ""
         resname = f"{key}{n}"
+        mapname = resname
 
         # change resource name using key IBOX_RESNAME
         ibox_resname = v.get("IBOX_RESNAME")
         if ibox_resname:
-            mapname = resname
             resname = parse_ibox_key(ibox_resname, parse_ibox_key_conf)
+
+        if cfg.debug:
+            logging.error(f"Joker processing: {key}{n}")
 
         # get IBOX_LINKED_OBJ keys
         linked_obj_name = v.get("IBOX_LINKED_OBJ_NAME", "")

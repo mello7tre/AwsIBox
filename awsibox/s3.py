@@ -11,7 +11,6 @@ from .shared import (
     add_obj,
     get_dictvalue,
 )
-from .iam import IAMPolicyBucketReplica
 from .cloudfront import CFOriginAccessIdentity
 
 
@@ -143,14 +142,6 @@ def S3_Buckets(key):
 
         BucketPolicyStatement = r_Policy.PolicyDocument["Statement"]
 
-        r_IAMPolicyReplica = IAMPolicyBucketReplica(
-            f"IAMPolicyReplicaBucket{n}",
-            bucket=resname,
-            bucket_name=bucket_name,
-            mapname=f"{resname}ReplicationConfigurationRules",
-            key=v["ReplicationConfiguration"]["Rules"],
-        )
-
         # BucketPolicy key
         if "BucketPolicy" in v:
             for _, bp in v["BucketPolicy"].items():
@@ -220,4 +211,7 @@ def S3_Buckets(key):
 
             add_obj(o_OriginAccessIdentity)
 
-        add_obj([r_Bucket, r_Policy, r_IAMPolicyReplica])
+        add_obj([
+            r_Bucket,
+            r_Policy
+        ])
