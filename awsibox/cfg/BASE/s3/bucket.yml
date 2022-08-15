@@ -89,17 +89,17 @@ Base: &base
     Rules:
       - IBOX_BASE:
           IBOX_IF:
-            - _ReplicationConfigurationRules.IBOX_PROPNAME.DestinationBucket
+            - IBOX_CURNAME.DestinationBucket
             - IBOX_IFVALUE
             - Ref("AWS::NoValue")
           Destination:
             Bucket.IBOX_PCO:
               IBOX_PARAMETER:
-                - _ReplicationConfigurationRules.IBOX_PROPNAME.DestinationBucket:
+                - IBOX_CURNAME:
                     Description: "Replica Destination Bucket - empty for default based on Env/Roles/Region"
               IBOX_CONDITION:
-                - _ReplicationConfigurationRules.IBOX_PROPNAME.DestinationBucket:
-                    get_condition("", "not_equals", "none", f"{IBOX_RESNAME}ReplicationConfigurationRules{IBOX_PROPNAME}DestinationBucket")
+                - IBOX_CURNAME:
+                    get_condition("", "not_equals", "none", IBOX_CURNAME)
           Status: Enabled
   Versioning: Disabled
   VersioningConfiguration:

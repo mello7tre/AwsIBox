@@ -11,6 +11,7 @@ IBOX_SPECIAL_KEYS = (
     "IBOX_REMAPNAME",
     "IBOX_INDEXNAME",
     "IBOX_PROPNAME",
+    "IBOX_CURNAME",
     "IBOX_LINKED_OBJ_NAME",
     "IBOX_LINKED_OBJ_INDEX",
     "IBOX_LINKED_OBJ_FOR",
@@ -923,6 +924,10 @@ def auto_get_props(
                 value = eval(key[ibox_code])
             elif propname in key and propname in props:
                 # there is match between obj prop and a dict key
+                if not isinstance(obj, (Output, Parameter, Condition)):
+                    global IBOX_CURNAME
+                    IBOX_CURNAME = f"{mapname}{propname}"
+
                 key_value = key[propname]
 
                 # Process IBOX_AUTO_PO and IBOX_PCO keys
@@ -1001,6 +1006,10 @@ def auto_get_props(
                         # avoid parsing Parameter Descrption as output one
                         del ibox_auto_po_value["Description"]
                     _auto_PO(propname, ibox_auto_po_value, "o", value)
+
+        # need to redefine it here because it's has been changed by nested supprop
+        if not isinstance(obj, (Output, Parameter, Condition)):
+            IBOX_CURNAME = mapname
 
         # title override
         try:

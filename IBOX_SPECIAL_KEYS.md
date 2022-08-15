@@ -7,6 +7,7 @@
 - [IBOX\_CODE](#IBOX_CODE)
 - [IBOX\_CODE\_KEY](#IBOX_CODE_KEY)
 - [IBOX\_CONDITION](#IBOX_CONDITION)
+- [IBOX\_CURNAME](#IBOX_CURNAME)
 - [IBOX\_CUSTOM\_OBJ](#IBOX_CUSTOM_OBJ)
 - [IBOX\_ENABLED](#IBOX_ENABLED)
 - [IBOX\_ENABLED\_IF](#IBOX_ENABLED_IF)
@@ -62,7 +63,6 @@ Type.IBOX_AUTO_PO:
 
 #### IBOX\_BASE
 Is used to define a base configuration for a resource or sub-resource.\
-Can only be used as dictionary key of a first level node.\
 Ex:
 ```
 Base: &base
@@ -125,6 +125,39 @@ Field.IBOX_PCO:
     - _PlacementStrategies0TypeRandom:
         get_condition('', 'equals', 'random', f'{IBOX_RESNAME}PlacementStrategies0Type')
 ```
+
+#### IBOX\_CURNAME
+Can be used as python var or inside other IBOX keys.\
+Represent current full mapname, the concatenation/sum of all traversed keys.\
+Ex:
+```
+  ReplicationConfiguration:
+    IBOX_IF:
+      - _Replica
+      - IBOX_IFVALUE
+      - Ref("AWS::NoValue")
+    Enabled: "no"
+    Role: GetAtt(f"Role{IBOX_RESNAME}Replica", "Arn")
+    Rules:
+      - 1:
+          IBOX_IF:
+            - IBOX_CURNAME.DestinationBucket
+            - IBOX_IFVALUE
+            - Ref("AWS::NoValue")
+          Destination:
+            Bucket.IBOX_PCO:
+              IBOX_PARAMETER:
+                - IBOX_CURNAME:
+                    Description: "Replica Destination Bucket - empty for default based on Env/Roles/Region"
+              IBOX_CONDITION:
+                - IBOX_CURNAME:
+                    get_condition("", "not_equals", "none", IBOX_CURNAME)
+          Status: Enabled
+
+```
+`IBOX_CURNAME` will have as value `ReplicationConfigurationRules1` when used inside `IBOX_IF`.\
+`IBOX_CURNAME` will have as value `ReplicationConfigurationRules1DestinationBucket` when used inside `Bucket.IBOX_PCO`.\
+(A dot can be used to separate a _normal_ string from the `IBOX_CURNAME` one, it's simply used to better read it, during processing any `.` will be removed.)
 
 #### IBOX\_CUSTOM\_OBJ
 Can be used to precess a list of string, Ex LambdaLayers, using a custom class\.
