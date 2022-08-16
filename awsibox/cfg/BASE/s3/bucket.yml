@@ -27,7 +27,7 @@ Base: &base
     - _Replica:
         And(Condition(IBOX_RESNAME), get_condition("", "equals", "yes", f"{IBOX_RESNAME}ReplicationConfigurationEnabled"))
     - _Versioning:
-        get_condition("", "equals", "Enabled", f"{IBOX_RESNAME}Versioning")
+        get_condition("", "not_equals", "Disabled", f"{IBOX_RESNAME}VersioningConfigurationStatus")
   IBOX_OUTPUT:
     - _:
         Value: If(IBOX_RESNAME, Ref(IBOX_RESNAME), Sub(IBOX_REMAPNAME))
@@ -101,13 +101,14 @@ Base: &base
                 - IBOX_CURNAME:
                     get_condition("", "not_equals", "none", IBOX_CURNAME)
           Status: Enabled
-  Versioning: Disabled
   VersioningConfiguration:
     IBOX_IF:
       - _Versioning
       - IBOX_IFVALUE
       - Ref("AWS::NoValue")
-    Status: get_endvalue(f"{IBOX_RESNAME}Versioning")
+    Status.IBOX_AUTO_PO:
+      AllowedValues: ["", "Enabled", "Suspended", "Disabled"]
+    Status: Disabled
 
 
 global:

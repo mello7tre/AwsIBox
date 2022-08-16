@@ -19,4 +19,5 @@ global:
   Bucket:
     - AppRepository:
         OutputValueRegion: 'AWSRegion'
-        Versioning: Enabled
+        VersioningConfiguration:
+          Status: Enabled
