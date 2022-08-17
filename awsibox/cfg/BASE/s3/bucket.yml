@@ -72,10 +72,22 @@ Base: &base
           AllowedMethods: ["GET"]
           AllowedOrigins: ["*"]
           MaxAge: 3000
+  CloudFrontOriginAccessIdentity.IBOX_PCO_NO:
+    IBOX_CONDITION:
+      - IBOX_CURNAME:
+          And(
+            Condition(IBOX_RESNAME),
+            get_condition("", "not_equals", "none", IBOX_CURNAME)
+          )
   CloudFrontOriginAccessIdentityExtra:
     Dev: none
     Stg: none
     Prd: none
+  PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
+    - base: Sub(f"arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity%s}" % IBOX_INDEXNAME)
+    - dev: IBOX_IFCONDVALUE
+    - stg: IBOX_IFCONDVALUE
+    - prd: IBOX_IFCONDVALUE
   PolicyStatementReplica:
     Resource: {}
     Principal: none
@@ -114,3 +126,6 @@ Base: &base
 global:
   Bucket:
     - IBOX_BASE: *base
+  IBOX_CUSTOM_OBJ:
+    - PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
+        Value: get_endvalue(f"PolicyStatementCloudFrontOriginAccessIdentityPrincipal{IBOX_RESNAME}")

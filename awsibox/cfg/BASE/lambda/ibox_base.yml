@@ -20,7 +20,14 @@ Function: &function
     S3Key.IBOX_AUTO_PO:
       Description: str(f"S3Key Name for lambda {IBOX_INDEXNAME} Code")
   Export: False
-  Layers.IBOX_CUSTOM_OBJ: LambdaLayers
+  Layers.IBOX_CUSTOM_OBJ:
+    IBOX_PARAMETER:
+      - _:
+          Description: str(IBOX_RESNAME)
+    IBOX_OUTPUT:
+      - _:
+          Value: get_endvalue(IBOX_RESNAME)
+    Value: get_endvalue(IBOX_RESNAME)
   Handler: "index.lambda_handler"
   Role: GetAtt(f"RoleLambda{IBOX_INDEXNAME}", "Arn")
   FunctionName: Sub("${AWS::StackName}-${EnvRole}-%s" % IBOX_INDEXNAME)

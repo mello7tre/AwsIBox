@@ -789,9 +789,10 @@ def auto_get_props(
                 # If there is a key ending with {propname}.IBOX_PCO process it
                 _try_PCO_in_obj(key[ibox_pco])
 
-        def _proc_custom_obj(name, key_value, mapname):
+        def _proc_custom_obj(base_rootdict, key_value, mapname):
             values = []
-            base_rootdict = getattr(cfg, f"{name}IBOX_CUSTOM_OBJ")
+            if not base_rootdict:
+                base_rootdict = getattr(cfg, f"IBOX_CUSTOM_OBJ{mapname}")
             if isinstance(key_value, dict):
                 my_iter = iter(key_value.items())
                 is_dict = True
@@ -905,6 +906,10 @@ def auto_get_props(
             ibox_code_key = f"{propname}.IBOX_CODE_KEY"
             ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
 
+            if not isinstance(obj, (Output, Parameter, Condition)):
+                global IBOX_CURNAME
+                IBOX_CURNAME = f"{mapname}{propname}"
+
             # IBOX_PCO for Custom Key ONLY
             # process ibox_pco for custom key not present in obj props
             # but only if there is not a relative ibox_auto_p/o or ibox_code key
@@ -922,12 +927,12 @@ def auto_get_props(
                 # First process IBOX_AUTO_PO and IBOX_PCO keys
                 _process_ibox_auto_pco_key(propname)
                 value = eval(key[ibox_code])
-            elif propname in key and propname in props:
-                # there is match between obj prop and a dict key
-                if not isinstance(obj, (Output, Parameter, Condition)):
-                    global IBOX_CURNAME
-                    IBOX_CURNAME = f"{mapname}{propname}"
-
+            elif (
+                propname in key
+                and propname in props
+                or (propname in key and ibox_custom_obj in key)
+            ):
+                # there is match between obj prop and a dict key or there is a custom obj
                 key_value = key[propname]
 
                 # Process IBOX_AUTO_PO and IBOX_PCO keys

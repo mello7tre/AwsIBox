@@ -21,7 +21,8 @@ CacheBehavior: &cache_behavior
   ViewerProtocolPolicy: redirect-to-https
 
 DistributionConfig: &distribution_config
-  Aliases.IBOX_CUSTOM_OBJ: CloudFrontDistributionConfigAliases
+  Aliases.IBOX_CUSTOM_OBJ:
+    Value: get_endvalue(f"CloudFrontDistributionBaseDistributionConfigAliases{IBOX_RESNAME}")
   DefaultCacheBehavior: *cache_behavior
   CacheBehaviors: {"IBOX_SUB_OBJ": "CloudFrontCacheBehaviors"}
   CustomErrorResponses: []
@@ -49,9 +50,6 @@ global:
     - IBOX_BASE:
         IBOX_TITLE: CloudFrontDistribution
         DistributionConfig: *distribution_config
-  CloudFrontDistributionConfigAliases:
-    - IBOX_CUSTOM_OBJ:
-        Value: get_endvalue(f"CloudFrontDistributionBaseDistributionConfigAliases{IBOX_RESNAME}")
   CloudFrontCacheBehaviors:
     - IBOX_BASE: *cache_behavior
   CloudFrontOrigins:
