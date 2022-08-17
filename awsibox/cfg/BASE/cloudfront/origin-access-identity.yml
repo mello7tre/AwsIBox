@@ -1,0 +1,9 @@
+global:
+  CloudFrontOriginAccessIdentity:
+    - Base:
+        IBOX_ENABLED: False
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: IBOX_RESNAME

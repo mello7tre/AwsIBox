@@ -316,6 +316,7 @@ CFG_TO_FUNC = {
     "CloudFrontOriginAccessIdentity": {
         "module": "joker",
         "func": ("cloudfront", "CloudFrontOriginAccessIdentity"),
+        "dep": ["Bucket"],
     },
     "CloudFrontOriginRequestPolicy": {
         "module": "joker",

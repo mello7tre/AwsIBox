@@ -101,7 +101,7 @@ def S3_Buckets(key):
 
         # resources
         r_Bucket = s3.Bucket(resname)
-        auto_get_props(r_Bucket, remapname=bucket_name)
+        auto_get_props(r_Bucket, remapname=bucket_name, indexname=n)
 
         PolicyStatementReplicaResources = []
         for m, w in v["PolicyStatementReplica"]["Resource"].items():
@@ -147,8 +147,28 @@ def S3_Buckets(key):
             for _, bp in v["BucketPolicy"].items():
                 BucketPolicyStatement.append(get_dictvalue(bp))
 
+        # Policy CloudFrontOriginAccessIdentity
+        PolicyStatementCloudFrontOriginAccessIdentityPrincipal = getattr(
+            cfg,
+            f"{resname}PolicyStatementCloudFrontOriginAccessIdentityPrincipal",
+            None,
+        )
+        if isinstance(PolicyStatementCloudFrontOriginAccessIdentityPrincipal, list):
+            # resources
+            BucketPolicyStatement.append(
+                {
+                    "Action": ["s3:GetObject"],
+                    "Effect": "Allow",
+                    "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
+                    "Principal": {
+                        "AWS": PolicyStatementCloudFrontOriginAccessIdentityPrincipal
+                    },
+                    "Sid": "AllowCFAccess",
+                }
+            )
+
         PolicyCloudFrontOriginAccessIdentityPrincipal = []
-        if "CloudFrontOriginAccessIdentity" in v:
+        if "CloudFrontOriginAccessIdentity_NO" in v:
             identityname = v["CloudFrontOriginAccessIdentity"]
             identityresname = f"CloudFrontOriginAccessIdentity{identityname}"
 
@@ -187,17 +207,6 @@ def S3_Buckets(key):
 
             add_obj(c_identity)
 
-            # resources
-            BucketPolicyStatement.append(
-                {
-                    "Action": ["s3:GetObject"],
-                    "Effect": "Allow",
-                    "Resource": [Sub("arn:aws:s3:::%s/*" % bucket_name)],
-                    "Principal": {"AWS": PolicyCloudFrontOriginAccessIdentityPrincipal},
-                    "Sid": "AllowCFAccess",
-                }
-            )
-
             r_OriginAccessIdentity = CFOriginAccessIdentity(
                 identityresname, comment=identityname, Condition=identitycondname
             )
@@ -211,7 +220,4 @@ def S3_Buckets(key):
 
             add_obj(o_OriginAccessIdentity)
 
-        add_obj([
-            r_Bucket,
-            r_Policy
-        ])
+        add_obj([r_Bucket, r_Policy])

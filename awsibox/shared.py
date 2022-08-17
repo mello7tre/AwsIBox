@@ -707,6 +707,8 @@ def auto_get_props(
             return get_dictvalue(key[obj_propname])
 
     def _populate(obj, key=None, mapname=None, rootdict=None):
+        global IBOX_RESNAME, IBOX_CURNAME
+
         if not mapname:
             mapname = obj.title
         if rootdict:
@@ -789,10 +791,10 @@ def auto_get_props(
                 # If there is a key ending with {propname}.IBOX_PCO process it
                 _try_PCO_in_obj(key[ibox_pco])
 
-        def _proc_custom_obj(base_rootdict, key_value, mapname):
+        def _proc_custom_obj(base_rootdict, key_value, mapname, propname):
             values = []
             if not base_rootdict:
-                base_rootdict = getattr(cfg, f"IBOX_CUSTOM_OBJ{mapname}")
+                base_rootdict = getattr(cfg, f"IBOX_CUSTOM_OBJ{propname}")
             if isinstance(key_value, dict):
                 my_iter = iter(key_value.items())
                 is_dict = True
@@ -802,12 +804,17 @@ def auto_get_props(
 
             for n, v in my_iter:
                 rootdict = {"Value": v}
+                obj_title = n if is_dict else v
+                if isinstance(v, dict):
+                    rootdict.update(v.get("Conf", {}))
+                    v = v.get("Value", v)
+                    obj_title = f"{n}Value"
                 rootdict.update(base_rootdict)
-                obj = IBOX_Custom_Obj(n if is_dict else v)
-                auto_get_props(obj, rootdict=rootdict)
+                obj = IBOX_Custom_Obj(obj_title)
+                auto_get_props(obj, rootdict=rootdict, mapname=f"{mapname}{propname}")
                 value = getattr(obj, "Value")
                 if v == "IBOX_IFCONDVALUE":
-                    condname = f"{mapname}{n}"
+                    condname = f"{mapname}{propname}{n}"
                     add_obj(get_condition(condname, "not_equals", "IBOX_IFCONDVALUE"))
                     values.append(If(condname, value, Ref("AWS::NoValue")))
                 else:
@@ -907,7 +914,6 @@ def auto_get_props(
             ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
 
             if not isinstance(obj, (Output, Parameter, Condition)):
-                global IBOX_CURNAME
                 IBOX_CURNAME = f"{mapname}{propname}"
 
             # IBOX_PCO for Custom Key ONLY
@@ -944,9 +950,12 @@ def auto_get_props(
                 # set value
                 elif isinstance(key_value, (list, dict)) and ibox_custom_obj in key:
                     # to process a list like a custom obj
+                    save_ibox_resname = IBOX_RESNAME
                     value = _proc_custom_obj(
-                        key[ibox_custom_obj], key_value, f"{mapname}{propname}"
+                        key[ibox_custom_obj], key_value, mapname, propname
                     )
+                    # need to save and restore IBOX_RESNAME because during processing _proc_custom_obj it change
+                    IBOX_RESNAME = save_ibox_resname
                 elif isinstance(key_value, dict):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)
@@ -998,6 +1007,9 @@ def auto_get_props(
             # Finally set obj property
             try:
                 setattr(obj, propname, value)
+            except AttributeError:
+                setattr(cfg, f"{mapname}{propname}", value)
+                pass
             except TypeError:
                 pass
             else:

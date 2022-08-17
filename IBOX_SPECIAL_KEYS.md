@@ -177,11 +177,11 @@ Layers:
   - layer2
 ```
 You append at the key name `.IBOX_CUSTOM_OBJ` with as value the configuration used to process the list elements.\
-If value is None, configuration is get from a key named like the IBOX\_CUSTOM\_OBJ + full `mapname`.
+If value is None/empty, configuration is get from a key named like the IBOX\_CUSTOM\_OBJ + key name.\
 Ex:
 ```
 IBOX_CUSTOM_OBJ:
-  - LambdaLayers:
+  - Layers:
       IBOX_PARAMETER:
         - _:
             Description: str(IBOX_RESNAME)
@@ -193,7 +193,8 @@ IBOX_CUSTOM_OBJ:
 And in Lambda cfg:
 ```
 Lambda:
-  Layers.IBOX_CUSTOM_OBJ:
+  - Test:
+      Layers.IBOX_CUSTOM_OBJ:
 ```
 Each custom object is created with title equals to the list element.
 

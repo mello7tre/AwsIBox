@@ -1,6 +1,7 @@
 IBoxLoader:
   - !include
     - s3/bucket.yml
+    - cloudfront/origin-access-identity.yml
     - sns/subscription.yml
     - lambda/permission.yml
     - lambda/function.yml

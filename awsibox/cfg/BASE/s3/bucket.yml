@@ -84,7 +84,22 @@ Base: &base
     Stg: none
     Prd: none
   PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
-    - base: Sub(f"arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity%s}" % IBOX_INDEXNAME)
+    - base:
+        Conf:
+          IBOX_LINKED_OBJ:
+            Key: CloudFrontOriginAccessIdentity
+            Type: Base
+            Name: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
+            Conf:
+              Condition: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
+              IBOX_RESNAME: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
+          IBOX_CONDITION:
+            - CloudFrontOriginAccessIdentity.IBOX_INDEXNAME:
+                And(
+                  Condition(f"Bucket{IBOX_INDEXNAME}"),
+                  get_condition("", "not_equals", "none", f"{IBOX_CURNAME}baseValue")
+                )
+        Value: Ref(f"CloudFrontOriginAccessIdentity{IBOX_INDEXNAME}")
     - dev: IBOX_IFCONDVALUE
     - stg: IBOX_IFCONDVALUE
     - prd: IBOX_IFCONDVALUE
@@ -124,8 +139,8 @@ Base: &base
 
 
 global:
-  Bucket:
-    - IBOX_BASE: *base
   IBOX_CUSTOM_OBJ:
     - PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
-        Value: get_endvalue(f"PolicyStatementCloudFrontOriginAccessIdentityPrincipal{IBOX_RESNAME}")
+        Value: 'Sub("arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}", **{"CloudFrontOriginAccessIdentity": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")})'
+  Bucket:
+    - IBOX_BASE: *base
