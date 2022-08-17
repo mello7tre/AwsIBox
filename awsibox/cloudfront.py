@@ -14,14 +14,6 @@ from .shared import (
 )
 
 
-class CFOriginAccessIdentity(clf.CloudFrontOriginAccessIdentity):
-    def __init__(self, title, comment, **kwargs):
-        super().__init__(title, **kwargs)
-        self.CloudFrontOriginAccessIdentityConfig = (
-            clf.CloudFrontOriginAccessIdentityConfig(Comment=comment)
-        )
-
-
 def cache_behavior_process():
     for n, v in cfg.CloudFrontCacheBehaviors.items():
         resname = f"CloudFrontCacheBehaviors{n}"

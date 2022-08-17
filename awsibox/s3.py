@@ -11,7 +11,6 @@ from .shared import (
     add_obj,
     get_dictvalue,
 )
-from .cloudfront import CFOriginAccessIdentity
 
 
 def S3_Buckets(key):
@@ -166,58 +165,5 @@ def S3_Buckets(key):
                     "Sid": "AllowCFAccess",
                 }
             )
-
-        PolicyCloudFrontOriginAccessIdentityPrincipal = []
-        if "CloudFrontOriginAccessIdentity_NO" in v:
-            identityname = v["CloudFrontOriginAccessIdentity"]
-            identityresname = f"CloudFrontOriginAccessIdentity{identityname}"
-
-            PolicyCloudFrontOriginAccessIdentityPrincipal.append(
-                Sub(
-                    "arn:aws:iam::cloudfront:user/"
-                    "CloudFront Origin Access Identity ${%s}" % identityresname
-                )
-            )
-
-            for ixn, ixv in v["CloudFrontOriginAccessIdentityExtra"].items():
-                ixname = f"{resname}CloudFrontOriginAccessIdentityExtra{ixn}"
-                # conditions
-                add_obj(get_condition(ixname, "not_equals", "none"))
-
-                PolicyCloudFrontOriginAccessIdentityPrincipal.append(
-                    If(
-                        ixname,
-                        get_subvalue(
-                            "arn:aws:iam::cloudfront:user/"
-                            "CloudFront Origin Access Identity ${1M}",
-                            ixname,
-                        ),
-                        Ref("AWS::NoValue"),
-                    )
-                )
-
-            # conditions
-            identitycondname = f"{resname}CloudFrontOriginAccessIdentity"
-            c_identity = {
-                identitycondname: And(
-                    Condition(resname),
-                    get_condition("", "not_equals", "none", identitycondname),
-                )
-            }
-
-            add_obj(c_identity)
-
-            r_OriginAccessIdentity = CFOriginAccessIdentity(
-                identityresname, comment=identityname, Condition=identitycondname
-            )
-
-            add_obj(r_OriginAccessIdentity)
-
-            # outputs
-            o_OriginAccessIdentity = Output(
-                identityresname, Value=Ref(identityresname), Condition=identitycondname
-            )
-
-            add_obj(o_OriginAccessIdentity)
 
         add_obj([r_Bucket, r_Policy])
