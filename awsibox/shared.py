@@ -794,7 +794,7 @@ def auto_get_props(
         def _proc_custom_obj(base_rootdict, key_value, mapname, propname):
             values = []
             if not base_rootdict:
-                base_rootdict = getattr(cfg, f"IBOX_CUSTOM_OBJ{propname}")
+                base_rootdict = getattr(cfg, f"{mapname}IBOX_CUSTOM_OBJ{propname}")
             if isinstance(key_value, dict):
                 my_iter = iter(key_value.items())
                 is_dict = True

@@ -3,6 +3,9 @@ IBoxLoader: !include
   - iam/policy-bucket-replica.yml
 
 Base: &base
+  IBOX_CUSTOM_OBJ:
+    - PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
+        Value: 'Sub("arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}", **{"CloudFrontOriginAccessIdentity": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")})'
   IBOX_LINKED_OBJ:
     IAMRole:
       Key: IAMRole
@@ -139,8 +142,5 @@ Base: &base
 
 
 global:
-  IBOX_CUSTOM_OBJ:
-    - PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
-        Value: 'Sub("arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}", **{"CloudFrontOriginAccessIdentity": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")})'
   Bucket:
     - IBOX_BASE: *base

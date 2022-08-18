@@ -164,37 +164,39 @@ Can be used to precess a list of string, Ex LambdaLayers, using a custom class\.
 This way you can have a parameter, output, condition and custom code for every element of the list\.
 Ex:
 ```
-Layers.IBOX_CUSTOM_OBJ:
-  IBOX_PARAMETER:
-    - _:
-        Description: str(IBOX_RESNAME)
-  IBOX_OUTPUT:
-    - _:
-        Value: get_endvalue(IBOX_RESNAME)
-  Value: get_endvalue(IBOX_RESNAME)
-Layers:
-  - layer1
-  - layer2
-```
-You append at the key name `.IBOX_CUSTOM_OBJ` with as value the configuration used to process the list elements.\
-If value is None/empty, configuration is get from a key named like the IBOX\_CUSTOM\_OBJ + key name.\
-Ex:
-```
-IBOX_CUSTOM_OBJ:
-  - Layers:
-      IBOX_PARAMETER:
-        - _:
-            Description: str(IBOX_RESNAME)
-      IBOX_OUTPUT:
-        - _:
-            Value: get_endvalue(IBOX_RESNAME)
-      Value: get_endvalue(IBOX_RESNAME)
-```
-And in Lambda cfg:
-```
 Lambda:
   - Test:
       Layers.IBOX_CUSTOM_OBJ:
+        IBOX_PARAMETER:
+          - _:
+              Description: str(IBOX_RESNAME)
+        IBOX_OUTPUT:
+          - _:
+              Value: get_endvalue(IBOX_RESNAME)
+        Value: get_endvalue(IBOX_RESNAME)
+      Layers:
+        - layer1
+        - layer2
+```
+You append at the key name `.IBOX_CUSTOM_OBJ` with as value the configuration used to process the list elements.\
+If value is None/empty, configuration is get from a key named like the IBOX\_CUSTOM\_OBJ + key name located under the current obj.\
+Ex:
+```
+Lambda:
+  - Test:
+      IBOX_CUSTOM_OBJ:
+        - Layers:
+            IBOX_PARAMETER:
+              - _:
+                  Description: str(IBOX_RESNAME)
+            IBOX_OUTPUT:
+              - _:
+                  Value: get_endvalue(IBOX_RESNAME)
+            Value: get_endvalue(IBOX_RESNAME)
+      Layers.IBOX_CUSTOM_OBJ:
+      Layers:
+        - layer1
+        - layer2
 ```
 Each custom object is created with title equals to the list element.
 
