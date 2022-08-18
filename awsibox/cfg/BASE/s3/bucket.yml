@@ -82,10 +82,6 @@ Base: &base
             Condition(IBOX_RESNAME),
             get_condition("", "not_equals", "none", IBOX_CURNAME)
           )
-  CloudFrontOriginAccessIdentityExtra:
-    Dev: none
-    Stg: none
-    Prd: none
   PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
     - base:
         Conf:
