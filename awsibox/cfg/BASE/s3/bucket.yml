@@ -92,6 +92,7 @@ Base: &base
             Conf:
               Condition: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
               IBOX_RESNAME: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
+              IBOX_LINKED_OBJ_NAME: IBOX_INDEXNAME
           IBOX_CONDITION:
             - CloudFrontOriginAccessIdentity.IBOX_INDEXNAME:
                 And(

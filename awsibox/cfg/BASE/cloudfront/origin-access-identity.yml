@@ -6,4 +6,4 @@ global:
           - _:
               Value: Ref(IBOX_RESNAME)
         CloudFrontOriginAccessIdentityConfig:
-          Comment: IBOX_RESNAME
+          Comment: IBOX_LINKED_OBJ_NAME
