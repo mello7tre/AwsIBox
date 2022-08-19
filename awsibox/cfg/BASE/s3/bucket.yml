@@ -12,6 +12,8 @@ Base: &base
         Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
     - PolicyStatementAccountsDeletePrincipal:
         Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+    - PolicyStatementReplicaResourcePrefix:
+        Value: get_subvalue("arn:aws:s3:::%s/${1M}*" % IBOX_REMAPNAME, f"{IBOX_MAPNAME}{IBOX_RESNAME}")
   IBOX_LINKED_OBJ:
     IAMRole:
       Key: IAMRole
@@ -118,9 +120,10 @@ Base: &base
     - dev: IBOX_IFCONDVALUE
     - stg: IBOX_IFCONDVALUE
     - prd: IBOX_IFCONDVALUE
-  PolicyStatementReplica:
-    Resource: {}
-    Principal: none
+  PolicyStatementReplicaPrincipal: none
+  PolicyStatementReplicaResourcePrefix.IBOX_CUSTOM_OBJ:
+  PolicyStatementReplicaResourcePrefix:
+    1: ""
   ReplicationConfiguration:
     IBOX_IF:
       - _Replica

@@ -22,22 +22,6 @@ def S3_Buckets(key):
         r_Bucket = s3.Bucket(resname)
         auto_get_props(r_Bucket, remapname=bucket_name, indexname=n)
 
-        PolicyStatementReplicaResources = []
-        for m, w in v["PolicyStatementReplica"]["Resource"].items():
-            polstatname = f"{resname}PolicyStatementReplicaResource{m}"
-            # conditions
-            add_obj(get_condition(f"{polstatname}Prefix", "not_equals", "none"))
-
-            PolicyStatementReplicaResources.append(
-                If(
-                    f"{polstatname}Prefix",
-                    get_subvalue(
-                        "arn:aws:s3:::%s/${1M}*" % bucket_name, f"{polstatname}Prefix"
-                    ),
-                    Ref("AWS::NoValue"),
-                )
-            )
-
         r_Policy = s3.BucketPolicy(
             f"BucketPolicy{n}",
             Condition=resname,
@@ -46,7 +30,9 @@ def S3_Buckets(key):
         # BucketPolicy Statements are read from yaml cfg, so update it with dynamic data
         base_statements = cfg.S3BucketPolicyBasePolicyDocumentStatement
         # At least one statement must be always present, create a simple one with no conditions
-        base_statements["AllowReplica"]["Resource"] = PolicyStatementReplicaResources
+        base_statements["AllowReplica"]["Resource"] = getattr(
+            cfg, f"{resname}PolicyStatementReplicaResourcePrefix"
+        )
         base_statements["AllowListBucketGetObject"]["Principal"]["AWS"] = getattr(
             cfg, f"{resname}PolicyStatementAccountsReadPrincipal"
         )
