@@ -6,6 +6,12 @@ Base: &base
   IBOX_CUSTOM_OBJ:
     - PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
         Value: 'Sub("arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}", **{"CloudFrontOriginAccessIdentity": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")})'
+    - PolicyStatementAccountsReadPrincipal:
+        Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+    - PolicyStatementAccountsWritePrincipal:
+        Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+    - PolicyStatementAccountsDeletePrincipal:
+        Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
   IBOX_LINKED_OBJ:
     IAMRole:
       Key: IAMRole
@@ -27,6 +33,12 @@ Base: &base
         get_condition("", "equals", "yes", f"{IBOX_RESNAME}Cors")
     - _PolicyStatementReplicaPrincipal:
         get_condition("", "not_equals", "none", f"{IBOX_RESNAME}PolicyStatementReplicaPrincipal")
+    - _PolicyStatementRead: >-
+       Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementAccountsReadPrincipal{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementAccountsReadPrincipal")])
+    - _PolicyStatementWrite: >-
+       Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementAccountsWritePrincipal{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementAccountsWritePrincipal")])
+    - _PolicyStatementDelete: >-
+       Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementAccountsDeletePrincipal{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementAccountsDeletePrincipal")])
     - _Replica:
         And(Condition(IBOX_RESNAME), get_condition("", "equals", "yes", f"{IBOX_RESNAME}ReplicationConfigurationEnabled"))
     - _Versioning:
@@ -51,18 +63,6 @@ Base: &base
   Condition: IBOX_RESNAME
   BucketName: Sub(IBOX_REMAPNAME)
   Create: "no"
-  AccountsRead:
-    dev: none
-    stg: none
-    prd: none
-  AccountsWrite:
-    dev: none
-    stg: none
-    prd: none
-  AccountsDelete:
-    dev: none
-    stg: none
-    prd: none
   Cors: "no"
   CorsConfiguration:
     IBOX_IF:
@@ -82,6 +82,21 @@ Base: &base
             Condition(IBOX_RESNAME),
             get_condition("", "not_equals", "none", IBOX_CURNAME)
           )
+  PolicyStatementAccountsReadPrincipal.IBOX_CUSTOM_OBJ:
+  PolicyStatementAccountsReadPrincipal:
+    dev: IBOX_IFCONDVALUE
+    stg: IBOX_IFCONDVALUE
+    prd: IBOX_IFCONDVALUE
+  PolicyStatementAccountsWritePrincipal.IBOX_CUSTOM_OBJ:
+  PolicyStatementAccountsWritePrincipal:
+    dev: IBOX_IFCONDVALUE
+    stg: IBOX_IFCONDVALUE
+    prd: IBOX_IFCONDVALUE
+  PolicyStatementAccountsDeletePrincipal.IBOX_CUSTOM_OBJ:
+  PolicyStatementAccountsDeletePrincipal:
+    dev: IBOX_IFCONDVALUE
+    stg: IBOX_IFCONDVALUE
+    prd: IBOX_IFCONDVALUE
   PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
     - base:
         Conf:

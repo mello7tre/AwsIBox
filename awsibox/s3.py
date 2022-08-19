@@ -18,86 +18,6 @@ def S3_Buckets(key):
         resname = f"{key}{n}"
         bucket_name = getattr(cfg, f"{key}Name{n}")
 
-        ## Policy Read
-        PolicyReadConditions = []
-        PolicyReadPrincipal = []
-        for m, w in v["AccountsRead"].items():
-            accountread_name = f"{resname}AccountsRead{m}"
-            # conditions
-            add_obj(get_condition(accountread_name, "not_equals", "none"))
-
-            PolicyReadConditions.append(Condition(accountread_name))
-            PolicyReadPrincipal.append(
-                If(
-                    accountread_name,
-                    get_subvalue("arn:aws:iam::${1M}:root", accountread_name),
-                    Ref("AWS::NoValue"),
-                )
-            )
-        # conditions
-        if PolicyReadConditions:
-            c_PolicyRead = {
-                f"{resname}PolicyRead": Or(
-                    Equals("1", "0"), Equals("1", "0"), *PolicyReadConditions
-                )
-            }
-        else:
-            c_PolicyRead = {f"{resname}PolicyRead": Equals("True", "False")}
-
-        ## Policy Write
-        PolicyWriteConditions = []
-        PolicyWritePrincipal = []
-        for m, w in v["AccountsWrite"].items():
-            accountwrite_name = f"{resname}AccountsWrite{m}"
-            # conditions
-            add_obj(get_condition(accountwrite_name, "not_equals", "none"))
-
-            PolicyWriteConditions.append(Condition(accountwrite_name))
-            PolicyWritePrincipal.append(
-                If(
-                    accountwrite_name,
-                    get_subvalue("arn:aws:iam::${1M}:root", accountwrite_name),
-                    Ref("AWS::NoValue"),
-                )
-            )
-        # conditions
-        if PolicyWriteConditions:
-            c_PolicyWrite = {
-                f"{resname}PolicyWrite": Or(
-                    Equals("1", "0"), Equals("1", "0"), *PolicyWriteConditions
-                )
-            }
-        else:
-            c_PolicyWrite = {f"{resname}PolicyWrite": Equals("True", "False")}
-
-        ## Policy Delete
-        PolicyDeleteConditions = []
-        PolicyDeletePrincipal = []
-        for m, w in v["AccountsDelete"].items():
-            accountwrite_name = f"{resname}AccountsDelete{m}"
-            # conditions
-            add_obj(get_condition(accountwrite_name, "not_equals", "none"))
-
-            PolicyDeleteConditions.append(Condition(accountwrite_name))
-            PolicyDeletePrincipal.append(
-                If(
-                    accountwrite_name,
-                    get_subvalue("arn:aws:iam::${1M}:root", accountwrite_name),
-                    Ref("AWS::NoValue"),
-                )
-            )
-        # conditions
-        if PolicyDeleteConditions:
-            c_PolicyDelete = {
-                f"{resname}PolicyDelete": Or(
-                    Equals("1", "0"), Equals("1", "0"), *PolicyDeleteConditions
-                )
-            }
-        else:
-            c_PolicyDelete = {f"{resname}PolicyDelete": Equals("True", "False")}
-
-        add_obj([c_PolicyRead, c_PolicyWrite, c_PolicyDelete])
-
         # resources
         r_Bucket = s3.Bucket(resname)
         auto_get_props(r_Bucket, remapname=bucket_name, indexname=n)
@@ -129,9 +49,9 @@ def S3_Buckets(key):
         base_statements["AllowReplica"]["Resource"] = PolicyStatementReplicaResources
         base_statements["AllowListBucketGetObject"]["Principal"][
             "AWS"
-        ] = PolicyReadPrincipal
-        base_statements["AllowPut"]["Principal"]["AWS"] = PolicyWritePrincipal
-        base_statements["AllowDelete"]["Principal"]["AWS"] = PolicyDeletePrincipal
+        ] = getattr(cfg, f"{resname}PolicyStatementAccountsReadPrincipal")
+        base_statements["AllowPut"]["Principal"]["AWS"] = getattr(cfg, f"{resname}PolicyStatementAccountsWritePrincipal")
+        base_statements["AllowDelete"]["Principal"]["AWS"] = getattr(cfg, f"{resname}PolicyStatementAccountsDeletePrincipal")
         auto_get_props(
             r_Policy,
             mapname="S3BucketPolicyBase",
