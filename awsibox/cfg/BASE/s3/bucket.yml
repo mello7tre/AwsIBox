@@ -30,7 +30,7 @@ Base: &base
     - _:
         get_condition("", "equals", "yes", f"{IBOX_RESNAME}Create")
     - _Cors:
-        get_condition("", "equals", "yes", f"{IBOX_RESNAME}Cors")
+        get_condition("", "equals", "yes", f"{IBOX_RESNAME}CorsConfigurationEnabled")
     - _PolicyStatementReplicaPrincipal:
         get_condition("", "not_equals", "none", f"{IBOX_RESNAME}PolicyStatementReplicaPrincipal")
     - _PolicyStatementRead: >-
@@ -63,8 +63,8 @@ Base: &base
   Condition: IBOX_RESNAME
   BucketName: Sub(IBOX_REMAPNAME)
   Create: "no"
-  Cors: "no"
   CorsConfiguration:
+    Enabled: "no"
     IBOX_IF:
       - _Cors
       - IBOX_IFVALUE
