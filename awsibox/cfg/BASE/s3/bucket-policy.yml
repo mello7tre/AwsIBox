@@ -27,7 +27,7 @@ global:
                   AWS:
                     - get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementReplicaPrincipal")
                 Sid: AllowReplica
-            - AllowListBucketGetObject:
+            - AllowAccountsRead:
                 IBOX_IF:
                   - IBOX_LINKED_OBJ_INDEX.PolicyStatementRead
                   - IBOX_IFVALUE
@@ -46,7 +46,7 @@ global:
                 Principal:
                   AWS: ""
                 Sid: AllowListBucketGetObject
-            - AllowPut:
+            - AllowAccountsWrite:
                 IBOX_IF:
                   - IBOX_LINKED_OBJ_INDEX.PolicyStatementWrite
                   - IBOX_IFVALUE
@@ -59,7 +59,7 @@ global:
                 Principal:
                   AWS: ""
                 Sid: AllowPut
-            - AllowDelete:
+            - AllowAccountsDelete:
                 IBOX_IF:
                   - IBOX_LINKED_OBJ_INDEX.PolicyStatementDelete
                   - IBOX_IFVALUE
