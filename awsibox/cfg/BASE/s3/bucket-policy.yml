@@ -45,7 +45,7 @@ global:
                   - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
                 Principal:
                   AWS: ""
-                Sid: AllowListBucketGetObject
+                Sid: AllowAccountsRead
             - AllowAccountsWrite:
                 IBOX_IF:
                   - IBOX_LINKED_OBJ_INDEX.PolicyStatementWrite
@@ -58,7 +58,7 @@ global:
                   - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
                 Principal:
                   AWS: ""
-                Sid: AllowPut
+                Sid: AllowAccountsWrite
             - AllowAccountsDelete:
                 IBOX_IF:
                   - IBOX_LINKED_OBJ_INDEX.PolicyStatementDelete
@@ -71,5 +71,5 @@ global:
                   - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
                 Principal:
                   AWS: ""
-                Sid: AllowDelete
+                Sid: AllowAccountsDelete
           Version: "2012-10-17"
