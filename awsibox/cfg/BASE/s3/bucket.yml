@@ -114,8 +114,9 @@ Base: &base
             - CloudFrontOriginAccessIdentity.IBOX_INDEXNAME:
                 And(
                   Condition(f"Bucket{IBOX_INDEXNAME}"),
-                  get_condition("", "not_equals", "none", f"{IBOX_CURNAME}baseValue")
+                  get_condition("", "not_equals", "none", f"{IBOX_CURNAME}baseEnabled")
                 )
+        Enabled: 'yes'
         Value: Ref(f"CloudFrontOriginAccessIdentity{IBOX_INDEXNAME}")
     - dev: IBOX_IFCONDVALUE
     - stg: IBOX_IFCONDVALUE
