@@ -33,13 +33,13 @@ def S3_Buckets(key):
         base_statements["AllowReplica"]["Resource"] = getattr(
             cfg, f"{resname}PolicyStatementReplicaResourcePrefix"
         )
-        base_statements["AllowListBucketGetObject"]["Principal"]["AWS"] = getattr(
+        base_statements["AllowAccountsRead"]["Principal"]["AWS"] = getattr(
             cfg, f"{resname}PolicyStatementAccountsReadPrincipal"
         )
-        base_statements["AllowPut"]["Principal"]["AWS"] = getattr(
+        base_statements["AllowAccountsWrite"]["Principal"]["AWS"] = getattr(
             cfg, f"{resname}PolicyStatementAccountsWritePrincipal"
         )
-        base_statements["AllowDelete"]["Principal"]["AWS"] = getattr(
+        base_statements["AllowAccountsDelete"]["Principal"]["AWS"] = getattr(
             cfg, f"{resname}PolicyStatementAccountsDeletePrincipal"
         )
         auto_get_props(
