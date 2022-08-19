@@ -47,11 +47,15 @@ def S3_Buckets(key):
         base_statements = cfg.S3BucketPolicyBasePolicyDocumentStatement
         # At least one statement must be always present, create a simple one with no conditions
         base_statements["AllowReplica"]["Resource"] = PolicyStatementReplicaResources
-        base_statements["AllowListBucketGetObject"]["Principal"][
-            "AWS"
-        ] = getattr(cfg, f"{resname}PolicyStatementAccountsReadPrincipal")
-        base_statements["AllowPut"]["Principal"]["AWS"] = getattr(cfg, f"{resname}PolicyStatementAccountsWritePrincipal")
-        base_statements["AllowDelete"]["Principal"]["AWS"] = getattr(cfg, f"{resname}PolicyStatementAccountsDeletePrincipal")
+        base_statements["AllowListBucketGetObject"]["Principal"]["AWS"] = getattr(
+            cfg, f"{resname}PolicyStatementAccountsReadPrincipal"
+        )
+        base_statements["AllowPut"]["Principal"]["AWS"] = getattr(
+            cfg, f"{resname}PolicyStatementAccountsWritePrincipal"
+        )
+        base_statements["AllowDelete"]["Principal"]["AWS"] = getattr(
+            cfg, f"{resname}PolicyStatementAccountsDeletePrincipal"
+        )
         auto_get_props(
             r_Policy,
             mapname="S3BucketPolicyBase",

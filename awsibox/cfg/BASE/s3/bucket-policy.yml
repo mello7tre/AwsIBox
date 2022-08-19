@@ -29,7 +29,7 @@ global:
                 Sid: AllowReplica
             - AllowListBucketGetObject:
                 IBOX_IF:
-                  - IBOX_LINKED_OBJ_INDEX.PolicyRead
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementRead
                   - IBOX_IFVALUE
                   - Ref("AWS::NoValue")
                 Action:
@@ -48,7 +48,7 @@ global:
                 Sid: AllowListBucketGetObject
             - AllowPut:
                 IBOX_IF:
-                  - IBOX_LINKED_OBJ_INDEX.PolicyWrite
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementWrite
                   - IBOX_IFVALUE
                   - Ref("AWS::NoValue")
                 Action:
@@ -61,7 +61,7 @@ global:
                 Sid: AllowPut
             - AllowDelete:
                 IBOX_IF:
-                  - IBOX_LINKED_OBJ_INDEX.PolicyDelete
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementDelete
                   - IBOX_IFVALUE
                   - Ref("AWS::NoValue")
                 Action:
