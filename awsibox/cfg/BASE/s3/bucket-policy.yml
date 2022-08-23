@@ -37,7 +37,7 @@ global:
                   - 's3:GetBucketLocation'
                   - 's3:ListBucketMultipartUploads'
                   - 's3:ListBucketVersions'
-                  - 's3:GetObject'
+                  - 's3:GetObject*'
                   - 's3:ListMultipartUploadParts'
                 Effect: Allow
                 Resource:
