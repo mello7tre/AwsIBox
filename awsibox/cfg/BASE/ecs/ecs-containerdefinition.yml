@@ -32,7 +32,7 @@ Base: &base
         Value: Join(',', get_endvalue(f'{IBOX_RESNAME}Command')) 
     - _Constraints:
         Value: >-
-          Cpu= ${Cpu} ,Memory= ${Memory} If("{IBOX_MAPNAME}MemoryReservation",",MemoryReservation=",Ref("AWS::NoValue")) ${MemoryReservation}
+          Cpu= ${Cpu} ,Memory= ${Memory} If(f"{IBOX_MAPNAME}MemoryReservation",",MemoryReservation=",Ref("AWS::NoValue")) ${MemoryReservation}
     - _Image:
         Value: ${Image}
   Command: Ref('AWS::NoValue')
