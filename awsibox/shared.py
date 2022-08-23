@@ -137,6 +137,8 @@ def add_objoutput(res):
                     obj = iboxprops[f"{mapname}{n}"][0]
                     propname = iboxprops[f"{mapname}{n}"][1]
                     n = getattr(obj, propname)
+                elif n.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+                    n = n.replace("{IBOX_MAPNAME}", f"{mapname}")
                 join_list.append(n)
 
             res.Value = Join("", join_list)
