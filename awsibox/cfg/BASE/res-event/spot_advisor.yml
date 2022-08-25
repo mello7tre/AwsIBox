@@ -16,7 +16,7 @@ global:
         Description: 'Advise if ASG is using a spot instance type with a high frequency of interruption'
         MemorySize: 128
         Runtime: python3.9
-        Timeout: 20
+        Timeout: 60
         Environment:
           Variables:
             - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
