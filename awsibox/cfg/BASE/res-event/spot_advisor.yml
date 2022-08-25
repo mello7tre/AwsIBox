@@ -30,3 +30,7 @@ global:
                 Action: 'sns:Publish'
                 Effect: Allow
                 Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+            - 2:
+                Action: 'pricing:GetProducts'
+                Effect: Allow
+                Resource: '*'
