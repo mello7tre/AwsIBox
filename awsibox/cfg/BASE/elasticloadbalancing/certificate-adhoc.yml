@@ -52,5 +52,5 @@ global:
               )
         Port: get_endvalue('ListenerLoadBalancerHttpsPort')
         Protocol: HTTPS
-        SslPolicy: get_endvalue('ListenerLoadBalancerSslPolicy')
+        SslPolicy: ELBSecurityPolicy-2016-08
   LoadBalancerSslCertificateAdHoc: 'no'
