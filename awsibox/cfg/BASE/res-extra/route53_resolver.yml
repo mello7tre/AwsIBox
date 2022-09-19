@@ -1,0 +1,13 @@
+global:
+  Route53ResolverEndpoint:
+    - OutBoundPrivate:
+        IBOX_ENABLED: False
+        Direction: OUTBOUND
+        IpAddresses:
+          - A:
+              SubnetId: Select(0, Split(",", ImportValue("SubnetsPrivate")))
+          - B:
+              SubnetId: Select(1, Split(",", ImportValue("SubnetsPrivate")))
+        Name: OutBoundPrivate
+        SecurityGroupIds:
+          - ImportValue('SecurityGroupBaseInstance')

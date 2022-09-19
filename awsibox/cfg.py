@@ -418,6 +418,18 @@ CFG_TO_FUNC = {
         "func": ("route53", "RecordSetType"),
         "dep": ["ApiGatewayDomainName", "DBInstance", "EFSFileSystem", "LoadBalancer"],
     },
+    "Route53ResolverEndpoint": {
+        "module": "joker",
+        "func": ("route53", "ResolverEndpoint"),
+    },
+    "Route53ResolverRule": {
+        "module": "joker",
+        "func": ("route53", "ResolverRule"),
+    },
+    "Route53ResolverRuleAssociation": {
+        "module": "joker",
+        "func": ("route53", "ResolverRuleAssociation"),
+    },
     "SecurityGroup": {"module": "ec2", "func": "SG_SecurityGroup"},
     "SecurityGroupIngress": {
         "module": "ec2",
