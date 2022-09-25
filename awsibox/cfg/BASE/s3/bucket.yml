@@ -84,6 +84,10 @@ Base: &base
             Condition(IBOX_RESNAME),
             get_condition("", "not_equals", "none", IBOX_CURNAME)
           )
+  LifecycleConfiguration:
+    Rules:
+      - IBOX_BASE:
+          Status.IBOX_AUTO_PO: {}
   PolicyStatementAccountsReadPrincipal.IBOX_CUSTOM_OBJ:
   PolicyStatementAccountsReadPrincipal:
     dev: IBOX_IFCONDVALUE
