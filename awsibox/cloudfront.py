@@ -30,7 +30,7 @@ def cache_behavior_process():
         cfg.CloudFrontDistributionBase["DistributionConfig"]["DefaultCacheBehavior"]
     )
     # process other behaviors
-    for n, v in cfg.CloudFrontCacheBehaviors.items():
+    for n in cfg.CloudFrontCacheBehaviors:
         process_cache_policy(getattr(cfg, f"CloudFrontCacheBehaviors{n}"))
 
 
