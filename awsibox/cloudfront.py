@@ -14,16 +14,24 @@ from .shared import (
 )
 
 
+def process_cache_policy(v):
+    # Use CachePolicyId/OriginRequestPolicyId or legacy mode
+    if "CachePolicyId" in v:
+        for k in ["DefaultTTL", "MaxTTL", "MinTTL", "ForwardedValues"]:
+            try:
+                del v[k]
+            except Exception:
+                pass
+
+
 def cache_behavior_process():
+    # process default behavior
+    process_cache_policy(
+        cfg.CloudFrontDistributionBase["DistributionConfig"]["DefaultCacheBehavior"]
+    )
+    # process other behaviors
     for n, v in cfg.CloudFrontCacheBehaviors.items():
-        resname = f"CloudFrontCacheBehaviors{n}"
-        # Use CachePolicyId/OriginRequestPolicyId or legacy mode
-        if "CachePolicyId" in v:
-            for k in ["DefaultTTL", "MaxTTL", "MinTTL", "ForwardedValues"]:
-                try:
-                    del getattr(cfg, resname)[k]
-                except Exception:
-                    pass
+        process_cache_policy(getattr(cfg, f"CloudFrontCacheBehaviors{n}"))
 
 
 def origin_process():
