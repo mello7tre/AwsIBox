@@ -158,7 +158,7 @@ Base: &base
                 - IBOX_IFVALUE
                 - Ref('AWS::NoValue')
               Owner: Destination
-            Prefix: ''
+          Prefix: ''
           Status: Enabled
   VersioningConfiguration:
     IBOX_IF:
