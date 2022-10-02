@@ -46,7 +46,6 @@ ENV_BASE = ["dev", "stg", "prd"]
 DEFAULT_REGIONS = [
     "eu-west-1",
     "us-east-1",
-    "eu-central-1",
 ]
 
 AZones = {
