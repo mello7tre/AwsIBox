@@ -150,6 +150,15 @@ Base: &base
               IBOX_CONDITION:
                 - IBOX_CURNAME:
                     get_condition("", "not_equals", "none", IBOX_CURNAME)
+            Bucket: none
+            Account: IBOX_IFCONDVALUE
+            AccessControlTranslation:
+              IBOX_IF:
+                - IBOX_MAPNAME.Account
+                - IBOX_IFVALUE
+                - Ref('AWS::NoValue')
+              Owner: Destination
+            Prefix: ''
           Status: Enabled
   VersioningConfiguration:
     IBOX_IF:
