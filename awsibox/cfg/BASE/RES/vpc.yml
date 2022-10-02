@@ -20,6 +20,7 @@ global:
     - AZones:
   EC2EIP:
     - Nat:
+        Condition: EC2NatGatewayBase
         IBOX_RESNAME: EIPNat
         IBOX_OUTPUT:
           - _:
@@ -28,6 +29,7 @@ global:
   EC2NatGateway:
     - Base:
         IBOX_TITLE: NatGateway
+        Create: 'no'
         DependsOn: VPCGatewayAttachment
         AllocationId: GetAtt("EIPNat", "AllocationId")
         SubnetId: Ref("SubnetPublicA")
@@ -43,6 +45,7 @@ global:
         GatewayId: Ref("InternetGateway")
         RouteTableId: Ref("RouteTablePublic")
     - NatGateway:
+        Condition: EC2NatGatewayBase
         IBOX_TITLE: RouteNatGateway
         DestinationCidrBlock: "0.0.0.0/0"
         NatGatewayId: Ref("NatGateway")
