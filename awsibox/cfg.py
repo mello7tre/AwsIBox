@@ -109,6 +109,7 @@ EVAL_PYTHON_FUNCTIONS_IN_CFG = (
     "dict(",
     "eval(",
     "str(",
+    "int(",
     "list(",
     "getattr(",
     "SG_SecurityGroups",

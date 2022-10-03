@@ -142,6 +142,8 @@ Base: &base
             - IBOX_CURNAME.DestinationBucket
             - IBOX_IFVALUE
             - Ref("AWS::NoValue")
+          DeleteMarkerReplication:
+            Status: Enabled
           Destination:
             Bucket.IBOX_PCO:
               IBOX_PARAMETER:
@@ -158,7 +160,12 @@ Base: &base
                 - IBOX_IFVALUE
                 - Ref('AWS::NoValue')
               Owner: Destination
-          Prefix: ''
+          Filter:
+            Prefix: ''
+          Priority: >-
+            int(
+              IBOX_PROPNAME if IBOX_PROPNAME.isdigit() else 
+              list(getattr(cfg, f"{IBOX_RESNAME}ReplicationConfigurationRules").keys()).index(IBOX_PROPNAME) + 1)
           Status: Enabled
   VersioningConfiguration:
     IBOX_IF:
