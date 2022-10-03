@@ -15,14 +15,22 @@ BaseInternal: &base_internal
 
 ZoneExternal: &zone_external
   <<: *base
-  HostedZoneId:
-      Ref("HostedZoneEnv") if "Env" in getattr(cfg, "Route53HostedZone", []) else get_expvalue('HostedZoneIdEnv')
+  HostedZoneId: >-
+      If(
+        "HostedZoneEnv",
+        Ref("HostedZoneEnv"),
+        get_endvalue("Route53HostedZoneEnvId"),
+      ) if "Env" in getattr(cfg, "Route53HostedZone", []) else get_expvalue('HostedZoneIdEnv')
   Name: Sub('${AWS::StackName}.${EnvRole}.%s' % cfg.HostedZoneNameRegionEnv)
 
 ZoneInternal: &zone_internal
   <<: *base
-  HostedZoneId:
-      Ref("HostedZonePrivate") if "Private" in getattr(cfg, "Route53HostedZone", []) else get_expvalue('HostedZoneIdPrivate')
+  HostedZoneId: >-
+      If(
+        "HostedZonePrivate",
+        Ref("HostedZonePrivate"),
+        get_endvalue("Route53HostedZonePrivateId"),
+      ) if "Private" in getattr(cfg, "Route53HostedZone", []) else get_expvalue('HostedZoneIdPrivate')
   Name: Sub('${AWS::StackName}.${EnvRole}.%s' % cfg.HostedZoneNamePrivate)
 
 LoadBalancer: &loadbalancer
