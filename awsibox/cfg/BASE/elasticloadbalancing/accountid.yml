@@ -31,6 +31,9 @@ eu-west-3:
 eu-north-1:
   LoadBalancerAccountID: 897822967062
 
+eu-south-1:
+  LoadBalancerAccountID: 635631232127
+
 ap-east-1:
   LoadBalancerAccountID: 754344448648
 
