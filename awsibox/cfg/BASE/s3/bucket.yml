@@ -166,6 +166,7 @@ Base: &base
             int(
               IBOX_PROPNAME if IBOX_PROPNAME.isdigit() else
               list(getattr(cfg, f"{IBOX_RESNAME}ReplicationConfigurationRules").keys()).index(IBOX_PROPNAME) + 1)
+          Status.IBOX_AUTO_PO: {}
           Status: Enabled
   VersioningConfiguration:
     IBOX_IF:
