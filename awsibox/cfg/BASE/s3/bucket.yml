@@ -88,6 +88,7 @@ Base: &base
     Rules:
       - IBOX_BASE:
           Status.IBOX_AUTO_PO: {}
+          Status: Disabled
   PolicyStatementAccountsReadPrincipal.IBOX_CUSTOM_OBJ:
   PolicyStatementAccountsReadPrincipal:
     dev: IBOX_IFCONDVALUE
