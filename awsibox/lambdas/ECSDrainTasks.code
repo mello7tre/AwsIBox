@@ -1,0 +1,236 @@
+# vim: ft=python
+import json
+import time
+import boto3
+import os
+import logging
+from pprint import pprint, pformat
+from datetime import datetime, timedelta
+
+# logging.basicConfig()
+logger = logging.getLogger("ECSDrainTasks")
+handler = logging.StreamHandler()
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+logger.propagate = False
+
+
+AWS_MAP = {
+    "ecs": "ecs",
+    "asg": "autoscaling",
+    "clf": "cloudformation",
+    "elbv2": "elbv2",
+}
+
+
+class aws_client(object):
+    def __init__(self):
+        setattr(self, "region", boto3.session.Session().region_name)
+        pass
+
+    # Remember that __getattr__ is only used for missing attribute lookup
+    def __getattr__(self, name):
+        try:
+            client = boto3.client(AWS_MAP[name])
+            setattr(self, name, client)
+        except Exception:
+            raise AttributeError
+        else:
+            return getattr(self, name)
+
+
+aws = aws_client()
+
+
+def getClfExports():
+    exports = {}
+    paginator = aws.clf.get_paginator("list_exports")
+    responseIterator = paginator.paginate()
+
+    for e in responseIterator:
+        for export in e["Exports"]:
+            name = export["Name"]
+            value = export["Value"]
+            exports[name] = value
+
+    return exports
+
+
+def find_asg(instance):
+    resp = aws.asg.describe_auto_scaling_instances(InstanceIds=[instance])
+
+    if resp.get("AutoScalingInstances"):
+        return resp.get("AutoScalingInstances")[0]["AutoScalingGroupName"]
+
+
+def find_cluster(asg_name):
+    asgTags = aws.asg.describe_auto_scaling_groups(AutoScalingGroupNames=[asg_name])[
+        "AutoScalingGroups"
+    ][0]["Tags"]
+
+    for n in asgTags:
+        if n["Key"] == "aws:cloudformation:stack-name":
+            stack_name = n["Value"]
+            try:
+                return getClfExports()[f"Cluster-{stack_name}"]
+            except Exception:
+                break
+
+
+def find_container_instance(cluster, instance_id, status=None):
+    status_desc = ""
+    kwargs = {"cluster": cluster, "filter": f"ec2InstanceId == {instance_id}"}
+
+    if status:
+        # return True
+        kwargs["status"] = status
+        status_desc = f" with status {status}"
+
+    list_resp = aws.ecs.list_container_instances(**kwargs)
+
+    try:
+        instance_arn = list_resp["containerInstanceArns"][0]
+        logger.info(f"Found {instance_arn}{status_desc}")
+        return instance_arn
+    except Exception:
+        logger.warning(f"No Container Instance{status_desc}")
+        return False
+
+
+def get_tasks(cluster, instance_arn, status):
+    tasks = []
+    paginator = aws.ecs.get_paginator("list_tasks")
+    response_iter = paginator.paginate(
+        cluster=cluster, containerInstance=instance_arn, desiredStatus=status
+    )
+    for resp in response_iter:
+        for t in resp.get("taskArns", []):
+            tasks.append(os.path.basename(t))
+
+    logger.info(f"{len(tasks)} tasks {status} on {instance_arn}")
+
+    return tasks
+
+
+def get_tg(cluster, services):
+    tg = []
+    while services:
+        services_sub = services[0:100]
+        resp = aws.ecs.describe_services(cluster=cluster, services=services_sub)
+        for s in resp.get("services", []):
+            for tgs in s.get("loadBalancers", []):
+                tg_name = tgs["targetGroupArn"]
+                if tg_name not in tg:
+                    logger.info(f"Adding TG: {tg_name}")
+                    tg.append(tg_name)
+        del services[0:100]
+
+    return tg
+
+
+def deregister_targets(tg, tg_targets):
+    all_tg = {}
+    resp = aws.elbv2.describe_target_health(
+        TargetGroupArn=tg,
+    )
+    for t in resp.get("TargetHealthDescriptions", []):
+        t_id = t["Target"].get("Id")
+        t_port = t["Target"].get("Port")
+        if t_id and t_port:
+            all_tg[t_id] = t_port
+
+    for target in tg_targets:
+        t_port = all_tg.get(target)
+        logger.info(f"Begin de-registering {target}:{t_port} from {tg}")
+        try:
+            aws.elbv2.deregister_targets(
+                TargetGroupArn=tg, Targets=[{"Id": target, "Port": t_port}]
+            )
+        except Exception as e:
+            logger.error(f"de-registering {target}:{t_port} from {tg}: {e}")
+
+
+def drain_instance(cluster, instance_arn, retry=0):
+    logger.info(f"{instance_arn} DRAINING")
+    try:
+        resp_update = aws.ecs.update_container_instances_state(
+            cluster=cluster, containerInstances=[instance_arn], status="DRAINING"
+        )
+        instances = resp_update.get("containerInstances")
+    except Exception as e:
+        logger.error(e)
+    else:
+        failure = resp_update.get("failures")
+        if failure:
+            logger.error(f"{failure} [{retry}]")
+            if (
+                failure[0].get("reason") == "INVALID_INSTANCE_STATE_TRANSITION"
+                and retry < 5
+            ):
+                retry += 1
+                time.sleep(5)
+                return drain_instance(cluster, instance_arn, retry)
+        elif instances:
+            return instances[0]["status"] == "DRAINING"
+
+
+def process_tasks(cluster, tasks_id, tg_targets):
+    services = []
+    while tasks_id:
+        tasks_id_sub = tasks_id[0:100]
+        resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_id_sub)
+        tasks = resp.get("tasks", [])
+
+        for t in tasks:
+            group = t.get("group", "")
+            if group.split(":")[0] == "service":
+                service_name = group.split(":")[1]
+                if service_name not in services:
+                    logger.info(f"Processing tasks for service {service_name}")
+                    services.append(service_name)
+            for c in t.get("containers", []):
+                for n in c.get("networkInterfaces", []):
+                    ip = n["privateIpv4Address"]
+                    if ip not in tg_targets:
+                        tg_targets.append(ip)
+
+        del tasks_id[0:100]
+
+    return services
+
+
+def lambda_handler(event, context):
+    instance_id = event["detail"]["instance-id"]
+    asg_name = find_asg(instance_id)
+
+    # add prefix to log messages
+    formatter = logging.Formatter(
+        fmt=f"%(levelname)s:[{instance_id}@{asg_name}]:%(message)s"
+    )
+    handler.setFormatter(formatter)
+
+    cluster = find_cluster(asg_name)
+    instance_arn = find_container_instance(cluster, instance_id)
+
+    tg_targets = [instance_id]
+    if cluster and instance_arn:
+        if find_container_instance(cluster, instance_id, "DRAINING") or drain_instance(
+            cluster, instance_arn
+        ):
+            # container instance is in DRAINING status
+            runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
+            services = process_tasks(cluster, runnig_tasks, tg_targets)
+
+            target_groups = get_tg(cluster, services)
+
+            # logger.info("Sleeping 30s before deregistering...")
+            # time.sleep(30)
+            for t in target_groups:
+                deregister_targets(t, tg_targets)
+
+
+# test by cmd line
+if __name__ == "__main__":
+    i_id = "i-010e9a227253eb7de"
+    event = {"detail": {"instance-id": i_id}}
+    lambda_handler(event, {})
