@@ -158,19 +158,22 @@ def get_tg_delay(tg):
 
 
 def deregister_targets(tg, tg_tasks, tg_targets, tasks_to_stop):
-    all_tg = {}
+    targets_detail = {}
     resp = aws.elbv2.describe_target_health(
         TargetGroupArn=tg,
     )
-    tg_delay = get_tg_delay(tg)
     for t in resp.get("TargetHealthDescriptions", []):
         t_id = t["Target"].get("Id")
         t_port = t["Target"].get("Port")
         if t_id and t_port:
-            all_tg[t_id] = t_port
+            targets_detail[t_id] = t_port
+
+    tg_delay = get_tg_delay(tg)
 
     for target in tg_targets:
-        t_port = all_tg.get(target)
+        if target not in targets_detail:
+            continue
+        t_port = targets_detail.get(target)
         # Fake port to avoid registering
         t_port = 666
         logger.info(f"Begin de-registering {target}:{t_port} from {tg}")
@@ -212,7 +215,7 @@ def drain_instance(cluster, instance_arn, retry=0):
 
 def process_tasks(cluster, tasks_id, instance_id):
     services = {}
-    tg_targets = {}
+    tg_targets = []
     while tasks_id:
         tasks_id_sub = tasks_id[0:100]
         resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_id_sub)
@@ -230,20 +233,13 @@ def process_tasks(cluster, tasks_id, instance_id):
                     services[service_name] = [t_arn]
             for c in t.get("containers", []):
                 for n in c.get("networkInterfaces", []):
-                    ip = n["privateIpv4Address"]
-                    if ip in tg_targets:
-                        tg_targets[ip].append(t_arn)
-                    else:
-                        tg_targets[ip] = [t_arn]
+                    tg_targets.append(n["privateIpv4Address"])
                 for n in c.get("networkBindings", []):
-                    if instance_id in tg_targets:
-                        tg_targets[instance_id].append(t_arn)
-                    else:
-                        tg_targets[instance_id] = [t_arn]
+                    tg_targets.append(instance_id)
 
         del tasks_id[0:100]
 
-    return services, tg_targets
+    return services, set(tg_targets)
 
 
 def do_stop_tasks(cluster, delay, tasks):
