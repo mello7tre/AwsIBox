@@ -521,7 +521,7 @@ def import_lambda(name):
                 code = fdata
 
             if len(code) > 4096:
-                logging.warning(f"Inline lambda {lambda_file_trunk} > 4096 [{len(code)}]")
+                logging.warning(f"Inline lambda {lambda_file_trunk} {len(code)} > 4096")
 
             code_lines = code.splitlines(keepends=True)
 
