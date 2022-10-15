@@ -1,12 +1,9 @@
 # vim: ft=python
-import json
 import time
 import boto3
 import os
 import logging
 import concurrent.futures
-from pprint import pprint, pformat
-from datetime import datetime, timedelta
 
 # logging.basicConfig()
 logger = logging.getLogger("ECSDrainTasks")
