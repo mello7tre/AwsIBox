@@ -26,7 +26,6 @@ AWS_MAP = {
 
 class aws_client(object):
     def __init__(self):
-        setattr(self, "region", boto3.session.Session().region_name)
         pass
 
     # Remember that __getattr__ is only used for missing attribute lookup
@@ -83,9 +82,10 @@ def find_container_instance(cluster, instance_id, status=None):
     kwargs = {"cluster": cluster, "filter": f"ec2InstanceId == {instance_id}"}
 
     if status:
-        return True
+        # Avoid Draining instance - to test
+        # return True
         kwargs["status"] = status
-        status_desc = f" with status {status}"
+        status_desc = f" in status {status}"
 
     list_resp = aws.ecs.list_container_instances(**kwargs)
 
@@ -176,13 +176,13 @@ def deregister_targets(tg, tg_tasks, tg_targets, tasks_to_stop):
         t_port = targets_detail.get(target)
         # Fake port to avoid registering - to test
         # t_port = 666
-        logger.info(f"Begin de-registering {target}:{t_port} from {tg}")
+        logger.info(f"Deregistering {target}:{t_port} on {tg}")
         try:
             aws.elbv2.deregister_targets(
                 TargetGroupArn=tg, Targets=[{"Id": target, "Port": t_port}]
             )
         except Exception as e:
-            logger.error(f"de-registering {target}:{t_port} from {tg}: {e}")
+            logger.error(f"Degistering {target}:{t_port} on {tg}: {e}")
         else:
             for task in tg_tasks:
                 if task not in tasks_to_stop or tg_delay > tasks_to_stop[task]:
@@ -226,7 +226,7 @@ def process_tasks(cluster, tasks_id, instance_id):
             group = t.get("group", "")
             if group.split(":")[0] == "service":
                 service_name = group.split(":")[1]
-                logger.info(f"Processing tasks for service {service_name}")
+                logger.info(f"Processing service {service_name} tasks")
                 if service_name in services:
                     services[service_name].append(t_arn)
                 else:
@@ -244,7 +244,7 @@ def process_tasks(cluster, tasks_id, instance_id):
 
 def do_stop_tasks(cluster, delay, tasks):
     tasks_str = "\n\t".join(tasks)
-    logger.info(f"Sleeping {delay}s before stopping {len(tasks)} tasks:\n\t{tasks_str}")
+    logger.info(f"Wait {delay}s and stop {len(tasks)} tasks:\n\t{tasks_str}")
     # Force delay - to test
     # delay = 2
     time.sleep(delay)
@@ -256,7 +256,7 @@ def do_stop_tasks(cluster, delay, tasks):
                 cluster=cluster, task=t, reason="Spot cluster instance termination"
             )
         except Exception:
-            logger.error(f"Failed stopping task: {t}")
+            logger.error(f"Stopping task: {t}")
         else:
             logger.info(f"Stopped task: {t}")
 
