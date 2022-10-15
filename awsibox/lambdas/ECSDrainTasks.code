@@ -252,7 +252,9 @@ def do_stop_tasks(cluster, delay, tasks):
         try:
             # skip stop - to test
             # pass
-            aws.ecs.stop_task(cluster=cluster, task=t, reason="Spot cluster instance termination")
+            aws.ecs.stop_task(
+                cluster=cluster, task=t, reason="Spot cluster instance termination"
+            )
         except Exception:
             logger.error(f"Failed stopping task: {t}")
         else:
@@ -308,7 +310,7 @@ def lambda_handler(event, context):
 
 
 # test by cmd line
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #    i_id = "i-03fcf8ca7d03c3d2d"
 #    event = {"detail": {"instance-id": i_id}}
 #    lambda_handler(event, {})

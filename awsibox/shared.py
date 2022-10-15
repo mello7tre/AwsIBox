@@ -516,11 +516,12 @@ def import_lambda(name):
                     code = python_minifier.minify(
                         fdata, rename_globals=True, preserve_globals=["lambda_handler"]
                     )
-            except Exception:
+            except Exception as e:
+                logging.error(f"Failed minifying: {e}")
                 code = fdata
 
             if len(code) > 4096:
-                logging.warning(f"Inline lambda {lambda_file_trunk} > 4096")
+                logging.warning(f"Inline lambda {lambda_file_trunk} > 4096 [{len(code)}]")
 
             code_lines = code.splitlines(keepends=True)
 
