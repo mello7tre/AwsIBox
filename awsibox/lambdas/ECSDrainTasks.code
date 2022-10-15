@@ -174,8 +174,8 @@ def deregister_targets(tg, tg_tasks, tg_targets, tasks_to_stop):
         if target not in targets_detail:
             continue
         t_port = targets_detail.get(target)
-        # Fake port to avoid registering
-        t_port = 666
+        # Fake port to avoid registering - to test
+        # t_port = 666
         logger.info(f"Begin de-registering {target}:{t_port} from {tg}")
         try:
             aws.elbv2.deregister_targets(
@@ -245,13 +245,14 @@ def process_tasks(cluster, tasks_id, instance_id):
 def do_stop_tasks(cluster, delay, tasks):
     tasks_str = "\n\t".join(tasks)
     logger.info(f"Sleeping {delay}s before stopping {len(tasks)} tasks:\n\t{tasks_str}")
-    # Force delay to test
+    # Force delay - to test
     # delay = 2
     time.sleep(delay)
     for t in tasks:
         try:
-            pass
-            # aws.ecs.stop_task(cluster=cluster, task=t, reason="Spot cluster instance termination")
+            # skip stop - to test
+            # pass
+            aws.ecs.stop_task(cluster=cluster, task=t, reason="Spot cluster instance termination")
         except Exception:
             logger.error(f"Failed stopping task: {t}")
         else:
@@ -307,7 +308,7 @@ def lambda_handler(event, context):
 
 
 # test by cmd line
-if __name__ == "__main__":
-    i_id = "i-0e961a412a21940ee"
-    event = {"detail": {"instance-id": i_id}}
-    lambda_handler(event, {})
+#if __name__ == "__main__":
+#    i_id = "i-03fcf8ca7d03c3d2d"
+#    event = {"detail": {"instance-id": i_id}}
+#    lambda_handler(event, {})

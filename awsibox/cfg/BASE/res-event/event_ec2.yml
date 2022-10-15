@@ -37,6 +37,22 @@ global:
           - LambdaR53RecordInstanceId:
               Arn: GetAtt('LambdaR53RecordInstanceId', 'Arn')
               Id: 'TargetFunction-02'
+    - EC2SpotInterruption:
+        Description: 'EC2 Spot Instance Interruption Warning'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            instance-action:
+              - terminate
+              - stop
+          detail-type:
+            - EC2 Spot Instance Interruption Warning
+          source:
+            - aws.ec2
+        Targets:
+          - LambdaECSDrainTasks:
+              Arn: GetAtt('LambdaECSDrainTasks', 'Arn')
+              Id: 'TargetFunction-01'
   Lambda:
     - EC2StartStopTagged:
         Code:
@@ -48,6 +64,13 @@ global:
         Environment:
           Variables:
             - TagName: 'AutoStartStop'
+    - ECSDrainTasks:
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
+        Description: 'Drain and stop Tasks from ECS container spot instances scheduled for termination'
+        MemorySize: 128
+        Runtime: python3.9
+        Timeout: 300
     - ServiceDiscovery:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
@@ -84,6 +107,25 @@ global:
                   - 'ec2:StopInstances'
                 Effect: Allow
                 Resource: 'arn:aws:ec2:*:*:instance/*'
+    - LambdaECSDrainTasks:
+        Roles:
+          - Ref('RoleLambdaECSDrainTasks')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'autoscaling:CompleteLifecycleAction'
+                  - 'cloudformation:ListExports'
+                  - 'ecs:DescribeContainerInstances'
+                  - 'ecs:UpdateContainerInstancesState'
+                  - 'ecs:ListContainerInstances'
+                  - 'ecs:ListTasks'
+                  - 'ecs:DescribeTasks'
+                  - 'ecs:StopTask'
+                  - 'ecs:DescribeServices'
+                  - 'elbv2:DescribeTargetGroupAttributes'
+                  - 'elbv2:DescribeTargetHealth'
+                  - 'elbv2:DeregisterTargets'
     - LambdaServiceDiscovery:
         Roles:
           - Ref('RoleLambdaServiceDiscovery')
