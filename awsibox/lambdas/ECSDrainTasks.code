@@ -39,7 +39,9 @@ aws = aws_client()
 
 
 def find_cluster(instance_id):
-    instance_tags = aws.ec2.describe_tags(Filters=[{'Name': 'resource-id','Values':[instance_id]}])
+    instance_tags = aws.ec2.describe_tags(
+        Filters=[{"Name": "resource-id", "Values": [instance_id]}]
+    )
     for n in instance_tags["Tags"]:
         if n["Key"] == "ECSCluster":
             return n["Value"]
@@ -231,12 +233,12 @@ def lambda_handler(event, context):
     )
     handler.setFormatter(formatter)
 
-    instance_arn = find_container_instance(cluster, instance_id)
+    instance_arn = find_container_instance(cluster, instance_id) if cluster else None
 
     # Sleep 5 seconds to be sure that ECS Agent (ECS_ENABLE_SPOT_INSTANCE_DRAINING)
     # have put Container Instance in Draining
-    time.sleep(5)
     if cluster and instance_arn:
+        time.sleep(5)
         runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
         services, tg_targets = process_tasks(cluster, runnig_tasks, instance_id)
 
@@ -251,6 +253,6 @@ def lambda_handler(event, context):
 
 # test by cmd line
 # if __name__ == "__main__":
-#    i_id = "i-078df2ddcf2ca7a99"
+#    i_id = "i-078df2ddcf2ca7a99a"
 #    event = {"detail": {"instance-id": i_id}}
 #    lambda_handler(event, {})
