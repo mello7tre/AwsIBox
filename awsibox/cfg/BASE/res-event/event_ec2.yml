@@ -114,8 +114,6 @@ global:
           Statement:
             - 1:
                 Action:
-                  - 'autoscaling:CompleteLifecycleAction'
-                  - 'cloudformation:ListExports'
                   - 'ecs:DescribeContainerInstances'
                   - 'ecs:UpdateContainerInstancesState'
                   - 'ecs:ListContainerInstances'

@@ -15,8 +15,7 @@ logger.propagate = False
 
 AWS_MAP = {
     "ecs": "ecs",
-    "asg": "autoscaling",
-    "clf": "cloudformation",
+    "ec2": "ec2",
     "elbv2": "elbv2",
 }
 
@@ -39,39 +38,11 @@ class aws_client(object):
 aws = aws_client()
 
 
-def getClfExports():
-    exports = {}
-    paginator = aws.clf.get_paginator("list_exports")
-    responseIterator = paginator.paginate()
-
-    for e in responseIterator:
-        for export in e["Exports"]:
-            name = export["Name"]
-            value = export["Value"]
-            exports[name] = value
-
-    return exports
-
-
-def find_asg(instance):
-    resp = aws.asg.describe_auto_scaling_instances(InstanceIds=[instance])
-
-    if resp.get("AutoScalingInstances"):
-        return resp.get("AutoScalingInstances")[0]["AutoScalingGroupName"]
-
-
-def find_cluster(asg_name):
-    asgTags = aws.asg.describe_auto_scaling_groups(AutoScalingGroupNames=[asg_name])[
-        "AutoScalingGroups"
-    ][0]["Tags"]
-
-    for n in asgTags:
-        if n["Key"] == "aws:cloudformation:stack-name":
-            stack_name = n["Value"]
-            try:
-                return getClfExports()[f"Cluster-{stack_name}"]
-            except Exception:
-                break
+def find_cluster(instance_id):
+    instance_tags = aws.ec2.describe_tags(Filters=[{'Name': 'resource-id','Values':[instance_id]}])
+    for n in instance_tags["Tags"]:
+        if n["Key"] == "ECSCluster":
+            return n["Value"]
 
 
 def find_container_instance(cluster, instance_id, status=None):
@@ -186,30 +157,6 @@ def deregister_targets(tg, tg_tasks, tg_targets, tasks_to_stop):
                     tasks_to_stop[task] = tg_delay
 
 
-def drain_instance(cluster, instance_arn, retry=0):
-    logger.info(f"{instance_arn} DRAINING")
-    try:
-        resp_update = aws.ecs.update_container_instances_state(
-            cluster=cluster, containerInstances=[instance_arn], status="DRAINING"
-        )
-        instances = resp_update.get("containerInstances")
-    except Exception as e:
-        logger.error(e)
-    else:
-        failure = resp_update.get("failures")
-        if failure:
-            logger.error(f"{failure} [{retry}]")
-            if (
-                failure[0].get("reason") == "INVALID_INSTANCE_STATE_TRANSITION"
-                and retry < 5
-            ):
-                retry += 1
-                time.sleep(5)
-                return drain_instance(cluster, instance_arn, retry)
-        elif instances:
-            return instances[0]["status"] == "DRAINING"
-
-
 def process_tasks(cluster, tasks_id, instance_id):
     services = {}
     tg_targets = []
@@ -278,36 +225,34 @@ def stop_tasks(cluster, tasks_to_stop):
 
 def lambda_handler(event, context):
     instance_id = event["detail"]["instance-id"]
-    asg_name = find_asg(instance_id)
+    cluster = find_cluster(instance_id)
 
     # add prefix to log messages
     formatter = logging.Formatter(
-        fmt=f"%(levelname)s:[{instance_id}@{asg_name}]:%(message)s"
+        fmt=f"%(levelname)s:[{instance_id}@{cluster}]:%(message)s"
     )
     handler.setFormatter(formatter)
 
-    cluster = find_cluster(asg_name)
     instance_arn = find_container_instance(cluster, instance_id)
 
+    # Sleep 5 seconds to be sure that ECS Agent (ECS_ENABLE_SPOT_INSTANCE_DRAINING)
+    # have put Container Instance in Draining
+    time.sleep(5)
     if cluster and instance_arn:
-        if find_container_instance(cluster, instance_id, "DRAINING") or drain_instance(
-            cluster, instance_arn
-        ):
-            # container instance is in DRAINING status
-            runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
-            services, tg_targets = process_tasks(cluster, runnig_tasks, instance_id)
+        runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
+        services, tg_targets = process_tasks(cluster, runnig_tasks, instance_id)
 
-            target_groups = get_tg(cluster, services)
+        target_groups = get_tg(cluster, services)
 
-            tasks_to_stop = {}
-            for tg, tg_tasks in target_groups.items():
-                deregister_targets(tg, tg_tasks, tg_targets, tasks_to_stop)
+        tasks_to_stop = {}
+        for tg, tg_tasks in target_groups.items():
+            deregister_targets(tg, tg_tasks, tg_targets, tasks_to_stop)
 
-            stop_tasks(cluster, tasks_to_stop)
+        stop_tasks(cluster, tasks_to_stop)
 
 
 # test by cmd line
-# if __name__ == "__main__":
-#    i_id = "i-03fcf8ca7d03c3d2d"
-#    event = {"detail": {"instance-id": i_id}}
-#    lambda_handler(event, {})
+if __name__ == "__main__":
+   i_id = "i-078df2ddcf2ca7a99"
+   event = {"detail": {"instance-id": i_id}}
+   lambda_handler(event, {})
