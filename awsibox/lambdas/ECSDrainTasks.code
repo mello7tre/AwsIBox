@@ -252,7 +252,7 @@ def lambda_handler(event, context):
 
 
 # test by cmd line
-if __name__ == "__main__":
-   i_id = "i-078df2ddcf2ca7a99"
-   event = {"detail": {"instance-id": i_id}}
-   lambda_handler(event, {})
+# if __name__ == "__main__":
+#    i_id = "i-078df2ddcf2ca7a99"
+#    event = {"detail": {"instance-id": i_id}}
+#    lambda_handler(event, {})
