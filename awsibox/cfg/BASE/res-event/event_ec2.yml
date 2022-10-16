@@ -122,6 +122,8 @@ global:
                   - 'elbv2:DescribeTargetGroupAttributes'
                   - 'elbv2:DescribeTargetHealth'
                   - 'elbv2:DeregisterTargets'
+                Effect: Allow
+                Resource: '*'
     - LambdaServiceDiscovery:
         Roles:
           - Ref('RoleLambdaServiceDiscovery')
