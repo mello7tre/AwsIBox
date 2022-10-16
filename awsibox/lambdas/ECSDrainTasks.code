@@ -82,22 +82,6 @@ def get_tasks(cluster, instance_arn, status):
 
 
 def get_tg(cluster, services):
-    tg = []
-    while services:
-        services_sub = services[0:100]
-        resp = aws.ecs.describe_services(cluster=cluster, services=services_sub)
-        for s in resp.get("services", []):
-            for tgs in s.get("loadBalancers", []):
-                tg_name = tgs["targetGroupArn"]
-                if tg_name not in tg:
-                    logger.info(f"Adding TG: {tg_name}")
-                    tg.append(tg_name)
-        del services[0:100]
-
-    return tg
-
-
-def get_tg(cluster, services):
     tg = {}
     service_list = list(services.keys())
     while service_list:

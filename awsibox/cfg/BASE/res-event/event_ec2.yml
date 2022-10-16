@@ -119,9 +119,9 @@ global:
                   - 'ecs:DescribeTasks'
                   - 'ecs:StopTask'
                   - 'ecs:DescribeServices'
-                  - 'elbv2:DescribeTargetGroupAttributes'
-                  - 'elbv2:DescribeTargetHealth'
-                  - 'elbv2:DeregisterTargets'
+                  - 'elasticloadbalancing:DescribeTargetGroupAttributes'
+                  - 'elasticloadbalancing:DescribeTargetHealth'
+                  - 'elasticloadbalancing:DeregisterTargets'
                 Effect: Allow
                 Resource: '*'
     - LambdaServiceDiscovery:
