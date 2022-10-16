@@ -50,8 +50,6 @@ def find_container_instance(cluster, instance_id, status=None):
     kwargs = {"cluster": cluster, "filter": f"ec2InstanceId == {instance_id}"}
 
     if status:
-        # Avoid Draining instance - to test
-        # return True
         kwargs["status"] = status
         status_desc = f" in status {status}"
 

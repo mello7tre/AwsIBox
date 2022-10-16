@@ -114,8 +114,6 @@ global:
           Statement:
             - 1:
                 Action:
-                  - 'ecs:DescribeContainerInstances'
-                  - 'ecs:UpdateContainerInstancesState'
                   - 'ecs:ListContainerInstances'
                   - 'ecs:ListTasks'
                   - 'ecs:DescribeTasks'
