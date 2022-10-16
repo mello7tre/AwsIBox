@@ -48,6 +48,13 @@ global:
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
         NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
         RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance')
+  AutoScalingGroup:
+    - Base:
+        Tags:
+          - ECSCluster:
+              Key: ECSCluster
+              Value: Ref('Cluster')
+              PropagateAtLaunch: true
   AutoScalingScalingPolicy:
     - Custom:
         IBOX_ENABLED: True
