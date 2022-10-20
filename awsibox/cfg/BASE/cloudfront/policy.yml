@@ -150,6 +150,7 @@ global:
               - CloudFront-Is-Mobile-Viewer
               - CloudFront-Viewer-City
               - CloudFront-Viewer-ASN
+              - CloudFront-Viewer-Address
           QueryStringsConfig:
             QueryStringBehavior: all
     - AllQueryStringsHeadersCustom:
@@ -165,6 +166,7 @@ global:
               - CloudFront-Is-Mobile-Viewer
               - CloudFront-Viewer-City
               - CloudFront-Viewer-ASN
+              - CloudFront-Viewer-Address
           QueryStringsConfig:
             QueryStringBehavior: all
     - HeadersCustom:
@@ -180,5 +182,6 @@ global:
               - CloudFront-Is-Mobile-Viewer
               - CloudFront-Viewer-City
               - CloudFront-Viewer-ASN
+              - CloudFront-Viewer-Address
           QueryStringsConfig:
             QueryStringBehavior: none
