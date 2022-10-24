@@ -517,7 +517,7 @@ def import_lambda(name):
                         fdata, rename_globals=True, preserve_globals=["lambda_handler"]
                     )
             except Exception as e:
-                logging.error(f"Failed minifying: {e}")
+                # logging.error(f"Failed minifying: {e}")
                 code = fdata
 
             if len(code) > 4096:
