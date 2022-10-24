@@ -1,0 +1,5 @@
+global:
+  Parameter:
+    - LoadBalancerApplicationStack:
+        Description: 'LoadBalancer Application Stack to use - empty for default based on env/role'
+  LoadBalancerApplicationStack: alb-a

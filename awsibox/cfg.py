@@ -357,6 +357,14 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("elasticache", "ReplicationGroup"),
     },
+    "ElasticLoadBalancingV2ListenerRule": {
+        "module": "joker",
+        "func": ("elasticloadbalancingv2", "ListenerRule"),
+    },
+    "ElasticLoadBalancingV2TargetGroup": {
+        "module": "joker",
+        "func": ("elasticloadbalancingv2", "TargetGroup"),
+    },
     "EventsRule": {
         "module": "events",
         "func": "EVE_EventRules",

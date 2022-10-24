@@ -8,11 +8,9 @@ IBoxLoader: !include
   - ecs/ecs-task.yml
   - ecs/ecs-service.yml
   - events/rule_target.yml
+  - res-elasticloadbalancing/v2-listener.yml
 
 global:
-  Parameter:
-    - LoadBalancerApplicationStack:
-        Description: 'LoadBalancer Application Stack to use - empty for default based on env/role'
   SecurityGroupIngress:
     - LoadBalancerApplicationHttpExternal:
         IBOX_ENABLED: False
@@ -57,7 +55,6 @@ global:
     - 1:
         HostHeader: '*${EnvRole}.*'
   LoadBalancerType: Application
-  LoadBalancerApplicationStack: alb-a
   ApplicationAutoScalingScalingPolicy:
     - Cpu:
         IBOX_ENABLED: True
