@@ -32,6 +32,7 @@ STACK_TYPES = [
     "rds",
     "res",
     "tsk",
+    "lbd",
 ]
 
 MAX_SECURITY_GROUPS = 4
