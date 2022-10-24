@@ -35,7 +35,7 @@ ZoneInternal: &zone_internal
 
 LoadBalancer: &loadbalancer
   AliasTarget: &loadbalancer_alias_target
-    HostedZoneId: get_endvalue('HostedZoneIdLBNET' if cfg.LoadBalancerType == "Network" else 'HostedZoneIdLB')
+    HostedZoneId: get_endvalue('HostedZoneIdLBNET' if getattr("cfg", "LoadBalancerType", "") == "Network" else 'HostedZoneIdLB')
   Type: A
 
 EC2LoadBalancerTargetExternal: &ec2_loadbalancer_target_external
