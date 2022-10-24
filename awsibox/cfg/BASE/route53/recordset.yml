@@ -159,6 +159,8 @@ global:
         <<: [*zone_internal, *ecs_loadbalancer_target_internal, *loadbalancer, *base_internal]
     - ECSInternalLoadBalancerExternal:
         <<: [*zone_internal, *ecs_loadbalancer_target_external, *loadbalancer, *base_internal]
+    - LBDExternalLoadBalancerExternal:
+        <<: [*zone_external, *ecs_loadbalancer_target_external, *loadbalancer, *base_external]
     - EFS: *efs
     - CloudFront:
         <<: *cloudfront
