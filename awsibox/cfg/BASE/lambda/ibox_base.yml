@@ -10,6 +10,11 @@ Function: &function
       Type: Lambda
       Conf:
         IBOX_RESNAME: Role.IBOX_RESNAME
+    LogGroup:
+      Key: LogsLogGroup
+      Type: Lambda
+      Conf:
+        IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
   IBOX_OUTPUT:
     - _:
         IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
@@ -28,6 +33,7 @@ Function: &function
       - _:
           Value: get_endvalue(IBOX_RESNAME)
     Value: get_endvalue(IBOX_RESNAME)
+  LogGroupCreate: "yes"
   Handler: "index.lambda_handler"
   Role: GetAtt(f"RoleLambda{IBOX_INDEXNAME}", "Arn")
   FunctionName: Sub("${AWS::StackName}-${EnvRole}-%s" % IBOX_INDEXNAME)

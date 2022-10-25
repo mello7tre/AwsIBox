@@ -1,0 +1,15 @@
+global:
+  LogsLogGroup:
+    - Lambda:
+        IBOX_ENABLED: False
+        IBOX_CONDITION:
+          - _: >-
+              And(
+                Condition(getattr(cfg.Resources[IBOX_LINKED_OBJ_NAME], "Condition")) if
+                  hasattr(cfg.Resources[IBOX_LINKED_OBJ_NAME], "Condition") else
+                  Equals("1", "1"),
+                get_condition('', 'equals', 'yes', f"{IBOX_LINKED_OBJ_NAME}LogGroupCreate")
+              )
+        Condition: IBOX_RESNAME
+        LogGroupName: Sub('/aws/lambda/${%s}' % IBOX_LINKED_OBJ_NAME)
+        RetentionInDays: 30

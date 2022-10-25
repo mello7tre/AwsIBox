@@ -413,7 +413,11 @@ CFG_TO_FUNC = {
         "module": "elasticloadbalancing",
         "func": "LB_ElasticLoadBalancing",
     },
-    "LogsLogGroup": {"module": "joker", "func": ("logs", "LogGroup")},
+    "LogsLogGroup": {
+        "module": "joker",
+        "func": ("logs", "LogGroup"),
+        "dep": ["Lambda"],
+    },
     "ScheduledAction": {"module": "joker", "func": ("autoscaling", "ScheduledAction")},
     "ScalableTarget": {
         "module": "joker",

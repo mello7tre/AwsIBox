@@ -7,5 +7,6 @@ IBoxLoader:
     - lambda/function.yml
     - lambda/version.yml
     - iam/role.yml
+    - cloudwatch/log_group.yml
 
 global:
