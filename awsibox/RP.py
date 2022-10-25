@@ -359,8 +359,9 @@ def build_RP():
                     for key in list(RP[env][region]):
                         if hasattr(cfg, f"{key}@"):
                             # if there is key in RP_tree/cfg and it endswith "@"
-                            # skip mapped values and update cfg.fixedvalues
+                            # skip mapped values and update cfg.fixedvalues and RP
                             cfg.fixedvalues[key] = getattr(cfg, f"{key}@")
+                            del RP[env][region][key]
                         elif hasattr(cfg, key) and RP[env][region][key] == getattr(
                             cfg, key
                         ):
