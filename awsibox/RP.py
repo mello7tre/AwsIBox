@@ -357,10 +357,14 @@ def build_RP():
                             )
                     # create list of all mapped keys
                     for key in list(RP[env][region]):
-                        # if value is equal to the global one, delete the key
-                        if hasattr(cfg, key) and RP[env][region][key] == getattr(
+                        if hasattr(cfg, f"{key}@"):
+                            # if there is key in RP_tree/cfg and it endswith "@"
+                            # skip mapped values and update cfg.fixedvalues
+                            cfg.fixedvalues[key] = getattr(cfg, f"{key}@")
+                        elif hasattr(cfg, key) and RP[env][region][key] == getattr(
                             cfg, key
                         ):
+                            # if value is equal to the global one, delete the key
                             del RP[env][region][key]
                         elif key not in mapped_keys:
                             # only add if not already present
