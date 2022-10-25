@@ -33,7 +33,7 @@ Function: &function
       - _:
           Value: get_endvalue(IBOX_RESNAME)
     Value: get_endvalue(IBOX_RESNAME)
-  LogGroupCreate: "yes"
+  LogGroupCreate: True
   Handler: "index.lambda_handler"
   Role: GetAtt(f"RoleLambda{IBOX_INDEXNAME}", "Arn")
   FunctionName: Sub("${AWS::StackName}-${EnvRole}-%s" % IBOX_INDEXNAME)

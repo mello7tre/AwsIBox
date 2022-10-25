@@ -6,6 +6,8 @@ def Joker(key, module, cls):
     for n, v in getattr(cfg, key).items():
         if not v.get("IBOX_ENABLED", True):
             continue
+        if not eval(v.get("IBOX_ENABLED_IF", "True")):
+            continue
 
         parse_ibox_key_conf = {"IBOX_INDEXNAME": n}
         resname = f"{key}{n}"
