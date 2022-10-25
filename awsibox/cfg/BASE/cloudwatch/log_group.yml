@@ -2,7 +2,7 @@ global:
   LogsLogGroup:
     - Lambda:
         IBOX_ENABLED: False
-        IBOX_ENABLED_IF: f"Lambda{n}LogGroupCreate" == True
+        IBOX_ENABLED_IF: getattr(cfg, f"{n}LogGroupCreate", False)
         # Enable the following keys to use a Template Condition
         IBOX_CONDITION.DISABLED:
           - _: >-
