@@ -8,6 +8,7 @@ global:
         IBOX_PARAMETER:
           - IBOX_LINKED_OBJ_NAME.LogGroupCreate:
               Description: Create Lambda LogsLogGroup
+              AllowedValues: ['', 'yes', 'no']
         IBOX_CONDITION:
           - _: >-
               And(
