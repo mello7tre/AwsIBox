@@ -1,0 +1,6 @@
+IBoxLoader: !include
+  - lambda/permission.yml
+  - lambda/function.yml
+  - lambda/version.yml
+  - iam/role.yml
+  - cloudwatch/log_group.yml
