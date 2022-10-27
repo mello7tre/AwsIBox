@@ -897,7 +897,8 @@ def auto_get_props(
             # but avoid intercepting the "normal" conf that is a dict too (a key named Type must not exist)
             if isinstance(ibox_linked_obj, dict) and "Type" not in ibox_linked_obj:
                 for linked_obj in ibox_linked_obj.values():
-                    _linked_obj(linked_obj)
+                    if linked_obj:
+                        _linked_obj(linked_obj)
             else:
                 _linked_obj(ibox_linked_obj)
 
