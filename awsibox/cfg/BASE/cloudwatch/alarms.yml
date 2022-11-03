@@ -225,3 +225,19 @@ global:
         <<: *diskused
         ComparisonOperator: GreaterThanOrEqualToThreshold
         Threshold: '80'
+    - SQSQueueDeadLetter:
+        IBOX_PARAMETER:
+          - _Threshold:
+              AllowedValues: ['', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+              AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
+        EvaluationPeriods: 1
+        ComparisonOperator: GreaterThanThreshold
+        Dimensions:
+          - SQSQueue:
+              Name: QueueName
+              Value: GetAtt(IBOX_LINKED_OBJ_NAME, 'QueueName')
+        MetricName: ApproximateNumberOfMessagesVisible
+        Namespace: AWS/SQS
+        Statistic: Average
+        Threshold: '0'
+        TreatMissingData: 'notBreaching'

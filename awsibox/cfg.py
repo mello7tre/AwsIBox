@@ -266,7 +266,7 @@ CFG_TO_FUNC = {
     "Alarm": {
         "module": "joker",
         "func": ("cloudwatch", "Alarm"),
-        "dep": ["LoadBalancer"],
+        "dep": ["LoadBalancer", "SQSQueue"],
     },
     "ApiGatewayAccount": {"module": "joker", "func": ("apigateway", "Account")},
     "ApiGatewayApiKey": {"module": "joker", "func": ("apigateway", "ApiKey")},

@@ -835,7 +835,9 @@ def auto_get_props(
             louc_cfg = {}
             for lo_for_index in lo_for_cycle:
                 # need to copy it because it's updated
-                lo_conf = copy.deepcopy(linked_obj_data.get("Conf", {}))
+                lo_conf = copy.deepcopy(
+                    linked_obj_data.get("Conf", {"IBOX_LINKED_OBJ_NAME": IBOX_RESNAME})
+                )
                 lo_conf["IBOX_ENABLED"] = True
                 # for all lo_conf entries, if their value is a string parse it using parse_ibox_key
                 for loc_entry_key, loc_entry_value in lo_conf.items():
