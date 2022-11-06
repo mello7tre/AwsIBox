@@ -24,13 +24,31 @@ global:
               QueryStringBehavior: all
     - 0QueryStringsHeadersCustom:
         CachePolicyConfig:
-          Comment: 'Default TTL 0 QueryStrings and Custom Headers'
+          Comment: 'Default TTL 0 All QueryStrings and Custom Headers'
           DefaultTTL: 0
           MaxTTL: 1
           MinTTL: 0
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
+            EnableAcceptEncodingGzip: true
+            EnableAcceptEncodingBrotli: true
+            HeadersConfig:
+              HeaderBehavior: whitelist
+              Headers:
+                - Origin
+                - Authorization
+            QueryStringsConfig:
+              QueryStringBehavior: all
+    - 0QueryStringsCookiesHeadersCustom:
+        CachePolicyConfig:
+          Comment: 'Default TTL 0 All QueryStrings and Cookies Custom Headers'
+          DefaultTTL: 0
+          MaxTTL: 1
+          MinTTL: 0
+          ParametersInCacheKeyAndForwardedToOrigin:
+            CookiesConfig:
+              CookieBehavior: all
             EnableAcceptEncodingGzip: true
             EnableAcceptEncodingBrotli: true
             HeadersConfig:
@@ -87,9 +105,9 @@ global:
                 - Origin
             QueryStringsConfig:
               QueryStringBehavior: none
-    - 86400QueryStrings:
+    - 86400QueryStringsHeadersNone:
         CachePolicyConfig:
-          Comment: 'Default TTL 86400 QueryStrings'
+          Comment: 'Default TTL 86400 All QueryStrings'
           DefaultTTL: 86400
           MaxTTL: 31536000
           MinTTL: 0
@@ -104,7 +122,7 @@ global:
               QueryStringBehavior: all
     - 86400QueryStringsHeadersCustom:
         CachePolicyConfig:
-          Comment: 'Default TTL 86400 QueryStrings and Custom Headers'
+          Comment: 'Default TTL 86400 All QueryStrings and Custom Headers'
           DefaultTTL: 86400
           MaxTTL: 31536000
           MinTTL: 0
@@ -135,38 +153,6 @@ global:
             CookieBehavior: all
           HeadersConfig:
             HeaderBehavior: allViewer
-          QueryStringsConfig:
-            QueryStringBehavior: all
-    - AllCookiesQueryStringsHeadersCustom:
-        OriginRequestPolicyConfig:
-          Comment: 'Forward All Cookies, QueryStrings and Custom Headers'
-          CookiesConfig:
-            CookieBehavior: all
-          HeadersConfig:
-            HeaderBehavior: whitelist
-            Headers:
-              - User-Agent
-              - Referer
-              - CloudFront-Is-Mobile-Viewer
-              - CloudFront-Viewer-City
-              - CloudFront-Viewer-ASN
-              - CloudFront-Viewer-Address
-          QueryStringsConfig:
-            QueryStringBehavior: all
-    - AllQueryStringsHeadersCustom:
-        OriginRequestPolicyConfig:
-          Comment: 'Forward All QueryStrings and Custom Headers'
-          CookiesConfig:
-            CookieBehavior: none
-          HeadersConfig:
-            HeaderBehavior: whitelist
-            Headers:
-              - User-Agent
-              - Referer
-              - CloudFront-Is-Mobile-Viewer
-              - CloudFront-Viewer-City
-              - CloudFront-Viewer-ASN
-              - CloudFront-Viewer-Address
           QueryStringsConfig:
             QueryStringBehavior: all
     - HeadersCustom:
