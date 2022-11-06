@@ -105,7 +105,7 @@ global:
                 - Origin
             QueryStringsConfig:
               QueryStringBehavior: none
-    - 86400QueryStringsHeadersNone:
+    - 86400QueryStrings:
         CachePolicyConfig:
           Comment: 'Default TTL 86400 All QueryStrings'
           DefaultTTL: 86400
