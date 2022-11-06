@@ -7,7 +7,7 @@ global:
               Export: Export(IBOX_RESNAME)
         CachePolicyConfig:
           Name: str(IBOX_INDEXNAME)
-    - 0AllHeadersNone:
+    - 0QueryStringsCookies:
         CachePolicyConfig:
           Comment: 'Default TTL 0 All Cookies and QueryStrings No Headers'
           DefaultTTL: 0
@@ -146,9 +146,9 @@ global:
               Export: Export(IBOX_RESNAME)
         OriginRequestPolicyConfig:
           Name: str(IBOX_INDEXNAME)
-    - All:
+    - QueryStringsCookiesHeaders:
         OriginRequestPolicyConfig:
-          Comment: 'Forward All'
+          Comment: 'Forward All QueryStrings, Cookies and Headers'
           CookiesConfig:
             CookieBehavior: all
           HeadersConfig:
