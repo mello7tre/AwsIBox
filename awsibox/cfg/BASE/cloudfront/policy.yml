@@ -164,3 +164,21 @@ global:
               Export: Export(IBOX_RESNAME)
         ResponseHeadersPolicyConfig:
           Name: str(IBOX_INDEXNAME)
+    - XRobotsTagNoindexFollow:
+        ResponseHeadersPolicyConfig:
+          Comment: 'Header x-robots-tag: noindex, follow'
+          CustomHeadersConfig:
+            Items:
+              - XRobotsTag:
+                  Header: x-robots-tag
+                  Override: false
+                  Value: 'noindex, follow'
+    - CacheControl31536000:
+        ResponseHeadersPolicyConfig:
+          Comment: 'Header cache-control: max-age=31536000'
+          CustomHeadersConfig:
+            Items:
+              - CacheControl:
+                  Header: cache-control
+                  Override: true
+                  Value: 'max-age=31536000'
