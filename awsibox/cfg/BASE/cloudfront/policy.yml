@@ -156,3 +156,11 @@ global:
               - CloudFront-Viewer-Address
           QueryStringsConfig:
             QueryStringBehavior: none
+  CloudFrontResponseHeadersPolicy:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)
+        ResponseHeadersPolicyConfig:
+          Name: str(IBOX_INDEXNAME)
