@@ -323,6 +323,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("cloudfront", "OriginRequestPolicy"),
     },
+    "CloudFrontResponseHeadersPolicy": {
+        "module": "joker",
+        "func": ("cloudfront", "ResponseHeadersPolicy"),
+    },
     "CodeDeployApp": {"module": "joker", "func": ("codedeploy", "Application")},
     "DynamoDBTable": {"module": "joker", "func": ("dynamodb", "Table")},
     "EC2EIP": {"module": "joker", "func": ("ec2", "EIP")},
