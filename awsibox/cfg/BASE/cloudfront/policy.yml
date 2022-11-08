@@ -7,21 +7,6 @@ global:
               Export: Export(IBOX_RESNAME)
         CachePolicyConfig:
           Name: str(IBOX_INDEXNAME)
-    - 0QueryStringsCookies:
-        CachePolicyConfig:
-          Comment: 'Default TTL 0 All Cookies and QueryStrings No Headers'
-          DefaultTTL: 0
-          MaxTTL: 1
-          MinTTL: 0
-          ParametersInCacheKeyAndForwardedToOrigin:
-            CookiesConfig:
-              CookieBehavior: all
-            EnableAcceptEncodingGzip: true
-            EnableAcceptEncodingBrotli: true
-            HeadersConfig:
-              HeaderBehavior: none
-            QueryStringsConfig:
-              QueryStringBehavior: all
     - 0QueryStringsHeadersCustom:
         CachePolicyConfig:
           Comment: 'Default TTL 0 All QueryStrings and Custom Headers'
