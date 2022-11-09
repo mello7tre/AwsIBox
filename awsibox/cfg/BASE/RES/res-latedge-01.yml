@@ -14,6 +14,7 @@ global:
         IBOX_SOURCE_OBJ: LambdaFunctionVersioned
         Environment: IBOX_SKIP
     - AtEdgeAddHeaders:
+        IBOX_ENABLED: False
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         AtEdge: True
