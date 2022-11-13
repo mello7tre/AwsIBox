@@ -7,12 +7,13 @@ global:
               Export: Export(IBOX_RESNAME)
         CachePolicyConfig:
           Name: str(IBOX_INDEXNAME)
+          MaxTTL: 31536000
+          MinTTL: 0
     - 0QueryStringsHeadersCustom:
         CachePolicyConfig:
           Comment: 'Default TTL 0 All QueryStrings and Custom Headers'
           DefaultTTL: 0
           MaxTTL: 1
-          MinTTL: 0
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
@@ -30,7 +31,6 @@ global:
           Comment: 'Default TTL 0 All QueryStrings and Cookies Custom Headers'
           DefaultTTL: 0
           MaxTTL: 1
-          MinTTL: 0
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: all
@@ -47,8 +47,6 @@ global:
         CachePolicyConfig:
           Comment: 'Default TTL 86400 None'
           DefaultTTL: 86400
-          MaxTTL: 31536000
-          MinTTL: 0
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
@@ -62,8 +60,6 @@ global:
         CachePolicyConfig:
           Comment: 'Default TTL 31536000 None'
           DefaultTTL: 31536000
-          MaxTTL: 31536000
-          MinTTL: 0
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
@@ -77,8 +73,6 @@ global:
         CachePolicyConfig:
           Comment: 'Default TTL 31536000 Header Origin'
           DefaultTTL: 31536000
-          MaxTTL: 31536000
-          MinTTL: 0
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
@@ -94,8 +88,6 @@ global:
         CachePolicyConfig:
           Comment: 'Default TTL 86400 All QueryStrings'
           DefaultTTL: 86400
-          MaxTTL: 31536000
-          MinTTL: 0
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
@@ -109,8 +101,6 @@ global:
         CachePolicyConfig:
           Comment: 'Default TTL 86400 All QueryStrings and Custom Headers'
           DefaultTTL: 86400
-          MaxTTL: 31536000
-          MinTTL: 0
           ParametersInCacheKeyAndForwardedToOrigin:
             CookiesConfig:
               CookieBehavior: none
