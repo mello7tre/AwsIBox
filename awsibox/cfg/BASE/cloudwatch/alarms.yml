@@ -230,6 +230,7 @@ global:
           - _Threshold:
               AllowedValues: ['', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
               AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
+        AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
         EvaluationPeriods: 1
         ComparisonOperator: GreaterThanThreshold
         Dimensions:
