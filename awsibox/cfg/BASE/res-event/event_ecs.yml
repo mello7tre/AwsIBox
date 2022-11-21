@@ -31,7 +31,7 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         Layers:
           - LambdaLayerVersionPython37SSM
-          - Python39SlackClient
+          - LambdaLayerVersionPython39SlackClient
         MemorySize: 128
         Runtime: python3.9
         Timeout: 30
