@@ -21,12 +21,12 @@ global:
           source:
             - aws.ecs
         Targets:
-          - LambdaECSEvents:
-              Arn: GetAtt('LambdaECSEvents', 'Arn')
+          - LambdaECSEventTaskStateChange:
+              Arn: GetAtt('LambdaECSEventTaskStateChange', 'Arn')
               Id: TargetFunction-01
   Lambda:
-    - ECSEvents:
-        Description: 'ECSEvents'
+    - ECSEventTaskStateChange:
+        Description: 'ECSEventTaskStateChange'
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Layers:
@@ -39,9 +39,9 @@ global:
           Variables:
             - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
   IAMPolicy:
-    - LambdaECSEvents:
+    - LambdaECSEventTaskStateChange:
         Roles:
-          - Ref('RoleLambdaECSEvents')
+          - Ref('RoleLambdaECSEventTaskStateChange')
         PolicyDocument:
           Statement:
             - 1:
@@ -50,4 +50,4 @@ global:
                 Resource: get_expvalue('SNSTopicCloudWatchAlarm')
     - ParameterStore:
         Roles++:
-          - Ref('RoleLambdaECSEvents')
+          - Ref('RoleLambdaECSEventTaskStateChange')
