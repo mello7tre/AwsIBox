@@ -1,0 +1,107 @@
+# vim: ft=python
+import os
+import logging
+import boto3
+import slack
+import cfg as app_cfg
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+app_cfg.set({})
+
+MSG_TOKEN = getattr(app_cfg, "SLACK_TOKEN", "")
+MSG_CHANNEL = getattr(app_cfg, "SLACK_CHANNEL", "")
+MSG_USER = getattr(app_cfg, "SLACK_USER", "")
+ENV = os.environ["Env"]
+SNS_TOPIC = os.environ["SNSTopic"]
+
+CLIENT_SNS = boto3.client("sns")
+
+if MSG_TOKEN and MSG_CHANNEL and MSG_USER:
+    HAVE_MSG = True
+    MSG_WEBCLIENT = slack.WebClient(token=MSG_TOKEN)
+else:
+    HAVE_MSG = False
+
+
+def send_msg(subj, msg):
+    blocks = [
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*{subj}*"},
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": msg,
+            },
+        },
+    ]
+
+    resp = MSG_WEBCLIENT.chat_postMessage(
+        channel=f"#{MSG_CHANNEL}",
+        text="",
+        blocks=blocks,
+        username=MSG_USER,
+        icon_emoji=":robot_face:",
+    )
+    logger.info(resp)
+
+
+def lambda_handler(event, context):
+    detail = event["detail"]
+
+    containers = detail.get("containers", [])
+    stopCode = detail["stopCode"]
+    desiredStatus = detail["desiredStatus"]
+    lastStatus = detail["lastStatus"]
+    executionStoppedAt = detail["executionStoppedAt"]
+    task_prefix = detail["taskDefinitionArn"].split("/")[1][0:7]
+
+    for c in containers:
+        try:
+            reason = c["reason"]
+            name = c["name"]
+            image = c["image"].split("/")[1]
+            memory = c["memory"]
+            c_arn = c["containerArn"].split("/")
+            cluster = c_arn[1]
+            t_id = c_arn[2]
+            c_id = c_arn[3]
+        except Exception as e:
+            continue
+
+        if (
+            stopCode == "EssentialContainerExited"
+            and desiredStatus == "STOPPED"
+            and lastStatus == desiredStatus
+            and "OutOfMemoryError" in reason
+        ):
+            icon = " :fire:" if ENV == "prd" else ""
+            subj = f"Task {task_prefix} [{name}] OOM ({ENV}){icon}"
+            msg = (
+                f"*Env*: {ENV}\n"
+                f"*TaskPrefix*: {task_prefix}\n"
+                f"*Cluster*: {cluster}\n"
+                f"*ContainerName*: {name}\n"
+                f"*Reason*: {reason}\n"
+                f"*Image*: {image}\n"
+                f"*Memory*: {memory}\n"
+                f"*TaskId*: {t_id}\n"
+                f"*ContainerId*: {c_id}\n"
+                f"*StoppedAt*: {executionStoppedAt}\n"
+            )
+
+            logger.info(subj)
+
+            if ENV == "prd":
+                pub_result = CLIENT_SNS.publish(
+                    TopicArn=SNS_TOPIC, Subject=subj, Message=msg
+                )
+                logger.info(pub_result)
+            if HAVE_MSG:
+                send_msg(subj, msg)
+
+            return

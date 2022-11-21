@@ -1,0 +1,121 @@
+IBoxLoader:
+  - !include
+    - lambda/layers.yml
+
+global:
+  EventsRule:
+    - ECSEventServiceFailure:
+        Description: 'ECSEventsSpot Lambda Trigger for Cpu and Memory Failure'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            eventType:
+              - ERROR
+            eventName:
+              - SERVICE_TASK_PLACEMENT_FAILURE
+            reason:
+              - 'RESOURCE:MEMORY'
+              - 'RESOURCE:CPU'
+          detail-type:
+            - ECS Service Action
+          source:
+            - aws.ecs
+        Targets:
+          - LambdaECSEventsSpot:
+              Arn: GetAtt('LambdaECSEventsSpot', 'Arn')
+              Id: TargetFunction-01
+    - EC
+        Description: 'ECSEventsSpot Lambda Trigger for Task Spot RUNNING'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            capacityProviderName:
+              - FARGATE_SPOT
+            desiredStatus:
+              - RUNNING
+            lastStatus:
+              - RUNNING
+            launchType:
+              - FARGATE
+          detail-type:
+            - ECS Task State Change
+          source:
+            - aws.ecs
+        Targets:
+          - LambdaECSEventsSpot:
+              Arn: GetAtt('LambdaECSEventsSpot', 'Arn')
+              Id: TargetFunction-01
+    - ECSEventServiceFailureSpot:
+        Description: 'ECSEventsSpot Lambda Trigger for Spot Failure'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            eventType:
+              - ERROR
+            eventName:
+              - SERVICE_TASK_PLACEMENT_FAILURE
+            reason:
+              - 'RESOURCE:FARGATE'
+          detail-type:
+            - ECS Service Action
+          source:
+            - aws.ecs
+        Targets:
+          - LambdaECSEventsSpot:
+              Arn: GetAtt('LambdaECSEventsSpot', 'Arn')
+              Id: TargetFunction-01
+    - ECSEventServiceSteadySpot:
+        Description: 'ECSEventsSpot Lambda Trigger for Spot Capacity Provider Steady State'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            eventType:
+              - INFO
+            eventName:
+              - CAPACITY_PROVIDER_STEADY_STATE
+            capacityProviderArns:
+              - Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:capacity-provider/FARGATE_SPOT')
+          detail-type:
+            - ECS Service Action
+          source:
+            - aws.ecs
+        Targets:
+          - LambdaECSEventsSpot:
+              Arn: GetAtt('LambdaECSEventsSpot', 'Arn')
+              Id: TargetFunction-01
+  Lambda:
+    - ECSEventsSpot:
+        Description: 'ECSEventsSpot'
+        Code:
+          S3Bucket: Sub(cfg.BucketNameAppRepository)
+          S3Key: ibox-tools/ecs-events/master-444dd76.zip
+        Layers:
+          - LambdaLayerVersionPython37SSM
+        MemorySize: 128
+        Runtime: python3.9
+        Timeout: 30
+        Environment:
+          Variables:
+            - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+  IAMPolicy:
+    - LambdaECSEventsSpot:
+        Roles:
+          - Ref('RoleLambdaECSEventsSpot')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:DescribeContainerInstances'
+                  - 'ecs:DescribeServices'
+                  - 'ecs:UpdateService'
+                  - 'cloudwatch:SetAlarmState'
+                  - 'cloudwatch:DisableAlarmActions'
+                  - 'cloudwatch:EnableAlarmActions'
+                  - 'events:PutRule'
+                  - 'events:DeleteRule'
+                  - 'events:PutTargets'
+                  - 'events:RemoveTargets'
+                  - 'lambda:AddPermission'
+                  - 'lambda:RemovePermission'
+                Effect: Allow
+                Resource: '*'
