@@ -1,0 +1,74 @@
+# vim: ft=python
+import boto3
+import json
+import logging
+import cfg as app_cfg
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+app_cfg.set({})
+
+RATE = getattr(app_cfg, "CLOUDWATCH_REPEATED_NOTIFY_RATE", "3 minutes")
+
+CLIENT_EVENTS = boto3.client("events")
+CLIENT_LAMBDA = boto3.client("lambda")
+
+
+def del_schedule(event, context):
+    event_name = event["event-name"]
+    # Remove Target
+    CLIENT_EVENTS.remove_targets(Rule=event_name, Ids=["1"])
+    # Remove Permission
+    try:
+        CLIENT_LAMBDA.remove_permission(
+            FunctionName=context.function_name, StatementId=event_name
+        )
+    except Exception:
+        pass
+    # Delete Rule
+    CLIENT_EVENTS.delete_rule(Name=event_name)
+    logger.info(f"Removed event: {event_name}")
+
+
+def lambda_handler(event, context):
+    event_name = "CWASC_CloudWatchRepeatedNotify"
+    try:
+        # Check if rule already exist
+        CLIENT_EVENTS.describe_rule(Name=event_name)
+    except Exception:
+        # Put Rule
+        put_response = CLIENT_EVENTS.put_rule(
+            Name=event_name, ScheduleExpression=f"rate({RATE})", State="ENABLED"
+        )
+        # Add permission
+        CLIENT_LAMBDA.add_permission(
+            FunctionName=context.function_name,
+            StatementId=event_name,
+            Action="lambda:InvokeFunction",
+            Principal="events.amazonaws.com",
+            SourceArn=put_response["RuleArn"],
+        )
+    else:
+        CLIENT_EVENTS.put_rule(
+            Name=event_name, ScheduleExpression=f"rate({RATE})", State="ENABLED"
+        )
+    finally:
+        # Put Target
+        CLIENT_EVENTS.put_targets(
+            Rule=event_name,
+            Targets=[
+                {
+                    "Id": "1",
+                    "Arn": context.invoked_function_arn,
+                    "Input": json.dumps(
+                        {
+                            "detail-type": "Scheduled Event",
+                            "event-name": event_name,
+                        }
+                    ),
+                }
+            ],
+        )
+    logger.info(f"Added event: {event_name}")

@@ -1,0 +1,61 @@
+# vim: ft=python
+import os
+import boto3
+import logging
+import cfg as app_cfg
+from datetime import datetime, timezone
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+app_cfg.set({})
+
+TOPIC = os.environ["SNSTopic"]
+EXCLUDE = getattr(app_cfg, "CLOUDWATCH_REPEATED_NOTIFY_EXCLUDE", "")
+
+REGION = boto3.session.Session().region_name
+CLIENT_SNS = boto3.client("sns")
+CLIENT_CLOUDWATCH = boto3.client("cloudwatch")
+
+
+def send_notification(alarms):
+    alarms_list = []
+    now = datetime.now(timezone.utc)
+    for a in alarms:
+        name = a["AlarmName"]
+        if any(x in name for x in EXCLUDE.split()):
+            continue
+        state_update_time = a["StateUpdatedTimestamp"]
+        # Notify only for alarms already triggered
+        if (
+            a["StateValue"] == "ALARM"
+            and (now - state_update_time).total_seconds() > 60 * 4
+        ):
+            alarms_list.append(f"{name} - {state_update_time}")
+
+    if alarms_list:
+        notification_subject = (
+            f"ALARM: {len(alarms_list)} alarms remains in ALARM state in {REGION}"
+        )
+        notification_body = "\n".join(alarms_list)
+
+        logger.info(f"Alarms in ALARM: {alarms_list}")
+        result = CLIENT_SNS.publish(
+            TopicArn=TOPIC, Subject=notification_subject, Message=notification_body
+        )
+
+        logger.info(result)
+
+
+def lambda_handler(event, context):
+    alarm_response = CLIENT_CLOUDWATCH.describe_alarms(
+        StateValue="ALARM",
+        ActionPrefix=TOPIC,
+    )
+    alarms = alarm_response.get("MetricAlarms", []) + alarm_response.get(
+        "CompositeAlarms", []
+    )
+
+    if alarms:
+        send_notification(alarms)

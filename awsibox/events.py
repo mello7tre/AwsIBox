@@ -14,8 +14,10 @@ from .shared import (
 
 def EVE_EventRules(key):
     for n, v in getattr(cfg, key).items():
-        resname = f"{key}{n}"
+        if not v.get("IBOX_ENABLED", True):
+            continue
 
+        resname = f"{key}{n}"
         ibox_lo_cfg = v.get("IBOX_LINKED_OBJ", {})
         if isinstance(ibox_lo_cfg, str):
             ibox_lo_cfg = {"Base": ibox_lo_cfg}
