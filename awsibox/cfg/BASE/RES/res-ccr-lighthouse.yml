@@ -36,9 +36,10 @@ global:
     - CCRLightHouse:
         Export: True
         Code:
-          S3Bucket: Sub(cfg.BucketNameAppRepository)
-          S3Key: Sub('ibox-tools/ccr-lighthouse/ccr-lighthouse-${EnvApp1Version}.zip')
+          ZipFile: str(IBOX_INDEXNAME)
         Description: 'Custom Resource for executing lighthouse-task'
+        Layers:
+          - LambdaLayerVersionPython39CRHelper
         MemorySize: 128
         Runtime: python3.9
         Timeout: 300

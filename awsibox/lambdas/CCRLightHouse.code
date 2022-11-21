@@ -1,0 +1,114 @@
+# vim: ft=python
+import boto3
+import os
+import logging
+from pprint import pprint, pformat
+from crhelper import CfnResource
+
+logger = logging.getLogger(__name__)
+
+EventsRuleECSRunTaskSuffix = "-lighthouse-task-RuleECSRunTask"
+
+CLIENT_EVENTS = boto3.client("events")
+CLIENT_ECS = boto3.client("ecs")
+
+# Initialise the helper
+helper = CfnResource(
+    json_logging=False,
+    log_level="DEBUG",
+    boto_level="CRITICAL",
+    polling_interval=1,
+    sleep_on_delete=30,
+)
+
+try:
+    # Init code goes here
+    is_success = True
+except Exception as e:
+    helper.init_failure(e)
+
+
+def get_event_target(name):
+    response = CLIENT_EVENTS.list_targets_by_rule(Rule=f"{name}{EventsRuleECSRunTaskSuffix}")
+
+    if response["Targets"]:
+        return eval(response["Targets"][0]["Input"])
+
+
+def run_task(ti, role, appversion, reponame):
+    kwargs = {
+        "taskDefinition": ti["TaskDefinition"],
+        "cluster": ti["Cluster"],
+    }
+
+    if "NetworkModeAwsVpc" in ti:
+        kwargs["networkConfiguration"] = {
+            "awsvpcConfiguration": {
+                "subnets": ti["Subnets"].split(","),
+                "securityGroups": ti["SecurityGroups"].split(),
+                "assignPublicIp": "DISABLED",
+            }
+        }
+
+    kwargs["overrides"] = {
+        "containerOverrides": [
+            {
+                "name": "lighthouse-task",
+                "environment": [
+                    {"name": "CFG_NAME", "value": role},
+                    {"name": "APP_VERSION", "value": appversion},
+                    {"name": "APP_REPO", "value": reponame},
+                ],
+            }
+        ]
+    }
+
+    kwargs["count"] = 1
+    kwargs["launchType"] = ti["LaunchType"]
+
+    pprint(kwargs)
+    response = CLIENT_ECS.run_task(**kwargs)
+
+    if "failures" in response and len(response["failures"]) > 0:
+        logger.info(response)
+    else:
+        return True
+
+
+def do_run_task(role, appversion, reponame, stackname):
+    target_input = get_event_target(stackname)
+    run_task(target_input, role, appversion, reponame)
+
+
+@helper.update
+def update(event, context):
+    res = event["ResourceProperties"]
+
+    role = res["EnvRole"]
+    appversion = res["EnvApp1Version"]
+    reponame = res["RepoName"]
+    stackname = os.environ["LightHouseTaskStackName"]
+
+    logger.info(role)
+    logger.info(appversion)
+    logger.info(stackname)
+
+    try:
+        do_run_task(role, appversion, reponame, stackname)
+    except Exception as e:
+        logger.error(e)
+
+    return f"{stack_name}-CustomResourceLightHouse"
+
+
+@helper.create
+@helper.delete
+def no_op(_, __):
+    return f"{stack_name}-CustomResourceLightHouse"
+
+
+def lambda_handler(event, context):
+    global stack_name
+
+    stack_name = event["StackId"].split("/")[1]
+    helper(event, context)
