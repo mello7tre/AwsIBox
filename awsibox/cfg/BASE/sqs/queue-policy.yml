@@ -21,7 +21,7 @@ global:
                 Action:
                   - "SQS:SendMessage"
                 Condition:
-                  ArnEquals: {"aws:SourceArn": eval(IBOX_LINKED_OBJ_INDEX)}
+                  ArnEquals: {"aws:SourceArn": Sub(IBOX_LINKED_OBJ_INDEX)}
                 Effect: Allow
                 Principal:
                   "Service": "s3.amazonaws.com"
