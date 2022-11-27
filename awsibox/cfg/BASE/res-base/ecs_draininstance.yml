@@ -53,6 +53,11 @@ global:
         MemorySize: 128
         Runtime: python3.9
         Timeout: 300
+  LambdaEventSourceMapping:
+    - ECSDrainInstance:
+        DependsOn: 'IAMRoleLambdaECSDrainInstance'
+        EventSourceArn: GetAtt('SQSQueueECSDrainInstance', 'Arn')
+        FunctionName: Ref('LambdaECSDrainInstance')
   IAMRole:
     - ASGLifecycleHookECSDrainInstance:
         Export: True
