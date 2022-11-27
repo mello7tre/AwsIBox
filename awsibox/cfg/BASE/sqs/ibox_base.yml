@@ -5,7 +5,15 @@ QueuePolicyBase: &queue_policy_base
     Statement:
       - IBOX_LIST:
 
+QueueBase: &queue_base
+  IBOX_OUTPUT:
+    - _:
+        IBOX_ENABLED_IF: getattr(cfg, f"{IBOX_RESNAME}Export", False) == True
+        Value: Ref(IBOX_RESNAME)
+        Export: Export(IBOX_RESNAME)
 
 global:
   SQSQueuePolicy:
     - IBOX_BASE: *queue_policy_base
+  SQSQueue:
+    - IBOX_BASE: *queue_base
