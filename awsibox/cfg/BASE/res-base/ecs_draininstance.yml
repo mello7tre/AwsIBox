@@ -25,6 +25,11 @@ PoliciesLambdaECSDrainInstance: &policies_lambda_ecs_drain_instance
                 Action: 'sns:Publish'
                 Effect: Allow
                 Resource: Ref('SNSTopicECSDrainInstance')
+            - sqs:
+                Action:
+                  - 'sqs:DeleteMessage*'
+                  - 'sqs:ChangeMessageVisibility*'
+                Resource: Ref('SQSQueueECSDrainInstance')
             - clf:
                 Action: 'cloudformation:ListExports'
                 Effect: Allow
@@ -42,6 +47,9 @@ global:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Gracefully drain ECS tasks from EC2 instances before the instances are terminated by autoscaling.'
+        Environment:
+          Variables:
+            - SQSQueue: Ref("SQSQueueECSDrainInstance")
         MemorySize: 128
         Runtime: python3.9
         Timeout: 300
@@ -54,18 +62,35 @@ global:
               PolicyDocument:
                 Statement:
                   - IBOX_LIST:
-                  - 1:
+                  - sns:
                       Action: 'sns:Publish'
                       Effect: Allow
                       Resource: Ref('SNSTopicECSDrainInstance')
+                  - sqs:
+                      Action:
+                        - 'sqs:GetQueueUrl'
+                        - 'sqs:SendMessage'
+                      Effect: Allow
+                      Resource: Ref('SQSQueueECSDrainInstance')
                 Version: '2012-10-17'
               PolicyName: ASGLifecycleHookECSDrainInstance
   SNSSubscription:
-    - ECSDrainInstanceLambdaECSDrainInstance:
+    - ECSDrainInstanceLambdaECSDrainInstance.DISABLED:
         IBOX_SOURCE_OBJ: SNSSubscriptionLambda
         TopicArn: Ref('SNSTopicECSDrainInstance')
         Endpoint: GetAtt('LambdaECSDrainInstance', 'Arn')
         Protocol: lambda
+    - ECSDrainInstanceLambdaECSDrainInstance:
+        IBOX_SOURCE_OBJ: SNSSubscriptionSQS
+        TopicArn: Ref('SNSTopicECSDrainInstance')
+        Endpoint: GetAtt('SQSQueueECSDrainInstance', 'Arn')
+        Protocol: sqs
   SNSTopic:
     - ECSDrainInstance:
         Export: True
+  SQSQueue:
+    - ECSDrainInstance:
+        Export: True
+        DelaySeconds: 10
+        MessageRetentionPeriod: 7200
+        VisibilityTimeout: 30

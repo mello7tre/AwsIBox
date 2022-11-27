@@ -1,85 +1,44 @@
 # vim: ft=python
 import json
-import time
 import boto3
 import os
 import logging
-from pprint import pprint, pformat
 from datetime import datetime, timedelta
 
 # logging.basicConfig()
 logger = logging.getLogger("ECSDrainInstance")
-handler = logging.StreamHandler()
-logger.addHandler(handler)
+logging_handler = logging.StreamHandler()
+logger.addHandler(logging_handler)
 logger.setLevel(logging.INFO)
 logger.propagate = False
 
+SQS_QUEUE = os.environ.get("SQSQUEUE")
 
-AWS_MAP = {
-    "ecs": "ecs",
-    "asg": "autoscaling",
-    "clf": "cloudformation",
-    "sns": "sns",
-}
-
-
-class aws_client(object):
-    def __init__(self):
-        setattr(self, "region", boto3.session.Session().region_name)
-        pass
-
-    # Remember that __getattr__ is only used for missing attribute lookup
-    def __getattr__(self, name):
-        try:
-            client = boto3.client(AWS_MAP[name])
-            setattr(self, name, client)
-        except Exception:
-            raise AttributeError
-        else:
-            return getattr(self, name)
+CLIENT_EC2 = boto3.client("ec2")
+CLIENT_ECS = boto3.client("ecs")
+CLIENT_AUTOSCALING = boto3.client("autoscaling")
+CLIENT_SQS = boto3.client("sqs")
 
 
-aws = aws_client()
-
-
-def getClfExports():
-    exports = {}
-    paginator = aws.clf.get_paginator("list_exports")
-    responseIterator = paginator.paginate()
-
-    for e in responseIterator:
-        for export in e["Exports"]:
-            name = export["Name"]
-            value = export["Value"]
-            exports[name] = value
-
-    return exports
-
-
-def find_cluster(asg_name):
-    asgTags = aws.asg.describe_auto_scaling_groups(AutoScalingGroupNames=[asg_name])[
-        "AutoScalingGroups"
-    ][0]["Tags"]
-
-    for n in asgTags:
-        if n["Key"] == "aws:cloudformation:stack-name":
-            stack_name = n["Value"]
-            try:
-                return getClfExports()[f"Cluster-{stack_name}"]
-            except Exception:
-                break
+def find_cluster(instance_id):
+    instance_tags = CLIENT_EC2.describe_tags(
+        Filters=[{"Name": "resource-id", "Values": [instance_id]}]
+    )
+    for n in instance_tags["Tags"]:
+        if n["Key"] == "ECSCluster":
+            return n["Value"]
 
 
 def get_heartbeat_timeout(asg_name, lifecyclehook_name):
     heartbeat_timeout = 900
 
-    resp = aws.asg.describe_lifecycle_hooks(
+    resp = CLIENT_AUTOSCALING.describe_lifecycle_hooks(
         AutoScalingGroupName=asg_name, LifecycleHookNames=[lifecyclehook_name]
     )
 
-    for l in resp.get("LifecycleHooks", []):
-        if "ECSDrainInstance" in l.get("NotificationTargetARN", ""):
-            heartbeat_timeout = l["HeartbeatTimeout"]
+    for life in resp.get("LifecycleHooks", []):
+        if "ECSDrainInstance" in life.get("NotificationTargetARN", ""):
+            heartbeat_timeout = life["HeartbeatTimeout"]
             break
 
     return heartbeat_timeout
@@ -91,9 +50,9 @@ def find_container_instance(cluster, instance_id, status=None):
 
     if status:
         kwargs["status"] = status
-        status_desc = f" with status {status}"
+        status_desc = f" in status {status}"
 
-    list_resp = aws.ecs.list_container_instances(**kwargs)
+    list_resp = CLIENT_ECS.list_container_instances(**kwargs)
 
     try:
         instance_arn = list_resp["containerInstanceArns"][0]
@@ -106,7 +65,7 @@ def find_container_instance(cluster, instance_id, status=None):
 
 def get_tasks(cluster, instance_arn, status):
     tasks = []
-    paginator = aws.ecs.get_paginator("list_tasks")
+    paginator = CLIENT_ECS.get_paginator("list_tasks")
     response_iter = paginator.paginate(
         cluster=cluster, containerInstance=instance_arn, desiredStatus=status
     )
@@ -119,41 +78,10 @@ def get_tasks(cluster, instance_arn, status):
     return tasks
 
 
-def send_message(topic_arn, heartbeat_timeout, msg):
-    time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
-
-    if "EndTime" in msg:
-        # subsequent sleep time cheking for tasks to stop
-        sleep_time = 20
-        endtime = datetime.strptime(msg["EndTime"], time_format)
-        if datetime.utcnow() > endtime:
-            logger.info(f"HB Ended: {datetime.utcnow()} > {endtime}")
-            return
-    else:
-        # initial sleep time after drainig container
-        sleep_time = 40
-        endtime = datetime.strptime(msg["Time"], time_format) + timedelta(
-            seconds=heartbeat_timeout
-        )
-        msg["EndTime"] = endtime.strftime(time_format)
-
-    logger.info(f"HB End: {msg['EndTime']} [{heartbeat_timeout}]")
-    logger.info(f"Sleeping {sleep_time}sec...posting to {topic_arn}")
-    time.sleep(sleep_time)
-
-    sns_resp = aws.sns.publish(
-        TopicArn=topic_arn,
-        Message=json.dumps(msg),
-        Subject="Re-invoke Lambda",
-    )
-
-    logger.info("Posted msg %s " % (sns_resp["MessageId"]))
-
-
 def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
     logger.info("Completing lifecycle")
 
-    aws.asg.complete_lifecycle_action(
+    CLIENT_AUTOSCALING.complete_lifecycle_action(
         LifecycleHookName=lifecyclehook_name,
         AutoScalingGroupName=asg_name,
         LifecycleActionResult="CONTINUE",
@@ -164,7 +92,7 @@ def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
 def drain_instance(cluster, instance_arn, retry=0):
     logger.info(f"{instance_arn} DRAINING")
     try:
-        resp_update = aws.ecs.update_container_instances_state(
+        resp_update = CLIENT_ECS.update_container_instances_state(
             cluster=cluster, containerInstances=[instance_arn], status="DRAINING"
         )
         instances = resp_update.get("containerInstances")
@@ -174,14 +102,10 @@ def drain_instance(cluster, instance_arn, retry=0):
         failure = resp_update.get("failures")
         if failure:
             logger.error(f"{failure} [{retry}]")
-            if (
-                failure[0].get("reason")
-                == "INVALID_INSTANCE_STATE_TRANSITION"
-                and retry < 5
-            ):
-                retry += 1
-                time.sleep(5)
-                return drain_instance(cluster, instance_arn, retry)
+            if failure[0].get("reason") == "INVALID_INSTANCE_STATE_TRANSITION":
+                logger.warning(
+                    f"Cluster {cluster} Instance {instance_arn}, INVALID_INSTANCE_STATE_TRANSITION"
+                )
         elif instances:
             return instances[0]["status"] == "DRAINING"
 
@@ -190,7 +114,7 @@ def tasks_are_running(cluster, tasks_msg):
     tasks_id, running = list(tasks_msg), len(tasks_msg)
     while tasks_id:
         tasks_id_sub = tasks_id[0:100]
-        resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_id_sub)
+        resp = CLIENT_ECS.describe_tasks(cluster=cluster, tasks=tasks_id_sub)
         tasks = resp.get("tasks", [])
 
         for t in tasks:
@@ -209,84 +133,65 @@ def tasks_are_running(cluster, tasks_msg):
 
 
 def lambda_handler(event, context):
-    topic_arn = event["Records"][0]["Sns"]["TopicArn"]
-    msg = json.loads(event["Records"][0]["Sns"]["Message"])
+    time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    msg = json.loads(event["Records"][0]["body"])
+    msg_handle = event["Records"][0]["receiptHandle"]
+    delete_msg = False
 
     if "autoscaling:EC2_INSTANCE_TERMINATING" not in msg.get("LifecycleTransition", []):
-        return
+        CLIENT_SQS.delete_message(QueueUrl=SQS_QUEUE, ReceiptHandle=msg_handle)
 
     asg_name = msg["AutoScalingGroupName"]
     instance_id = msg["EC2InstanceId"]
     lifecyclehook_name = msg["LifecycleHookName"]
+    msg_time = datetime.strptime(msg["Time"], time_format)
 
     # add prefix to log messages
     formatter = logging.Formatter(
         fmt=f"%(levelname)s:[{instance_id}@{asg_name}]:%(message)s"
     )
-    handler.setFormatter(formatter)
+    logging_handler.setFormatter(formatter)
 
-    need_to_send_msg = False
+    cluster = find_cluster(instance_id)
+    instance_arn = find_container_instance(cluster, instance_id)
 
-    if msg.get("ALREADY_DRAINED"):
-        # Workflow triggered by msg sent because tasks are still running on instance
-        cluster = msg["Cluster"]
-        tasks = msg["Tasks"]
-        if tasks_are_running(cluster, tasks):
-            need_to_send_msg = True
+    if cluster and instance_arn:
+        if find_container_instance(cluster, instance_id, "DRAINING") or drain_instance(
+            cluster, instance_arn
+        ):
+            # container instance is in DRAINING status
+            runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
+            if not runnig_tasks:
+                complete_lifecycle(asg_name, lifecyclehook_name, instance_id)
+                delete_msg = True
     else:
-        # Workflow triggered by ASG LifeCycleHook
-        cluster = find_cluster(asg_name)
-        instance_arn = find_container_instance(cluster, instance_id)
+        logger.warning("No Cluster/Instance")
+        delete_msg = True
 
-        if cluster and instance_arn:
-            if find_container_instance(
-                cluster, instance_id, "DRAINING"
-            ) or drain_instance(cluster, instance_arn):
-                # container instance is in DRAINING status
-                runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
-                if runnig_tasks:
-                    msg["ALREADY_DRAINED"] = True
-                    msg["Cluster"] = cluster
-                    msg["Tasks"] = runnig_tasks
-                    need_to_send_msg = True
-            else:
-                need_to_send_msg = True
-        else:
-            logger.warning(f"No Cluster/Instance")
+    heartbeat_timeout = get_heartbeat_timeout(asg_name, lifecyclehook_name)
 
-    if need_to_send_msg:
-        heartbeat_timeout = get_heartbeat_timeout(asg_name, lifecyclehook_name)
-        send_message(topic_arn, heartbeat_timeout, msg)
-    else:
-        complete_lifecycle(asg_name, lifecyclehook_name, instance_id)
+    if delete_msg or (
+        datetime.utcnow() > msg_time + timedelta(seconds=heartbeat_timeout)
+    ):
+        logger.info("Deleting message")
+        CLIENT_SQS.delete_message(QueueUrl=SQS_QUEUE, ReceiptHandle=msg_handle)
 
 
 # test by cmd line
 # if __name__ == "__main__":
-#    message = {
-#        "AutoScalingGroupName": "rmq-z-AutoScalingGroup-ZP5HX5UZLDFU",
-#        "EC2InstanceId": "i-04208828b4cd76ec1",
-#        "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
-#        "LifecycleHookName": "rmq-z-ASGLifecycleHookECSDrainInstance-jyqNwkJgVsg8",
-#        "Time": "2022-03-30T20:20:20.33Z",
-#    }
-#    # uncomment to test re-sent message workflow
-#    #message["ALREADY_DRAINED"] = True
-#    #message["EndTime"] = "2022-03-30T20:20:20.33Z"
-#    #
-#    message["Cluster"] = "rmq-z-Cluster-FbOYhwfK9szD"
-#    message["Tasks"] = [
-#        "38a0a5b76a744a829a7da5082764276a",
-#        "da0501ef38994fe28f0b9a864915aefd",
-#    ]
-#    event = {
-#        "Records": [
-#            {
-#                "Sns": {
-#                    "TopicArn": "test topic arn",
-#                    "Message": json.dumps(message),
-#                }
-#            }
-#        ]
-#    }
-#    lambda_handler(event, {})
+#   message = {
+#       "AutoScalingGroupName": "img-a-d-AutoScalingGroup-R2JXOGLJ8GAC",
+#       "EC2InstanceId": "i-010072258dc224b00",
+#       "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
+#       "LifecycleHookName": "img-a-d-ASGLifecycleHookECSDrainInstance-KeHqtXX7kNBg",
+#       "Time": "2022-11-27T20:20:20.33Z",
+#   }
+#   event = {
+#       "Records": [
+#          {
+#              "body": json.dumps(message),
+#              "receiptHandle": "gatto",
+#          }
+#       ]
+#   }
+#   lambda_handler(event, {})
