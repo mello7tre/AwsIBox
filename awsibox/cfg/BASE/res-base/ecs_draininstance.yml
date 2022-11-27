@@ -75,7 +75,9 @@ global:
                 Version: '2012-10-17'
               PolicyName: ASGLifecycleHookECSDrainInstance
   SNSSubscription:
-    - ECSDrainInstanceLambdaECSDrainInstance.DISABLED:
+    - ECSDrainInstanceLambdaECSDrainInstance:
+        # not in use keep for history
+        IBOX_ENABLED: False
         IBOX_SOURCE_OBJ: SNSSubscriptionLambda
         TopicArn: Ref('SNSTopicECSDrainInstance')
         Endpoint: GetAtt('LambdaECSDrainInstance', 'Arn')
