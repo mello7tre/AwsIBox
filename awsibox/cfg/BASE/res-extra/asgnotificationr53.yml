@@ -22,7 +22,6 @@ global:
   SQSQueue:
     - ASGNotificationR53:
         MessageRetentionPeriod: 360
-        TopicArn: get_expvalue('SNSTopicASGNotificationR53')
   SNSSubscription:
     - ASGNotificationR53SQSASGNotificationR53:
         IBOX_SOURCE_OBJ: SNSSubscriptionSQS
