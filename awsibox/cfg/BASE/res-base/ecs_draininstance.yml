@@ -55,7 +55,7 @@ global:
         Timeout: 300
   LambdaEventSourceMapping:
     - ECSDrainInstance:
-        DependsOn: 'IAMRoleLambdaECSDrainInstance'
+        DependsOn: 'RoleLambdaECSDrainInstance'
         EventSourceArn: GetAtt('SQSQueueECSDrainInstance', 'Arn')
         FunctionName: Ref('LambdaECSDrainInstance')
   IAMRole:
