@@ -92,9 +92,10 @@ global:
         Protocol: lambda
     - ECSDrainInstanceSQSQueueECSDrainInstance:
         IBOX_SOURCE_OBJ: SNSSubscriptionSQS
-        TopicArn: Ref('SNSTopicECSDrainInstance')
         Endpoint: GetAtt('SQSQueueECSDrainInstance', 'Arn')
         Protocol: sqs
+        RawMessageDelivery: True
+        TopicArn: Ref('SNSTopicECSDrainInstance')
   SNSTopic:
     - ECSDrainInstance:
         Export: True
