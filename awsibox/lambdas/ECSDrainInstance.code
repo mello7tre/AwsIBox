@@ -137,7 +137,7 @@ def get_draining_cluster_and_runnig_tasks(instance_id):
 def lambda_handler(event, context):
     time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
     msg = json.loads(event["Records"][0]["body"])
-    end_lf = send_msg = False
+    end_lf = False
 
     asg_name = msg["AutoScalingGroupName"]
     instance_id = msg["EC2InstanceId"]
@@ -153,10 +153,7 @@ def lambda_handler(event, context):
     tasks_to_check = msg.get("Tasks")
     if tasks_to_check:
         # Following Message from lambda to check running task
-        if tasks_are_running(msg["Cluster"], tasks_to_check):
-            # tasks are still running
-            send_msg = True
-        else:
+        if not tasks_are_running(msg["Cluster"], tasks_to_check):
             end_lf = True
     else:
         # First Message from ASG to drain and get running task
@@ -164,29 +161,22 @@ def lambda_handler(event, context):
         if task_to_msg:
             msg["Cluster"] = cluster
             msg["Tasks"] = task_to_msg
-            send_msg = True
         else:
             end_lf = True
 
     # lifecycle
     if end_lf:
-        logger.info("Completing lifecycle")
-        try:
-            CLIENT_AUTOSCALING.complete_lifecycle_action(
-                LifecycleHookName=lifecyclehook_name,
-                AutoScalingGroupName=asg_name,
-                LifecycleActionResult="CONTINUE",
-                InstanceId=instance_id,
-            )
-        except Exception:
-            pass
-        else:
-            logger.info("Completed lifecycle")
-
-    # send a message with only the task not stopped to re-trigger lambda until 0 task running or LifeCycle timeout
-    if send_msg and datetime.now(timezone.utc) < msg_time + timedelta(
+        CLIENT_AUTOSCALING.complete_lifecycle_action(
+            LifecycleHookName=lifecyclehook_name,
+            AutoScalingGroupName=asg_name,
+            LifecycleActionResult="CONTINUE",
+            InstanceId=instance_id,
+        )
+        logger.info("Completed lifecycle")
+    elif datetime.now(timezone.utc) < msg_time + timedelta(
         seconds=get_heartbeat_timeout(asg_name, lifecyclehook_name)
     ):
+        # send a message with only the task not stopped to re-trigger lambda until 0 task running or LifeCycle timeout
         logger.info("Sending message with tasks running.")
         CLIENT_SQS.send_message(
             QueueUrl=SQS_QUEUE, MessageBody=json.dumps(msg), DelaySeconds=20
