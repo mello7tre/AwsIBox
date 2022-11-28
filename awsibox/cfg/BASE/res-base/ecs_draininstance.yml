@@ -59,6 +59,7 @@ global:
   LambdaEventSourceMapping:
     - ECSDrainInstance:
         DependsOn: 'RoleLambdaECSDrainInstance'
+        BatchSize: 1
         EventSourceArn: GetAtt('SQSQueueECSDrainInstance', 'Arn')
         FunctionName: Ref('LambdaECSDrainInstance')
   IAMRole:
