@@ -3,7 +3,7 @@ import json
 import boto3
 import os
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 # logging.basicConfig()
 logger = logging.getLogger("ECSDrainInstance")
@@ -121,7 +121,7 @@ def tasks_are_running(cluster, tasks_msg):
     return running != 0
 
 
-def drain_and_get_runnig_tasks(cluster, instance_id):
+def get_draining_cluster_and_runnig_tasks(instance_id):
     cluster = find_cluster(instance_id)
     instance_arn = find_container_instance(cluster, instance_id)
 
@@ -129,7 +129,7 @@ def drain_and_get_runnig_tasks(cluster, instance_id):
         if find_container_instance(cluster, instance_id, "DRAINING") or drain_instance(
             cluster, instance_arn
         ):
-            return get_tasks(cluster, instance_arn, "RUNNING")
+            return cluster, get_tasks(cluster, instance_arn, "RUNNING")
     else:
         logger.warning("No Cluster/Instance")
 
@@ -137,13 +137,12 @@ def drain_and_get_runnig_tasks(cluster, instance_id):
 def lambda_handler(event, context):
     time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
     msg = json.loads(event["Records"][0]["body"])
-    msg_handle = event["Records"][0]["receiptHandle"]
-    end_lf = delete_msg = False
+    end_lf = send_msg = False
 
     asg_name = msg["AutoScalingGroupName"]
     instance_id = msg["EC2InstanceId"]
     lifecyclehook_name = msg["LifecycleHookName"]
-    msg_time = datetime.strptime(msg["Time"], time_format)
+    msg_time = datetime.strptime(msg["Time"], time_format).replace(tzinfo=timezone.utc)
 
     # add prefix to log messages
     formatter = logging.Formatter(
@@ -154,21 +153,20 @@ def lambda_handler(event, context):
     tasks_to_check = msg.get("Tasks")
     if tasks_to_check:
         # Following Message from lambda to check running task
-        cluster = msg.get("Cluster")
-        if not tasks_are_running(cluster, tasks_to_check):
+        if tasks_are_running(msg["Cluster"], tasks_to_check):
+            # tasks are still running
+            send_msg = True
+        else:
             end_lf = True
     else:
         # First Message from ASG to drain and get running task
-        task_to_msg = drain_and_get_runnig_tasks(instance_id)
-        if not task_to_msg:
-            end_lf = True
-        else:
+        cluster, task_to_msg = get_draining_cluster_and_runnig_tasks(instance_id)
+        if task_to_msg:
             msg["Cluster"] = cluster
             msg["Tasks"] = task_to_msg
-            CLIENT_SQS.send_message(
-                QueueUrl=SQS_QUEUE, MessageBody=json.dumps(msg), DelaySeconds=20
-            )
-            delete_msg = True
+            send_msg = True
+        else:
+            end_lf = True
 
     # lifecycle
     if end_lf:
@@ -184,13 +182,15 @@ def lambda_handler(event, context):
             pass
         else:
             logger.info("Completed lifecycle")
-            delete_msg = True
 
-    # delete msg
-    if delete_msg or datetime.utcnow() > msg_time + timedelta(
+    # send a message with only the task not stopped to re-trigger lambda until 0 task running or LifeCycle timeout
+    if send_msg and datetime.now(timezone.utc) < msg_time + timedelta(
         seconds=get_heartbeat_timeout(asg_name, lifecyclehook_name)
     ):
-        CLIENT_SQS.delete_message(QueueUrl=SQS_QUEUE, ReceiptHandle=msg_handle)
+        logger.info("Sending message with tasks running.")
+        CLIENT_SQS.send_message(
+            QueueUrl=SQS_QUEUE, MessageBody=json.dumps(msg), DelaySeconds=20
+        )
 
 
 # test by cmd line

@@ -29,6 +29,7 @@ PoliciesLambdaECSDrainInstance: &policies_lambda_ecs_drain_instance
                 Action:
                   - 'sqs:GetQueueAttributes'
                   - 'sqs:ReceiveMessage'
+                  - 'sqs:SendMessage'
                   - 'sqs:DeleteMessage*'
                   - 'sqs:ChangeMessageVisibility*'
                 Effect: Allow
@@ -103,6 +104,5 @@ global:
   SQSQueue:
     - ECSDrainInstance:
         Export: True
-        DelaySeconds: 10
         MessageRetentionPeriod: 7200
         VisibilityTimeout: 30
