@@ -12,7 +12,7 @@ logger.addHandler(logging_handler)
 logger.setLevel(logging.INFO)
 logger.propagate = False
 
-SQS_QUEUE = os.environ.get("SQSQUEUE")
+SQS_QUEUE = os.environ.get("SQSQueue")
 
 CLIENT_EC2 = boto3.client("ec2")
 CLIENT_ECS = boto3.client("ecs")
