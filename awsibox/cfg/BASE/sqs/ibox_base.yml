@@ -12,7 +12,7 @@ QueueBase: &queue_base
   IBOX_OUTPUT:
     - _:
         IBOX_ENABLED_IF: getattr(cfg, f"{IBOX_RESNAME}Export", False) == True
-        Value: Ref(IBOX_RESNAME)
+        Value: GetAtt(IBOX_RESNAME, "Arn")
         Export: Export(IBOX_RESNAME)
 
 global:
