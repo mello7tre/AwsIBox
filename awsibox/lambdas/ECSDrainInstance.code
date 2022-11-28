@@ -78,17 +78,6 @@ def get_tasks(cluster, instance_arn, status):
     return tasks
 
 
-def complete_lifecycle(asg_name, lifecyclehook_name, instance_id):
-    logger.info("Completing lifecycle")
-
-    CLIENT_AUTOSCALING.complete_lifecycle_action(
-        LifecycleHookName=lifecyclehook_name,
-        AutoScalingGroupName=asg_name,
-        LifecycleActionResult="CONTINUE",
-        InstanceId=instance_id,
-    )
-
-
 def drain_instance(cluster, instance_arn, retry=0):
     logger.info(f"{instance_arn} DRAINING")
     try:
@@ -132,14 +121,24 @@ def tasks_are_running(cluster, tasks_msg):
     return running != 0
 
 
+def drain_and_get_runnig_tasks(cluster, instance_id):
+    cluster = find_cluster(instance_id)
+    instance_arn = find_container_instance(cluster, instance_id)
+
+    if cluster and instance_arn:
+        if find_container_instance(cluster, instance_id, "DRAINING") or drain_instance(
+            cluster, instance_arn
+        ):
+            return get_tasks(cluster, instance_arn, "RUNNING")
+    else:
+        logger.warning("No Cluster/Instance")
+
+
 def lambda_handler(event, context):
     time_format = "%Y-%m-%dT%H:%M:%S.%fZ"
     msg = json.loads(event["Records"][0]["body"])
     msg_handle = event["Records"][0]["receiptHandle"]
-    delete_msg = False
-
-    if "autoscaling:EC2_INSTANCE_TERMINATING" not in msg.get("LifecycleTransition", []):
-        CLIENT_SQS.delete_message(QueueUrl=SQS_QUEUE, ReceiptHandle=msg_handle)
+    end_lf = delete_msg = False
 
     asg_name = msg["AutoScalingGroupName"]
     instance_id = msg["EC2InstanceId"]
@@ -152,28 +151,45 @@ def lambda_handler(event, context):
     )
     logging_handler.setFormatter(formatter)
 
-    cluster = find_cluster(instance_id)
-    instance_arn = find_container_instance(cluster, instance_id)
-
-    if cluster and instance_arn:
-        if find_container_instance(cluster, instance_id, "DRAINING") or drain_instance(
-            cluster, instance_arn
-        ):
-            # container instance is in DRAINING status
-            runnig_tasks = get_tasks(cluster, instance_arn, "RUNNING")
-            if not runnig_tasks:
-                complete_lifecycle(asg_name, lifecyclehook_name, instance_id)
-                delete_msg = True
+    tasks_to_check = msg.get("Tasks")
+    if tasks_to_check:
+        # Following Message from lambda to check running task
+        cluster = msg.get("Cluster")
+        if not tasks_are_running(cluster, tasks_to_check):
+            end_lf = True
     else:
-        logger.warning("No Cluster/Instance")
-        delete_msg = True
+        # First Message from ASG to drain and get running task
+        task_to_msg = drain_and_get_runnig_tasks(instance_id)
+        if not task_to_msg:
+            end_lf = True
+        else:
+            msg["Cluster"] = cluster
+            msg["Tasks"] = task_to_msg
+            CLIENT_SQS.send_message(
+                QueueUrl=SQS_QUEUE, MessageBody=json.dumps(msg), DelaySeconds=20
+            )
+            delete_msg = True
 
-    heartbeat_timeout = get_heartbeat_timeout(asg_name, lifecyclehook_name)
+    # lifecycle
+    if end_lf:
+        logger.info("Completing lifecycle")
+        try:
+            CLIENT_AUTOSCALING.complete_lifecycle_action(
+                LifecycleHookName=lifecyclehook_name,
+                AutoScalingGroupName=asg_name,
+                LifecycleActionResult="CONTINUE",
+                InstanceId=instance_id,
+            )
+        except Exception:
+            pass
+        else:
+            logger.info("Completed lifecycle")
+            delete_msg = True
 
-    if delete_msg or (
-        datetime.utcnow() > msg_time + timedelta(seconds=heartbeat_timeout)
+    # delete msg
+    if delete_msg or datetime.utcnow() > msg_time + timedelta(
+        seconds=get_heartbeat_timeout(asg_name, lifecyclehook_name)
     ):
-        logger.info("Deleting message")
         CLIENT_SQS.delete_message(QueueUrl=SQS_QUEUE, ReceiptHandle=msg_handle)
 
 
