@@ -39,9 +39,9 @@ def get_servicename(tags):
         return "%s.%s" % (stackname, role)
 
 
-def get_service(client, servicename):
+def get_service(servicename):
     service = {}
-    paginator = client.get_paginator("list_services")
+    paginator = CLIENT_SERVICEDISCOVERY.get_paginator("list_services")
     response_iterator = paginator.paginate(
         Filters=[{"Name": "NAMESPACE_ID", "Values": [NAMESPACEID]}]
     )
@@ -55,8 +55,8 @@ def get_service(client, servicename):
                 return service
 
 
-def create_service(client, servicename):
-    response = client.create_service(
+def create_service(servicename):
+    response = CLIENT_SERVICEDISCOVERY.create_service(
         Name=servicename,
         DnsConfig={
             "NamespaceId": NAMESPACEID,
@@ -67,8 +67,8 @@ def create_service(client, servicename):
     return response["Service"]["Id"]
 
 
-def register_instance(client, serviceid, instance):
-    response = client.register_instance(
+def register_instance(serviceid, instance):
+    response = CLIENT_SERVICEDISCOVERY.register_instance(
         ServiceId=serviceid,
         InstanceId=instance.instance_id,
         Attributes={"AWS_INSTANCE_IPV4": instance.private_ip_address},
@@ -77,8 +77,8 @@ def register_instance(client, serviceid, instance):
     return response
 
 
-def do_upsert_record_set(client, aliasname, namespace_hostedzoneid, action):
-    response = client.change_resource_record_sets(
+def do_upsert_record_set(aliasname, namespace_hostedzoneid, action):
+    response = CLIENT_ROUTE53.change_resource_record_sets(
         HostedZoneId=HOSTEDZONEID,
         ChangeBatch={
             "Changes": [
