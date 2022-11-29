@@ -3,13 +3,16 @@ import logging
 import boto3
 import argparse
 from math import floor
-from pprint import pprint, pformat
+from pprint import pformat
 from datetime import datetime, timezone
 
 logging.basicConfig()
 logging.getLogger("botocore").setLevel("CRITICAL")
 logger = logging.getLogger("ibox_cluster_autoscale")
 logger.setLevel(logging.INFO)
+
+CLIENT_ECS = boto3.client("ecs")
+CLIENT_AUTOSCALING = boto3.client("autoscaling")
 
 
 # parse main argumets
@@ -33,7 +36,7 @@ def get_args():
 
 def process_containers(cluster, containers, res):
     net = 0
-    response = client.describe_container_instances(
+    response = CLIENT_ECS.describe_container_instances(
         cluster=cluster, containerInstances=containers
     )
 
@@ -58,7 +61,7 @@ def process_containers(cluster, containers, res):
 
 def populate_free_resources(cluster, res):
     ci_active = 0
-    paginator = client.get_paginator("list_container_instances")
+    paginator = CLIENT_ECS.get_paginator("list_container_instances")
     response_iterator = paginator.paginate(cluster=cluster, status="ACTIVE")
     for s in response_iterator:
         container_instance_arns = s["containerInstanceArns"]
@@ -78,7 +81,7 @@ def populate_free_resources(cluster, res):
 
 def process_services(c):
     net = 0
-    paginator_service = client.get_paginator("list_services")
+    paginator_service = CLIENT_ECS.get_paginator("list_services")
     response_iterator_service = paginator_service.paginate(
         cluster=c,
         launchType="EC2",
@@ -89,7 +92,7 @@ def process_services(c):
     for s in response_iterator_service:
         if not s["serviceArns"]:
             continue
-        s_d = client.describe_services(
+        s_d = CLIENT_ECS.describe_services(
             cluster=c,
             services=s["serviceArns"],
         )["services"]
@@ -129,7 +132,7 @@ def need_to_run(c):
 
 
 def tag_ecs_count(cluster, c):
-    client.tag_resource(
+    CLIENT_ECS.tag_resource(
         resourceArn=cluster,
         tags=[{"key": "IBOX_CLUSTER_AUTO_REDUCE_COUNT", "value": str(c)}],
     )
@@ -190,7 +193,7 @@ def process_cluster(c):
             instance = res["i_id"]
             logger.info(f"Terminate {instance}")
             try:
-                autoscaling.terminate_instance_in_auto_scaling_group(
+                CLIENT_AUTOSCALING.terminate_instance_in_auto_scaling_group(
                     InstanceId=instance, ShouldDecrementDesiredCapacity=True
                 )
             except Exception as e:
@@ -203,10 +206,10 @@ def process_cluster(c):
 def do_work():
     if lambda_run or not args.clusters:
         # warning max 100 clusters are returned
-        clusters = client.list_clusters()["clusterArns"]
+        clusters = CLIENT_ECS.list_clusters()["clusterArns"]
     else:
         clusters = args.clusters
-    clusters = client.describe_clusters(
+    clusters = CLIENT_ECS.describe_clusters(
         clusters=clusters, include=["TAGS", "STATISTICS"]
     )["clusters"]
     for c in clusters:
@@ -214,17 +217,11 @@ def do_work():
 
 
 def lambda_handler(event=None, context=None):
-    global client
-    global autoscaling
     global lambda_run
     global args
+
     lambda_run = True if event else False
-
     args = get_args()
-
-    client = boto3.client("ecs")
-    autoscaling = boto3.client("autoscaling")
-
     do_work()
 
 
