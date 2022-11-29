@@ -6,33 +6,34 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-rcode = os.environ['RCode']
-bucket = os.environ['Bucket']
-prefix = 'service-unavailable'
+RCODE = os.environ["RCode"]
+BUCKET = os.environ["Bucket"]
+PREFIX = "service-unavailable"
+
+CLIENT_S3 = boto3.client("s3")
 
 
 def lambda_handler(event, context):
-    client = boto3.client('s3')
-    host = event['headers']['host']
-    domain = host[0:host.find('.')]
+    host = event["headers"]["host"]
+    domain = host[0:host.find(".")]
 
-    key = f'{prefix}/{domain}/{rcode}.html'
+    key = f"{PREFIX}/{domain}/{RCODE}.html"
     keyFile = os.path.basename(key)
 
     logger.info(key)
 
-    download_path = f'/tmp/{keyFile}'
+    download_path = f"/tmp/{keyFile}"
 
-    client.download_file(bucket, key, download_path)
+    CLIENT_S3.download_file(BUCKET, key, download_path)
 
-    with open(download_path, 'r') as f:
+    with open(download_path, "r") as f:
         response = {
-            'statusCode': int(rcode),
-            'statusDescription': f'{rcode} Service Unavailable',
-            'isBase64Encoded': False,
-            'headers': {
-                'Content-Type': 'text/html; charset=utf-8'}}
+            "statusCode": int(RCODE),
+            "statusDescription": f"{RCODE} Service Unavailable",
+            "isBase64Encoded": False,
+            "headers": {"Content-Type": "text/html; charset=utf-8"},
+        }
 
-        response['body'] = f.read()
+        response["body"] = f.read()
 
         return response
