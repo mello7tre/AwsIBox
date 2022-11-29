@@ -13,33 +13,13 @@ logger.setLevel(logging.INFO)
 logger.propagate = False
 
 
-AWS_MAP = {
-    "ecs": "ecs",
-    "ec2": "ec2",
-    "elbv2": "elbv2",
-}
-
-
-class aws_client(object):
-    def __init__(self):
-        pass
-
-    # Remember that __getattr__ is only used for missing attribute lookup
-    def __getattr__(self, name):
-        try:
-            client = boto3.client(AWS_MAP[name])
-            setattr(self, name, client)
-        except Exception:
-            raise AttributeError
-        else:
-            return getattr(self, name)
-
-
-aws = aws_client()
+CLIENT_ECS = boto3.client("ecs")
+CLIENT_EC2 = boto3.client("ec2")
+CLIENT_ELBV2 = boto3.client("elbv2")
 
 
 def find_cluster(instance_id):
-    instance_tags = aws.ec2.describe_tags(
+    instance_tags = CLIENT_EC2.describe_tags(
         Filters=[{"Name": "resource-id", "Values": [instance_id]}]
     )
     for n in instance_tags["Tags"]:
@@ -55,7 +35,7 @@ def find_container_instance(cluster, instance_id, status=None):
         kwargs["status"] = status
         status_desc = f" in status {status}"
 
-    list_resp = aws.ecs.list_container_instances(**kwargs)
+    list_resp = CLIENT_ECS.list_container_instances(**kwargs)
 
     try:
         instance_arn = list_resp["containerInstanceArns"][0]
@@ -68,7 +48,7 @@ def find_container_instance(cluster, instance_id, status=None):
 
 def get_tasks(cluster, instance_arn, status):
     tasks = []
-    paginator = aws.ecs.get_paginator("list_tasks")
+    paginator = CLIENT_ECS.get_paginator("list_tasks")
     response_iter = paginator.paginate(
         cluster=cluster, containerInstance=instance_arn, desiredStatus=status
     )
@@ -86,7 +66,7 @@ def get_tg(cluster, services):
     service_list = list(services.keys())
     while service_list:
         services_sub = service_list[0:100]
-        resp = aws.ecs.describe_services(cluster=cluster, services=services_sub)
+        resp = CLIENT_ECS.describe_services(cluster=cluster, services=services_sub)
         for s in resp.get("services", []):
             s_name = s["serviceName"]
             for tgs in s.get("loadBalancers", []):
@@ -102,7 +82,7 @@ def get_tg(cluster, services):
 
 
 def get_tg_delay(tg):
-    resp = aws.elbv2.describe_target_group_attributes(TargetGroupArn=tg)
+    resp = CLIENT_ELBV2.describe_target_group_attributes(TargetGroupArn=tg)
 
     for n in resp.get("Attributes", []):
         if n["Key"] == "deregistration_delay.timeout_seconds":
@@ -111,7 +91,7 @@ def get_tg_delay(tg):
 
 def deregister_targets(tg, tg_tasks, tg_targets, tasks_to_stop):
     targets_detail = {}
-    resp = aws.elbv2.describe_target_health(
+    resp = CLIENT_ELBV2.describe_target_health(
         TargetGroupArn=tg,
     )
     for t in resp.get("TargetHealthDescriptions", []):
@@ -130,7 +110,7 @@ def deregister_targets(tg, tg_tasks, tg_targets, tasks_to_stop):
         # t_port = 666
         logger.info(f"Deregistering {target}:{t_port} on {tg}")
         try:
-            aws.elbv2.deregister_targets(
+            CLIENT_ELBV2.deregister_targets(
                 TargetGroupArn=tg, Targets=[{"Id": target, "Port": t_port}]
             )
         except Exception as e:
@@ -146,7 +126,7 @@ def process_tasks(cluster, tasks_id, instance_id):
     tg_targets = []
     while tasks_id:
         tasks_id_sub = tasks_id[0:100]
-        resp = aws.ecs.describe_tasks(cluster=cluster, tasks=tasks_id_sub)
+        resp = CLIENT_ECS.describe_tasks(cluster=cluster, tasks=tasks_id_sub)
         tasks = resp.get("tasks", [])
 
         for t in tasks:
@@ -180,7 +160,7 @@ def do_stop_tasks(cluster, delay, tasks):
         try:
             # skip stop - to test
             # pass
-            aws.ecs.stop_task(
+            CLIENT_ECS.stop_task(
                 cluster=cluster, task=t, reason="Spot cluster instance termination"
             )
         except Exception:
