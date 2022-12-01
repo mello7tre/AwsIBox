@@ -13,6 +13,8 @@ global:
   Output:
     - StackType:
         Value: ec2 ecs
+    - ClusterStack:
+        Value: Ref("AWS::StackName")
   ApplicationAutoScalingScalingPolicy:
     - Cpu:
         IBOX_ENABLED: False
