@@ -28,6 +28,8 @@ global:
         Value: get_endvalue('LaunchType')
     - LogDriver:
         Value: get_endvalue('LogDriver')
+    - ClusterStack:
+        Value: get_endvalue('ClusterStack')
   ClusterStack: ecs-a
   LogDriver: awslogs
   LogsLogGroup:
