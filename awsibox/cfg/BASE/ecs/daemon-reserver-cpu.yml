@@ -14,6 +14,8 @@ global:
     - DaemonReserveCpu:
         get_condition('', 'equals', 'yes', 'DaemonReserveCpu')
   Output:
+    - ClusterStack:
+        Value: Ref("Cluster")
     - DaemonReserveCpu:
         Value: get_endvalue('DaemonReserveCpu')
   DaemonReserveCpu: 'no'
