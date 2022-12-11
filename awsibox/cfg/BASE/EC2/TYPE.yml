@@ -15,7 +15,7 @@ global:
   Parameter:
     - UpdateMode:
         Description: 'How to update Instances'
-        AllowedValues: ['none', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
+        AllowedValues: ['none', 'Replace', 'Rolling', 'Cfn']
         Default: 'none'
     - AutoScalingGroupBaseHealthCheckGracePeriod:
         Description: 'How long to wait before ASG check instance health - empty for default based on env/role'

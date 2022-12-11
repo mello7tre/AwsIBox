@@ -33,6 +33,9 @@ Base: &base
   ServiceRoleArn: get_expvalue("RoleCodeDeploy", "")
 
 global:
+  Parameter:
+    - UpdateMode:
+        AllowedValues: ['none', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
   Apps:
     - IBOX_BASE: *base
   CodeDeploy: True
