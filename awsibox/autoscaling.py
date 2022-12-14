@@ -744,6 +744,9 @@ def AS_LaunchTemplate():
     if cfn_envrole in globals():  # Ex cfn_client_portal
         CfnRole = globals()[cfn_envrole]()
         CfmInitArgs.update(CfnRole)
+        # add POSTRUN section if present in envrole custom cfn
+        if "POSTRUN" in CfmInitArgs:
+            InitConfigSets.data["default"].append("POSTRUN")
 
     if cfg.use_cfn_init:
         R_LaunchTemplate.Metadata = cfm.Metadata(
