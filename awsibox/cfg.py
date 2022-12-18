@@ -193,6 +193,11 @@ INSTANCE_FAMILY = [
         "Max": "2xlarge",
     },
     {
+        "Name": "t4g",
+        "Min": "nano",
+        "Max": "2xlarge",
+    },
+    {
         "Name": "m5a",
         "Min": "large",
         "Max": "4xlarge",
@@ -229,6 +234,11 @@ INSTANCE_FAMILY = [
     },
     {
         "Name": "c6a",
+        "Min": "large",
+        "Max": "4xlarge",
+    },
+    {
+        "Name": "c7g",
         "Min": "large",
         "Max": "4xlarge",
     },
