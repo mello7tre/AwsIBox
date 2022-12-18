@@ -355,12 +355,8 @@ class ASInitConfigCloudWatchAgent(cfm.InitConfig):
         super().__init__(title, **kwargs)
 
         self.packages = {
-            "rpm": {
-                "amazon-cloudwatch-agent": (
-                    "https://s3.amazonaws.com"
-                    "/amazoncloudwatch-agent/amazon_linux/amd64/latest/"
-                    "amazon-cloudwatch-agent.rpm"
-                )
+            "yum": {
+                "amazon-cloudwatch-agent": []
             }
         }
         self.files = {
