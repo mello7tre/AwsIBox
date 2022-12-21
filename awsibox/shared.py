@@ -620,9 +620,11 @@ def auto_get_props(
             prop_class = props[obj_propname][0]
 
         # troposphere 4 validators of AWSProperty
-        if (callable(prop_class)
-                and prop_class.__name__ not in ["validate_variables_name"]
-                and prop_class.__name__.startswith("validate")):
+        if (
+            callable(prop_class)
+            and prop_class.__name__ not in ["validate_variables_name"]
+            and prop_class.__name__.startswith("validate")
+        ):
             prop_mod_name = obj.__module__.split(".")[1]
             prop_class = getattr(getattr(troposphere, prop_mod_name), obj_propname)
 
