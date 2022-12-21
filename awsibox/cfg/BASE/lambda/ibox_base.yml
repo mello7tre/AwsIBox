@@ -40,12 +40,12 @@ Function: &function
   Environment:
     Variables.IBOX_PCO:
       IBOX_PARAMETER:
-        - ServiceRestartTime:
+        - EnvServiceRestartTime:
             Description: 'Use to force service restart - can use: $(date +%F_%T)'
     Variables:
       - Env: Ref('EnvShort')
       - EnvRole: Ref('EnvRole')
-      - IBox_ServiceRestartTime: Ref("ServiceRestartTime")
+      - IBox_EnvServiceRestartTime: Ref("EnvServiceRestartTime")
 
 LayerVersion: &layer_version
   IBOX_ENABLED: True
