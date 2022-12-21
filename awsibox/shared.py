@@ -628,7 +628,8 @@ def auto_get_props(
             else:
                 prop_obj = prop_class()
 
-            if prop_class.__bases__[0].__name__ in ["AWSProperty", "AWSAttribute"]:
+            obj_class = prop_obj.__class__
+            if obj_class.__bases__[0].__name__ in ["AWSProperty", "AWSAttribute"]:
                 _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
                 # Check for incomplete AWSProperty object and set obj to None to skip it
                 try:
@@ -636,11 +637,11 @@ def auto_get_props(
                 except Exception as e:
                     # logging.warning(f"Resource with missing properties: {obj_propname}\n\t\t{e}")
                     prop_obj = None
-            elif prop_class.__name__ == "dict":
+            elif obj_class.__name__ == "dict":
                 prop_obj = get_dictvalue(key[obj_propname])
-            elif prop_class.__name__ == "Tags":
+            elif obj_class.__name__ == "Tags":
                 prop_obj = _get_obj_tags()
-            elif prop_class.__name__ == "str" and obj_propname == "LifecyclePolicyText":
+            elif obj_class.__name__ == "str" and obj_propname == "LifecyclePolicyText":
                 # str but can be represented as dict Ex. ECR LifecyclePolicyText
                 prop_obj = json.dumps(get_dictvalue(key[obj_propname]))
 
