@@ -38,9 +38,14 @@ Function: &function
   Role: GetAtt(f"RoleLambda{IBOX_INDEXNAME}", "Arn")
   FunctionName: Sub("${AWS::StackName}-${EnvRole}-%s" % IBOX_INDEXNAME)
   Environment:
+    Variables.IBOX_PCO:
+      IBOX_PARAMETER:
+        - ServiceRestartTime:
+            Description: 'Use to force service restart - can use: $(date +%F_%T)'
     Variables:
       - Env: Ref('EnvShort')
       - EnvRole: Ref('EnvRole')
+      - IBox_ServiceRestartTime: Ref("ServiceRestartTime")
 
 LayerVersion: &layer_version
   IBOX_ENABLED: True
