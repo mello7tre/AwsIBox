@@ -28,11 +28,12 @@ global:
   Lambda:
     - StacksOps:
         Code:
-          S3Bucket: Sub(cfg.BucketNameAppRepository)
-          S3Key: 'ibox-tools/stacks-ops/stacks-ops-01.zip'
+          ZipFile: str(IBOX_INDEXNAME)
         Description: 'Stacks Operations'
         Layers:
           - LambdaLayerVersionPython37SSM
+          - LambdaLayerVersionPythonIboxStacksOps
+          - LambdaLayerVersionPython39SlackClient
         MemorySize: 128
         Runtime: python3.9
         Environment:

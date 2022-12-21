@@ -1,0 +1,67 @@
+# vim: ft=python
+import cfg as app_cfg
+import os
+from datetime import datetime
+from iboxstacksops import cfg as i_cfg, commands as i_commands, msg as i_msg
+from iboxstacksops.aws import myboto3 as i_myboto3
+
+# Get Secrets from ParameterStore
+app_cfg.envRole = "buildkite"
+app_cfg.set({})
+
+os.environ["IBOX_SLACK_USER"] = app_cfg.SLACK_USER
+os.environ["IBOX_SLACK_TOKEN"] = app_cfg.SLACK_TOKEN
+notificationarn = os.environ["CloudFormationNotificationArn"]
+
+i_cfg.nochangeset = True
+i_cfg.nowait = True
+i_cfg.topics = [notificationarn]
+i_cfg.slack_channel = i_cfg.SLACK_CHANNEL
+
+# Init Clients out of lambda_handler to speed it up
+i_msg.init()
+myboto3 = i_myboto3()
+myboto3.init_resources(["cloudformation"])
+myboto3.init_clients(["cloudformation", "s3", "sts", "ecr"])
+
+
+def update(event):
+    # required because lambda do not clear module in successive (2,3min) runs.
+    i_cfg.EnvApp1Version = i_cfg.DockerLabelLastUpdate = None
+
+    result = {}
+    for stack, appversion in event.items():
+        i_cfg.stack = [stack]
+        if appversion == "log":
+            # just show stack log
+            i_commands.log()
+        else:
+            if isinstance(appversion, dict):
+                # appversion is a dict, used for stack with multiple appversions
+                for appn, appn_version in appversion.items():
+                    setattr(i_cfg, f"EnvApp{appn}Version", appn_version)
+            elif appversion == "restart":
+                # set vars to re-init/start services
+                i_cfg.EnvServiceRestartTime = str(datetime.now())
+                i_cfg.DockerLabelLastUpdate = str(datetime.now())
+            else:
+                i_cfg.EnvApp1Version = appversion
+
+            try:
+                cmd_result = i_commands.update()
+            except Exception as e:
+                result[stack] = e.args[0]
+            else:
+                result[stack] = cmd_result[stack]
+
+    return result
+
+
+def lambda_handler(event, context):
+    return update(event)
+
+
+# TO TEST
+# result = lambda_handler({'vrc-a-d': 'log'}, '')
+# result = lambda_handler({"img-a-d": {"2": "master-2a6e992"}}, "")
+# print(result)
