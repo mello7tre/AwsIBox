@@ -1,6 +1,5 @@
 import python_minifier
-import troposphere.ssm as ssm
-import troposphere.policies as pol
+import troposphere
 
 from .common import *
 from .RP import RP_to_cfg
@@ -37,7 +36,7 @@ class Parameter(Parameter):
             add_obj(
                 [
                     get_condition(title, "not_equals", "", nomap=True),
-                    ssm.Parameter(
+                    troposphere.ssm.Parameter(
                         f"SSMParameter{title}",
                         Type="String",
                         Condition=title,
@@ -615,7 +614,7 @@ def auto_get_props(
 
         # trick (bad) to detect attributes as CreationPolicy and UpdatePolicy
         if obj_propname in ["CreationPolicy", "UpdatePolicy"]:
-            prop_class = getattr(pol, obj_propname)
+            prop_class = getattr(troposphere.policies, obj_propname)
         else:
             prop_class = props[obj_propname][0]
 
