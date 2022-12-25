@@ -26,7 +26,7 @@ except ModuleNotFoundError:
 class ASLaunchTemplateData(ec2.LaunchTemplateData):
     def __init__(self, title, UserDataApp, **kwargs):
         super().__init__(title, **kwargs)
-        auto_get_props(self, "LaunchTemplateData")
+        auto_get_props(self, "LaunchTemplateData", res_obj_type="AWS::EC2::LaunchTemplate", prop_obj_cfm_name="LaunchTemplateData")
         user_data = [
             "#!/bin/bash",
             "PATH=/opt/aws/bin:/usr/local/bin:$PATH",

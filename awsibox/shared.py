@@ -559,6 +559,8 @@ def auto_get_props(
     remapname="",
     linked_obj_name="",
     linked_obj_index="",
+    res_obj_type=None,
+    prop_obj_cfm_name=None,
 ):
     # IBOX_RESNAME can be used in yaml and resolved inside get_endvalue
     global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME, IBOX_REMAPNAME, IBOX_PROPNAME
@@ -582,7 +584,10 @@ def auto_get_props(
     # IBOX_OUTPUT
     IBOX_PROPS = {"MAP": {}}
 
-    def _get_obj(obj, key, obj_propname, mapname):
+
+    res_obj_type = getattr(obj, "resource_type", res_obj_type)
+
+    def _get_obj(obj, key, obj_propname, mapname, res_obj_type, prop_obj_cfm_name):
         props = obj.props
         mapname_obj = f"{mapname}{obj_propname}"
         global IBOX_PROPNAME
@@ -618,12 +623,38 @@ def auto_get_props(
         else:
             prop_class = props[obj_propname][0]
 
+        # begin tropo4
+        obj_prop_itemtype = None
+        # if prop_obj_cfm_name is None means that i need to check in ResourceTypes 
+        #print(f"{res_obj_type}.{prop_obj_cfm_name}.{obj_propname}")
+        #try:
+        #    res_obj_propname = cfg.cfm_res_spec["PropertyTypes"][f"{res_obj_type}.{prop_obj_cfm_name}"]["Properties"][obj_propname]
+        #except Exception:
+        #    if res_obj_type:
+        #        res_obj_propname = {}
+        #        #res_obj_propname = cfg.cfm_res_spec["ResourceTypes"][res_obj_type]["Properties"][obj_propname]
+        #    else:
+        #        res_obj_propname = {}
+
+        #if "Type" in res_obj_propname:
+        #    obj_prop_type = res_obj_propname.get("Type")
+        #    obj_prop_itemtype = res_obj_propname.get("ItemType")
+        #    if not obj_prop_itemtype:
+        #        obj_prop_itemtype = obj_prop_type
+        #else:
+        #    obj_prop_type = res_obj_propname.get("PrimitiveType")
+        #    obj_prop_itemtype = None
+
+        #print(obj_prop_type)
         # troposphere 4 validators of AWSProperty
         if (
             callable(prop_class)
             and prop_class.__name__ not in ["validate_variables_name"]
             and prop_class.__name__.startswith("validate")
+            and 1 != 1
         ):
+            #obj_res_type = obj.resource_type
+            #prop_type = cfg.cfm_res_spec[obj_res_type][obj_propname]["Properties"][""]
             prop_mod_name = obj.__module__.split(".")[1]
             prop_class = getattr(getattr(troposphere, prop_mod_name), obj_propname)
 
@@ -637,7 +668,7 @@ def auto_get_props(
                 prop_obj = prop_class()
 
             if prop_class.__bases__[0].__name__ in ["AWSProperty", "AWSAttribute"]:
-                _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
+                _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj, res_obj_type=res_obj_type, prop_obj_cfm_name=obj_prop_itemtype)
                 # Check for incomplete AWSProperty object and set obj to None to skip it
                 try:
                     prop_obj.to_dict()
@@ -693,7 +724,7 @@ def auto_get_props(
                     mapname_o = f"{mapname_obj}{name_o}"
                     prop_obj = prop_class()
 
-                    _populate(prop_obj, key=v, mapname=mapname_o)
+                    _populate(prop_obj, key=v, mapname=mapname_o, res_obj_type=res_obj_type, prop_obj_cfm_name=obj_prop_itemtype)
 
                     # trick to wrapper single obj in If Condition
                     try:
@@ -717,7 +748,7 @@ def auto_get_props(
         ):
             return get_dictvalue(key[obj_propname])
 
-    def _populate(obj, key=None, mapname=None, rootdict=None):
+    def _populate(obj, key=None, mapname=None, rootdict=None, res_obj_type=None, prop_obj_cfm_name=None):
         global IBOX_RESNAME, IBOX_CURNAME
 
         if not mapname:
@@ -972,7 +1003,7 @@ def auto_get_props(
                     IBOX_RESNAME = save_ibox_resname
                 elif isinstance(key_value, dict):
                     # key value is a dict, get populated object
-                    value = _get_obj(obj, key, propname, mapname)
+                    value = _get_obj(obj, key, propname, mapname, res_obj_type, prop_obj_cfm_name)
                     if value is None:
                         continue
                 elif isinstance(key_value, str) and key_value.startswith(
@@ -1048,7 +1079,7 @@ def auto_get_props(
         except Exception:
             pass
 
-    _populate(obj, key, mapname, rootdict)
+    _populate(obj, key, mapname, rootdict, res_obj_type, prop_obj_cfm_name)
     return obj
 
 
