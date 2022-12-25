@@ -624,26 +624,26 @@ def auto_get_props(
             prop_class = props[obj_propname][0]
 
         # begin tropo4
-        obj_prop_itemtype = None
+        #obj_prop_itemtype = None
         # if prop_obj_cfm_name is None means that i need to check in ResourceTypes 
-        #print(f"{res_obj_type}.{prop_obj_cfm_name}.{obj_propname}")
-        #try:
-        #    res_obj_propname = cfg.cfm_res_spec["PropertyTypes"][f"{res_obj_type}.{prop_obj_cfm_name}"]["Properties"][obj_propname]
-        #except Exception:
-        #    if res_obj_type:
-        #        res_obj_propname = {}
-        #        #res_obj_propname = cfg.cfm_res_spec["ResourceTypes"][res_obj_type]["Properties"][obj_propname]
-        #    else:
-        #        res_obj_propname = {}
+        print(f"{res_obj_type}.{prop_obj_cfm_name}.{obj_propname}")
+        try:
+            res_obj_propname = cfg.cfm_res_spec["PropertyTypes"][f"{res_obj_type}.{prop_obj_cfm_name}"]["Properties"][obj_propname]
+        except Exception:
+            if res_obj_type:
+                res_obj_propname = {}
+                #res_obj_propname = cfg.cfm_res_spec["ResourceTypes"][res_obj_type]["Properties"][obj_propname]
+            else:
+                res_obj_propname = {}
 
-        #if "Type" in res_obj_propname:
-        #    obj_prop_type = res_obj_propname.get("Type")
-        #    obj_prop_itemtype = res_obj_propname.get("ItemType")
-        #    if not obj_prop_itemtype:
-        #        obj_prop_itemtype = obj_prop_type
-        #else:
-        #    obj_prop_type = res_obj_propname.get("PrimitiveType")
-        #    obj_prop_itemtype = None
+        if "Type" in res_obj_propname:
+            obj_prop_type = res_obj_propname.get("Type")
+            obj_prop_itemtype = res_obj_propname.get("ItemType")
+            if not obj_prop_itemtype:
+                obj_prop_itemtype = obj_prop_type
+        else:
+            obj_prop_type = res_obj_propname.get("PrimitiveType")
+            obj_prop_itemtype = None
 
         #print(obj_prop_type)
         # troposphere 4 validators of AWSProperty
