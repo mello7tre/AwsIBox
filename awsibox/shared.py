@@ -631,8 +631,8 @@ def auto_get_props(
             res_obj_propname = cfg.cfm_res_spec["PropertyTypes"][f"{res_obj_type}.{prop_obj_cfm_name}"]["Properties"][obj_propname]
         except Exception:
             if res_obj_type:
-                res_obj_propname = {}
-                #res_obj_propname = cfg.cfm_res_spec["ResourceTypes"][res_obj_type]["Properties"][obj_propname]
+                #res_obj_propname = {}
+                res_obj_propname = cfg.cfm_res_spec["ResourceTypes"][res_obj_type]["Properties"][obj_propname]
             else:
                 res_obj_propname = {}
 
