@@ -83,6 +83,12 @@ PARAMETERS_SKIP_OVERRIDE_CONDITION = (
     "VPCName",
 )
 
+TROPO_CLASS_TO_CFM = {
+    "AWS::WAFv2::WebACL": {
+        "WebACLRule": "Rule",
+    }
+}
+
 EVAL_TROPO_FUNCTIONS_IN_CFG = (
     "Sub(",
     "Ref(",
@@ -447,15 +453,15 @@ CFG_TO_FUNC = {
     },
     "Route53ResolverEndpoint": {
         "module": "joker",
-        "func": ("route53", "ResolverEndpoint"),
+        "func": ("route53resolver", "ResolverEndpoint"),
     },
     "Route53ResolverRule": {
         "module": "joker",
-        "func": ("route53", "ResolverRule"),
+        "func": ("route53resolver", "ResolverRule"),
     },
     "Route53ResolverRuleAssociation": {
         "module": "joker",
-        "func": ("route53", "ResolverRuleAssociation"),
+        "func": ("route53resolver", "ResolverRuleAssociation"),
     },
     "SecurityGroup": {"module": "ec2", "func": "SG_SecurityGroup"},
     "SecurityGroupIngress": {

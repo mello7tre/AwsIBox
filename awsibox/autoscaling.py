@@ -23,73 +23,75 @@ except ModuleNotFoundError:
     pass
 
 
-class ASLaunchTemplateData(ec2.LaunchTemplateData):
-    def __init__(self, title, UserDataApp, **kwargs):
-        super().__init__(title, **kwargs)
-        auto_get_props(self, "LaunchTemplateData")
-        user_data = [
-            "#!/bin/bash",
-            "PATH=/opt/aws/bin:/usr/local/bin:$PATH",
-            "export BASH_ENV=/etc/profile.d/ibox_env.sh",
-            "export ENV=$BASH_ENV",
-            "yum -C list installed aws-cfn-bootstrap || yum install -y aws-cfn-bootstrap",
-            "if ( ! which cfn-init );then",
-            "  yum install -y python3-pip chkconfig",
-            "  pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz",
-            "  cp /usr/local/init/systemd/cfn-hup.service /etc/systemd/system/ && systemctl daemon-reload",
-            "fi",
-            Sub("".join(UserDataApp)),
+def ASLaunchTemplateData(UserDataApp):
+    LaunchTemplateData = ec2.LaunchTemplateData("LaunchTemplateData")
+    auto_get_props(LaunchTemplateData, "LaunchTemplateData", res_obj_type="AWS::EC2::LaunchTemplate")
+
+    user_data = [
+        "#!/bin/bash",
+        "PATH=/opt/aws/bin:/usr/local/bin:$PATH",
+        "export BASH_ENV=/etc/profile.d/ibox_env.sh",
+        "export ENV=$BASH_ENV",
+        "yum -C list installed aws-cfn-bootstrap || yum install -y aws-cfn-bootstrap",
+        "if ( ! which cfn-init );then",
+        "  yum install -y python3-pip chkconfig",
+        "  pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz",
+        "  cp /usr/local/init/systemd/cfn-hup.service /etc/systemd/system/ && systemctl daemon-reload",
+        "fi",
+        Sub("".join(UserDataApp)),
+        Sub(
+            "cfn-init -v --stack ${AWS::StackName} --role ${RoleInstance}"
+            " --resource LaunchTemplate --region ${AWS::Region}"
+        ),
+        If(
+            "DoNotSignal",
+            Ref("AWS::NoValue"),
             Sub(
-                "cfn-init -v --stack ${AWS::StackName} --role ${RoleInstance}"
-                " --resource LaunchTemplate --region ${AWS::Region}"
+                "cfn-signal -e $? --stack ${AWS::StackName}"
+                " --role ${RoleInstance} --resource AutoScalingGroup"
+                " --region ${AWS::Region}"
             ),
+        ),
+        "rm /var/lib/cloud/instance/sem/config_scripts_user\n",
+    ]
+
+    user_data = Join("\n", user_data)
+
+    try:
+        # look for external file
+        user_data = import_user_data(
+            getattr(cfg, "IBOX_ROLE_EX", getattr(cfg, "envrole"))
+        )
+    except Exception:
+        pass
+    else:
+        if "cfn-init" not in user_data:
+            cfg.use_cfn_init = False
+        user_data = Join("", user_data)
+
+    try:
+        # look for bottlerocket key
+        cfg.BottleRocket
+    except Exception:
+        # use standard cfg
+        LaunchTemplateData.UserData = Base64(user_data)
+    else:
+        # use if condition with both bottlerocket custom and standard cfg
+        LaunchTemplateData.UserData = Base64(
             If(
-                "DoNotSignal",
-                Ref("AWS::NoValue"),
-                Sub(
-                    "cfn-signal -e $? --stack ${AWS::StackName}"
-                    " --role ${RoleInstance} --resource AutoScalingGroup"
-                    " --region ${AWS::Region}"
+                "BottleRocket",
+                Join(
+                    "\n",
+                    [
+                        get_endvalue(f"BottleRocketUserData{n}Line")
+                        for n in cfg.BottleRocketUserData
+                    ],
                 ),
+                user_data,
             ),
-            "rm /var/lib/cloud/instance/sem/config_scripts_user\n",
-        ]
+        )
 
-        user_data = Join("\n", user_data)
-
-        try:
-            # look for external file
-            user_data = import_user_data(
-                getattr(cfg, "IBOX_ROLE_EX", getattr(cfg, "envrole"))
-            )
-        except Exception:
-            pass
-        else:
-            if "cfn-init" not in user_data:
-                cfg.use_cfn_init = False
-            user_data = Join("", user_data)
-
-        try:
-            # look for bottlerocket key
-            cfg.BottleRocket
-        except Exception:
-            # use standard cfg
-            self.UserData = Base64(user_data)
-        else:
-            # use if condition with both bottlerocket custom and standard cfg
-            self.UserData = Base64(
-                If(
-                    "BottleRocket",
-                    Join(
-                        "\n",
-                        [
-                            get_endvalue(f"BottleRocketUserData{n}Line")
-                            for n in cfg.BottleRocketUserData
-                        ],
-                    ),
-                    user_data,
-                ),
-            )
+    return LaunchTemplateData
 
 
 # ############################################
@@ -722,9 +724,7 @@ def AS_LaunchTemplate():
     R_LaunchTemplate = ec2.LaunchTemplate(
         "LaunchTemplate",
         LaunchTemplateName=Sub("${AWS::StackName}-${EnvRole}"),
-        LaunchTemplateData=ASLaunchTemplateData(
-            "LaunchTemplateData", UserDataApp=UserDataApp
-        ),
+        LaunchTemplateData=ASLaunchTemplateData(UserDataApp),
     )
     R_LaunchTemplate.LaunchTemplateData.NetworkInterfaces[0].Groups.extend(
         SecurityGroups

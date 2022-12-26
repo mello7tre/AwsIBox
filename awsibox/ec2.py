@@ -222,15 +222,15 @@ def SG_SecurityGroupRules(groupname, ingresses):
         if allowed_ip:
             for m, w in cfg.AllowedIp.items():
                 r_SGRule = SecurityGroupRule(resname)
-                auto_get_props(r_SGRule, **kwargs)
-                auto_get_props(r_SGRule, f"AllowedIp{m}")
+                auto_get_props(r_SGRule, **kwargs, res_obj_type="AWS::EC2::SecurityGroup")
+                auto_get_props(r_SGRule, f"AllowedIp{m}", res_obj_type="AWS::EC2::SecurityGroup")
                 SecurityGroup_Rules.append(
                     If(f"AllowedIp{m}", r_SGRule, Ref("AWS::NoValue"))
                 )
 
         if not allowed_ip or allowed_ip_or_public:
             r_SGRule = SecurityGroupRule(resname)
-            auto_get_props(r_SGRule, **kwargs)
+            auto_get_props(r_SGRule, **kwargs, res_obj_type="AWS::EC2::SecurityGroup")
 
             if allowed_ip and allowed_ip_or_public:
                 r_SGRule.CidrIp = "0.0.0.0/0"

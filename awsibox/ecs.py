@@ -41,7 +41,7 @@ def ECS_ContainerDefinition():
 
         # resources
         Container = ecs.ContainerDefinition(name)
-        auto_get_props(Container, indexname=n)
+        auto_get_props(Container, indexname=n, res_obj_type="AWS::ECS::TaskDefinition")
 
         if len(cfg.ContainerDefinitions) == 1:
             # parameters

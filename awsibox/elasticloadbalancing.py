@@ -58,7 +58,7 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
         if "Actions" not in key:
             tg_prefix = key.get("TargetGroupPrefix", "")
             self.Actions = [
-                elbv2.Action(
+                elbv2.ListenerRuleAction(
                     Type="forward",
                     TargetGroupArn=Ref(f"TargetGroup{tg_prefix}{scheme}"),
                 )

@@ -1,6 +1,5 @@
 import python_minifier
-import troposphere.ssm as ssm
-import troposphere.policies as pol
+from troposphere import policies, ssm
 
 from .common import *
 from .RP import RP_to_cfg
@@ -560,6 +559,7 @@ def auto_get_props(
     remapname="",
     linked_obj_name="",
     linked_obj_index="",
+    res_obj_type=None,
 ):
     # IBOX_RESNAME can be used in yaml and resolved inside get_endvalue
     global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME, IBOX_REMAPNAME, IBOX_PROPNAME
@@ -582,6 +582,8 @@ def auto_get_props(
     # Later i will assign this dict to the relative output object using
     # IBOX_OUTPUT
     IBOX_PROPS = {"MAP": {}}
+
+    res_obj_type = getattr(obj, "resource_type", res_obj_type)
 
     def _get_obj(obj, key, obj_propname, mapname):
         props = obj.props
@@ -613,21 +615,55 @@ def auto_get_props(
 
             return obj_tags
 
-        # trick (bad) to detect attributes as CreationPolicy and UpdatePolicy
+        obj_class = obj.__class__.__name__
+        obj_mod_name = obj.__module__
+        prop_class = props.get(obj_propname, [None])[0]
+        # print(f"TYPE: {res_obj_type}, CLASS: {obj_class}, PROP: {obj_propname}")
+
+        # detect attributes as CreationPolicy not included in obj properties
         if obj_propname in ["CreationPolicy", "UpdatePolicy"]:
-            prop_class = getattr(pol, obj_propname)
-        else:
-            prop_class = props[obj_propname][0]
+            prop_class = getattr(policies, obj_propname)
+        elif callable(prop_class) and prop_class.__name__ not in [
+            "validate_variables_name",
+            "policytypes",
+        ]:
+            # prop_class is a method fallback and try to use CloudFormationResourceSpecification
+            if res_obj_type in cfg.TROPO_CLASS_TO_CFM:
+                obj_class = cfg.TROPO_CLASS_TO_CFM[res_obj_type].get(
+                    obj_class, obj_class
+                )
+            try:
+                res_obj_propname = cfg.cfm_res_spec["PropertyTypes"][
+                    f"{res_obj_type}.{obj_class}"
+                ]["Properties"][obj_propname]
+            except Exception:
+                try:
+                    res_obj_propname = cfg.cfm_res_spec["ResourceTypes"][res_obj_type][
+                        "Properties"
+                    ][obj_propname]
+                except Exception:
+                    res_obj_propname = None
 
-        # troposphere 4 validators of AWSProperty
-        if (
-            callable(prop_class)
-            and prop_class.__name__ not in ["validate_variables_name"]
-            and prop_class.__name__.startswith("validate")
-        ):
-            prop_mod_name = obj.__module__.split(".")[1]
-            prop_class = getattr(getattr(troposphere, prop_mod_name), obj_propname)
+            if res_obj_propname:
+                obj_prop_type = res_obj_propname.get("Type")
+                prop_class_type = res_obj_propname.get("ItemType")
+                if not prop_class_type:
+                    prop_class_type = obj_prop_type
+                if not prop_class_type:
+                    prop_class_type = res_obj_propname.get("PrimitiveType")
 
+                # print(f"PROP_CLASS_TYPE: {prop_class_type}")
+                try:
+                    prop_class = getattr(sys.modules[obj_mod_name], prop_class_type)
+                except Exception:
+                    pass
+                else:
+                    if obj_prop_type == "List":
+                        prop_class = [prop_class]
+
+        # print(f"PROP_CLASS: {prop_class}")
+
+        # obj_propname is a class, usually Tropo AWSProperty
         if isinstance(prop_class, type):
             # If object already have that props, object class is
             # the existing already defined object,
@@ -638,7 +674,11 @@ def auto_get_props(
                 prop_obj = prop_class()
 
             if prop_class.__bases__[0].__name__ in ["AWSProperty", "AWSAttribute"]:
-                _populate(prop_obj, key=key[obj_propname], mapname=mapname_obj)
+                _populate(
+                    prop_obj,
+                    key=key[obj_propname],
+                    mapname=mapname_obj,
+                )
                 # Check for incomplete AWSProperty object and set obj to None to skip it
                 try:
                     prop_obj.to_dict()
@@ -655,20 +695,25 @@ def auto_get_props(
 
             return prop_obj
 
-        elif isinstance(prop_class, tuple) and any(
-            n in prop_class for n in [Tags, asgTags]
+        # obj_propname is are Tropo Tags
+        elif (
+            isinstance(prop_class, tuple)
+            and any(n in prop_class for n in [Tags, asgTags])
+        ) or (
+            callable(prop_class) and prop_class.__name__ in ["validate_tags_or_list"]
         ):
             prop_obj = _get_obj_tags()
 
             return prop_obj
 
+        # obj_propname is List of Tropo AWSProperty
         elif (
             isinstance(prop_class, list)
             and isinstance(prop_class[0], type)
             and prop_class[0].__bases__[0].__name__ == "AWSProperty"
         ):
             prop_list = []
-            prop_class = props[obj_propname][0][0]
+            prop_class = prop_class[0]
 
             # for sub obj defined elsewhere
             ibox_sub_obj = key[obj_propname].get("IBOX_SUB_OBJ")
@@ -707,7 +752,7 @@ def auto_get_props(
             if prop_list or ibox_sub_obj:
                 return prop_list
 
-        # Pure dict as KSM Key KeyPolicy
+        # obj_propname is a dict as KSM Key KeyPolicy
         elif (
             isinstance(prop_class, tuple)
             and isinstance(prop_class[0], type)
