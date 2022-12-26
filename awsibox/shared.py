@@ -585,7 +585,7 @@ def auto_get_props(
 
     res_obj_type = getattr(obj, "resource_type", res_obj_type)
 
-    def _get_obj(obj, key, obj_propname, mapname, res_obj_type):
+    def _get_obj(obj, key, obj_propname, mapname):
         props = obj.props
         mapname_obj = f"{mapname}{obj_propname}"
         global IBOX_PROPNAME
@@ -618,24 +618,20 @@ def auto_get_props(
         obj_class = obj.__class__.__name__
         obj_mod_name = obj.__module__
         prop_class = props.get(obj_propname, [None])[0]
-        print(
-            f"TYPE: {res_obj_type}, CLASS: {obj_class}, PROP: {obj_propname}, MOD: {obj_mod_name}"
-        )
+        # print(f"TYPE: {res_obj_type}, CLASS: {obj_class}, PROP: {obj_propname}")
 
+        # detect attributes as CreationPolicy not included in obj properties
         if obj_propname in ["CreationPolicy", "UpdatePolicy"]:
-            # trick (bad) to detect attributes as CreationPolicy and UpdatePolicy
             prop_class = getattr(policies, obj_propname)
         elif callable(prop_class) and prop_class.__name__ not in [
             "validate_variables_name",
             "policytypes",
         ]:
-            # prop_class is a method fallback and use CloudFormationResourceSpecification
+            # prop_class is a method fallback and try to use CloudFormationResourceSpecification
             if res_obj_type in cfg.TROPO_CLASS_TO_CFM:
                 obj_class = cfg.TROPO_CLASS_TO_CFM[res_obj_type].get(
                     obj_class, obj_class
                 )
-                if obj.__class__.__name__ != obj_class:
-                    print(f"CHANGED CLASS NAME {obj.__class__.__name__} -> {obj_class}")
             try:
                 res_obj_propname = cfg.cfm_res_spec["PropertyTypes"][
                     f"{res_obj_type}.{obj_class}"
@@ -656,7 +652,7 @@ def auto_get_props(
                 if not prop_class_type:
                     prop_class_type = res_obj_propname.get("PrimitiveType")
 
-                print(f"PROP_CLASS_TYPE: {prop_class_type}")
+                # print(f"PROP_CLASS_TYPE: {prop_class_type}")
                 try:
                     prop_class = getattr(sys.modules[obj_mod_name], prop_class_type)
                 except Exception:
@@ -665,9 +661,9 @@ def auto_get_props(
                     if obj_prop_type == "List":
                         prop_class = [prop_class]
 
-        print(f"PROP_CLASS: {prop_class}")
+        # print(f"PROP_CLASS: {prop_class}")
 
-        # obj_propname is a class, usually Tropo AWSProperty 
+        # obj_propname is a class, usually Tropo AWSProperty
         if isinstance(prop_class, type):
             # If object already have that props, object class is
             # the existing already defined object,
@@ -682,7 +678,6 @@ def auto_get_props(
                     prop_obj,
                     key=key[obj_propname],
                     mapname=mapname_obj,
-                    res_obj_type=res_obj_type,
                 )
                 # Check for incomplete AWSProperty object and set obj to None to skip it
                 try:
@@ -726,7 +721,7 @@ def auto_get_props(
                 for o, v in getattr(cfg, ibox_sub_obj).items():
                     obj_name = f"{ibox_sub_obj}{o}"
                     prop_obj = prop_class(obj_name)
-                    auto_get_props(prop_obj, res_obj_type=res_obj_type)
+                    auto_get_props(prop_obj)
                     if_wrapper = v.get("IBOX_IF")
                     if if_wrapper:
                         prop_obj = iboxif(if_wrapper, obj_propname, prop_obj)
@@ -744,9 +739,7 @@ def auto_get_props(
                     mapname_o = f"{mapname_obj}{name_o}"
                     prop_obj = prop_class()
 
-                    _populate(
-                        prop_obj, key=v, mapname=mapname_o, res_obj_type=res_obj_type
-                    )
+                    _populate(prop_obj, key=v, mapname=mapname_o)
 
                     # trick to wrapper single obj in If Condition
                     try:
@@ -770,7 +763,7 @@ def auto_get_props(
         ):
             return get_dictvalue(key[obj_propname])
 
-    def _populate(obj, key=None, mapname=None, rootdict=None, res_obj_type=None):
+    def _populate(obj, key=None, mapname=None, rootdict=None):
         global IBOX_RESNAME, IBOX_CURNAME
 
         if not mapname:
@@ -1025,7 +1018,7 @@ def auto_get_props(
                     IBOX_RESNAME = save_ibox_resname
                 elif isinstance(key_value, dict):
                     # key value is a dict, get populated object
-                    value = _get_obj(obj, key, propname, mapname, res_obj_type)
+                    value = _get_obj(obj, key, propname, mapname)
                     if value is None:
                         continue
                 elif isinstance(key_value, str) and key_value.startswith(
@@ -1101,7 +1094,7 @@ def auto_get_props(
         except Exception:
             pass
 
-    _populate(obj, key, mapname, rootdict, res_obj_type)
+    _populate(obj, key, mapname, rootdict)
     return obj
 
 
