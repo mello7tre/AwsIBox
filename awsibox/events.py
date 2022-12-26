@@ -45,11 +45,10 @@ def EVE_EventRules(key):
             if m.startswith("ECSCluster"):
                 # add common "fixed" props
                 auto_get_props(
-                    Target, mapname="EventsRuleTargetECSCluster", indexname=m, res_obj_type="AWS::Events::Rule", prop_obj_cfm_name="Target"
-                )
+                    Target, mapname="EventsRuleTargetECSCluster", indexname=m, res_obj_type="AWS::Events::Rule")
 
             # add props found in yaml cfg
-            auto_get_props(Target, res_obj_type="AWS::Events::Rule", prop_obj_cfm_name="Target")
+            auto_get_props(Target, res_obj_type="AWS::Events::Rule")
             Targets.append(Target)
 
         getattr(cfg, resname).update({"IBOX_LINKED_OBJ": ibox_lo_cfg})
