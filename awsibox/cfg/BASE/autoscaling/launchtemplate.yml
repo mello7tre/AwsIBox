@@ -25,17 +25,6 @@ global:
           - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-arm64-gp2'
           - '/aws/service/ami-amazon-linux-latest/al2022-ami-minimal-kernel-default-x86_64'
         Type: 'AWS::SSM::Parameter::Value<String>'
-    - LaunchTemplateDataInstanceType:
-        Description: 'InstanceType - default for default based on env/role'
-        ConstraintDescription: 'must be a valid EC2 instance type.'
-        AllowedValues: cfg.INSTANCE_LIST
-        Default: 'default'
-    - LaunchTemplateDataKeyName:
-        Description: 'EC2 SSH Key - empty for default'
-    - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice:
-        Description: 'Maximum Spot Price of ASG - empty for default based on env/role - 0 to disable'
-    - LaunchTemplateDataBlockDeviceMappingsXvdaEbsVolumeSize:
-        Description: 'Size of HD in GB - empty for default based on env/role'
   Condition:
     - CloudFormationInit:
         Equals(Ref('UpdateMode'), 'Cfn')
@@ -52,8 +41,6 @@ global:
         )
     - LaunchTemplateDataImageIdLatest:
         get_condition('', 'equals', 'latest', 'LaunchTemplateDataImageId')
-    - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice:
-        get_condition('', 'not_equals', '0', 'LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice')
   Output:
     - DoNotSignal:
         Value: Ref('DoNotSignal')
@@ -62,20 +49,16 @@ global:
         Value: Join(',', Ref('EfsMounts'))
     - LaunchTemplateDataImageId:
         Value: cfg.Resources['LaunchTemplate'].LaunchTemplateData.ImageId
-    - LaunchTemplateDataInstanceType:
-        Value: get_endvalue('LaunchTemplateDataInstanceType')
-    - LaunchTemplateDataKeyName:
-        Value: get_endvalue('LaunchTemplateDataKeyName')
     - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize:
         Value: get_endvalue('LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize')
-    - LaunchTemplateDataBlockDeviceMappingsXvdaEbsVolumeSize:
-        Value: get_endvalue('LaunchTemplateDataBlockDeviceMappingsXvdaEbsVolumeSize')
   LaunchTemplate:
     - Data:
         BlockDeviceMappings:
           - Xvda:
               DeviceName: /dev/xvda
               Ebs:
+                VolumeSize.IBOX_AUTO_PO:
+                  Description: 'Size of HD in GB - empty for default based on env/role'
                 VolumeSize: 8
                 VolumeType: gp3
           - AdditionalStorage:
@@ -100,8 +83,18 @@ global:
             - Ref('AWS::NoValue')
           MarketType: spot
           SpotOptions:
+            MaxPrice.IBOX_AUTO_P:
+              Description: 'Maximum Spot Price of ASG - empty for default based on env/role - 0 to disable'
+              Condition: get_condition('', 'not_equals', '0', 'LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice')
             MaxPrice: '0'
+        InstanceType.IBOX_AUTO_PO:
+          Description: 'InstanceType - default for default based on env/role'
+          ConstraintDescription: 'must be a valid EC2 instance type.'
+          AllowedValues: cfg.INSTANCE_LIST
+          Default: 'default'
         InstanceType: t3.micro
+        KeyName.IBOX_AUTO_PO:
+          Description: 'EC2 SSH Key - empty for default'
         KeyName: none
         Monitoring:
           Enabled: false
