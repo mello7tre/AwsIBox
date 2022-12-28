@@ -35,13 +35,13 @@ global:
           Comment: Sub('${AWS::StackName}-${EnvRole}')
           DefaultCacheBehavior:
             TargetOriginId: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s' % cfg.HostedZoneNameEnv)
-  CloudFrontOrigins:
-    - Default:
-        CustomOriginConfig:
-          HTTPSPort: get_endvalue('ListenerLoadBalancerHttpsPort')
-          HTTPPort:  get_endvalue('ListenerLoadBalancerHttpPort')
-        DomainName: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
-        Id: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
+          Origins:
+            - Default:
+                CustomOriginConfig:
+                  HTTPSPort: get_endvalue('ListenerLoadBalancerHttpsPort')
+                  HTTPPort:  get_endvalue('ListenerLoadBalancerHttpPort')
+                DomainName: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
+                Id: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
   RecordSetCloudFront: 'yes'
   Route53RecordSet:
     - CloudFront:

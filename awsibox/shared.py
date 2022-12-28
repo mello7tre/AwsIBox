@@ -11,6 +11,7 @@ IBOX_SPECIAL_KEYS = (
     "IBOX_INDEXNAME",
     "IBOX_PROPNAME",
     "IBOX_CURNAME",
+    "IBOX_REFNAME",
     "IBOX_LINKED_OBJ_NAME",
     "IBOX_LINKED_OBJ_INDEX",
     "IBOX_LINKED_OBJ_FOR",
@@ -715,41 +716,29 @@ def auto_get_props(
             prop_list = []
             prop_class = prop_class[0]
 
-            # for sub obj defined elsewhere
-            ibox_sub_obj = key[obj_propname].get("IBOX_SUB_OBJ")
-            if ibox_sub_obj:
-                for o, v in getattr(cfg, ibox_sub_obj).items():
-                    obj_name = f"{ibox_sub_obj}{o}"
-                    prop_obj = prop_class(obj_name)
-                    auto_get_props(prop_obj)
-                    if_wrapper = v.get("IBOX_IF")
-                    if if_wrapper:
-                        prop_obj = iboxif(if_wrapper, obj_propname, prop_obj)
+            for o, v in key[obj_propname].items():
+                # for a list of properties set IBOX_PROPNAME to the name of property
+                IBOX_PROPNAME = o
+
+                if o == "IBOX_IF":
+                    # element named IBOX_IF must no be parsed
+                    # is needed for wrapping whole returned obj in _populate
+                    continue
+                name_o = str(o)
+                mapname_o = f"{mapname_obj}{name_o}"
+                prop_obj = prop_class()
+
+                _populate(prop_obj, key=v, mapname=mapname_o)
+
+                # trick to wrapper single obj in If Condition
+                try:
+                    if_wrapper = v["IBOX_IF"]
+                except Exception:
                     prop_list.append(prop_obj)
-            else:
-                for o, v in key[obj_propname].items():
-                    # for a list of properties set IBOX_PROPNAME to the name of property
-                    IBOX_PROPNAME = o
+                else:
+                    prop_list.append(iboxif(if_wrapper, mapname, prop_obj))
 
-                    if o == "IBOX_IF":
-                        # element named IBOX_IF must no be parsed
-                        # is needed for wrapping whole returned obj in _populate
-                        continue
-                    name_o = str(o)
-                    mapname_o = f"{mapname_obj}{name_o}"
-                    prop_obj = prop_class()
-
-                    _populate(prop_obj, key=v, mapname=mapname_o)
-
-                    # trick to wrapper single obj in If Condition
-                    try:
-                        if_wrapper = v["IBOX_IF"]
-                    except Exception:
-                        prop_list.append(prop_obj)
-                    else:
-                        prop_list.append(iboxif(if_wrapper, mapname, prop_obj))
-
-            if prop_list or ibox_sub_obj:
+            if prop_list:
                 return prop_list
 
         # obj_propname is a dict as KSM Key KeyPolicy
@@ -764,7 +753,7 @@ def auto_get_props(
             return get_dictvalue(key[obj_propname])
 
     def _populate(obj, key=None, mapname=None, rootdict=None):
-        global IBOX_RESNAME, IBOX_CURNAME
+        global IBOX_RESNAME, IBOX_CURNAME, IBOX_REFNAME
 
         if not mapname:
             mapname = obj.title
@@ -821,8 +810,14 @@ def auto_get_props(
             if mode == "p":
                 parameter_base = {"Description": "Empty for mapped value"}
                 parameter_base.update(conf)
-                parameter = {"IBOX_PARAMETER": {f"{mapname}{name}": parameter_base}}
-                _try_PCO_in_obj(parameter)
+                pco_conf = {"IBOX_PARAMETER": {f"{mapname}{name}": parameter_base}}
+                # look for Condition key and if found update pco_conf
+                condition = conf.get("Condition")
+                if condition:
+                    pco_conf.update(
+                        {"IBOX_CONDITION": {f"{mapname}{name}": condition}}
+                    )
+                _try_PCO_in_obj(pco_conf)
             if mode == "o":
                 if isinstance(value, int):
                     # Output value must be a string
@@ -941,6 +936,10 @@ def auto_get_props(
         # Allowed object properties
         props = list(vars(obj)["propnames"])
         props.extend(vars(obj)["attributes"])
+
+        # needed by IBOX_BASE used on Resource Properties
+        if key.get("IBOX_BASE_REF"):
+            IBOX_REFNAME = mapname
 
         # Parameters, Conditions, Outpus in yaml cfg
         _try_PCO_in_obj(key)

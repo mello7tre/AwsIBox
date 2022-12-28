@@ -1,22 +1,15 @@
 global:
-  CloudFrontCacheBehaviors:
-    - /error-pages/*:
-        Order: 599
-        PathPattern:  '/error-pages/*'
-        DefaultTTL: 31536000
-        ForwardedValues:
-          QueryString: false
-        TargetOriginId: portal-static-error-pages
-  CloudFrontOrigins:
-    - PortalStaticErrorPages:
-        DomainName: Sub(f'{cfg.BucketNamePortalStatic}.s3.amazonaws.com')
-        Id: portal-static-error-pages
-        OriginCustomHeaders: []
-        S3OriginConfig:
-          OriginAccessIdentity: ''
   CloudFrontDistribution:
     - IBOX_BASE:
         DistributionConfig:
+          CacheBehaviors:
+            - /error-pages/*:
+                Order: 599
+                PathPattern:  '/error-pages/*'
+                DefaultTTL: 31536000
+                ForwardedValues:
+                  QueryString: false
+                TargetOriginId: portal-static-error-pages
           CustomErrorResponses:
             - 404:
                 ErrorCode: 404
@@ -41,3 +34,10 @@ global:
                 ErrorCachingMinTTL: 300
                 ResponsePagePath: '/error-pages/504.html'
                 ResponseCode: 504
+          Origins:
+            - PortalStaticErrorPages:
+                DomainName: Sub(f'{cfg.BucketNamePortalStatic}.s3.amazonaws.com')
+                Id: portal-static-error-pages
+                OriginCustomHeaders: []
+                S3OriginConfig:
+                  OriginAccessIdentity: ''

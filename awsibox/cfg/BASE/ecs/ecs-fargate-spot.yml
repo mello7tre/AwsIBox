@@ -26,7 +26,7 @@ global:
               Key: IBOXFARGATESPOTServiceBase
               Value: GetAtt('Service', 'Name')
   ScalableTarget:
-    - Service:
+    - ECSService:
         ResourceId:
           If('FargateSpot',
             get_subvalue('service/${1E}/${ServiceSpot.Name}', 'Cluster', 'ClusterStack'),

@@ -68,15 +68,17 @@ global:
               - Service:
                   Name: ServiceName
                   Value: GetAtt('Service', 'Name')
-  ScalableTargetScheduledAction:
-    - Down:
-        CapacityMax: k
-        CapacityMin: k
-        Schedule: 'cron(00 22 * * ? *)'
-    - Up:
-        CapacityMax: k
-        CapacityMin: k
-        Schedule: 'cron(00 06 * * ? *)'
+  ScalableTarget:
+    - ECSService:
+        ScheduledActions:
+          - Down:
+              CapacityMax: k
+              CapacityMin: k
+              Schedule: 'cron(00 22 * * ? *)'
+          - Up:
+              CapacityMax: k
+              CapacityMin: k
+              Schedule: 'cron(00 06 * * ? *)'
   Service:
     - Base:
         IBOX_ENABLED: True
@@ -87,7 +89,7 @@ dev: &cfg_dev
       EvaluationPeriods: 0
     TargetInternal5XX:
       EvaluationPeriods: 0
-  ScalableTargetScheduledAction:
+  ScalableTargetECSServiceScheduledActions:
     Down:
       CapacityMax: k
       CapacityMin: k

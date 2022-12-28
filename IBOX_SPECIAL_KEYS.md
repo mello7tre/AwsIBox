@@ -23,11 +23,11 @@
 - [IBOX\_OUTPUT](#IBOX_OUTPUT)
 - [IBOX\_PARAMETER](#IBOX_PARAMETER)
 - [IBOX\_PCO](#IBOX_PCO)
+- [IBOX\_REFNAME](#IBOX_REFNAME)
 - [IBOX\_RESNAME](#IBOX_RESNAME)
 - [IBOX\_ROLE\_EX](#IBOX_ROLE_EX)
 - [IBOX\_SKIP\_FUNC](#IBOX_SKIP_FUNC)
 - [IBOX\_SOURCE\_OBJ](#IBOX_SOURCE_OBJ)
-- [IBOX\_SUB\_OBJ](#IBOX_SUB_OBJ)
 - [IBOX\_TITLE](#IBOX_TITLE)
 
 ### Usage ###
@@ -46,6 +46,13 @@ Ex extended:
 ```
 Type.IBOX_AUTO_P:
   AllowedValues: ['', 'binpack', 'random', 'spread']
+```
+If inside the conf there is a key named "Condition", is processed like a `IBOX_CONDITION` key named as the parameter with as conf the value of the Condition key.\
+Ex condition:
+```
+WebACLId.IBOX_AUTO_P:
+  Condition: get_condition('', 'not_equals', 'none', IBOX_CURNAME)
+  AllowedValues: ['', 'yes', 'no']
 ```
 
 #### IBOX\_AUTO\_PO
@@ -405,6 +412,33 @@ Look at `IBOX_CONDITION`.
 #### IBOX\_PCO\_IF
 Same as `IBOX_PCO` but is processed ONLY if the relative key is present.
 
+#### IBOX\_REFNAME
+Can be used if under/inside an `IBOX_BASE` conf.\
+It's value is equal to the full "mapname" of the last traversed object populated by `IBOX_BASE` conf.\
+Ex:
+```
+ScalableTarget:
+  - ECSService:
+      ServiceNamespace: ecs
+      ScheduledActions:
+        - IBOX_BASE:
+            IBOX_PARAMETER:
+              - IBOX_REFNAME.CapacityMin:
+                  Description: 'k to keep current value - empty for mapped value'
+            IBOX_CONDITION:
+              - IBOX_REFNAME.KeepMinSize:
+                  get_condition('', 'equals', 'k', f'{IBOX_REFNAME}CapacityMin')
+ScalableTarget:
+  - ECSService:
+    ScheduledActions:
+      - Down: {}
+      - Up: {}
+```
+Insided Down/Up `IBOX_REFNAME` will have as value:
+```
+ScalableTargetECSServiceScheduledActionsDown
+ScalableTargetECSServiceScheduledActionsUp
+```
 #### IBOX\_RESNAME
 Can be used as python var or inside other IBOX keys.\
 Represent the name/tile of the resource.\
@@ -464,21 +498,6 @@ ElastiCacheReplicationGroup:
 ```
 `ElastiCacheReplicationGroupBase` object will be pre-processed using the relative key `ElastiCacheCacheClusterBase`.\
 All properties defined for `ElastiCacheCacheCluster` that are used for `ElastiCacheReplicationGroup` too, will be assigned.
-
-#### IBOX\_SUB\_OBJ
-Is used to process another key and include the result as value of the current one.\
-Ex:
-```
-ScalableTarget:
-  - Service:
-      <<: *ecs
-      IBOX_TITLE: ScalableTarget
-      ScheduledActions: {"IBOX_SUB_OBJ": "ScalableTargetScheduledAction"}
-ScalableTargetScheduledAction:
-  - Down: *scheduledaction
-  - Up: *scheduledaction
-```
-`ScalableTarget` `ScheduledActions` property will be a list of `ScalableTargetScheduledAction` created processing the key `ScalableTargetScheduledAction`.
 
 #### IBOX\_TITLE
 Is used to replace the resource title after having processed it.\
