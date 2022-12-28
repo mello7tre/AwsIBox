@@ -49,19 +49,19 @@ def CF_CloudFront(key):
         resname = f"{key}{n}"
         # Resources
         R_CloudFrontDistribution = clf.Distribution(resname)
+        distribution_config = v["DistributionConfig"]
 
         # process cache_behavior and origin
-        cache_behavior_process(v["DistributionConfig"])
-        origin_process(resname, v["DistributionConfig"])
+        cache_behavior_process(distribution_config)
+        origin_process(resname, distribution_config)
 
         # Automatically compute Behaviour Order based on PathPattern
         cfg.dbg_clf_compute_order = {}
         sortedcachebehaviors = sorted(
-            v["DistributionConfig"]["CacheBehaviors"].items(),
+            distribution_config["CacheBehaviors"].items(),
             key=lambda x_y: clf_compute_order(x_y[1]["PathPattern"]),
         )
-        #cfg.CloudFrontCacheBehaviors = {x[0]: x[1] for x in sortedcachebehaviors}
-        setattr(cfg, f"{resname}DistributionConfigCacheBehaviors", {x[0]: x[1] for x in sortedcachebehaviors})
+        distribution_config["CacheBehaviors"] = {x[0]: x[1] for x in sortedcachebehaviors}
 
         if cfg.debug:
             print("##########CLF_COMPUTE_ORDER#########START#######")
