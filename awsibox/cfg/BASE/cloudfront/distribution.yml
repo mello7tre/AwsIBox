@@ -1,56 +1,47 @@
-Origin: &origin
-  IBOX_PARAMETER:
-    - _DomainName:
-        Description: 'empty for mapped value'
-  CustomOriginConfig:
-    IBOX_PARAMETER:
-      - _CustomOriginConfigHTTPSPort:
-          Description: 'empty for mapped value'
-    OriginProtocolPolicy: https-only
-  OriginPath: ''
-  S3OriginConfig:
-    IBOX_PARAMETER:
-      - _S3OriginConfigOriginAccessIdentity:
-          Description: 'empty for mapped value'
-
-CacheBehavior: &cache_behavior
-  Compress: True
-  ForwardedValues:
-    QueryString: True
-    Headers: []
-  ViewerProtocolPolicy: redirect-to-https
-
-DistributionConfig: &distribution_config
-  Aliases.IBOX_CUSTOM_OBJ:
-    Value: get_endvalue(f"CloudFrontDistributionBaseDistributionConfigAliases{IBOX_RESNAME}")
-  DefaultCacheBehavior: *cache_behavior
-  CacheBehaviors: {"IBOX_SUB_OBJ": "CloudFrontCacheBehaviors"}
-  CustomErrorResponses: []
-  Enabled: true
-  HttpVersion: get_endvalue('CloudFrontHttpVersion')
-  Logging:
-    IBOX_IF:
-      - CloudFrontLogging
-      - IBOX_IFVALUE
-      - Ref('AWS::NoValue')
-    Bucket: Sub(f'{cfg.BucketNameLogs}.s3.amazonaws.com')
-    Prefix: Sub('${EnvRole}.${AWS::StackName}/')
-  Origins: {"IBOX_SUB_OBJ": "CloudFrontOrigins"}
-  PriceClass: PriceClass_100
-  ViewerCertificate:
-    AcmCertificateArn: If('CloudFrontAcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))
-    CloudFrontDefaultCertificate: If('CloudFrontAcmCertificate', Ref('AWS::NoValue'), True)
-    SslSupportMethod: If('CloudFrontAcmCertificate', 'sni-only', Ref('AWS::NoValue'))
-    MinimumProtocolVersion: If('CloudFrontAcmCertificate', get_endvalue('CloudFrontMinimumProtocolVersion'), Ref('AWS::NoValue'))
-  WebACLId: get_endvalue('CloudFrontWebACLId', condition=True)
-
-
 global:
   CloudFrontDistribution:
     - IBOX_BASE:
         IBOX_TITLE: CloudFrontDistribution
-        DistributionConfig: *distribution_config
-  CloudFrontCacheBehaviors:
-    - IBOX_BASE: *cache_behavior
-  CloudFrontOrigins:
-    - IBOX_BASE: *origin
+        DistributionConfig:
+          Aliases.IBOX_CUSTOM_OBJ:
+            Value: get_endvalue(f"CloudFrontDistributionBaseDistributionConfigAliases{IBOX_RESNAME}")
+          DefaultCacheBehavior: &cache_behavior
+            Compress: True
+            ForwardedValues:
+              QueryString: True
+              Headers: []
+            ViewerProtocolPolicy: redirect-to-https
+          CacheBehaviors:
+            - IBOX_BASE: *cache_behavior
+          CustomErrorResponses: []
+          Enabled: true
+          HttpVersion: get_endvalue('CloudFrontHttpVersion')
+          Logging:
+            IBOX_IF:
+              - CloudFrontLogging
+              - IBOX_IFVALUE
+              - Ref('AWS::NoValue')
+            Bucket: Sub(f'{cfg.BucketNameLogs}.s3.amazonaws.com')
+            Prefix: Sub('${EnvRole}.${AWS::StackName}/')
+          Origins:
+            - IBOX_BASE:
+                IBOX_PARAMETER:
+                  - IBOX_REFNAME.DomainName:
+                      Description: 'empty for mapped value'
+                CustomOriginConfig:
+                  IBOX_PARAMETER:
+                    - IBOX_REFNAME.CustomOriginConfigHTTPSPort:
+                        Description: 'empty for mapped value'
+                  OriginProtocolPolicy: https-only
+                OriginPath: ''
+                S3OriginConfig:
+                  IBOX_PARAMETER:
+                    - IBOX_REFNAME.S3OriginConfigOriginAccessIdentity:
+                        Description: 'empty for mapped value'
+          PriceClass: PriceClass_100
+          ViewerCertificate:
+            AcmCertificateArn: If('CloudFrontAcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))
+            CloudFrontDefaultCertificate: If('CloudFrontAcmCertificate', Ref('AWS::NoValue'), True)
+            SslSupportMethod: If('CloudFrontAcmCertificate', 'sni-only', Ref('AWS::NoValue'))
+            MinimumProtocolVersion: If('CloudFrontAcmCertificate', get_endvalue('CloudFrontMinimumProtocolVersion'), Ref('AWS::NoValue'))
+          WebACLId: get_endvalue('CloudFrontWebACLId', condition=True)

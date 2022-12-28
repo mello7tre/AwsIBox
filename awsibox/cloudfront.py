@@ -24,24 +24,24 @@ def process_cache_policy(v):
                 pass
 
 
-def cache_behavior_process():
+def cache_behavior_process(key):
     # process default behavior
     process_cache_policy(
-        cfg.CloudFrontDistributionBase["DistributionConfig"]["DefaultCacheBehavior"]
+        key["DefaultCacheBehavior"]
     )
     # process other behaviors
-    for n in cfg.CloudFrontCacheBehaviors:
-        process_cache_policy(getattr(cfg, f"CloudFrontCacheBehaviors{n}"))
+    for n, v in key["CacheBehaviors"].items():
+        process_cache_policy(v)
 
 
-def origin_process():
-    for n, v in cfg.CloudFrontOrigins.items():
-        resname = f"CloudFrontOrigins{n}"
+def origin_process(name, key):
+    for n, v in key["Origins"].items():
+        resname = f"{name}DistributionConfigOrigins{n}"
 
         if "OriginAccessIdentity" in v.get("S3OriginConfig", []):
-            del getattr(cfg, resname)["CustomOriginConfig"]
+            del getattr(cfg, name)["DistributionConfig"]["Origins"][n]["CustomOriginConfig"]
         else:
-            del getattr(cfg, resname)["S3OriginConfig"]
+            del getattr(cfg, name)["DistributionConfig"]["Origins"][n]["S3OriginConfig"]
 
 
 def CF_CloudFront(key):
@@ -51,16 +51,17 @@ def CF_CloudFront(key):
         R_CloudFrontDistribution = clf.Distribution(resname)
 
         # process cache_behavior and origin
-        cache_behavior_process()
-        origin_process()
+        cache_behavior_process(v["DistributionConfig"])
+        origin_process(resname, v["DistributionConfig"])
 
         # Automatically compute Behaviour Order based on PathPattern
         cfg.dbg_clf_compute_order = {}
         sortedcachebehaviors = sorted(
-            cfg.CloudFrontCacheBehaviors.items(),
+            v["DistributionConfig"]["CacheBehaviors"].items(),
             key=lambda x_y: clf_compute_order(x_y[1]["PathPattern"]),
         )
-        cfg.CloudFrontCacheBehaviors = {x[0]: x[1] for x in sortedcachebehaviors}
+        #cfg.CloudFrontCacheBehaviors = {x[0]: x[1] for x in sortedcachebehaviors}
+        setattr(cfg, f"{resname}DistributionConfigCacheBehaviors", {x[0]: x[1] for x in sortedcachebehaviors})
 
         if cfg.debug:
             print("##########CLF_COMPUTE_ORDER#########START#######")
@@ -70,5 +71,5 @@ def CF_CloudFront(key):
                 print(f"{n} {v}\n")
             print("##########CLF_COMPUTE_ORDER#########END#######")
 
-        auto_get_props(R_CloudFrontDistribution)
+        auto_get_props(R_CloudFrontDistribution, mapname=resname)
         add_obj(R_CloudFrontDistribution)
