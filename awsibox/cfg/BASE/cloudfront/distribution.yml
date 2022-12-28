@@ -5,15 +5,15 @@ global:
         DistributionConfig:
           Aliases.IBOX_CUSTOM_OBJ:
             Value: get_endvalue(f"CloudFrontDistributionBaseDistributionConfigAliases{IBOX_RESNAME}")
-          DefaultCacheBehavior: &cache_behavior
-            Compress: True
-            ForwardedValues:
-              QueryString: True
-              Headers: []
-            ViewerProtocolPolicy: redirect-to-https
           CacheBehaviors:
-            - IBOX_BASE: *cache_behavior
+            - IBOX_BASE: &cache_behavior
+                Compress: True
+                ForwardedValues:
+                  QueryString: True
+                  Headers: []
+                ViewerProtocolPolicy: redirect-to-https
           CustomErrorResponses: []
+          DefaultCacheBehavior: *cache_behavior
           Enabled: true
           HttpVersion: get_endvalue('CloudFrontHttpVersion')
           Logging:
