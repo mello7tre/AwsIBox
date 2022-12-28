@@ -279,6 +279,7 @@ def build_RP():
             main_key_value = RP[main_key]
             if isinstance(main_key_value, dict) and base_key in main_key_value:
                 base_key_value = main_key_value[base_key]
+                base_key_value["IBOX_BASE_REF"] = True
 
                 for resource_key, resource_key_value in main_key_value.items():
                     if resource_key == base_key:

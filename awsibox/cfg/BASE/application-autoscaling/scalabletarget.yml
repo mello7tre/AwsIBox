@@ -1,6 +1,6 @@
 global:
   ScalableTarget:
-    - ECS:
+    - ECSService:
         MaxCapacity: get_endvalue('CapacityMax')
         MinCapacity: get_endvalue('CapacityMin')
         ResourceId: get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
@@ -9,55 +9,46 @@ global:
         ServiceNamespace: ecs
         ScheduledActions:
           - IBOX_BASE:
-              CapacityMax.IBOX_PCO:
-                IBOX_PARAMETER:
-                  - IBOX_CURNAME:
-                      Description: 'k to keep current value - empty for mapped value'
-                IBOX_CONDITION:
-                  - IBOX_CURNAME.Size:
-                      get_condition('', 'equals', 'CapacityMax', IBOX_CURNAME)
-                  - IBOX_CURNAME.Keep:
-                      get_condition('', 'equals', 'k', IBOX_CURNAME)
-              CapacityMin.IBOX_PCO:
-                IBOX_PARAMETER:
-                  - IBOX_CURNAME:
-                      Description: 'k to keep current value - empty for mapped value'
-                IBOX_CONDITION:
-                  - IBOX_CURNAME.Size:
-                      get_condition('', 'equals', 'CapacityMin', IBOX_CURNAME)
-                  - IBOX_CURNAME.Keep:
-                      get_condition('', 'equals', 'k', IBOX_CURNAME)
+              IBOX_PARAMETER:
+                - IBOX_REFNAME.CapacityMin:
+                    Description: 'k to keep current value - empty for mapped value'
+                - IBOX_REFNAME.CapacityMax:
+                    Description: 'k to keep current value - empty for mapped value'
+                - IBOX_REFNAME.Schedule:
+                    Description: 'empty for mapped value - "none" to disable'
+                - IBOX_REFNAME.StartTime:
+                    Description: ''
               IBOX_CONDITION:
-                - IBOX_CURNAME.Disable: Or(
-                      Not(Condition(f"{IBOX_CURNAME}.NoSchedule")),
+                - IBOX_REFNAME.KeepMinSize:
+                    get_condition('', 'equals', 'k', f'{IBOX_REFNAME}CapacityMin')
+                - IBOX_REFNAME.KeepMaxSize:
+                    get_condition('', 'equals', 'k', f'{IBOX_REFNAME}CapacityMax')
+                - IBOX_REFNAME.CapacityMinSize:
+                    get_condition('', 'equals', 'CapacityMin', f'{IBOX_REFNAME}CapacityMin')
+                - IBOX_REFNAME.CapacityMaxSize:
+                    get_condition('', 'equals', 'CapacityMax', f'{IBOX_REFNAME}CapacityMax')
+                - IBOX_REFNAME:
+                    get_condition('', 'not_equals', 'none', f'{IBOX_REFNAME}Schedule')
+                - IBOX_REFNAME.Disable: Or(
+                      Not(Condition(IBOX_REFNAME)),
                       And(
-                        Condition(f'{IBOX_CURNAME}KeepMaxSize'),
-                        Condition(f'{IBOX_CURNAME}KeepMinSize')))
+                        Condition(f'{IBOX_REFNAME}KeepMaxSize'),
+                        Condition(f'{IBOX_REFNAME}KeepMinSize')))
               IBOX_OUTPUT:
-                - IBOX_CURNAME:
+                - IBOX_REFNAME:
                     Value: >-
                       CapacityMin= ${ScalableTargetActionMinCapacity} ,CapacityMax= ${ScalableTargetActionMaxCapacity}
                       ,Schedule= ${Schedule} ,StartTime= ${StartTime}
               IBOX_IF:
-                - IBOX_CURNAME.Disable
+                - IBOX_REFNAME.Disable
                 - Ref('AWS::NoValue')
                 - IBOX_IFVALUE
               ScalableTargetAction:
-                MinCapacity: If(f'{IBOX_LOCNAME}CapacityMinSize',
+                MinCapacity: If(f'{IBOX_REFNAME}CapacityMinSize',
                                 get_endvalue('CapacityMin'),
-                                get_endvalue(f'{IBOX_LOCNAME}CapacityMin', nocondition=f'{IBOX_LOCNAME}CapacityMinKeep'))
-                MaxCapacity: If(f'{IBOX_LOCNAME}CapacityMaxSize',
+                                get_endvalue(f'{IBOX_REFNAME}CapacityMin', nocondition=f'{IBOX_REFNAME}KeepMinSize'))
+                MaxCapacity: If(f'{IBOX_REFNAME}CapacityMaxSize',
                                 get_endvalue('CapacityMax'),
-                                get_endvalue(f'{IBOX_LOCNAME}CapacityMax', nocondition=f'{IBOX_LOCNAME}CapacityMaxKeep'))
-              Schedule.IBOX_PCO:
-                IBOX_PARAMETER:
-                  - IBOX_CURNAME:
-                      Description: 'empty for mapped value - "none" to disable'
-                IBOX_CONDITION:
-                  - IBOX_CURNAME.Disable:
-                      get_condition('', 'not_equals', 'none', IBOX_CURNAME)
-              #Schedule: get_endvalue(f'{IBOX_CURNAME}Schedule')
-              ScheduledActionName: IBOX_LOCNAME
-              StartTime.IBOX_AUTO_P:
-                Description: ''
+                                get_endvalue(f'{IBOX_REFNAME}CapacityMax', nocondition=f'{IBOX_REFNAME}KeepMaxSize'))
+              ScheduledActionName: IBOX_REFNAME
               StartTime: Ref('AWS::NoValue')

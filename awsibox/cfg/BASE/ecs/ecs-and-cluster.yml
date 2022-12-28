@@ -93,5 +93,5 @@ global:
         DependsOn: ECSClusterCapacityProviderAssociationsBase
         Cluster: Ref('Cluster')
   ScalableTarget:
-    - Service:
+    - ECSService:
         ResourceId: Sub('service/${Cluster}/${Service.Name}')

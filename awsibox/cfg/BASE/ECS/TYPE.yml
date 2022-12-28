@@ -69,7 +69,7 @@ global:
                   Name: ServiceName
                   Value: GetAtt('Service', 'Name')
   ScalableTarget:
-    - ECS:
+    - ECSService:
         ScheduledActions:
           - Down:
               CapacityMax: k
@@ -89,7 +89,7 @@ dev: &cfg_dev
       EvaluationPeriods: 0
     TargetInternal5XX:
       EvaluationPeriods: 0
-  ScalableTargetECSScheduledActions:
+  ScalableTargetECSServiceScheduledActions:
     Down:
       CapacityMax: k
       CapacityMin: k

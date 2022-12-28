@@ -11,6 +11,7 @@ IBOX_SPECIAL_KEYS = (
     "IBOX_INDEXNAME",
     "IBOX_PROPNAME",
     "IBOX_CURNAME",
+    "IBOX_REFNAME",
     "IBOX_LINKED_OBJ_NAME",
     "IBOX_LINKED_OBJ_INDEX",
     "IBOX_LINKED_OBJ_FOR",
@@ -764,7 +765,7 @@ def auto_get_props(
             return get_dictvalue(key[obj_propname])
 
     def _populate(obj, key=None, mapname=None, rootdict=None):
-        global IBOX_RESNAME, IBOX_CURNAME
+        global IBOX_RESNAME, IBOX_CURNAME, IBOX_REFNAME
 
         if not mapname:
             mapname = obj.title
@@ -941,6 +942,10 @@ def auto_get_props(
         # Allowed object properties
         props = list(vars(obj)["propnames"])
         props.extend(vars(obj)["attributes"])
+
+        # needed by IBOX_BASE used on Resource Properties
+        if key.get("IBOX_BASE_REF"):
+            IBOX_REFNAME = mapname
 
         # Parameters, Conditions, Outpus in yaml cfg
         _try_PCO_in_obj(key)
