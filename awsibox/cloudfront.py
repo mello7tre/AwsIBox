@@ -39,9 +39,9 @@ def origin_process(name, key):
         resname = f"{name}DistributionConfigOrigins{n}"
 
         if "OriginAccessIdentity" in v.get("S3OriginConfig", []):
-            del getattr(cfg, name)["DistributionConfig"]["Origins"][n]["CustomOriginConfig"]
+            del v["CustomOriginConfig"]
         else:
-            del getattr(cfg, name)["DistributionConfig"]["Origins"][n]["S3OriginConfig"]
+            del v["S3OriginConfig"]
 
 
 def CF_CloudFront(key):
