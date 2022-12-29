@@ -2,6 +2,11 @@ global:
   CloudFrontDistribution:
     - IBOX_BASE:
         IBOX_TITLE: CloudFrontDistribution
+        AcmCertificate.IBOX_PCO:
+          IBOX_CONDITION:
+            - _AcmCertificate:
+                get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}AcmCertificate')
+        AcmCertificate: 'yes'
         DistributionConfig:
           Aliases.IBOX_CUSTOM_OBJ:
             Value: get_endvalue(f"CloudFrontDistributionBaseDistributionConfigAliases{IBOX_RESNAME}")
@@ -15,10 +20,10 @@ global:
           CustomErrorResponses: []
           DefaultCacheBehavior: *cache_behavior
           Enabled: true
-          HttpVersion: get_endvalue('CloudFrontHttpVersion')
+          HttpVersion: http2
           Logging:
             IBOX_IF:
-              - CloudFrontLogging
+              - _LogEnabled
               - IBOX_IFVALUE
               - Ref('AWS::NoValue')
             Bucket: Sub(f'{cfg.BucketNameLogs}.s3.amazonaws.com')
@@ -40,8 +45,17 @@ global:
                         Description: 'empty for mapped value'
           PriceClass: PriceClass_100
           ViewerCertificate:
-            AcmCertificateArn: If('CloudFrontAcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))
-            CloudFrontDefaultCertificate: If('CloudFrontAcmCertificate', Ref('AWS::NoValue'), True)
-            SslSupportMethod: If('CloudFrontAcmCertificate', 'sni-only', Ref('AWS::NoValue'))
-            MinimumProtocolVersion: If('CloudFrontAcmCertificate', get_endvalue('CloudFrontMinimumProtocolVersion'), Ref('AWS::NoValue'))
+            AcmCertificateArn: If(f'{IBOX_RESNAME}AcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))
+            CloudFrontDefaultCertificate: If(f'{IBOX_RESNAME}AcmCertificate', Ref('AWS::NoValue'), True)
+            SslSupportMethod: If(f'{IBOX_RESNAME}AcmCertificate', 'sni-only', Ref('AWS::NoValue'))
+            MinimumProtocolVersion: If(f'{IBOX_RESNAME}AcmCertificate', get_endvalue('CloudFrontMinimumProtocolVersion'), Ref('AWS::NoValue'))
           WebACLId: get_endvalue('CloudFrontWebACLId', condition=True)
+        LogEnabled.IBOX_PCO:
+          IBOX_PARAMETER:
+            - _LogEnabled:
+                Description: 'Empty for mapped value'
+                AllowedValues: ['', 'yes', 'no']
+          IBOX_CONDITION:
+            - _LogEnabled:
+                get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}LogEnabled')
+        LogEnabled: 'no'
