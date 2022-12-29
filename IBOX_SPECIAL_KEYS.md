@@ -434,8 +434,11 @@ ScalableTarget:
       - Down: {}
       - Up: {}
 ```
-Insided Down/Up `IBOX_REFNAME` will have as value:\
-ScalableTargetECSServiceScheduledActionsDown and ScalableTargetECSServiceScheduledActionsUp.
+Insided Down/Up `IBOX_REFNAME` will have as value:
+```
+ScalableTargetECSServiceScheduledActionsDown
+ScalableTargetECSServiceScheduledActionsUp
+```
 
 #### IBOX\_RESNAME
 Can be used as python var or inside other IBOX keys.\
