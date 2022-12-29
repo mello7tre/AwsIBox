@@ -439,7 +439,6 @@ Insided Down/Up `IBOX_REFNAME` will have as value:
 ScalableTargetECSServiceScheduledActionsDown
 ScalableTargetECSServiceScheduledActionsUp
 ```
-
 #### IBOX\_RESNAME
 Can be used as python var or inside other IBOX keys.\
 Represent the name/tile of the resource.\
