@@ -3,20 +3,5 @@ IBoxLoader: !include
   - distribution.yml
 
 global:
-  Parameter:
-    - CloudFrontWebACLId:
-        Description: 'CloudFront WebACLId - empty for default based on env/role'
-    - CloudFrontMinimumProtocolVersion:
-        Description: 'The minimum SSL/TLS protocol and ciphers that CloudFront can use to communicate with viewers'
-  Condition:
-    - CloudFrontWebACLId:
-        get_condition('', 'not_equals', 'none', 'CloudFrontWebACLId')
-  Output:
-    - CloudFrontWebACLId:
-        Value: get_endvalue('CloudFrontWebACLId')
-    - CloudFrontMinimumProtocolVersion:
-        Value: get_resvalue('CloudFrontDistribution', 'DistributionConfig.ViewerCertificate.MinimumProtocolVersion')
   CloudFrontDistribution:
     - Base: {}
-  CloudFrontMinimumProtocolVersion: TLSv1
-  CloudFrontWebACLId: none
