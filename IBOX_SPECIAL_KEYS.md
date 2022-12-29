@@ -412,7 +412,7 @@ Look at `IBOX_CONDITION`.
 #### IBOX\_PCO\_IF
 Same as `IBOX_PCO` but is processed ONLY if the relative key is present.
 
-### IBOX\_REFNAME
+#### IBOX\_REFNAME
 Can be used if under/inside an `IBOX_BASE` conf.\
 It's value is equal to the full "mapname" of the last traversed object populated by `IBOX_BASE` conf.\
 Ex:
