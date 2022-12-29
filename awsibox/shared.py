@@ -822,8 +822,14 @@ def auto_get_props(
             if mode == "p":
                 parameter_base = {"Description": "Empty for mapped value"}
                 parameter_base.update(conf)
-                parameter = {"IBOX_PARAMETER": {f"{mapname}{name}": parameter_base}}
-                _try_PCO_in_obj(parameter)
+                pco_conf = {"IBOX_PARAMETER": {f"{mapname}{name}": parameter_base}}
+                # look for Condition key and if found update pco_conf
+                condition = conf.get("Condition")
+                if condition:
+                    pco_conf.update(
+                        {"IBOX_CONDITION": {f"{mapname}{name}": condition}}
+                    )
+                _try_PCO_in_obj(pco_conf)
             if mode == "o":
                 if isinstance(value, int):
                     # Output value must be a string
