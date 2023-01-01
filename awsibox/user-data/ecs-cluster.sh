@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 ENV=_IBOX_CODE_Ref('Env')_IBOX_CODE_
 ENVABBR=_IBOX_CODE_Ref('EnvShort')_IBOX_CODE_
 ENVACCOUNTID=_IBOX_CODE_Ref("AWS::AccountId")_IBOX_CODE_
