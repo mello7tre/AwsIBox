@@ -4,7 +4,6 @@ Base: &base
   PolicyName: IBOX_RESNAME
 
 Tracking: &tracking
-  <<: *base
   Condition: IBOX_RESNAME
   IBOX_PARAMETER:
     - _TargetTrackingScalingPolicyConfigurationCustomizedMetricSpecificationStatistic:
@@ -17,7 +16,6 @@ Tracking: &tracking
   PolicyType: TargetTrackingScaling
 
 Step: &step
-  <<: *base
   PolicyType: StepScaling
   StepScalingPolicyConfiguration:
     AdjustmentType: ChangeInCapacity
@@ -76,6 +74,7 @@ StepUP: &stepup
 
 global:
   ApplicationAutoScalingScalingPolicy:
+    - IBOX_BASE: *base
     - Cpu:
         <<: *trackingcpu
     - Custom:
