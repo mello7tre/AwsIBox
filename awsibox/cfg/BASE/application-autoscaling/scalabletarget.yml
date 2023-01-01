@@ -51,6 +51,6 @@ global:
                                 get_endvalue(f'{IBOX_REFNAME}CapacityMax', nocondition=f'{IBOX_REFNAME}KeepMaxSize'))
               ScheduledActionName: IBOX_REFNAME
               StartTime: Ref('AWS::NoValue')
-              SuspendedState:
-                ScheduledScalingSuspended.IBOX_AUTO_PO: {}
-                ScheduledScalingSuspended: True
+        SuspendedState:
+          ScheduledScalingSuspended.IBOX_AUTO_PO: {}
+          ScheduledScalingSuspended: True
