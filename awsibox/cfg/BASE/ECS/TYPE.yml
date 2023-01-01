@@ -72,12 +72,14 @@ global:
     - ECSService:
         ScheduledActions:
           - Down:
+              Enabled: 'no'
               CapacityMax: k
-              CapacityMin: k
+              CapacityMin: CapacityMin
               Schedule: 'cron(00 22 * * ? *)'
           - Up:
+              Enabled: 'no'
               CapacityMax: k
-              CapacityMin: k
+              CapacityMin: CapacityMin
               Schedule: 'cron(00 06 * * ? *)'
   Service:
     - Base:
@@ -91,11 +93,9 @@ dev: &cfg_dev
       EvaluationPeriods: 0
   ScalableTargetECSServiceScheduledActions:
     Down:
-      CapacityMax: k
-      CapacityMin: k
+      Enabled: 'yes'
     Up:
-      CapacityMax: CapacityMax
-      CapacityMin: CapacityMin
+      Enabled: 'yes'
 
 stg: *cfg_dev
 
