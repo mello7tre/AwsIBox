@@ -2,5 +2,6 @@ include .gitignore
 recursive-include awsibox/cfg *
 recursive-include awsibox/templates *
 recursive-include awsibox/lambdas *
+recursive-include awsibox/user-data *
 
 exclude awsibox/cfg/*/.*.swp

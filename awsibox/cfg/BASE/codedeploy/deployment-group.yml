@@ -35,7 +35,8 @@ Base: &base
 global:
   Parameter:
     - UpdateMode:
-        AllowedValues: ['none', 'Replace', 'Rolling', 'CodeDeploy', 'Cfn']
+        AllowedValues: ['none', 'Replace', 'Rolling', 'CodeDeploy']
   Apps:
     - IBOX_BASE: *base
   CodeDeploy: True
+  DeploymentGroup: 'yes'

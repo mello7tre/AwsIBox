@@ -20,7 +20,7 @@ global:
         Description: 'Service Role'
         AllowedPattern: '^[a-zA-Z0-9-_.]*$'
     - EnvStackVersion:
-        Description: 'Stack version, if changed with UpdateMode=Cfn triggers cfn-hup'
+        Description: 'Stack version'
         Default: '1'
   Condition:
     - BaseRegion:

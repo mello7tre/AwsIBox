@@ -15,7 +15,7 @@ global:
   Parameter:
     - UpdateMode:
         Description: 'How to update Instances'
-        AllowedValues: ['none', 'Replace', 'Rolling', 'Cfn']
+        AllowedValues: ['none', 'Replace', 'Rolling']
         Default: 'none'
     - AutoScalingGroupBaseHealthCheckGracePeriod:
         Description: 'How long to wait before ASG check instance health - empty for default based on env/role'
@@ -49,8 +49,6 @@ global:
     - IBOX_BASE:
         IBOX_ENABLED: False
   CustomUserDataScript: init.sh
-  CodeDeploy: False
-  DeploymentGroup: 'no'
   LoadBalancerType: Classic
   LoadBalancer:
     CookieSticky: '0'

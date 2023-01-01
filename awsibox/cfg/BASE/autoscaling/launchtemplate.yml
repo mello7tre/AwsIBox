@@ -26,8 +26,6 @@ global:
           - '/aws/service/ami-amazon-linux-latest/al2022-ami-minimal-kernel-default-x86_64'
         Type: 'AWS::SSM::Parameter::Value<String>'
   Condition:
-    - CloudFormationInit:
-        Equals(Ref('UpdateMode'), 'Cfn')
     - DoNotSignal:
         Equals(Ref('DoNotSignal'), 'yes')
     - EfsMounts:
