@@ -28,7 +28,7 @@ SIGNAL(){
 }
 
 if [ -n "$SIGNAL" ];then
-  trap signal EXIT
+  trap SIGNAL EXIT ERR
 fi
 
 cat > /etc/profile.d/ibox_env.sh << EOF
