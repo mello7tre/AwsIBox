@@ -3,54 +3,48 @@ IBoxLoader: !include [
 ]
 
 global:
-  Parameter:
-    - DoNotSignal:
-        Description: 'Do Not Signal ASG - WARNING need to manually exec cfn-signal!'
-        AllowedValues: ['yes', 'no']
-        Default: 'no'
-    - EfsMounts:
-        Description: 'Efs Mounts List'
-        Type: 'CommaDelimitedList'
-    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize:
-        Description: 'Size in GiB of additional EBS storage - 0 to disable - empty for default'
-        AllowedValues: ['', '0', '4', '8', '16', '32', '64', '128', '256', '512', '1024']
-    - LaunchTemplateDataImageId:
-        Description: 'AMI ID - empty for default based on env/role/region'
-    - LaunchTemplateDataImageIdLatest:
-        Description: 'Latest Amazon Linux2 ami available from SSM'
-        Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-        AllowedValues:
-          - '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-          - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2'
-          - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-arm64-gp2'
-          - '/aws/service/ami-amazon-linux-latest/al2022-ami-minimal-kernel-default-x86_64'
-        Type: 'AWS::SSM::Parameter::Value<String>'
-  Condition:
-    - DoNotSignal:
-        Equals(Ref('DoNotSignal'), 'yes')
-    - EfsMounts:
-         Not(Equals(Select('0', Ref('EfsMounts')), ''))
-    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage:
-        get_condition('', 'not_equals', '0', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize')
-    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount:
-        And(
-          Condition('LaunchTemplateDataBlockDeviceMappingsAdditionalStorage'),
-          get_condition('', 'equals', 'yes', 'LaunchTemplateDataBlockDeviceMappingsAdditionalStorageMount')
-        )
-    - LaunchTemplateDataImageIdLatest:
-        get_condition('', 'equals', 'latest', 'LaunchTemplateDataImageId')
-  Output:
-    - DoNotSignal:
-        Value: Ref('DoNotSignal')
-    - EfsMounts:
-        Condition: 'EfsMounts'
-        Value: Join(',', Ref('EfsMounts'))
-    - LaunchTemplateDataImageId:
-        Value: cfg.Resources['LaunchTemplate'].LaunchTemplateData.ImageId
-    - LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize:
-        Value: get_endvalue('LaunchTemplateDataBlockDeviceMappingsAdditionalStorageEbsVolumeSize')
   LaunchTemplate:
     - Data:
+        IBOX_PARAMETER:
+          - DoNotSignal:
+              Description: 'Avoid signaling ASG and instance shutdown if user-data fail.'
+              AllowedValues: ['yes', 'no']
+              Default: 'no'
+          - EfsMounts:
+              Description: 'Efs Mounts List'
+              Type: 'CommaDelimitedList'
+          - _BlockDeviceMappingsAdditionalStorageEbsVolumeSize:
+              Description: 'Size in GiB of additional EBS storage - 0 to disable - empty for default'
+              AllowedValues: ['', '0', '4', '8', '16', '32', '64', '128', '256', '512', '1024']
+          - _ImageIdLatest:
+              Description: 'Latest Amazon Linux2 ami available from SSM'
+              Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+              AllowedValues:
+                - '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+                - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2'
+                - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-arm64-gp2'
+                - '/aws/service/ami-amazon-linux-latest/al2022-ami-minimal-kernel-default-x86_64'
+              Type: 'AWS::SSM::Parameter::Value<String>'
+        IBOX_CONDITION:
+          - DoNotSignal:
+              Equals(Ref('DoNotSignal'), 'yes')
+          - EfsMounts:
+               Not(Equals(Select('0', Ref('EfsMounts')), ''))
+          - _BlockDeviceMappingsAdditionalStorage:
+              get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}BlockDeviceMappingsAdditionalStorageEbsVolumeSize')
+          - _BlockDeviceMappingsAdditionalStorageMount:
+              And(
+                Condition(f'{IBOX_RESNAME}BlockDeviceMappingsAdditionalStorage'),
+                get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}BlockDeviceMappingsAdditionalStorageMount')
+              )
+        IBOX_OUTPUT:
+          - DoNotSignal:
+              Value: Ref('DoNotSignal')
+          - EfsMounts:
+              Condition: 'EfsMounts'
+              Value: Join(',', Ref('EfsMounts'))
+          - _BlockDeviceMappingsAdditionalStorageEbsVolumeSize:
+              Value: get_endvalue(f'{IBOX_RESNAME}BlockDeviceMappingsAdditionalStorageEbsVolumeSize')
         BlockDeviceMappings:
           - Xvda:
               DeviceName: /dev/xvda
@@ -73,7 +67,13 @@ global:
           Arn: GetAtt('InstanceProfile', 'Arn')
         ImageId.IBOX_CODE: If(
           'LaunchTemplateDataImageIdLatest', Ref('LaunchTemplateDataImageIdLatest'), get_endvalue('LaunchTemplateDataImageId'))
+        ImageId.IBOX_AUTO_PO: {}
         ImageId: latest
+        ImageIdLatest.IBOX_PCO:
+          IBOX_CONDITION:
+            - _ImageIdLatest:
+                get_condition('', 'equals', 'latest', f'{IBOX_RESNAME}ImageId')
+        ImageIdLatest: ''
         InstanceMarketOptions:
           IBOX_IF:
             - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice
