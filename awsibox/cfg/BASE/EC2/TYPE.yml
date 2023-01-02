@@ -48,7 +48,6 @@ global:
   Apps:
     - IBOX_BASE:
         IBOX_ENABLED: False
-  CustomUserDataScript: init.sh
   LoadBalancerType: Classic
   LoadBalancer:
     CookieSticky: '0'
