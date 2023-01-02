@@ -5,14 +5,16 @@ SETUP(){
   EFSMOUNTS=_IBOX_CODE_If('EfsMounts', Join(' ', Ref('EfsMounts')), '')_IBOX_CODE_
   HOSTEDZONENAMEPRIVATE=_IBOX_CODE_str(cfg.HostedZoneNamePrivate)_IBOX_CODE_
 
-  # setup main disk
-  n=0
-  for disk in /dev/xvd[b-d]; do
-    [ -b "$disk" ] || continue
-    file -s "$disk" | grep -q "ext[34] filesystem" || { mkfs.ext4 $disk || continue; }
-    mkdir -p /media/ephemeral${n} && mount $disk /media/ephemeral${n}
-    n=$(($n+1))
-  done
+  # setup main disk - currently disabled
+  if [ "${EC2INSTANCEAUTOFORMATEXT4:-no}" = "yes" ];then
+    n=0
+    for disk in /dev/xvd[b-d]; do
+      [ -b "$disk" ] || continue
+      file -s "$disk" | grep -q "ext[34] filesystem" || { mkfs.ext4 $disk || continue; }
+      mkdir -p /media/ephemeral${n} && mount $disk /media/ephemeral${n}
+      n=$(($n+1))
+    done
+  fi
 
   # setup additional disk
   if [ -n "$ADDITIONALSTORAGEMOUNT" ];then
