@@ -1000,7 +1000,12 @@ def auto_get_props(
                 and custom_key_only not in props
             ):
                 # process IBOX_AUTO_PO custom key if the relative propname do not exist in key and props
-                _auto_PO(custom_key_only, key[propname], "po", Ref(custom_key_only))
+                _auto_PO(
+                    custom_key_only,
+                    key[propname],
+                    "po",
+                    Ref(f"{mapname}{custom_key_only}"),
+                )
 
             # IBOX_CODE
             if ibox_code in key and propname in props:
