@@ -984,15 +984,15 @@ def auto_get_props(
             if not isinstance(obj, (Output, Parameter, Condition)):
                 IBOX_CURNAME = f"{mapname}{propname}"
 
-            # IBOX_PCO for Custom Key ONLY
-            # process ibox_pco for custom key not present in obj props
-            # but only if there is not a relative ibox_auto_p/o or ibox_code key
+            # IBOX_PCO and IBOX_AUTO_PO for Custom Key ONLY
             if (
                 ibox_pco in key
                 and propname in key
                 and propname not in props
                 and all(n not in key for n in [ibox_auto_p, ibox_auto_po, ibox_code])
             ):
+                # process ibox_pco for custom key not present in obj props
+                # but only if there is not a relative ibox_auto_p/o or ibox_code key
                 _try_PCO_in_obj(key[ibox_pco])
             elif (
                 propname.endswith("IBOX_AUTO_PO")
