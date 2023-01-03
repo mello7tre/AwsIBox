@@ -813,18 +813,19 @@ def auto_get_props(
                     func_map[pco](k)
 
         def _auto_PO(name, conf, mode, value=""):
-            if mode == "p":
+            if "p" in mode:
                 parameter_base = {"Description": "Empty for mapped value"}
                 parameter_base.update(conf)
                 pco_conf = {"IBOX_PARAMETER": {f"{mapname}{name}": parameter_base}}
                 # look for Condition key and if found update pco_conf
                 condition = conf.get("Condition")
                 if condition:
-                    pco_conf.update(
-                        {"IBOX_CONDITION": {f"{mapname}{name}": condition}}
-                    )
+                    pco_conf.update({"IBOX_CONDITION": {f"{mapname}{name}": condition}})
                 _try_PCO_in_obj(pco_conf)
-            if mode == "o":
+            if "o" in mode:
+                if "Description" in conf:
+                    # avoid parsing Parameter Descrption as output one
+                    del conf["Description"]
                 if isinstance(value, int):
                     # Output value must be a string
                     value = str(value)
@@ -978,6 +979,8 @@ def auto_get_props(
             ibox_code_key = f"{propname}.IBOX_CODE_KEY"
             ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
 
+            custom_key_only = propname.replace(".IBOX_AUTO_PO", "")
+
             if not isinstance(obj, (Output, Parameter, Condition)):
                 IBOX_CURNAME = f"{mapname}{propname}"
 
@@ -991,6 +994,13 @@ def auto_get_props(
                 and all(n not in key for n in [ibox_auto_p, ibox_auto_po, ibox_code])
             ):
                 _try_PCO_in_obj(key[ibox_pco])
+            elif (
+                propname.endswith("IBOX_AUTO_PO")
+                and custom_key_only not in key
+                and custom_key_only not in props
+            ):
+                # process IBOX_AUTO_PO custom key if the relative propname do not exist in key and props
+                _auto_PO(custom_key_only, key[propname], "po", Ref(custom_key_only))
 
             # IBOX_CODE
             if ibox_code in key and propname in props:
@@ -1084,9 +1094,6 @@ def auto_get_props(
                 # Automatically create output
                 if ibox_auto_po in key:
                     ibox_auto_po_value = key[ibox_auto_po]
-                    if "Description" in ibox_auto_po_value:
-                        # avoid parsing Parameter Descrption as output one
-                        del ibox_auto_po_value["Description"]
                     _auto_PO(propname, ibox_auto_po_value, "o", value)
 
         # need to redefine it here because it's has been changed by nested supprop

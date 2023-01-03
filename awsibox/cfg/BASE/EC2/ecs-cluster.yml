@@ -90,22 +90,20 @@ global:
               Value: 'yes'
   LaunchTemplate:
     - Data:
-        IBOX_PARAMETER:
-          - _ImageIdLatest:
-              Description: 'Latest ecs ami available from SSM'
-              Default: '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
-              AllowedValues:
-                - '/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
-                - '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
-                - '/aws/service/ecs/optimized-ami/amazon-linux-2/arm64/recommended/image_id'
-                - '/aws/service/ecs/optimized-ami/amazon-linux-2022/recommended/image_id'
-                - '/aws/service/bottlerocket/aws-ecs-1/x86_64/latest/image_id'
-                - '/aws/service/bottlerocket/aws-ecs-1/arm64/latest/image_id'
-              Type: 'AWS::SSM::Parameter::Value<String>'
         BlockDeviceMappings:
           - Xvda:
               Ebs:
                 VolumeSize: 30
+        ImageIdLatest.IBOX_AUTO_PO:
+          Description: 'Latest ecs ami available from SSM'
+          Default: '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+          AllowedValues:
+            - '/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
+            - '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+            - '/aws/service/ecs/optimized-ami/amazon-linux-2/arm64/recommended/image_id'
+            - '/aws/service/ecs/optimized-ami/amazon-linux-2022/recommended/image_id'
+            - '/aws/service/bottlerocket/aws-ecs-1/x86_64/latest/image_id'
+            - '/aws/service/bottlerocket/aws-ecs-1/arm64/latest/image_id'
   Listeners: []
   RecordSet: []
   IAMRole:

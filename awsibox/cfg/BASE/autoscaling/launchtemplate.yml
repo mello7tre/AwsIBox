@@ -16,15 +16,6 @@ global:
           - _BlockDeviceMappingsAdditionalStorageEbsVolumeSize:
               Description: 'Size in GiB of additional EBS storage - 0 to disable - empty for default'
               AllowedValues: ['', '0', '4', '8', '16', '32', '64', '128', '256', '512', '1024']
-          - _ImageIdLatest:
-              Description: 'Latest Amazon Linux2 ami available from SSM'
-              Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-              AllowedValues:
-                - '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-                - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2'
-                - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-arm64-gp2'
-                - '/aws/service/ami-amazon-linux-latest/al2022-ami-minimal-kernel-default-x86_64'
-              Type: 'AWS::SSM::Parameter::Value<String>'
         IBOX_CONDITION:
           - DoNotSignal:
               Equals(Ref('DoNotSignal'), 'yes')
@@ -69,11 +60,16 @@ global:
           'LaunchTemplateDataImageIdLatest', Ref('LaunchTemplateDataImageIdLatest'), get_endvalue('LaunchTemplateDataImageId'))
         ImageId.IBOX_AUTO_PO: {}
         ImageId: latest
-        ImageIdLatest.IBOX_PCO:
-          IBOX_CONDITION:
-            - _ImageIdLatest:
-                get_condition('', 'equals', 'latest', f'{IBOX_RESNAME}ImageId')
-        ImageIdLatest: ''
+        ImageIdLatest.IBOX_AUTO_PO:
+          Description: 'Latest Amazon Linux2 ami available from SSM'
+          Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+          AllowedValues:
+            - '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+            - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2'
+            - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-arm64-gp2'
+            - '/aws/service/ami-amazon-linux-latest/al2022-ami-minimal-kernel-default-x86_64'
+          Type: 'AWS::SSM::Parameter::Value<String>'
+          Condition: get_condition('', 'equals', 'latest', f'{IBOX_RESNAME}ImageId')
         InstanceMarketOptions:
           IBOX_IF:
             - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice
