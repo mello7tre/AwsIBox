@@ -222,6 +222,9 @@ def get_endvalue(
         # ... otherway use mapping
         elif no_check_for_mappedvalues or param in cfg.mappedvalues:
             value = FindInMap(Ref("EnvShort"), Ref("AWS::Region"), param)
+        # .. or return relative paramter
+        elif param in cfg.Parameters:
+            return Ref(param)
         else:
             raise ValueError(f"{param} not present in mappedvalues.")
 
@@ -829,6 +832,8 @@ def auto_get_props(
                 if isinstance(value, int):
                     # Output value must be a string
                     value = str(value)
+                elif isinstance(value, str) and value.startswith("get_endvalue"):
+                    value = eval(value)
                 output_base = {"Value": value}
                 output_base.update(conf)
                 output = {"IBOX_OUTPUT": {f"{mapname}{name}": output_base}}
@@ -1000,7 +1005,7 @@ def auto_get_props(
                     custom_key_only,
                     key[propname],
                     "po",
-                    Ref(f"{mapname}{custom_key_only}"),
+                    f"get_endvalue('{mapname}{custom_key_only}')"
                 )
 
             # IBOX_CODE
