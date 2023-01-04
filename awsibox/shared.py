@@ -819,16 +819,17 @@ def auto_get_props(
             if "p" in mode:
                 parameter_base = {"Description": "Empty for mapped value"}
                 parameter_base.update(conf)
+                # avoid including Output Condition in Parameter
+                parameter_base.pop("Condition", "")
                 pco_conf = {"IBOX_PARAMETER": {f"{mapname}{name}": parameter_base}}
-                # look for Condition key and if found update pco_conf
-                condition = conf.get("Condition")
+                # look for CONDITION key and if found update pco_conf
+                condition = conf.get("CONDITION")
                 if condition:
                     pco_conf.update({"IBOX_CONDITION": {f"{mapname}{name}": condition}})
                 _try_PCO_in_obj(pco_conf)
             if "o" in mode:
-                if "Description" in conf:
-                    # avoid parsing Parameter Descrption as output one
-                    del conf["Description"]
+                # avoid parsing Parameter Descrption as output one
+                conf.pop("Description", "")
                 if isinstance(value, int):
                     # Output value must be a string
                     value = str(value)
