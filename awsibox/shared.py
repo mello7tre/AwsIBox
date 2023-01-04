@@ -994,12 +994,8 @@ def auto_get_props(
                 # process ibox_pco for custom key not present in obj props
                 # but only if there is not a relative ibox_auto_p/o or ibox_code key
                 _try_PCO_in_obj(key[ibox_pco])
-            elif (
-                propname.endswith("IBOX_AUTO_PO")
-                and custom_key_only not in key
-                and custom_key_only not in props
-            ):
-                # process IBOX_AUTO_PO custom key if the relative propname do not exist in key and props
+            elif propname.endswith("IBOX_AUTO_PO") and custom_key_only not in props:
+                # process IBOX_AUTO_PO custom key if the relative propname do not exist in resource props
                 _auto_PO(
                     custom_key_only,
                     key[propname],
