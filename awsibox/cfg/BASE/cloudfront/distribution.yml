@@ -58,12 +58,8 @@ global:
             CONDITION: get_condition('', 'not_equals', 'none', IBOX_CURNAME)
             Value: get_endvalue(IBOX_CURNAME)
           WebACLId: none
-        LogEnabled.IBOX_PCO:
-          IBOX_PARAMETER:
-            - _LogEnabled:
-                Description: 'Empty for mapped value'
-                AllowedValues: ['', 'yes', 'no']
-          IBOX_CONDITION:
-            - _LogEnabled:
-                get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}LogEnabled')
+        LogEnabled.IBOX_AUTO_PO:
+          Description: 'Empty for mapped value'
+          AllowedValues: ['', 'yes', 'no']
+          CONDITION: get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}LogEnabled')
         LogEnabled: 'no'
