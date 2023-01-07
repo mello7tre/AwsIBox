@@ -53,16 +53,10 @@ global:
               Description: 'The minimum SSL/TLS protocol and ciphers that CloudFront can use to communicate with viewers'
             MinimumProtocolVersion: TLSv1.2_2018
           WebACLId.IBOX_CODE: get_endvalue(IBOX_CURNAME, condition=True)
-          WebACLId.IBOX_PCO:
-            IBOX_PARAMETER:
-              - IBOX_CURNAME:
-                  Description: 'CloudFront WebACLId - empty for default based on env/role'
-            IBOX_CONDITION:
-              - IBOX_CURNAME:
-                  get_condition('', 'not_equals', 'none', IBOX_CURNAME)
-            IBOX_OUTPUT:
-              - IBOX_CURNAME:
-                  Value: get_endvalue(IBOX_CURNAME)
+          WebACLId.IBOX_AUTO_PO:
+            Description: 'CloudFront WebACLId - empty for default based on env/role'
+            CONDITION: get_condition('', 'not_equals', 'none', IBOX_CURNAME)
+            Value: get_endvalue(IBOX_CURNAME)
           WebACLId: none
         LogEnabled.IBOX_PCO:
           IBOX_PARAMETER:
