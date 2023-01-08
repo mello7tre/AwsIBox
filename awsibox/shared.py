@@ -816,6 +816,7 @@ def auto_get_props(
                     func_map[pco](k)
 
         def _auto_PO(name, conf, mode, value=""):
+            conf = dict(conf)
             if "p" in mode:
                 parameter_base = {"Description": "Empty for mapped value"}
                 parameter_base.update(conf)
