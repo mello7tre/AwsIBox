@@ -28,9 +28,9 @@ global:
                 Principal: '*'
                 Resource: "execute-api:/*"
           Version: "2012-10-17"
-  CloudFront: 'yes'
   CloudFrontDistribution:
     - IBOX_BASE:
+        Create: 'yes'
         DistributionConfig:
           Aliases:
             - Cdn: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv)

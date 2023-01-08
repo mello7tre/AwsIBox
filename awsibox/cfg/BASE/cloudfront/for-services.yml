@@ -4,29 +4,25 @@ IBoxLoader: !include
 
 global:
   Parameter:
-    - CloudFront:
-        Description: 'Create CloudFront Distribution - empty for default based on env/role'
-        AllowedValues: ['', 'yes', 'no']
     - RecordSetCloudFrontSuffix:
         Description: 'RecordSetCloudFront DNS Name Suffix - empty to disable'
   Condition:
-    - CloudFrontDistribution:
-        get_condition('', 'equals', 'yes', 'CloudFront')
     - RecordSetCloudFront:
         And(
           Condition('CloudFrontDistribution'),
           get_condition('', 'equals', 'yes', 'RecordSetCloudFront')
         )
   Output:
-    - CloudFront:
-        Value: get_endvalue('CloudFront')
     - RecordSetCloudFront:
         Condition: RecordSetCloudFront
         Value: Sub('${RecordSetCloudFront} --> ${CloudFrontDistribution.DomainName}')
-  CloudFront: 'no'
   CloudFrontDistribution:
     - IBOX_BASE:
-        Condition: CloudFrontDistribution
+        Condition: IBOX_RESNAME.Create
+        Create.IBOX_AUTO_PO:
+          AllowedValues: ['', 'yes', 'no']
+          CONDITION: get_condition('', 'equals', 'yes', f"{IBOX_RESNAME}Create")
+        Create: 'no'
         DistributionConfig:
           Aliases:
             - Cdn: If('RecordSetCloudFront',
