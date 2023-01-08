@@ -18,6 +18,12 @@ global:
         Value: Sub('${RecordSetCloudFront} --> ${CloudFrontDistribution.DomainName}')
   CloudFrontDistribution:
     - IBOX_BASE:
+        IBOX_LINKED_OBJ:
+          Route53RecordSet:
+            Key: Route53RecordSet
+            Conf:
+              IBOX_TITLE: RecordSetCloudFront
+            Type: CloudFront
         Condition: IBOX_RESNAME.Create
         Create.IBOX_AUTO_PO:
           AllowedValues: ['', 'yes', 'no']
@@ -39,9 +45,6 @@ global:
                 DomainName: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
                 Id: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
   RecordSetCloudFront: 'yes'
-  Route53RecordSet:
-    - CloudFront:
-        IBOX_ENABLED: True
 
 
 IBoxLoaderAfter: !include [
