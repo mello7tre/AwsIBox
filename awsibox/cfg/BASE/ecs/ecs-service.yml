@@ -5,14 +5,10 @@ Base: &base
       'LaunchTypeFarGate',
       If(f'{IBOX_RESNAME}EnableExecuteCommandOverride', Ref(f'{IBOX_RESNAME}EnableExecuteCommand'), True),
       get_endvalue(f'EnableExecuteCommand'))
-  EnableExecuteCommand.IBOX_PCO:
-    IBOX_PARAMETER:
-      - _EnableExecuteCommand:
-          Description: 'empty for mapped value - Default to "true" for FARGATE'
-          AllowedValues: ['', 'true', 'false']
-    IBOX_OUTPUT:
-      - _EnableExecuteCommand:
-          Value: ${EnableExecuteCommand}
+  EnableExecuteCommand.IBOX_AUTO_PO:
+    Description: 'empty for mapped value - Default to "true" for FARGATE'
+    AllowedValues: ['', 'true', 'false']
+    Value: ${EnableExecuteCommand}
   HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancer else Ref('AWS::NoValue')")
   LoadBalancers:
     - External:
