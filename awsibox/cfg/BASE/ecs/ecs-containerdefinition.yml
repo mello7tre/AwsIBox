@@ -87,15 +87,12 @@ Base: &base
       awslogs-region: Ref('AWS::Region')
       awslogs-stream-prefix: Ref('AWS::StackName')
   Memory: 128
-  MemoryReservation.IBOX_PCO:
-    IBOX_PARAMETER:
-      - _MemoryReservation:
-          Description: 'Memory soft limit - empty for mapped value - 0 to disable'
-    IBOX_CONDITION:
-      - _MemoryReservation:
-          get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}MemoryReservation')
   MemoryReservation.IBOX_CODE: If(
     f'{IBOX_RESNAME}MemoryReservation', get_endvalue(f'{IBOX_RESNAME}MemoryReservation'), Ref('AWS::NoValue'))
+  MemoryReservation.IBOX_AUTO_PO:
+    Description: 'Memory soft limit - empty for mapped value - 0 to disable'
+    CONDITION: get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}MemoryReservation')
+    Value: IBOX_SKIP
   MemoryReservation: 0
   Name.IBOX_CODE: get_subvalue(
     '${EnvRole}%s' % ('-${1M}' if 'Name' in getattr(cfg, IBOX_RESNAME) else ''), f'{IBOX_RESNAME}Name')

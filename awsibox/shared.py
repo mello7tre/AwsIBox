@@ -837,8 +837,9 @@ def auto_get_props(
                     value = eval(value)
                 output_base = {"Value": value}
                 output_base.update(conf)
-                output = {"IBOX_OUTPUT": {f"{mapname}{name}": output_base}}
-                _try_PCO_in_obj(output)
+                if output_base["Value"] != "IBOX_SKIP":
+                    output = {"IBOX_OUTPUT": {f"{mapname}{name}": output_base}}
+                    _try_PCO_in_obj(output)
 
         def _process_ibox_auto_pco_key(propname):
             ibox_auto_p = f"{propname}.IBOX_AUTO_P"
