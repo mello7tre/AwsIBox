@@ -954,6 +954,9 @@ def auto_get_props(
 
         # needed by IBOX_BASE used on Resource Properties
         if key.get("IBOX_BASE_REF"):
+            if "IBOX_REFNAME" in globals():
+                # save current value
+                globals()[f"IBOX_REFNAME@{mapname}"] = globals()["IBOX_REFNAME"]
             IBOX_REFNAME = mapname
 
         # Parameters, Conditions, Outpus in yaml cfg
@@ -1108,6 +1111,10 @@ def auto_get_props(
         # need to redefine it here because it's has been changed by nested supprop
         if not isinstance(obj, (Output, Parameter, Condition)):
             IBOX_CURNAME = mapname
+
+        if key.get("IBOX_BASE_REF") and f"IBOX_REFNAME@{mapname}" in globals():
+            # restore IBOX_REFNAME
+            IBOX_REFNAME = globals()[f"IBOX_REFNAME@{mapname}"]
 
         # title override
         try:
