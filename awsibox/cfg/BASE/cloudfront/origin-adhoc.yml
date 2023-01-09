@@ -10,6 +10,6 @@ global:
               If(
                 'CloudFrontOriginAdHoc',
                 Ref('RecordSetExternal'),
-                Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s' % cfg.HostedZoneNameEnv)
+                Sub(f'${{EnvRole}}${{{IBOX_RESNAME}DnsSuffix}}.origin.%s' % cfg.HostedZoneNameEnv)
               )
   CloudFrontOriginAdHoc: 'no'

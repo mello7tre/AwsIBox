@@ -33,7 +33,7 @@ global:
         Create: 'yes'
         DistributionConfig:
           Aliases:
-            - Cdn: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv)
+            - Cdn: Sub(f'${{EnvRole}}${{{IBOX_RESNAME}DnsSuffix}}.cdn.%s' % cfg.HostedZoneNameEnv)
           Origins:
             - Default:
                 CustomOriginConfig:

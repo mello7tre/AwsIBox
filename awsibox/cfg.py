@@ -449,7 +449,13 @@ CFG_TO_FUNC = {
     "Route53RecordSet": {
         "module": "joker",
         "func": ("route53", "RecordSetType"),
-        "dep": ["ApiGatewayDomainName", "DBInstance", "EFSFileSystem", "LoadBalancer"],
+        "dep": [
+            "ApiGatewayDomainName",
+            "DBInstance",
+            "EFSFileSystem",
+            "LoadBalancer",
+            "CloudFrontDistribution",
+        ],
     },
     "Route53ResolverEndpoint": {
         "module": "joker",

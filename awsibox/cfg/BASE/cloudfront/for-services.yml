@@ -3,25 +3,13 @@ IBoxLoader: !include
   - route53/recordset.yml
 
 global:
-  Parameter:
-    - RecordSetCloudFrontSuffix:
-        Description: 'RecordSetCloudFront DNS Name Suffix - empty to disable'
-  Condition:
-    - RecordSetCloudFront:
-        And(
-          Condition('CloudFrontDistribution'),
-          get_condition('', 'equals', 'yes', 'RecordSetCloudFront')
-        )
-  Output:
-    - RecordSetCloudFront:
-        Condition: RecordSetCloudFront
-        Value: Sub('${RecordSetCloudFront} --> ${CloudFrontDistribution.DomainName}')
   CloudFrontDistribution:
     - IBOX_BASE:
         IBOX_LINKED_OBJ:
           Route53RecordSet:
             Key: Route53RecordSet
             Conf:
+              IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
               IBOX_TITLE: RecordSetCloudFront
             Type: CloudFront
         Condition: IBOX_RESNAME.Create
@@ -30,13 +18,14 @@ global:
           CONDITION: get_condition('', 'equals', 'yes', f"{IBOX_RESNAME}Create")
         Create: 'no'
         DistributionConfig:
+          # need to escape Sub bracket {} using double ones
+          # and use IBOX_REFNAME in place of IBOX_RESNAME because i am inside a key processed by IBOX_CUSTOM_OBJ
           Aliases:
-            - Cdn: If('RecordSetCloudFront',
-                Sub('${EnvRole}${RecordSetCloudFrontSuffix}.cdn.%s' % cfg.HostedZoneNameEnv), Ref('RecordSetExternal'))
-            - Env:  Sub('${EnvRole}${RecordSetCloudFrontSuffix}.%s' % cfg.HostedZoneNameEnv)
+            - Cdn: Sub(f'${{EnvRole}}${{{IBOX_REFNAME}DnsSuffix}}.cdn.%s' % cfg.HostedZoneNameEnv)
+            - Env: Sub(f'${{EnvRole}}${{{IBOX_REFNAME}DnsSuffix}}.%s' % cfg.HostedZoneNameEnv)
           Comment: Sub('${AWS::StackName}-${EnvRole}')
           DefaultCacheBehavior:
-            TargetOriginId: Sub('${EnvRole}${RecordSetCloudFrontSuffix}.origin.%s' % cfg.HostedZoneNameEnv)
+            TargetOriginId: Sub(f'${{EnvRole}}${{{IBOX_RESNAME}DnsSuffix}}.origin.%s' % cfg.HostedZoneNameEnv)
           Origins:
             - Default:
                 CustomOriginConfig:
@@ -44,7 +33,8 @@ global:
                   HTTPPort:  get_endvalue('ListenerLoadBalancerHttpPort')
                 DomainName: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
                 Id: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
-  RecordSetCloudFront: 'yes'
+        DnsSuffix.IBOX_AUTO_PO:
+          Description: 'Useful to create duplicate stack that use CloudFront; change Aliases and DefaultOriginDomainName'
 
 
 IBoxLoaderAfter: !include [
