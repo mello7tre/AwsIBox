@@ -598,7 +598,7 @@ def auto_get_props(
     def _get_obj(obj, key, obj_propname, mapname):
         props = obj.props
         mapname_obj = f"{mapname}{obj_propname}"
-        global IBOX_PROPNAME
+        global IBOX_PROPNAME, IBOX_REFNAME
 
         def _get_obj_tags():
             prop_list = []
@@ -725,6 +725,10 @@ def auto_get_props(
             prop_list = []
             prop_class = prop_class[0]
 
+            # save IBOX_REFNAME
+            if "IBOX_REFNAME" in globals():
+                globals()[f"IBOX_REFNAME@{mapname}"] = globals()["IBOX_REFNAME"]
+
             for o, v in key[obj_propname].items():
                 # for a list of properties set IBOX_PROPNAME to the name of property
                 IBOX_PROPNAME = o
@@ -746,6 +750,10 @@ def auto_get_props(
                     prop_list.append(prop_obj)
                 else:
                     prop_list.append(iboxif(if_wrapper, mapname, prop_obj))
+
+            # restore IBOX_REFNAME
+            if f"IBOX_REFNAME@{mapname}" in globals():
+                IBOX_REFNAME = globals()[f"IBOX_REFNAME@{mapname}"]
 
             if prop_list:
                 return prop_list
@@ -954,9 +962,6 @@ def auto_get_props(
 
         # needed by IBOX_BASE used on Resource Properties
         if key.get("IBOX_BASE_REF"):
-            if "IBOX_REFNAME" in globals():
-                # save current value
-                globals()[f"IBOX_REFNAME@{mapname}"] = globals()["IBOX_REFNAME"]
             IBOX_REFNAME = mapname
 
         # Parameters, Conditions, Outpus in yaml cfg
@@ -1011,7 +1016,7 @@ def auto_get_props(
                     custom_key_only,
                     key[propname],
                     "po",
-                    f"get_endvalue('{mapname}{custom_key_only}')"
+                    f"get_endvalue('{mapname}{custom_key_only}')",
                 )
 
             # IBOX_CODE
@@ -1111,10 +1116,6 @@ def auto_get_props(
         # need to redefine it here because it's has been changed by nested supprop
         if not isinstance(obj, (Output, Parameter, Condition)):
             IBOX_CURNAME = mapname
-
-        if key.get("IBOX_BASE_REF") and f"IBOX_REFNAME@{mapname}" in globals():
-            # restore IBOX_REFNAME
-            IBOX_REFNAME = globals()[f"IBOX_REFNAME@{mapname}"]
 
         # title override
         try:
