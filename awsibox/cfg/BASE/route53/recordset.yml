@@ -71,7 +71,7 @@ CloudFront: &cloudfront
   IBOX_OUTPUT:
     - _:
         # escaped Sub bracket {} using double ones
-        # currently using fixed values for RecordSet and CloudFrontDistribution
+        # currently using fixed values for RecordSet and CloudFrontDistribution, commented out line, use a dynamic one
         # Value: Sub(f'${{{IBOX_RESNAME}}} --> ${{{IBOX_LINKED_OBJ_NAME}.DomainName}}')
         Value: Sub(f'${{RecordSetCloudFront}} --> ${{CloudFrontDistribution.DomainName}}')
   AliasTarget:
