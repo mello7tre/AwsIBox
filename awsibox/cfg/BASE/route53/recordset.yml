@@ -71,7 +71,9 @@ CloudFront: &cloudfront
   IBOX_OUTPUT:
     - _:
         # escaped Sub bracket {} using double ones
-        Value: Sub(f'${{RecordSetCloudFront}} --> ${{{IBOX_LINKED_OBJ_NAME}.DomainName}}')
+        # currently using fixed values for RecordSet and CloudFrontDistribution
+        # Value: Sub(f'${{{IBOX_RESNAME}}} --> ${{{IBOX_LINKED_OBJ_NAME}.DomainName}}')
+        Value: Sub(f'${{RecordSetCloudFront}} --> ${{CloudFrontDistribution.DomainName}}')
   AliasTarget:
     DNSName: GetAtt('CloudFrontDistribution', 'DomainName')
     HostedZoneId: cfg.HostedZoneIdCF
