@@ -58,13 +58,14 @@ def Joker(key, module, cls):
                     AllowedValues=["", "yes", "no"],
                 )
             )
-            add_obj(get_condition(resname, "equals", "yes", f"{resname}Create"))
-            add_obj(
-                Output(
-                    resname, Condition=resname, Value=Ref(v.get("IBOX_TITLE", resname))
+            if "Create.IBOX_AUTO_PO" not in v:
+                add_obj(get_condition(resname, "equals", "yes", f"{resname}Create"))
+                add_obj(
+                    Output(
+                        resname, Condition=resname, Value=Ref(v.get("IBOX_TITLE", resname))
+                    )
                 )
-            )
-            if not hasattr(obj, "Condition"):
-                obj.Condition = resname
+                if not hasattr(obj, "Condition"):
+                    obj.Condition = resname
 
         add_obj(obj)
