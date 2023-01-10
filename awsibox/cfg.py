@@ -72,17 +72,6 @@ VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PUBLIC = [
     f"{VPC_DEFAULT_CIDR_BLOCK_PREFIX}.{i + 200}.0/24" for i in range(AZones["MAX"])
 ]
 
-PARAMETERS_SKIP_OVERRIDE_CONDITION = (
-    "Env",
-    "UpdateMode",
-    "RecordSetExternal",
-    "DoNotSignal",
-    "EfsMounts",
-    "LaunchTemplateDataImageIdLatest",
-    "VPCCidrBlock",
-    "VPCName",
-)
-
 TROPO_CLASS_TO_CFM = {
     "AWS::WAFv2::WebACL": {
         "WebACLRule": "Rule",

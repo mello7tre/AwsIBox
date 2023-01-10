@@ -45,7 +45,6 @@ from . import cfg
 from .cfg import (
     MAX_SECURITY_GROUPS,
     SECURITY_GROUPS_DEFAULT,
-    PARAMETERS_SKIP_OVERRIDE_CONDITION,
 )
 
 

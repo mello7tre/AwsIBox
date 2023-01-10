@@ -53,9 +53,7 @@ class Parameter(Parameter):
 def stack_add_res():
     for n, v in cfg.Parameters.items():
         # Automatically create override conditions for parameters
-        #if n in list(cfg.fixedvalues) + cfg.mappedvalues:
-        if not n.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION):
-
+        if n in list(cfg.fixedvalues) + cfg.mappedvalues:
             if n.endswith("InstanceType"):
                 default = "default"
             elif n == "SecurityGroups":
@@ -195,7 +193,7 @@ def get_endvalue(
         if (
             cfg.no_override is False
             and param in cfg.Parameters
-            and not param.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)
+            and param in list(cfg.fixedvalues) + cfg.mappedvalues
         ):
             override_value = If(f"{param}Override", Ref(param), value)
         else:
@@ -432,7 +430,7 @@ def get_condition(
 
     if (
         key_name in cfg.Parameters
-        and not key_name.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION)
+        and key_name in list(cfg.fixedvalues) + cfg.mappedvalues
         and not nomap
     ):
         key_override = f"{key_name}Override"
