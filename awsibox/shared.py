@@ -53,6 +53,7 @@ class Parameter(Parameter):
 def stack_add_res():
     for n, v in cfg.Parameters.items():
         # Automatically create override conditions for parameters
+        #if n in list(cfg.fixedvalues) + cfg.mappedvalues:
         if not n.startswith(PARAMETERS_SKIP_OVERRIDE_CONDITION):
 
             if n.endswith("InstanceType"):

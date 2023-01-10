@@ -1,93 +1,81 @@
-Base: &base
-  IBOX_ENABLED: False
-  Cluster: get_expvalue('Cluster', 'ClusterStack')
-  EnableExecuteCommand.IBOX_CODE: If(
-      'LaunchTypeFarGate',
-      If(f'{IBOX_RESNAME}EnableExecuteCommandOverride', Ref(f'{IBOX_RESNAME}EnableExecuteCommand'), True),
-      get_endvalue(f'EnableExecuteCommand'))
-  EnableExecuteCommand.IBOX_AUTO_PO:
-    Description: 'empty for mapped value - Default to "true" for FARGATE'
-    AllowedValues: ['', 'true', 'false']
-    Value: ${EnableExecuteCommand}
-  HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancer else Ref('AWS::NoValue')")
-  LoadBalancers:
-    - External:
-        ContainerName: Ref('EnvRole')
-        ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
-        TargetGroupArn: Ref('TargetGroupExternal')
-    - Internal:
-        ContainerName: Ref('EnvRole')
-        ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
-        TargetGroupArn: Ref('TargetGroupInternal')
-  NetworkConfiguration:
-    IBOX_IF:
-      - NetworkModeAwsVpc
-      - IBOX_IFVALUE
-      - Ref('AWS::NoValue')
-    AwsvpcConfiguration:
-      SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + cfg.SecurityGroupsImport
-      Subnets: Split(',', get_expvalue('SubnetsPrivate'))
-  PlatformVersion: If('LaunchTypeFarGate', 'LATEST', Ref('AWS::NoValue'))
-  TaskDefinition: Ref('TaskDefinition')
-
-Replica: &replica
-  DesiredCount: get_endvalue('CapacityDesired')
-  DeploymentConfiguration:
-    MaximumPercent.IBOX_AUTO_PO: {}
-    MaximumPercent: 200
-    MinimumHealthyPercent.IBOX_AUTO_PO: {}
-    MinimumHealthyPercent: 100
-  LaunchType: If('LaunchTypeFarGate', get_endvalue('LaunchType'), Ref('AWS::NoValue'))
-  PlacementStrategies:
-    - IBOX_IF:
-        - LaunchTypeFarGate
-        - Ref('AWS::NoValue')
-        - IBOX_IFVALUE
-    - 0:
-        IBOX_OUTPUT:
-          - _PlacementStrategies0:
-              Value: Type= ${Type} ,Field= ${Field}
-        Type.IBOX_AUTO_P:
-          AllowedValues: ['', 'binpack', 'random', 'spread']
-        Type: spread
-        Field.IBOX_PCO:
-          IBOX_CONDITION:
-            - _PlacementStrategies0TypeRandom:
-                get_condition('', 'equals', 'random', f'{IBOX_RESNAME}PlacementStrategies0Type')
-        Field.IBOX_AUTO_P: {}
-        Field.IBOX_CODE: If(
-          f'{IBOX_RESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
-          get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Field'))
-        Field: instanceId
-
-#    If('LaunchTypeFarGate', Ref('AWS::NoValue'),
-#                          [ecs.PlacementStrategy(Type='spread', Field='instanceId')])
-#                          #ecs.PlacementStrategy(Type='spread', Field='attribute:ecs.availability-zone')
-  SchedulingStrategy: REPLICA
-  
-Daemon: &daemon
-  SchedulingStrategy: DAEMON
-  LaunchType: EC2
-
-Spot: &spot
-  CapacityProviderStrategy:
-    - FargateSpot:
-        Base: 1
-        CapacityProvider: FARGATE_SPOT
-        Weight: 1
-  DesiredCount: get_endvalue('CapacityDesired')
-
-
 global:
   Service:
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        Cluster: get_expvalue('Cluster', 'ClusterStack')
+        EnableExecuteCommand.IBOX_CODE: If(
+            'LaunchTypeFarGate',
+            If(f'{IBOX_RESNAME}EnableExecuteCommandOverride', Ref(f'{IBOX_RESNAME}EnableExecuteCommand'), True),
+            get_endvalue(f'EnableExecuteCommand'))
+        EnableExecuteCommand.IBOX_AUTO_PO:
+          Description: 'empty for mapped value - Default to "true" for FARGATE'
+          AllowedValues: ['', 'true', 'false']
+          Value: ${EnableExecuteCommand}
+        EnableExecuteCommand: false
+        HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancer else Ref('AWS::NoValue')")
+        LoadBalancers:
+          - External:
+              ContainerName: Ref('EnvRole')
+              ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
+              TargetGroupArn: Ref('TargetGroupExternal')
+          - Internal:
+              ContainerName: Ref('EnvRole')
+              ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
+              TargetGroupArn: Ref('TargetGroupInternal')
+        NetworkConfiguration:
+          IBOX_IF:
+            - NetworkModeAwsVpc
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
+          AwsvpcConfiguration:
+            SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + cfg.SecurityGroupsImport
+            Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+        PlatformVersion: If('LaunchTypeFarGate', 'LATEST', Ref('AWS::NoValue'))
+        TaskDefinition: Ref('TaskDefinition')
     - Base:
-        <<: [*base, *replica]
         IBOX_TITLE: Service
+        DesiredCount: get_endvalue('CapacityDesired')
+        DeploymentConfiguration:
+          MaximumPercent.IBOX_AUTO_PO: {}
+          MaximumPercent: 200
+          MinimumHealthyPercent.IBOX_AUTO_PO: {}
+          MinimumHealthyPercent: 100
+        LaunchType: If('LaunchTypeFarGate', get_endvalue('LaunchType'), Ref('AWS::NoValue'))
+        PlacementStrategies:
+          - IBOX_IF:
+              - LaunchTypeFarGate
+              - Ref('AWS::NoValue')
+              - IBOX_IFVALUE
+          - 0:
+              IBOX_OUTPUT:
+                - _PlacementStrategies0:
+                    Value: Type= ${Type} ,Field= ${Field}
+              Type.IBOX_AUTO_P:
+                AllowedValues: ['', 'binpack', 'random', 'spread']
+              Type: spread
+              Field.IBOX_PCO:
+                IBOX_CONDITION:
+                  - _PlacementStrategies0TypeRandom:
+                      get_condition('', 'equals', 'random', f'{IBOX_RESNAME}PlacementStrategies0Type')
+              Field.IBOX_AUTO_P: {}
+              Field.IBOX_CODE: If(
+                f'{IBOX_RESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
+                get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Field'))
+              Field: instanceId
+      #    If('LaunchTypeFarGate', Ref('AWS::NoValue'),
+      #                          [ecs.PlacementStrategy(Type='spread', Field='instanceId')])
+      #                          #ecs.PlacementStrategy(Type='spread', Field='attribute:ecs.availability-zone')
+        SchedulingStrategy: REPLICA
     - Daemon:
-        <<: [*base, *daemon]
+        SchedulingStrategy: DAEMON
+        LaunchType: EC2
     - Spot:
-        <<: [*base, *spot]
-
+        CapacityProviderStrategy:
+          - FargateSpot:
+              Base: 1
+              CapacityProvider: FARGATE_SPOT
+              Weight: 1
+        DesiredCount: get_endvalue('CapacityDesired')
   Condition:
     - EnableExecuteCommand:
         get_condition('', 'equals', True, f'EnableExecuteCommand')
