@@ -66,5 +66,4 @@ global:
             WaitOnResourceSignals: true
           AutoScalingScheduledAction:
             IgnoreUnmodifiedGroupSizeProperties: true
-        VPCZoneIdentifier: Split(',', get_expvalue(cfg.VPCZoneIdentifier))
-  VPCZoneIdentifier: SubnetsPrivate
+        VPCZoneIdentifier: Split(',', get_expvalue('SubnetsPrivate'))
