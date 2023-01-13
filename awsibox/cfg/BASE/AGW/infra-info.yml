@@ -10,7 +10,6 @@ global:
         Name: 'InfraInfo'
         Stage: v1
         BinaryMediaTypes: ['*/*']
-  CloudFront: IBOX_SKIP_FUNC
   ApiGatewayMethod:
     - Resource01RootGET:
         ApiKeyRequired: false
