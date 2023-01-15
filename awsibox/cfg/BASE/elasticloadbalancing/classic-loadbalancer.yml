@@ -1,9 +1,6 @@
 global:
   ElasticLoadBalancingLoadBalancer:
     - IBOX_BASE:
-        IBOX_CONDITION:
-          - LoadBalancerCookieSticky:
-              get_condition('', 'not_equals', '0', 'LoadBalancerCookieSticky')
         IBOX_OUTPUT:
           - HealthCheck:
               Value:
@@ -40,14 +37,15 @@ global:
           Timeout: '6'
           UnhealthyThreshold: '3'
         LBCookieStickinessPolicy:
-        # need to do it this "BAD" way cause troposphere/elasticloadbalancing.py classes do not specify class "type" inside list
-          If(
-            'LoadBalancerCookieSticky',
-            [dict([
-              ('PolicyName', 'LBCookieStickinessPolicy'),
-              ('CookieExpirationPeriod', get_endvalue('LoadBalancerCookieSticky')),
-            ])], Ref('AWS::NoValue')
-          )
+          - IBOX_IF:
+              - IBOX_MAPNAME.LBCookieStickinessPolicyBaseCookieExpirationPeriod
+              - IBOX_IFVALUE
+              - Ref('AWS::NoValue')
+          - Base:
+              PolicyName: LBCookieStickinessPolicy
+              CookieExpirationPeriod.IBOX_AUTO_PO:
+                CONDITION: get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}LBCookieStickinessPolicyBaseCookieExpirationPeriod')
+              CookieExpirationPeriod: '0'
         SecurityGroups:
           - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
     - External:

@@ -18,6 +18,8 @@ from .ec2 import SecurityGroupIngressInstanceELBPorts
 # Temporary fix for https://github.com/cloudtools/troposphere/issues/1474
 elbv2.one_of = my_one_of
 
+# Fix troposphere/elasticloadbalancing.py LBCookieStickinessPolicy is a List and do not use class LBCookieStickinessPolicy
+elb.LoadBalancer.props["LBCookieStickinessPolicy"] = ([elb.LBCookieStickinessPolicy], False)
 
 # S - V2 LOAD BALANCING #
 class ELBV2ListernerRuleECS(elbv2.ListenerRule):
