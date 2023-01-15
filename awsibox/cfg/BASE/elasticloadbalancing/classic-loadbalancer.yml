@@ -17,12 +17,10 @@ global:
                     f'{IBOX_MAPNAME}HealthCheckHealthyThreshold',
                     f'{IBOX_MAPNAME}HealthCheckUnhealthyThreshold'])
         AccessLoggingPolicy:
-          IBOX_IF:
-            - LoadBalancerLog
-            - IBOX_IFVALUE
-            - Ref('AWS::NoValue')
-          EmitInterval: get_endvalue('LoadBalancerLog')
-          Enabled: true
+          EmitInterval.IBOX_AUTO_PO: {}
+          EmitInterval: 5
+          Enabled.IBOX_AUTO_PO: {}
+          Enabled: false
           S3BucketName: Sub(cfg.BucketNameLogs)
           S3BucketPrefix: ''
         ConnectionDrainingPolicy:
