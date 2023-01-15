@@ -17,9 +17,14 @@ global:
                     f'{IBOX_MAPNAME}HealthCheckHealthyThreshold',
                     f'{IBOX_MAPNAME}HealthCheckUnhealthyThreshold'])
         AccessLoggingPolicy:
+          IBOX_IF:
+            - IBOX_MAPNAME.AccessLoggingPolicyEnabled
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
           EmitInterval.IBOX_AUTO_PO: {}
           EmitInterval: 5
-          Enabled.IBOX_AUTO_PO: {}
+          Enabled.IBOX_AUTO_PO:
+            CONDITION: get_condition('', 'equals', True, f'{IBOX_MAPNAME}AccessLoggingPolicyEnabled')
           Enabled: false
           S3BucketName: Sub(cfg.BucketNameLogs)
           S3BucketPrefix: ''

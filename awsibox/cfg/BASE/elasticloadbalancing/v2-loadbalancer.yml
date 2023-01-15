@@ -1,39 +1,32 @@
 LoadBalancerAttributesLogEnabled: &attr_log_enabled
-  IBOX_IF:
-    - LoadBalancerLog
-    - IBOX_IFVALUE
-    - 
-      Key: access_logs.s3.enabled
-      Value: 'false'
   Key: access_logs.s3.enabled
-  Value: 'true'
+  Value.IBOX_AUTO_PO:
+    AllowedValues: ['', 'true', 'false']
+    CONDITION: get_condition('', 'equals', 'true', f'{IBOX_MAPNAME}LoadBalancerAttributesLogEnabledValue')
+  Value: 'false'
 LoadBalancerAttributesLogBucket: &attr_log_bucket
   IBOX_IF:
-    - LoadBalancerLog
+    - IBOX_MAPNAME.LoadBalancerAttributesLogEnabledValue
     - IBOX_IFVALUE
     - Ref('AWS::NoValue')
   Key: access_logs.s3.bucket
   Value: Sub(cfg.BucketNameLogs)
 LoadBalancerAttributesLogPrefix: &att_log_prefix
   IBOX_IF:
-    - LoadBalancerLog
+    - IBOX_MAPNAME.LoadBalancerAttributesLogEnabledValue
     - IBOX_IFVALUE
     - Ref('AWS::NoValue')
   Key: access_logs.s3.prefix
   Value: Sub('${EnvRole}.${AWS::StackName}')
 
 Application: &app
-  IBOX_PARAMETER:
-    - LoadBalancerHttp2:
-        Description: 'empty for mapped value'
-        AllowedValues: ['', 'true', 'false']
   LoadBalancerAttributes:
     - LogEnabled: *attr_log_enabled
     - LogBucket: *attr_log_bucket
     - LogPrefix: *att_log_prefix
     - Http2:
         Key: routing.http2.enabled
-        Value: get_endvalue('LoadBalancerHttp2')
+        Value: 'true'
   SecurityGroups:
     - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
   Type: application
