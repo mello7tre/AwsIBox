@@ -7,12 +7,6 @@ IBoxLoader: !include
   - route53/recordset.yml
 
 global:
-  HealthCheckIntervalSeconds: 30
-  HealthCheckTimeoutSeconds: 6
-  HealthCheckPath: none
-  HealthCheckTarget: none
-  HealthyThresholdCount: 2
-  UnhealthyThresholdCount: 3
 
 
 IBoxLoaderAfter: !include [

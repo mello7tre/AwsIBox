@@ -1,92 +1,84 @@
 Base: &base
-  HealthCheckIntervalSeconds: get_endvalue('HealthCheckIntervalSeconds')
-  HealthCheckTimeoutSeconds: get_endvalue('HealthCheckTimeoutSeconds')
+  HealthCheckIntervalSeconds: 30
+  HealthCheckTimeoutSeconds: 6
   HealthCheckPath: get_endvalue('HealthCheckPath')
-  HealthyThresholdCount: get_endvalue('HealthyThresholdCount')
-  UnhealthyThresholdCount: get_endvalue('UnhealthyThresholdCount')
+  HealthyThresholdCount: 2
+  UnhealthyThresholdCount: 3
   TargetGroupAttributes:
+    - CookieDuration:
+        IBOX_IF:
+          - IBOX_MAPNAME.TargetGroupAttributesCookieDurationValue
+          - IBOX_IFVALUE
+          - Ref('AWS::NoValue')
+        Key: 'stickiness.lb_cookie.duration_seconds'
+        Value.IBOX_AUTO_PO:
+          Description: Sticky Cookie duration in seconds - empty for mapped value - 0 to disable
+          CONDITION: get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}TargetGroupAttributesCookieDurationValue')
+        Value: '0'
     - DeregistrationDelay:
         Key: 'deregistration_delay.timeout_seconds'
         Value.IBOX_AUTO_PO: {}
         Value: '30'
     - GroupCookieSticky:
         Key: 'stickiness.enabled'
-        Value: If('TargetGroupCookieSticky', 'true', 'false')
-    - CookieDuration:
-        IBOX_IF:
-          - TargetGroupCookieSticky
-          - IBOX_IFVALUE
-          - Ref('AWS::NoValue')
-        Key: 'stickiness.lb_cookie.duration_seconds'
-        Value: get_endvalue('TargetGroupCookieSticky')
-  Protocol: get_endvalue('TargetGroupProtocol')
+        Value: If(f'{IBOX_MAPNAME}TargetGroupAttributesCookieDurationValue', 'true', 'false')
+  Protocol: HTTP
   VpcId: get_expvalue('VpcId')
 
-EC2: &ec2
-  <<: *base
-  IBOX_OUTPUT:
-    - HealthCheck:
-        Value:
-          get_subvalue(
-            'Type=${1M},Path=${2M},Interval=${3M},Timeout=${4M},Healthy=${5M},Unhealthy=${6M}',
-            [
-              'AutoScalingGroupBaseHealthCheckType',
-              'HealthCheckPath',
-              'HealthCheckIntervalSeconds',
-              'HealthCheckTimeoutSeconds',
-              'HealthyThresholdCount',
-              'UnhealthyThresholdCount'])
-  Port: get_endvalue('Listeners1InstancePort')
-
-ECS: &ecs
-  <<: *base
-  IBOX_OUTPUT:
-    - HealthCheck:
-        Value:
-          get_subvalue(
-            'Path=${1M},Interval=${2M},Timeout=${3M},Healthy=${4M},Unhealthy=${5M}',
-            [
-              'HealthCheckPath',
-              'HealthCheckIntervalSeconds',
-              'HealthCheckTimeoutSeconds',
-              'HealthyThresholdCount',
-              'UnhealthyThresholdCount'])
-    - LoadBalancerApplication:
-        Value: get_endvalue('LoadBalancer', nolist=True)
-    - ListenerLoadBalancer:
-        Value: get_subvalue('HttpPort=${1M},HttpsPort=${2M}', ['ListenerLoadBalancerHttpPort', 'ListenerLoadBalancerHttpsPort'])
-  Port: get_endvalue('ContainerDefinitions1ContainerPort')
-  TargetType: If('NetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))
-
-ALB: &alb
-  IBOX_OUTPUT:
-    - TargetGroupServiceUnavailable.IBOX_INDEXNAME:
-        Value: Ref(f"TargetGroupServiceUnavailable{IBOX_INDEXNAME}")
-  Condition: str(f"LoadBalancerApplication{IBOX_INDEXNAME}")
-  Targets:
-    - ServiceUnavailable:
-        Id: get_expvalue(f'LambdaServiceUnavailableArn')
-  TargetType: lambda
-
-
 global:
-  Condition:
-    - TargetGroupCookieSticky:
-        get_condition('', 'not_equals', '0', 'TargetGroupCookieSticky')
-  ElasticLoadBalancingV2TargetGroupEC2: 
-    - External: *ec2
-    - Internal: *ec2
-    - Network:
+  ElasticLoadBalancingV2TargetGroupEC2:
+    - IBOX_BASE:
         <<: *base
+        IBOX_OUTPUT:
+          - HealthCheck:
+              Value:
+                get_subvalue(
+                  'Type=${1M},Path=${2M},Interval=${3M},Timeout=${4M},Healthy=${5M},Unhealthy=${6M}',
+                  [
+                    'AutoScalingGroupBaseHealthCheckType',
+                    'HealthCheckPath',
+                    f'{IBOX_MAPNAME}HealthCheckIntervalSeconds',
+                    f'{IBOX_MAPNAME}HealthCheckTimeoutSeconds',
+                    f'{IBOX_MAPNAME}HealthyThresholdCount',
+                    f'{IBOX_MAPNAME}UnhealthyThresholdCount'])
+        Port: get_endvalue('Listeners1InstancePort')
+    - External: {}
+    - Internal: {}
+    - Network:
         HealthCheckPath: Ref('AWS::NoValue')
         HealthCheckTimeoutSeconds: Ref('AWS::NoValue')
         HealthyThresholdCount: Ref('AWS::NoValue')
         UnhealthyThresholdCount: Ref('AWS::NoValue')
         Port: get_endvalue(f'{IBOX_REMAPNAME}InstancePort')
   ElasticLoadBalancingV2TargetGroupECS:
-    - IBOX_BASE: *ecs
+    - IBOX_BASE:
+        <<: *base
+        IBOX_OUTPUT:
+          - HealthCheck:
+              Value:
+                get_subvalue(
+                  'Path=${1M},Interval=${2M},Timeout=${3M},Healthy=${4M},Unhealthy=${5M}',
+                  [
+                    'HealthCheckPath',
+                    f'{IBOX_MAPNAME}HealthCheckIntervalSeconds',
+                    f'{IBOX_MAPNAME}HealthCheckTimeoutSeconds',
+                    f'{IBOX_MAPNAME}HealthyThresholdCount',
+                    f'{IBOX_MAPNAME}UnhealthyThresholdCount'])
+          - LoadBalancerApplication:
+              Value: get_endvalue('LoadBalancer', nolist=True)
+          - ListenerLoadBalancer:
+              Value: get_subvalue('HttpPort=${1M},HttpsPort=${2M}', ['ListenerLoadBalancerHttpPort', 'ListenerLoadBalancerHttpsPort'])
+        Port: get_endvalue('ContainerDefinitions1ContainerPort')
+        TargetType: If('NetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))
   ElasticLoadBalancingV2TargetGroupALB:
-    - External: *alb
-    - Internal: *alb
-  TargetGroupCookieSticky: '0'
-  TargetGroupProtocol: HTTP
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - TargetGroupServiceUnavailable.IBOX_INDEXNAME:
+              Value: Ref(f"TargetGroupServiceUnavailable{IBOX_INDEXNAME}")
+        Condition: str(f"LoadBalancerApplication{IBOX_INDEXNAME}")
+        Targets:
+          - ServiceUnavailable:
+              Id: get_expvalue(f'LambdaServiceUnavailableArn')
+        TargetType: lambda
+    - External: {}
+    - Internal: {}
