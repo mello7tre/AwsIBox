@@ -35,10 +35,10 @@ global:
           IdleTimeout: 60
         CrossZone: true
         HealthCheck:
-          HealthyThreshold: 2
-          Interval: 30
-          Timeout: 6
-          UnhealthyThreshold: 3
+          HealthyThreshold: '2'
+          Interval: '30'
+          Timeout: '6'
+          UnhealthyThreshold: '3'
         LBCookieStickinessPolicy:
         # need to do it this "BAD" way cause troposphere/elasticloadbalancing.py classes do not specify class "type" inside list
           If(

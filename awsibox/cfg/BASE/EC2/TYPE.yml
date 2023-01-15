@@ -49,9 +49,7 @@ global:
     - IBOX_BASE:
         IBOX_ENABLED: False
   LoadBalancerType: Classic
-  LoadBalancer:
-    CookieSticky: '0'
-    IdleTimeout: 60
+  LoadBalancerCookieSticky: '0'
   IAMPolicy:
     - CloudFormation:
         Roles:
