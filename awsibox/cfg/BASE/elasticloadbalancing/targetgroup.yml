@@ -1,7 +1,6 @@
 Base: &base
   HealthCheckIntervalSeconds: 30
   HealthCheckTimeoutSeconds: 6
-  HealthCheckPath: get_endvalue('HealthCheckPath')
   HealthyThresholdCount: 2
   UnhealthyThresholdCount: 3
   TargetGroupAttributes:
@@ -36,7 +35,7 @@ global:
                   'Type=${1M},Path=${2M},Interval=${3M},Timeout=${4M},Healthy=${5M},Unhealthy=${6M}',
                   [
                     'AutoScalingGroupBaseHealthCheckType',
-                    'HealthCheckPath',
+                    f'{IBOX_MAPNAME}HealthCheckPath',
                     f'{IBOX_MAPNAME}HealthCheckIntervalSeconds',
                     f'{IBOX_MAPNAME}HealthCheckTimeoutSeconds',
                     f'{IBOX_MAPNAME}HealthyThresholdCount',
@@ -59,7 +58,7 @@ global:
                 get_subvalue(
                   'Path=${1M},Interval=${2M},Timeout=${3M},Healthy=${4M},Unhealthy=${5M}',
                   [
-                    'HealthCheckPath',
+                    f'{IBOX_MAPNAME}HealthCheckPath',
                     f'{IBOX_MAPNAME}HealthCheckIntervalSeconds',
                     f'{IBOX_MAPNAME}HealthCheckTimeoutSeconds',
                     f'{IBOX_MAPNAME}HealthyThresholdCount',
