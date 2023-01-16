@@ -59,11 +59,6 @@ ALB: &alb
 
 
 global:
-  Listener:
-    - Classic:
-        PolicyNames:
-          - If('LoadBalancerCookieSticky', 'LBCookieStickinessPolicy', Ref('AWS::NoValue'))
-        SSLCertificateId: get_endvalue('RegionalCertificateArn')
   ListenerV2ECS:
     - HttpExternal:
         <<: *httpexternal

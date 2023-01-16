@@ -42,10 +42,15 @@ global:
               - IBOX_IFVALUE
               - Ref('AWS::NoValue')
           - Base:
-              PolicyName: LBCookieStickinessPolicy
+              PolicyName: LBCookieStickinessPolicyBase
               CookieExpirationPeriod.IBOX_AUTO_PO:
                 CONDITION: get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}LBCookieStickinessPolicyBaseCookieExpirationPeriod')
               CookieExpirationPeriod: '0'
+        Listeners:
+          - IBOX_BASE:
+              PolicyNames:
+                - If(f'{IBOX_MAPNAME}LBCookieStickinessPolicyBaseCookieExpirationPeriod', 'LBCookieStickinessPolicyBase', Ref('AWS::NoValue'))
+              SSLCertificateId: get_endvalue('RegionalCertificateArn')
         SecurityGroups:
           - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
     - External:

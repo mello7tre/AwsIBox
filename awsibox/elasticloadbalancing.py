@@ -20,6 +20,7 @@ elbv2.one_of = my_one_of
 
 # Fix troposphere/elasticloadbalancing.py LBCookieStickinessPolicy is a List and do not use class LBCookieStickinessPolicy
 elb.LoadBalancer.props["LBCookieStickinessPolicy"] = ([elb.LBCookieStickinessPolicy], False)
+elb.LoadBalancer.props["Listeners"] = ([elb.Listener], False)
 
 # S - V2 LOAD BALANCING #
 class ELBV2ListernerRuleECS(elbv2.ListenerRule):
@@ -89,16 +90,8 @@ def enable_recordset(rtype):
 
 def LB_ListenersEC2():
     # Resources
-    Listeners = []
     for n, v in cfg.Listeners.items():
         mapname = f"Listeners{n}"  # Ex ListenersPort5601
-
-        if cfg.LoadBalancerType == "Classic":
-            Listener = elb.Listener(mapname)
-            auto_get_props(Listener)
-            auto_get_props(Listener, "ListenerClassic")
-            Listeners.append(Listener)
-
         # resources
         r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
             f"SecurityGroupIngress{mapname}", listener=mapname
@@ -120,8 +113,6 @@ def LB_ListenersEC2():
             add_obj(Listener_Output)
 
         add_obj(r_SGIInstance)
-
-    return Listeners
 
 
 def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
@@ -365,14 +356,13 @@ def LB_TargetGroupsALB():
 
 
 def LB_ElasticLoadBalancingClassicEC2():
-    Listeners = LB_ListenersEC2()
+    LB_ListenersEC2()
     for n, v in cfg.ElasticLoadBalancingLoadBalancer.items():
         # resources
         if n not in cfg.LoadBalancer:
             continue
         r_LB = elb.LoadBalancer(f"LoadBalancerClassic{n}")
         auto_get_props(r_LB, mapname=f"ElasticLoadBalancingLoadBalancer{n}")
-        r_LB.Listeners = Listeners
 
         add_obj(r_LB)
         cfg.Alarm[f"Backend{n}5XX"]["IBOX_ENABLED"] = True
