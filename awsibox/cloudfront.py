@@ -46,6 +46,8 @@ def origin_process(name, key):
 
 def CF_CloudFront(key):
     for n, v in getattr(cfg, key).items():
+        if not v.get("IBOX_ENABLED", True):
+            continue
         resname = f"{key}{n}"
         # Resources
         R_CloudFrontDistribution = clf.Distribution(resname)
