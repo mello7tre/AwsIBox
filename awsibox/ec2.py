@@ -195,7 +195,16 @@ def SG_SecurityGroupRules(groupname, ingresses):
     SecurityGroup_Rules = []
     kwargs = {}
 
-    # Trick to populate SecurityGroupIngress using cfg.Listeners
+    # Just get config from first defined LoadBalancer
+    listeners_cfg = {}
+    if cfg.LoadBalancer and cfg.LoadBalancerType == "Classic":
+        for e in cfg.LoadBalancer:
+            listeners_cfg.update(
+                getattr(cfg, f"ElasticLoadBalancingLoadBalancer{e}")["Listeners"]
+            )
+            break
+
+    # Trick to populate SecurityGroupIngress using Listeners
     if ingresses:
         # use SecurityGroupIngress
         prefix = f"{groupname}SecurityGroupIngress"
@@ -204,13 +213,13 @@ def SG_SecurityGroupRules(groupname, ingresses):
     else:
         # use cfg.Listeners
         prefix = "Listeners"
-        ingresses = cfg.Listeners
+        ingresses = listeners_cfg
         use_listener = True
         cond_key = "Access"
 
     for n, v in ingresses.items():
         if use_listener:
-            # Trick to populate SecurityGroupIngress using cfg.Listeners
+            # Trick to populate SecurityGroupIngress using Listeners
             v["CidrIp"] = v["Access"]
             v["FromPort"] = v["LoadBalancerPort"]
             v["ToPort"] = v["LoadBalancerPort"]
@@ -222,8 +231,12 @@ def SG_SecurityGroupRules(groupname, ingresses):
         if allowed_ip:
             for m, w in cfg.AllowedIp.items():
                 r_SGRule = SecurityGroupRule(resname)
-                auto_get_props(r_SGRule, **kwargs, res_obj_type="AWS::EC2::SecurityGroup")
-                auto_get_props(r_SGRule, f"AllowedIp{m}", res_obj_type="AWS::EC2::SecurityGroup")
+                auto_get_props(
+                    r_SGRule, **kwargs, res_obj_type="AWS::EC2::SecurityGroup"
+                )
+                auto_get_props(
+                    r_SGRule, f"AllowedIp{m}", res_obj_type="AWS::EC2::SecurityGroup"
+                )
                 SecurityGroup_Rules.append(
                     If(f"AllowedIp{m}", r_SGRule, Ref("AWS::NoValue"))
                 )

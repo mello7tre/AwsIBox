@@ -19,7 +19,10 @@ from .ec2 import SecurityGroupIngressInstanceELBPorts
 elbv2.one_of = my_one_of
 
 # Fix troposphere/elasticloadbalancing.py LBCookieStickinessPolicy is a List and do not use class LBCookieStickinessPolicy
-elb.LoadBalancer.props["LBCookieStickinessPolicy"] = ([elb.LBCookieStickinessPolicy], False)
+elb.LoadBalancer.props["LBCookieStickinessPolicy"] = (
+    [elb.LBCookieStickinessPolicy],
+    False,
+)
 elb.LoadBalancer.props["Listeners"] = ([elb.Listener], False)
 
 # S - V2 LOAD BALANCING #
@@ -88,13 +91,13 @@ def enable_recordset(rtype):
         record["IBOX_ENABLED"] = True
 
 
-def LB_ListenersEC2():
-    # Resources
-    for n, v in cfg.Listeners.items():
-        mapname = f"Listeners{n}"  # Ex ListenersPort5601
+def LB_ListenersEC2(Listeners={}, listener_prefix=""):
+    for n, v in Listeners.items():
+        resname = f"Listeners{n}"  # Ex ListenersPort5601
+        mapname = f"{listener_prefix}{resname}"
         # resources
         r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
-            f"SecurityGroupIngress{mapname}", listener=mapname
+            f"SecurityGroupIngress{resname}", listener=mapname
         )
 
         if cfg.LoadBalancerType == "Network":
@@ -102,7 +105,7 @@ def LB_ListenersEC2():
             del r_SGIInstance.properties["SourceSecurityGroupId"]
         else:
             # outputs
-            Listener_Output = Output(mapname)
+            Listener_Output = Output(resname)
             Listener_Output.Value = Sub(
                 "Protocol=${Protocol},Access=${Access}",
                 **{
@@ -356,7 +359,17 @@ def LB_TargetGroupsALB():
 
 
 def LB_ElasticLoadBalancingClassicEC2():
-    LB_ListenersEC2()
+    # Just get config from first defined LoadBalancer
+    listeners_cfg = {}
+    listener_prefix = ""
+    for e in cfg.LoadBalancer:
+        listeners_cfg.update(
+            getattr(cfg, f"ElasticLoadBalancingLoadBalancer{e}")["Listeners"]
+        )
+        listener_prefix = f"ElasticLoadBalancingLoadBalancer{e}"
+        break
+
+    LB_ListenersEC2(listeners_cfg, listener_prefix)
     for n, v in cfg.ElasticLoadBalancingLoadBalancer.items():
         # resources
         if n not in cfg.LoadBalancer:
