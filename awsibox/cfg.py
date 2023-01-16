@@ -306,6 +306,10 @@ CFG_TO_FUNC = {
         "dep": ["SecurityGroups"],
     },
     "AutoScalingScalingPolicy": {"module": "autoscaling", "func": "AS_ScalingPolicies"},
+    "AutoScalingScheduledAction": {
+        "module": "joker",
+        "func": ("autoscaling", "ScheduledAction"),
+    },
     "Bucket": {"module": "s3", "func": "S3_Buckets"},
     "Certificate": {"module": "joker", "func": ("certificatemanager", "Certificate")},
     "CacheSubnetGroup": {"module": "joker", "func": ("elasticache", "SubnetGroup")},
@@ -427,11 +431,6 @@ CFG_TO_FUNC = {
         "func": ("logs", "LogGroup"),
         "dep": ["Lambda"],
     },
-    "ScheduledAction": {"module": "joker", "func": ("autoscaling", "ScheduledAction")},
-    "ScalableTarget": {
-        "module": "joker",
-        "func": ("applicationautoscaling", "ScalableTarget"),
-    },
     "RDSDBInstance": {"module": "rds", "func": "RDS_DB"},
     "RDSDBSubnetGroup": {"module": "joker", "func": ("rds", "DBSubnetGroup")},
     "Route53HostedZone": {"module": "joker", "func": ("route53", "HostedZone")},
@@ -457,6 +456,10 @@ CFG_TO_FUNC = {
     "Route53ResolverRuleAssociation": {
         "module": "joker",
         "func": ("route53resolver", "ResolverRuleAssociation"),
+    },
+    "ScalableTarget": {
+        "module": "joker",
+        "func": ("applicationautoscaling", "ScalableTarget"),
     },
     "SecurityGroup": {"module": "ec2", "func": "SG_SecurityGroup"},
     "SecurityGroupIngress": {

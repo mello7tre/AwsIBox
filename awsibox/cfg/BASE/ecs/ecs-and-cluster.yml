@@ -53,6 +53,22 @@ global:
         DependsOn: ECSClusterCapacityProviderAssociationsBase
         TargetTrackingConfiguration:
           DisableScaleIn: true
+  AutoScalingScheduledAction:
+    - IBOX_BASE:
+        DesiredCapacity.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityDesiredSize',
+          get_endvalue('AutoScalingGroupBaseDesiredCapacity'),
+          get_endvalue(f'{IBOX_RESNAME}DesiredSize', nocondition=f'{IBOX_RESNAME}KeepDesiredSize'))
+        MinSize.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityMinSize',
+          get_endvalue('AutoScalingGroupBaseMinSize'),
+          get_endvalue(f'{IBOX_RESNAME}MinSize', nocondition=f'{IBOX_RESNAME}KeepMinSize'))
+        MaxSize.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityMaxSize',
+          get_endvalue('AutoScalingGroupBaseMaxSize'),
+          get_endvalue(f'{IBOX_RESNAME}MaxSize', nocondition=f'{IBOX_RESNAME}KeepMaxSize'))
+    - Rotate:
+        IBOX_ENABLED: False
   ECSCapacityProvider:
     - Base:
         Enabled: 'yes'
@@ -71,22 +87,6 @@ global:
                 - ImportValue('SecurityGroupBaseInstance')
   LoadBalancerType: Application
   RecordSet: ['External', 'Internal']
-  ScheduledAction:
-    - IBOX_BASE:
-        DesiredCapacity.IBOX_CODE: If(
-          f'{IBOX_RESNAME}CapacityDesiredSize',
-          get_endvalue('AutoScalingGroupBaseDesiredCapacity'),
-          get_endvalue(f'{IBOX_RESNAME}DesiredSize', nocondition=f'{IBOX_RESNAME}KeepDesiredSize'))
-        MinSize.IBOX_CODE: If(
-          f'{IBOX_RESNAME}CapacityMinSize',
-          get_endvalue('AutoScalingGroupBaseMinSize'),
-          get_endvalue(f'{IBOX_RESNAME}MinSize', nocondition=f'{IBOX_RESNAME}KeepMinSize'))
-        MaxSize.IBOX_CODE: If(
-          f'{IBOX_RESNAME}CapacityMaxSize',
-          get_endvalue('AutoScalingGroupBaseMaxSize'),
-          get_endvalue(f'{IBOX_RESNAME}MaxSize', nocondition=f'{IBOX_RESNAME}KeepMaxSize'))
-    - Rotate:
-        IBOX_ENABLED: False
   Service:
     - Base:
         DependsOn: ECSClusterCapacityProviderAssociationsBase

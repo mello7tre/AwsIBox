@@ -59,6 +59,12 @@ global:
     - Up:
         IBOX_ENABLED: False
   Apps: {}
+  AutoScalingScheduledAction:
+    - Rotate:
+        DesiredSize: CapacityDesired
+        MaxSize: CapacityMax
+        MinSize: CapacityMin
+        Recurrence: '45 5 * * *'
   ECSCluster:
     - Base:
         IBOX_TITLE: Cluster
@@ -110,12 +116,6 @@ global:
     - Instance:
         ManagedPolicyArns++:
           - get_expvalue('IAMPolicyEcs')
-  ScheduledAction:
-    - Rotate:
-        DesiredSize: CapacityDesired
-        MaxSize: CapacityMax
-        MinSize: CapacityMin
-        Recurrence: '45 5 * * *'
   SecurityGroupIngress:
     - ContainerInstanceExternal:
         FromPort: 32768

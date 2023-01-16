@@ -48,6 +48,29 @@ global:
   Apps:
     - IBOX_BASE:
         IBOX_ENABLED: False
+  AutoScalingScalingPolicy:
+    - Custom:
+        TargetTrackingConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions:
+              - AutoScaling:
+                  Name: AutoScalingGroupName
+                  Value: Ref('AutoScalingGroup')
+    - Down:
+        IBOX_ENABLED: True
+    - Up:
+        IBOX_ENABLED: True
+  AutoScalingScheduledAction:
+    - Down:
+        DesiredSize: k
+        MaxSize: k
+        MinSize: CapacityMin
+        Recurrence: '00 19 * * *'
+    - Up:
+        DesiredSize: CapacityDesired
+        MaxSize: CapacityMax
+        MinSize: CapacityMin
+        Recurrence: '30 08 * * mon-fri'
   LoadBalancerType: Classic
   IAMPolicy:
     - CloudFormation:
@@ -70,33 +93,10 @@ global:
           - get_expvalue('IAMPolicyBaseInstance')
           - get_expvalue('IAMPolicySSM')
         Principal: ec2.amazonaws.com
-  AutoScalingScalingPolicy:
-    - Custom:
-        TargetTrackingConfiguration:
-          CustomizedMetricSpecification:
-            Dimensions:
-              - AutoScaling:
-                  Name: AutoScalingGroupName
-                  Value: Ref('AutoScalingGroup')
-    - Down:
-        IBOX_ENABLED: True
-    - Up:
-        IBOX_ENABLED: True
   SecurityGroup:
     - InstancesRules:
         IBOX_NO_OUTPUT: True
         GroupDescription: Enable Access from LoadBalancer to Instances and between Instances
-  ScheduledAction:
-    - Down:
-        DesiredSize: k
-        MaxSize: k
-        MinSize: CapacityMin
-        Recurrence: '00 19 * * *'
-    - Up:
-        DesiredSize: CapacityDesired
-        MaxSize: CapacityMax
-        MinSize: CapacityMin
-        Recurrence: '30 08 * * mon-fri'
 
 dev: &cfg_dev
   Alarm:
