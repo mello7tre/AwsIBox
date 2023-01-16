@@ -12,10 +12,6 @@ global:
               IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
               IBOX_TITLE: RecordSetCloudFront
             Type: CloudFront
-        Condition: IBOX_RESNAME.Create
-        Create.IBOX_AUTO_PO:
-          AllowedValues: ['', 'yes', 'no']
-          CONDITION: get_condition('', 'equals', 'yes', f"{IBOX_RESNAME}Create")
         Create: 'no'
         DistributionConfig:
           # need to escape Sub bracket {} using double ones

@@ -2,11 +2,16 @@ global:
   CloudFrontDistribution:
     - IBOX_BASE:
         IBOX_TITLE: CloudFrontDistribution
+        Condition: IBOX_RESNAME.Create
         AcmCertificate.IBOX_PCO:
           IBOX_CONDITION:
             - _AcmCertificate:
                 get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}AcmCertificate')
         AcmCertificate: 'yes'
+        Create.IBOX_AUTO_PO:
+          AllowedValues: ['', 'yes', 'no']
+          CONDITION: get_condition('', 'equals', 'yes', f"{IBOX_RESNAME}Create")
+        Create: 'yes'
         DistributionConfig:
           Aliases.IBOX_CUSTOM_OBJ:
             Value: get_endvalue(f"CloudFrontDistributionBaseDistributionConfigAliases{IBOX_RESNAME}")
