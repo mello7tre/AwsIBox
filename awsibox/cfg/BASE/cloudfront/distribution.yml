@@ -14,7 +14,7 @@ global:
         Create: 'yes'
         DistributionConfig:
           Aliases.IBOX_CUSTOM_OBJ:
-            Value: get_endvalue(f"CloudFrontDistributionBaseDistributionConfigAliases{IBOX_RESNAME}")
+            Value: get_endvalue(f"{IBOX_REFNAME}DistributionConfigAliases{IBOX_RESNAME}")
           CacheBehaviors:
             - IBOX_BASE: &cache_behavior
                 Compress: True
