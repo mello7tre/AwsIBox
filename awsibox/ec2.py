@@ -193,16 +193,14 @@ def SG_SecurityGroupRules(groupname, ingresses):
         return []
 
     SecurityGroup_Rules = []
-    kwargs = {}
 
-    # Just get config from first defined LoadBalancer
+    # get config from ElasticLoadBalancingLoadBalancer key
     listeners_cfg = {}
     if cfg.LoadBalancer and cfg.LoadBalancerType == "Classic":
         for e in cfg.LoadBalancer:
             listeners_cfg.update(
                 getattr(cfg, f"ElasticLoadBalancingLoadBalancer{e}")["Listeners"]
             )
-            break
 
     # Trick to populate SecurityGroupIngress using Listeners
     if ingresses:
@@ -220,14 +218,19 @@ def SG_SecurityGroupRules(groupname, ingresses):
     for n, v in ingresses.items():
         if use_listener:
             # Trick to populate SecurityGroupIngress using Listeners
-            v["CidrIp"] = v["Access"]
-            v["FromPort"] = v["LoadBalancerPort"]
-            v["ToPort"] = v["LoadBalancerPort"]
-            kwargs = {"rootdict": v}
+            sg_rootdict = {
+                "CidrIp": v["Access"],
+                "FromPort": v["LoadBalancerPort"],
+                "ToPort": v["LoadBalancerPort"],
+            }
+            kwargs = {"rootdict": sg_rootdict}
+        else:
+            sg_rootdict = v
+            kwargs = {}
 
         resname = f"{prefix}{n}"
-        allowed_ip = v.get("CidrIp") == "AllowedIp"
-        allowed_ip_or_public = v.get("AllowedIpOrPublic")
+        allowed_ip = sg_rootdict.get("CidrIp") == "AllowedIp"
+        allowed_ip_or_public = sg_rootdict.get("AllowedIpOrPublic")
         if allowed_ip:
             for m, w in cfg.AllowedIp.items():
                 r_SGRule = SecurityGroupRule(resname)

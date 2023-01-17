@@ -48,6 +48,10 @@ global:
               CookieExpirationPeriod: '0'
         Listeners:
           - IBOX_BASE:
+              IBOX_OUTPUT:
+                - IBOX_MAPNAME.Listeners.IBOX_PROPNAME:
+                    Value: >-
+                      LoadBalancerPort= ${LoadBalancerPort} ,InstancePort= ${InstancePort} ,Protocol= ${Protocol} ,Access= get_endvalue(f"{IBOX_MAPNAME}Access")
               PolicyNames:
                 - If(f'{IBOX_MAPNAME}LBCookieStickinessPolicyBaseCookieExpirationPeriod', 'LBCookieStickinessPolicyBase', Ref('AWS::NoValue'))
               SSLCertificateId: get_endvalue('RegionalCertificateArn')

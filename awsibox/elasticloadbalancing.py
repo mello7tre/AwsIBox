@@ -381,6 +381,27 @@ def LB_ElasticLoadBalancingClassicEC2():
         cfg.Alarm[f"Backend{n}5XX"]["IBOX_ENABLED"] = True
 
 
+def LB_ElasticLoadBalancingClassicEC2():
+    for lb in cfg.LoadBalancer:
+        # SecurityGroupIngressInstance configured using Listeners
+        listeners_cfg = getattr(cfg, f"ElasticLoadBalancingLoadBalancer{lb}")[
+            "Listeners"
+        ]
+        listeners_prefix = f"ElasticLoadBalancingLoadBalancer{lb}"
+        for n in listeners_cfg:
+            r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
+                f"SecurityGroupIngressListeners{n}",
+                listener=f"{listeners_prefix}Listeners{n}",
+            )
+            add_obj(r_SGIInstance)
+
+        # LoadBalancer
+        r_LB = elb.LoadBalancer(f"LoadBalancerClassic{lb}")
+        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingLoadBalancer{lb}")
+        add_obj(r_LB)
+        cfg.Alarm[f"Backend{lb}5XX"]["IBOX_ENABLED"] = True
+
+
 def LB_ElasticLoadBalancingApplicationEC2():
     for n, v in cfg.ElasticLoadBalancingV2LoadBalancerAPP.items():
         # resources
