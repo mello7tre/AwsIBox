@@ -25,8 +25,10 @@ global:
           Origins:
             - Default:
                 CustomOriginConfig:
-                  HTTPSPort: get_endvalue('ListenerLoadBalancerHttpsPort')
-                  HTTPPort:  get_endvalue('ListenerLoadBalancerHttpPort')
+                  HTTPSPort.IBOX_AUTO_PO: {}
+                  HTTPSPort: 443
+                  HTTPPort.IBOX_AUTO_PO: {}
+                  HTTPPort: 80
                 DomainName: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
                 Id: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
         DnsSuffix.IBOX_AUTO_PO:

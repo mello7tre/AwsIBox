@@ -8,7 +8,7 @@ Http: &http
 Https: &https
   IBOX_PARAMETER:
     - ListenerLoadBalancerHttpsPort:
-        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
+        Description: 'Https Port where Load Balancer listen - empty for default based on env/role'
   Certificates:
     Regional:
       CertificateArn: get_endvalue('RegionalCertificateArn')
@@ -59,6 +59,38 @@ ALB: &alb
 
 
 global:
+  ElasticLoadBalancingV2Listener:
+    - IBOX_BASE:
+        Access: Public
+        Port.IBOX_AUTO_PO: {}
+    - HttpExternal:
+        IBOX_ENABLED: False
+        <<: *external
+        Port: 80
+        Protocol: HTTP
+    - HttpInternal:
+        IBOX_ENABLED: False
+        <<: *internal
+        Port: 80
+        Protocol: HTTP
+    - HttpsExternal:
+        IBOX_ENABLED: False
+        <<: *external
+        Port: 443
+        Protocol: HTTPS
+        Certificates:
+          Regional:
+            CertificateArn: get_endvalue('RegionalCertificateArn')
+        SslPolicy.IBOX_AUTO_PO: {}
+        SslPolicy: ELBSecurityPolicy-2016-08
+    - TCPExternal:
+        IBOX_ENABLED: False
+        <<: *tcp
+        LoadBalancerArn: Ref(f'LoadBalancerNetworkExternal')
+    - TCPInternal:
+        IBOX_ENABLED: False
+        <<: *tcp
+        LoadBalancerArn: Ref(f'LoadBalancerNetworkInternal')
   ListenerV2ECS:
     - HttpExternal:
         <<: *httpexternal

@@ -371,6 +371,11 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("elasticache", "ReplicationGroup"),
     },
+    "ElasticLoadBalancingV2Listener": {
+        "module": "joker",
+        "func": ("elasticloadbalancingv2", "Listener"),
+        "dep": ["LoadBalancer"],
+    },
     "ElasticLoadBalancingV2ListenerRule": {
         "module": "joker",
         "func": ("elasticloadbalancingv2", "ListenerRule"),
@@ -466,7 +471,11 @@ CFG_TO_FUNC = {
         "module": "ec2",
         "func": "SG_SecurityGroupIngresses",
     },
-    "SecurityGroups": {"module": "ec2", "func": "SG_SecurityGroups"},
+    "SecurityGroups": {
+        "module": "ec2",
+        "func": "SG_SecurityGroups",
+        "dep": ["LoadBalancer"],
+    },
     "Service": {
         "module": "ecs",
         "func": "ECS_Service",

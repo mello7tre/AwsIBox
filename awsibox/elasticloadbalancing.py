@@ -380,15 +380,15 @@ def LB_ElasticLoadBalancingClassicEC2():
 
 
 def LB_ElasticLoadBalancingApplicationEC2():
-    for n, v in cfg.ElasticLoadBalancingV2LoadBalancerAPP.items():
-        # resources
-        if n not in cfg.LoadBalancer:
-            continue
-        r_LB = elbv2.LoadBalancer(f"LoadBalancerApplication{n}")
-        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerAPP{n}")
+    for lb in cfg.LoadBalancer:
+        r_LB = elbv2.LoadBalancer(f"LoadBalancerApplication{lb}")
+        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerAPP{lb}")
         add_obj(r_LB)
 
-    LB_ListenersV2ApplicationEC2()
+        if lb == "External":
+            getattr(cfg, f"ElasticLoadBalancingV2ListenerHttps{lb}")["IBOX_ENABLED"] = True
+        else:
+            getattr(cfg, f"ElasticLoadBalancingV2ListenerHttp{lb}")["IBOX_ENABLED"] = True
 
 
 def LB_ElasticLoadBalancingNetworkEC2():

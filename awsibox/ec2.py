@@ -189,18 +189,24 @@ def SG_SecurityGroupsTSK(key):
 
 
 def SG_SecurityGroupRules(groupname, ingresses):
-    if cfg.LoadBalancer and cfg.LoadBalancerType == "Network":
-        return []
-
     SecurityGroup_Rules = []
 
-    # get config from ElasticLoadBalancingLoadBalancer key
-    listeners_cfg = {}
-    if cfg.LoadBalancer and cfg.LoadBalancerType == "Classic":
-        for e in cfg.LoadBalancer:
-            listeners_cfg.update(
-                getattr(cfg, f"ElasticLoadBalancingLoadBalancer{e}")["Listeners"]
-            )
+    if cfg.LoadBalancer:
+        if cfg.LoadBalancerType == "Network":
+            return SecurityGroup_Rules
+
+        listeners_cfg = {}
+        if cfg.LoadBalancerType == "Classic":
+            # get config from ElasticLoadBalancingLoadBalancer key
+            for e in cfg.LoadBalancer:
+                listeners_cfg.update(
+                    getattr(cfg, f"ElasticLoadBalancingLoadBalancer{e}")["Listeners"]
+                )
+        if cfg.LoadBalancerType == "Application":
+            # get config ElasticLoadBalancingV2Listener key
+            for n, v in cfg.ElasticLoadBalancingV2Listener.items():
+                if v.get("IBOX_ENABLED", True):
+                    listeners_cfg[n] = v
 
     # Trick to populate SecurityGroupIngress using Listeners
     if ingresses:
@@ -219,9 +225,13 @@ def SG_SecurityGroupRules(groupname, ingresses):
         if use_listener:
             # Trick to populate SecurityGroupIngress using Listeners
             sg_rootdict = {
-                "CidrIp": v["Access"],
-                "FromPort": v["LoadBalancerPort"],
-                "ToPort": v["LoadBalancerPort"],
+                "CidrIp": v.get("Access", "Public"),
+                "FromPort": v["LoadBalancerPort"]
+                if "LoadBalancerPort" in v
+                else v["Port"],
+                "ToPort": v["LoadBalancerPort"]
+                if "LoadBalancerPort" in v
+                else v["Port"],
             }
             kwargs = {"rootdict": sg_rootdict}
         else:
