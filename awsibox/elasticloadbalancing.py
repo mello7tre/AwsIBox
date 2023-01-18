@@ -359,29 +359,6 @@ def LB_TargetGroupsALB():
 
 
 def LB_ElasticLoadBalancingClassicEC2():
-    # Just get config from first defined LoadBalancer
-    listeners_cfg = {}
-    listener_prefix = ""
-    for e in cfg.LoadBalancer:
-        listeners_cfg.update(
-            getattr(cfg, f"ElasticLoadBalancingLoadBalancer{e}")["Listeners"]
-        )
-        listener_prefix = f"ElasticLoadBalancingLoadBalancer{e}"
-        break
-
-    LB_ListenersEC2(listeners_cfg, listener_prefix)
-    for n, v in cfg.ElasticLoadBalancingLoadBalancer.items():
-        # resources
-        if n not in cfg.LoadBalancer:
-            continue
-        r_LB = elb.LoadBalancer(f"LoadBalancerClassic{n}")
-        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingLoadBalancer{n}")
-
-        add_obj(r_LB)
-        cfg.Alarm[f"Backend{n}5XX"]["IBOX_ENABLED"] = True
-
-
-def LB_ElasticLoadBalancingClassicEC2():
     for lb in cfg.LoadBalancer:
         # SecurityGroupIngressInstance configured using Listeners
         listeners_cfg = getattr(cfg, f"ElasticLoadBalancingLoadBalancer{lb}")[
