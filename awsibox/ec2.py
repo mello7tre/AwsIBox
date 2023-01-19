@@ -38,12 +38,9 @@ class SecurityGroupRule(ec2.SecurityGroupRule):
 
 
 class SecurityGroupIngressInstanceELBPorts(SecurityGroupIngress):
-    def __init__(self, title, listener, **kwargs):
+    def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
         name = self.title  # Ex. SecurityGroupIngressListeners1
-        self.FromPort = get_endvalue(f"{listener}InstancePort")
-        self.ToPort = get_endvalue(f"{listener}InstancePort")
-        self.SourceSecurityGroupId = Ref("SecurityGroupLoadBalancer")
         self.GroupId = GetAtt("SecurityGroupInstancesRules", "GroupId")
 
 

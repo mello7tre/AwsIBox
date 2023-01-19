@@ -91,33 +91,6 @@ def enable_recordset(rtype):
         record["IBOX_ENABLED"] = True
 
 
-def LB_ListenersEC2(Listeners={}, listener_prefix=""):
-    for n, v in Listeners.items():
-        resname = f"Listeners{n}"  # Ex ListenersPort5601
-        mapname = f"{listener_prefix}{resname}"
-        # resources
-        r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
-            f"SecurityGroupIngress{resname}", listener=mapname
-        )
-
-        if cfg.LoadBalancerType == "Network":
-            r_SGIInstance.CidrIp = "0.0.0.0/0"
-            del r_SGIInstance.properties["SourceSecurityGroupId"]
-        else:
-            # outputs
-            Listener_Output = Output(resname)
-            Listener_Output.Value = Sub(
-                "Protocol=${Protocol},Access=${Access}",
-                **{
-                    "Protocol": get_endvalue(f"{mapname}Protocol"),
-                    "Access": get_endvalue(f"{mapname}Access"),
-                },
-            )
-            add_obj(Listener_Output)
-
-        add_obj(r_SGIInstance)
-
-
 def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
     # Skip if Rule is only for External/Internal
     only_scheme = key.get("Scheme")
@@ -244,40 +217,6 @@ def LB_ListenerRules():
         add_obj(o_ListenerRule)
 
 
-def LB_ListenersV2ApplicationEC2():
-    LB_ListenersEC2()
-    for n in ["External", "Internal"]:
-        # resources
-        if n not in cfg.LoadBalancer:
-            continue
-        r_Http = elbv2.Listener(f"ListenerHttp{n}")
-        auto_get_props(r_Http, mapname=f"ListenerV2EC2Http{n}")
-        add_obj(r_Http)
-
-        if n == "External":
-            r_Https = elbv2.Listener(f"ListenerHttps{n}")
-            auto_get_props(r_Https, mapname=f"ListenerV2EC2Https{n}")
-            add_obj(r_Https)
-
-    LB_TargetGroupsEC2Application()
-
-
-def LB_ListenersV2NetworkEC2():
-    LB_ListenersEC2()
-    for lb in ["External", "Internal"]:
-        # resources
-        if lb not in cfg.LoadBalancer:
-            continue
-        for n, v in cfg.Listeners.items():
-            mapname = f"Listeners{n}"  # Ex ListenersPort5601
-            listener = elbv2.Listener(f"{mapname}{lb}")
-            auto_get_props(listener, mapname=f"ListenerV2EC2TCP{lb}", remapname=mapname)
-            auto_get_props(listener, mapname=mapname)
-            add_obj(listener)
-
-            LB_TargetGroupsEC2Network(lb, mapname)
-
-
 def LB_ListenersV2ECS():
     for n in ["External", "Internal"]:
         # resources
@@ -304,30 +243,6 @@ def LB_ListenersV2ECS():
     # Resources
     LB_TargetGroupsECS()
     LB_ListenerRules()
-
-
-def LB_TargetGroupsEC2Application():
-    for n in cfg.ElasticLoadBalancingV2TargetGroupEC2:
-        # resources
-        if n not in cfg.LoadBalancer:
-            continue
-        r_TG = elbv2.TargetGroup(f"TargetGroup{n}")
-        auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupEC2{n}")
-        add_obj(r_TG)
-
-        cfg.Alarm[f"TargetEC2{n}5XX"]["IBOX_ENABLED"] = True
-
-
-def LB_TargetGroupsEC2Network(lb, mapname_listener):
-    # resources
-    r_TG = elbv2.TargetGroup(f"TargetGroup{mapname_listener}{lb}")
-    auto_get_props(
-        r_TG,
-        mapname=f"ElasticLoadBalancingV2TargetGroupEC2Network",
-        remapname=mapname_listener,
-    )
-    auto_get_props(r_TG, mapname=mapname_listener)
-    add_obj(r_TG)
 
 
 def LB_TargetGroupsECS():
@@ -360,15 +275,17 @@ def LB_TargetGroupsALB():
 
 def LB_ElasticLoadBalancingClassicEC2():
     for lb in cfg.LoadBalancer:
-        # SecurityGroupIngressInstance configured using Listeners
-        listeners_cfg = getattr(cfg, f"ElasticLoadBalancingLoadBalancer{lb}")[
-            "Listeners"
-        ]
-        listeners_prefix = f"ElasticLoadBalancingLoadBalancer{lb}"
-        for n in listeners_cfg:
+        # update SecurityGroupInstancesRules Ingress using Listeners
+        for n in getattr(cfg, f"ElasticLoadBalancingLoadBalancer{lb}")["Listeners"]:
             r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
                 f"SecurityGroupIngressListeners{n}",
-                listener=f"{listeners_prefix}Listeners{n}",
+                FromPort=get_endvalue(
+                    f"ElasticLoadBalancingLoadBalancer{lb}Listeners{n}InstancePort"
+                ),
+                SourceSecurityGroupId=Ref("SecurityGroupLoadBalancer"),
+                ToPort=get_endvalue(
+                    f"ElasticLoadBalancingLoadBalancer{lb}Listeners{n}InstancePort"
+                ),
             )
             add_obj(r_SGIInstance)
 
@@ -376,6 +293,7 @@ def LB_ElasticLoadBalancingClassicEC2():
         r_LB = elb.LoadBalancer(f"LoadBalancerClassic{lb}")
         auto_get_props(r_LB, mapname=f"ElasticLoadBalancingLoadBalancer{lb}")
         add_obj(r_LB)
+
         cfg.Alarm[f"Backend{lb}5XX"]["IBOX_ENABLED"] = True
 
 
@@ -385,22 +303,57 @@ def LB_ElasticLoadBalancingApplicationEC2():
         auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerAPP{lb}")
         add_obj(r_LB)
 
+        # enable Listeners
         if lb == "External":
-            getattr(cfg, f"ElasticLoadBalancingV2ListenerHttps{lb}")["IBOX_ENABLED"] = True
+            getattr(cfg, f"ElasticLoadBalancingV2ListenerEC2Https{lb}")[
+                "IBOX_ENABLED"
+            ] = True
         else:
-            getattr(cfg, f"ElasticLoadBalancingV2ListenerHttp{lb}")["IBOX_ENABLED"] = True
+            getattr(cfg, f"ElasticLoadBalancingV2ListenerEC2Http{lb}")[
+                "IBOX_ENABLED"
+            ] = True
+        # enable TargetGroups
+        getattr(cfg, f"ElasticLoadBalancingV2TargetGroupLoadBalancerApplication{lb}")[
+            "IBOX_ENABLED"
+        ] = True
+
+        cfg.Alarm[f"TargetEC2{lb}5XX"]["IBOX_ENABLED"] = True
+
+    # update SecurityGroupInstancesRules giving access from LB to Target Ports
+    for n, v in cfg.ElasticLoadBalancingV2TargetGroup.items():
+        if v.get("IBOX_ENABLED", True):
+            r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
+                f"SecurityGroupIngressListeners{n}",
+                FromPort=get_endvalue(f"ElasticLoadBalancingV2TargetGroup{n}Port"),
+                SourceSecurityGroupId=Ref("SecurityGroupLoadBalancer"),
+                ToPort=get_endvalue(f"ElasticLoadBalancingV2TargetGroup{n}Port"),
+            )
+            add_obj(r_SGIInstance)
 
 
 def LB_ElasticLoadBalancingNetworkEC2():
-    for n, v in cfg.ElasticLoadBalancingV2LoadBalancerNET.items():
-        # resources
-        if n not in cfg.LoadBalancer:
-            continue
-        r_LB = elbv2.LoadBalancer(f"LoadBalancerNetwork{n}")
-        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerNET{n}")
+    for lb in cfg.LoadBalancer:
+        r_LB = elbv2.LoadBalancer(f"LoadBalancerNetwork{lb}")
+        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerNET{lb}")
         add_obj(r_LB)
 
-    LB_ListenersV2NetworkEC2()
+        # enable Listeners
+        getattr(cfg, f"ElasticLoadBalancingV2ListenerEC2TCP{lb}")["IBOX_ENABLED"] = True
+        # enable TargetGroups
+        getattr(cfg, f"ElasticLoadBalancingV2TargetGroupLoadBalancerNetwork{lb}")[
+            "IBOX_ENABLED"
+        ] = True
+
+    # update SecurityGroupInstancesRules giving access to Target Ports
+    for n, v in cfg.ElasticLoadBalancingV2TargetGroup.items():
+        if v.get("IBOX_ENABLED", True):
+            r_SGIInstance = SecurityGroupIngressInstanceELBPorts(
+                f"SecurityGroupIngressListeners{n}",
+                FromPort=get_endvalue(f"ElasticLoadBalancingV2TargetGroup{n}Port"),
+                CidrIp="0.0.0.0/0",
+                ToPort=get_endvalue(f"ElasticLoadBalancingV2TargetGroup{n}Port"),
+            )
+            add_obj(r_SGIInstance)
 
 
 def LB_ElasticLoadBalancingEC2(key):

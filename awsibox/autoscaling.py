@@ -206,30 +206,24 @@ def AS_LaunchTemplate():
 def AS_Autoscaling(key):
     LoadBalancers = []
     TargetGroups = []
-    for n in cfg.LoadBalancer:
-        if cfg.LoadBalancerType == "Classic":
+    if cfg.LoadBalancerType == "Classic":
+        for n in cfg.LoadBalancer:
             LoadBalancers.append(Ref(f"LoadBalancerClassic{n}"))
             setattr(
                 cfg,
                 "EC2InstanceUserDataELBClassicCheckLoadBalancerName",
                 Ref(f"LoadBalancerClassic{n}"),
             )
-
-        if cfg.LoadBalancerType == "Application":
-            TargetGroups.append(Ref(f"TargetGroup{n}"))
-            setattr(
-                cfg,
-                "EC2InstanceUserDataELBV2CheckTargetGroupArn",
-                Ref(f"TargetGroup{n}"),
-            )
-
-        if cfg.LoadBalancerType == "Network":
-            for k in cfg.Listeners:
-                TargetGroups.append(Ref(f"TargetGroupListeners{k}{n}"))
+    if cfg.LoadBalancerType in ["Application", "Network"]:
+        for n, v in getattr(cfg, "ElasticLoadBalancingV2TargetGroup", {}).items():
+            if v.get("IBOX_ENABLED", True):
+                TargetGroups.append(
+                    Ref(f"ElasticLoadBalancingV2TargetGroupLoadBalancer{n}")
+                )
                 setattr(
                     cfg,
                     "EC2InstanceUserDataELBV2CheckTargetGroupArn",
-                    Ref(f"TargetGroup{k}{n}"),
+                    Ref(f"ElasticLoadBalancingV2TargetGroupTargetGroupLoadBalancer{n}"),
                 )
 
     # Resources
@@ -238,10 +232,16 @@ def AS_Autoscaling(key):
     R_ASG = asg.AutoScalingGroup(
         "AutoScalingGroupBase",
         LoadBalancerNames=LoadBalancers,
-        TargetGroupARNs=TargetGroups,
     )
 
     auto_get_props(R_ASG)
+
+    try:
+        R_ASG.TargetGroupARNs
+    except Exception:
+        R_ASG.TargetGroupARNs = TargetGroups
+    else:
+        R_ASG.TargetGroupARNs.extend(TargetGroups)
 
     R_ASG.Tags += LaunchTemplateTags
 

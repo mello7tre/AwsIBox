@@ -25,6 +25,42 @@ Base: &base
   VpcId: get_expvalue('VpcId')
 
 global:
+  ElasticLoadBalancingV2TargetGroup:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - HealthCheck:
+              Value:
+                get_subvalue(
+                  'Path=${1M},Interval=${2M},Timeout=${3M},Healthy=${4M},Unhealthy=${5M}',
+                  [
+                    f'{IBOX_MAPNAME}HealthCheckPath',
+                    f'{IBOX_MAPNAME}HealthCheckIntervalSeconds',
+                    f'{IBOX_MAPNAME}HealthCheckTimeoutSeconds',
+                    f'{IBOX_MAPNAME}HealthyThresholdCount',
+                    f'{IBOX_MAPNAME}UnhealthyThresholdCount'])
+        HealthCheckIntervalSeconds: Ref('AWS::NoValue')
+        HealthCheckPath: Ref('AWS::NoValue')
+        HealthCheckTimeoutSeconds: Ref('AWS::NoValue')
+        HealthyThresholdCount: Ref('AWS::NoValue')
+        UnhealthyThresholdCount: Ref('AWS::NoValue')
+    - LoadBalancerApplicationExternal:
+        IBOX_ENABLED: False
+        <<: *base
+        Port: 80
+    - LoadBalancerApplicationInternal:
+        IBOX_ENABLED: False
+        <<: *base
+        Port: 80
+    - LoadBalancerNetworkExternal:
+        IBOX_ENABLED: False
+        Port: 80
+        Protocol: TCP
+        VpcId: get_expvalue('VpcId')
+    - LoadBalancerNetworkInternal:
+        IBOX_ENABLED: False
+        Port: 80
+        Protocol: TCP
+        VpcId: get_expvalue('VpcId')
   ElasticLoadBalancingV2TargetGroupEC2:
     - IBOX_BASE:
         <<: *base

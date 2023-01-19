@@ -5,9 +5,8 @@ global:
           - HealthCheck:
               Value:
                 get_subvalue(
-                  'Type=${1M},Target=${2M},Interval=${3M},Timeout=${4M},Healthy=${5M},Unhealthy=${6M}',
+                  'Target=${1M},Interval=${2M},Timeout=${3M},Healthy=${4M},Unhealthy=${5M}',
                   [
-                    'AutoScalingGroupBaseHealthCheckType',
                     f'{IBOX_MAPNAME}HealthCheckTarget',
                     f'{IBOX_MAPNAME}HealthCheckInterval',
                     f'{IBOX_MAPNAME}HealthCheckTimeout',

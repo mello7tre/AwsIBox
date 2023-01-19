@@ -17,14 +17,6 @@ Https: &https
   SslPolicy.IBOX_AUTO_PO: {}
   SslPolicy: ELBSecurityPolicy-2016-08
 
-TCP: &tcp 
-  Protocol: TCP
-  Port: get_endvalue(f'{IBOX_REMAPNAME}LoadBalancerPort')
-  DefaultActions:
-    - TG:
-        Type: forward
-        TargetGroupArn: Ref(f'TargetGroup{IBOX_RESNAME}')
-
 External: &external
   DefaultActions:
     - TG:
@@ -63,19 +55,22 @@ global:
     - IBOX_BASE:
         Access: Public
         Port.IBOX_AUTO_PO: {}
-    - HttpExternal:
+    - EC2HttpInternal:
         IBOX_ENABLED: False
-        <<: *external
+        DefaultActions:
+          - TG:
+              Type: forward
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupLoadBalancerApplicationInternal')
+        LoadBalancerArn: Ref('LoadBalancerApplicationInternal')
         Port: 80
         Protocol: HTTP
-    - HttpInternal:
+    - EC2HttpsExternal:
         IBOX_ENABLED: False
-        <<: *internal
-        Port: 80
-        Protocol: HTTP
-    - HttpsExternal:
-        IBOX_ENABLED: False
-        <<: *external
+        DefaultActions:
+          - TG:
+              Type: forward
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupLoadBalancerApplicationExternal')
+        LoadBalancerArn: Ref('LoadBalancerApplicationExternal')
         Port: 443
         Protocol: HTTPS
         Certificates:
@@ -83,14 +78,24 @@ global:
             CertificateArn: get_endvalue('RegionalCertificateArn')
         SslPolicy.IBOX_AUTO_PO: {}
         SslPolicy: ELBSecurityPolicy-2016-08
-    - TCPExternal:
+    - EC2TCPExternal:
         IBOX_ENABLED: False
-        <<: *tcp
-        LoadBalancerArn: Ref(f'LoadBalancerNetworkExternal')
-    - TCPInternal:
+        DefaultActions:
+          - TG:
+              Type: forward
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupLoadBalancerNetworkExternal')
+        LoadBalancerArn: Ref('LoadBalancerNetworkExternal')
+        Protocol: TCP
+        Port: 80
+    - EC2TCPInternal:
         IBOX_ENABLED: False
-        <<: *tcp
-        LoadBalancerArn: Ref(f'LoadBalancerNetworkInternal')
+        DefaultActions:
+          - TG:
+              Type: forward
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupLoadBalancerNetworkInternal')
+        LoadBalancerArn: Ref('LoadBalancerNetworkInternal')
+        Protocol: TCP
+        Port: 80
   ListenerV2ECS:
     - HttpExternal:
         <<: *httpexternal
@@ -101,19 +106,6 @@ global:
     - HttpsExternal:
         <<: *httpsexternal
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
-  ListenerV2EC2:
-    - HttpExternal:
-        <<: *httpexternal
-    - HttpInternal:
-        <<: *httpinternal
-    - HttpsExternal:
-        <<: *httpsexternal
-    - TCPExternal:
-       <<: *tcp
-       LoadBalancerArn: Ref(f'LoadBalancerNetworkExternal')
-    - TCPInternal:
-       <<: *tcp
-       LoadBalancerArn: Ref(f'LoadBalancerNetworkInternal')
   ListenerV2ALB:
     - HttpExternal:
         <<: [*alb, *httpexternal]

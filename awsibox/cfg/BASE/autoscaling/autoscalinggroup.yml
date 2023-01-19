@@ -17,6 +17,7 @@ global:
             Count: get_endvalue('CapacityDesired')
             Timeout: PT15M
         HealthCheckGracePeriod: 600
+        HealthCheckType.IBOX_AUTO_PO: {}
         HealthCheckType: EC2
         LaunchTemplate:
           LaunchTemplateId: Ref('LaunchTemplate')
