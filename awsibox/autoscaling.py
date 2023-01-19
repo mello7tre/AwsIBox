@@ -218,7 +218,7 @@ def AS_Autoscaling(key):
         for n, v in getattr(cfg, "ElasticLoadBalancingV2TargetGroup", {}).items():
             if v.get("IBOX_ENABLED", True):
                 TargetGroups.append(
-                    Ref(f"ElasticLoadBalancingV2TargetGroupLoadBalancer{n}")
+                    Ref(f"ElasticLoadBalancingV2TargetGroupEC2LoadBalancer{n}")
                 )
                 setattr(
                     cfg,

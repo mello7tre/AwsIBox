@@ -60,7 +60,7 @@ global:
         DefaultActions:
           - TG:
               Type: forward
-              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupLoadBalancerApplicationInternal')
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplicationInternal')
         LoadBalancerArn: Ref('LoadBalancerApplicationInternal')
         Port: 80
         Protocol: HTTP
@@ -69,7 +69,7 @@ global:
         DefaultActions:
           - TG:
               Type: forward
-              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupLoadBalancerApplicationExternal')
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplicationExternal')
         LoadBalancerArn: Ref('LoadBalancerApplicationExternal')
         Port: 443
         Protocol: HTTPS
@@ -83,7 +83,7 @@ global:
         DefaultActions:
           - TG:
               Type: forward
-              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupLoadBalancerNetworkExternal')
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerNetworkExternal')
         LoadBalancerArn: Ref('LoadBalancerNetworkExternal')
         Protocol: TCP
         Port: 80
@@ -92,7 +92,7 @@ global:
         DefaultActions:
           - TG:
               Type: forward
-              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupLoadBalancerNetworkInternal')
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerNetworkInternal')
         LoadBalancerArn: Ref('LoadBalancerNetworkInternal')
         Protocol: TCP
         Port: 80

@@ -310,7 +310,7 @@ def LB_ElasticLoadBalancingApplicationEC2():
                 "IBOX_ENABLED"
             ] = True
         # enable TargetGroups
-        getattr(cfg, f"ElasticLoadBalancingV2TargetGroupLoadBalancerApplication{lb}")[
+        getattr(cfg, f"ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplication{lb}")[
             "IBOX_ENABLED"
         ] = True
 
@@ -337,7 +337,7 @@ def LB_ElasticLoadBalancingNetworkEC2():
         # enable Listeners
         getattr(cfg, f"ElasticLoadBalancingV2ListenerEC2TCP{lb}")["IBOX_ENABLED"] = True
         # enable TargetGroups
-        getattr(cfg, f"ElasticLoadBalancingV2TargetGroupLoadBalancerNetwork{lb}")[
+        getattr(cfg, f"ElasticLoadBalancingV2TargetGroupEC2LoadBalancerNetwork{lb}")[
             "IBOX_ENABLED"
         ] = True
 
