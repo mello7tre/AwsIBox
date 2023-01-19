@@ -25,7 +25,7 @@ elb.LoadBalancer.props["LBCookieStickinessPolicy"] = (
 )
 elb.LoadBalancer.props["Listeners"] = ([elb.Listener], False)
 
-# S - V2 LOAD BALANCING #
+
 class ELBV2ListernerRuleECS(elbv2.ListenerRule):
     def __init__(self, title, key, index, mapname, scheme, **kwargs):
         super().__init__(title, **kwargs)
@@ -70,9 +70,6 @@ class ELBV2ListernerRuleECS(elbv2.ListenerRule):
                 )
             ]
         self.Priority = get_endvalue(f"{mapname}Priority")
-
-
-# E - V2 LOAD BALANCING #
 
 
 def enable_recordset(rtype):
