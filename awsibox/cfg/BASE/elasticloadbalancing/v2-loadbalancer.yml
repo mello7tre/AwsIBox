@@ -26,6 +26,7 @@ Application: &app
     - LogPrefix: *att_log_prefix
     - Http2:
         Key: routing.http2.enabled
+        Value.IBOX_AUTO_PO: {}
         Value: 'true'
   SecurityGroups:
     - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
