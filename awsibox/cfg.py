@@ -371,6 +371,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("elasticache", "ReplicationGroup"),
     },
+    "ElasticLoadBalancingV2LoadBalancer": {
+        "module": "joker",
+        "func": ("elasticloadbalancingv2", "LoadBalancer"),
+    },
     "ElasticLoadBalancingV2Listener": {
         "module": "joker",
         "func": ("elasticloadbalancingv2", "Listener"),
