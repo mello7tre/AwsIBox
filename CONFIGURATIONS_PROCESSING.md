@@ -7,7 +7,6 @@ The EnvRole yaml files are located in subdir named as the relative UPPERCASE Sta
 
 Current StackTypes are:
 - agw - ApiGateway
-- alb - Application Load Balancer
 - cch - Elastic Cache
 - clf - CloudFront
 - ec2 - EC2
@@ -16,6 +15,7 @@ Current StackTypes are:
 - rds - RDS
 - res - Generic AWS Resources
 - tsk - Scheduled Task (CloudWatch Events + ECS Task)
+- lbd - Lambda specific
 
 Every EnvRole yaml file must have the root key named as the EnvRole (Ex. ecs-cluster)
  
