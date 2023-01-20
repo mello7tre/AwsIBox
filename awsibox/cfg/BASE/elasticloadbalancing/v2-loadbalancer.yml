@@ -45,21 +45,21 @@ ALB: &alb
   <<: *app
   IBOX_OUTPUT:
     - _:
-        Condition: IBOX_RESNAME
-        Value: Ref(IBOX_RESNAME)
-        Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
+        Condition: IBOX_TITLE
+        Value: Ref(IBOX_TITLE)
+        Export: Export(Sub('%s-${AWS::StackName}' % IBOX_TITLE))
     - _DNS:
-        Condition: IBOX_RESNAME
-        Value: GetAtt(IBOX_RESNAME, 'DNSName')
-        Export: Export(Sub('%sDNS-${AWS::StackName}' % IBOX_RESNAME))
+        Condition: IBOX_TITLE
+        Value: GetAtt(IBOX_TITLE, 'DNSName')
+        Export: Export(Sub('%sDNS-${AWS::StackName}' % IBOX_TITLE))
     - _FullName:
-        Condition: IBOX_RESNAME
-        Value: GetAtt(IBOX_RESNAME, 'LoadBalancerFullName')
-        Export: Export(Sub('%sFullName-${AWS::StackName}' % IBOX_RESNAME))
-  Condition: IBOX_RESNAME
+        Condition: IBOX_TITLE
+        Value: GetAtt(IBOX_TITLE, 'LoadBalancerFullName')
+        Export: Export(Sub('%sFullName-${AWS::StackName}' % IBOX_TITLE))
+  Condition: IBOX_TITLE
   SecurityGroups:
-    - get_expvalue(f'SecurityGroup{IBOX_RESNAME}')
-    - GetAtt(f'SecurityGroup{IBOX_RESNAME}', 'GroupId')
+    - get_expvalue(f'SecurityGroup{IBOX_TITLE}')
+    - GetAtt(f'SecurityGroup{IBOX_TITLE}', 'GroupId')
 
 External: &external
   Scheme: 'internet-facing'
@@ -70,6 +70,15 @@ Internal: &internal
   Subnets: Split(',', get_expvalue('SubnetsPrivate'))
 
 global:
+  ElasticLoadBalancingV2LoadBalancer:
+    - ECSApplicationExternal:
+        IBOX_ENABLED: False
+        IBOX_TITLE: LoadBalancerApplicationExternal
+        <<: [*external, *alb]
+    - ECSApplicationInternal:
+        IBOX_ENABLED: False
+        IBOX_TITLE: LoadBalancerApplicationInternal
+        <<: [*internal, *alb]
   ElasticLoadBalancingV2LoadBalancerAPP:
     - External:
         <<: *external
@@ -84,10 +93,3 @@ global:
     - Internal:
         <<: *internal
         <<: *net
-  ElasticLoadBalancingV2LoadBalancerALB:
-    - External:
-        <<: *external
-        <<: *alb
-    - Internal:
-        <<: *internal
-        <<: *alb

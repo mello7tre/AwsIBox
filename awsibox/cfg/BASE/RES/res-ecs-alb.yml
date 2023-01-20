@@ -43,6 +43,21 @@ global:
         Condition: AlarmLoadBalancerApplicationInternal5XXEvaluationPeriods
         IBOX_ENABLED: True
         EvaluationPeriods: 3
+  ElasticLoadBalancingV2Listener:
+    - ECSHttpDefaultExternal:
+        IBOX_ENABLED: True
+    - ECSHttpDefaultInternal:
+        IBOX_ENABLED: True
+    - ECSHttpsDefaultExternal:
+        IBOX_ENABLED: True
+  ElasticLoadBalancingV2LoadBalancer:
+    - ECSApplicationExternal:
+        IBOX_ENABLED: True
+    - ECSApplicationInternal:
+        IBOX_ENABLED: True
+  LoadBalancer: ['External', 'Internal']
+  LoadBalancerType: Application
+  RecordSet: []
   SecurityGroup**:
     - LoadBalancerApplicationExternal:
         IBOX_OUTPUT:
@@ -74,9 +89,6 @@ global:
               CidrIp: '0.0.0.0/0'
               FromPort: 80
               ToPort: 80
-  LoadBalancer: ['External', 'Internal']
-  LoadBalancerType: Application
-  RecordSet: []
 
 dev: &cfg_dev
   Alarm:

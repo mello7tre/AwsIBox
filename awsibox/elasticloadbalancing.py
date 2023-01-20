@@ -257,19 +257,6 @@ def LB_TargetGroupsECS():
             pass
 
 
-def LB_TargetGroupsALB():
-    for n in cfg.ElasticLoadBalancingV2TargetGroupALB:
-        # resources
-        if n not in cfg.LoadBalancer:
-            continue
-        r_TG = elbv2.TargetGroup(f"TargetGroupServiceUnavailable{n}")
-        auto_get_props(
-            r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupALB{n}", indexname=n
-        )
-
-        add_obj(r_TG)
-
-
 def LB_ElasticLoadBalancingClassicEC2():
     for lb in cfg.LoadBalancer:
         # update SecurityGroupInstancesRules Ingress using Listeners
@@ -366,35 +353,6 @@ def LB_ElasticLoadBalancingEC2(key):
 
     if cfg.LoadBalancerType == "Network":
         LB_ElasticLoadBalancingNetworkEC2()
-
-
-def LB_ElasticLoadBalancingALB(key):
-    for n, v in cfg.ElasticLoadBalancingV2LoadBalancerALB.items():
-        # resources
-        if n not in cfg.LoadBalancer:
-            continue
-        r_LB = elbv2.LoadBalancer(f"LoadBalancerApplication{n}")
-        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerALB{n}")
-
-        r_ListenerHttp = elbv2.Listener(f"ListenerHttpDefault{n}")
-        auto_get_props(r_ListenerHttp, mapname=f"ListenerV2ALBHttp{n}")
-
-        if n == "External":
-            # Https enabled only for External ELB
-            r_ListenerHttps = elbv2.Listener(f"ListenerHttpsDefault{n}")
-            auto_get_props(r_ListenerHttps, mapname=f"ListenerV2ALBHttps{n}")
-            add_obj(r_ListenerHttps)
-
-        add_obj([r_LB, r_ListenerHttp])
-
-    # Resources
-    # Create TargetGroups pointing to LambdaServiceUnavailable
-    try:
-        cfg.ServiceUnavailable
-    except Exception:
-        pass
-    else:
-        LB_TargetGroupsALB()
 
 
 def LB_ElasticLoadBalancingECS(key):
