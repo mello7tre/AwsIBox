@@ -72,6 +72,18 @@ Internal: &internal
 
 global:
   ElasticLoadBalancingV2LoadBalancer:
+    - EC2ApplicationExternal:
+        IBOX_ENABLED: False
+        <<: [*external, *app]
+    - EC2ApplicationInternal:
+        IBOX_ENABLED: False
+        <<: [*internal, *app]
+    - EC2NetworkExternal:
+        IBOX_ENABLED: False
+        <<: [*external, *net]
+    - EC2NetworkInternal:
+        IBOX_ENABLED: False
+        <<: [*internal, *net]
     - ECSApplicationExternal:
         IBOX_ENABLED: False
         IBOX_TITLE: LoadBalancerApplicationExternal
@@ -80,17 +92,3 @@ global:
         IBOX_ENABLED: False
         IBOX_TITLE: LoadBalancerApplicationInternal
         <<: [*internal, *alb]
-  ElasticLoadBalancingV2LoadBalancerAPP:
-    - External:
-        <<: *external
-        <<: *app
-    - Internal:
-        <<: *internal
-        <<: *app
-  ElasticLoadBalancingV2LoadBalancerNET:
-    - External:
-        <<: *external
-        <<: *net
-    - Internal:
-        <<: *internal
-        <<: *net

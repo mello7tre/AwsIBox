@@ -284,7 +284,9 @@ def LB_ElasticLoadBalancingClassicEC2():
 def LB_ElasticLoadBalancingApplicationEC2():
     for lb in cfg.LoadBalancer:
         r_LB = elbv2.LoadBalancer(f"LoadBalancerApplication{lb}")
-        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerAPP{lb}")
+        auto_get_props(
+            r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerEC2Application{lb}"
+        )
         add_obj(r_LB)
 
         # enable Listeners
@@ -297,9 +299,9 @@ def LB_ElasticLoadBalancingApplicationEC2():
                 "IBOX_ENABLED"
             ] = True
         # enable TargetGroups
-        getattr(cfg, f"ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplication{lb}")[
-            "IBOX_ENABLED"
-        ] = True
+        getattr(
+            cfg, f"ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplication{lb}"
+        )["IBOX_ENABLED"] = True
 
         cfg.Alarm[f"TargetEC2{lb}5XX"]["IBOX_ENABLED"] = True
 
@@ -318,7 +320,9 @@ def LB_ElasticLoadBalancingApplicationEC2():
 def LB_ElasticLoadBalancingNetworkEC2():
     for lb in cfg.LoadBalancer:
         r_LB = elbv2.LoadBalancer(f"LoadBalancerNetwork{lb}")
-        auto_get_props(r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerNET{lb}")
+        auto_get_props(
+            r_LB, mapname=f"ElasticLoadBalancingV2LoadBalancerEC2Network{lb}"
+        )
         add_obj(r_LB)
 
         # enable Listeners
