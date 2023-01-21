@@ -118,8 +118,14 @@ def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
     )
 
     # Create ListenerRule only in stack's specific new Listener
-    ListenerHttpPort = cfg.ListenerLoadBalancerHttpPort
-    ListenerHttpsPort = cfg.ListenerLoadBalancerHttpsPort
+    ListenerHttpPort = getattr(
+        cfg, f"ElasticLoadBalancingV2ListenerECSHttp{scheme}Port"
+    )
+    ListenerHttpsPort = (
+        getattr(cfg, f"ElasticLoadBalancingV2ListenerECSHttps{scheme}Port")
+        if scheme == "External"
+        else 443
+    )
 
     Protocol = key.get("Protocol", "auto")
 
@@ -219,22 +225,29 @@ def LB_ListenersV2ECS():
         # resources
         if n not in cfg.LoadBalancer:
             continue
-        if cfg.ListenerLoadBalancerHttpPort not in ["none", 80]:
+        if getattr(cfg, f"ElasticLoadBalancingV2ListenerECSHttp{n}Port") not in [
+            "none",
+            80,
+        ]:
             # Enable the relative LB SecurityGroupIngress
             cfg.SecurityGroupIngress[f"LoadBalancerApplicationHttp{n}"][
                 "IBOX_ENABLED"
             ] = True
             r_Http = elbv2.Listener(f"ListenerHttp{n}")
-            auto_get_props(r_Http, mapname=f"ListenerV2ECSHttp{n}")
+            auto_get_props(r_Http, mapname=f"ElasticLoadBalancingV2ListenerECSHttp{n}")
             add_obj(r_Http)
 
-        if cfg.ListenerLoadBalancerHttpsPort not in ["none", 443] and n == "External":
+        if n == "External" and getattr(
+            cfg, f"ElasticLoadBalancingV2ListenerECSHttps{n}Port"
+        ) not in ["none", 443]:
             # Enable the relative LB SecurityGroupIngress
             cfg.SecurityGroupIngress[f"LoadBalancerApplicationHttps{n}"][
                 "IBOX_ENABLED"
             ] = True
             r_Https = elbv2.Listener(f"ListenerHttps{n}")
-            auto_get_props(r_Https, mapname=f"ListenerV2ECSHttps{n}")
+            auto_get_props(
+                r_Https, mapname=f"ElasticLoadBalancingV2ListenerECSHttps{n}"
+            )
             add_obj(r_Https)
 
     # Resources
@@ -243,16 +256,13 @@ def LB_ListenersV2ECS():
 
 
 def LB_TargetGroupsECS():
-    for n in cfg.ElasticLoadBalancingV2TargetGroupECS:
-        # resources
-        if n in ["External", "Internal"] and n not in cfg.LoadBalancer:
-            continue
-        r_TG = elbv2.TargetGroup(f"TargetGroup{n}")
-        auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupECS{n}")
+    for lb in cfg.LoadBalancer:
+        r_TG = elbv2.TargetGroup(f"TargetGroup{lb}")
+        auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupECSLoadBalancerApplication{lb}")
         add_obj(r_TG)
 
         try:
-            cfg.Alarm[f"Target{n}5XX"]["IBOX_ENABLED"] = True
+            cfg.Alarm[f"Target{lb}5XX"]["IBOX_ENABLED"] = True
         except Exception:
             pass
 

@@ -1,18 +1,12 @@
 Http: &http
-  IBOX_PARAMETER:
-    - ListenerLoadBalancerHttpPort:
-        Description: 'Http Port where Load Balancer listen - empty for default based on env/role'
-  Port: get_endvalue('ListenerLoadBalancerHttpPort')
+  Port: 80
   Protocol: HTTP
 
 Https: &https
-  IBOX_PARAMETER:
-    - ListenerLoadBalancerHttpsPort:
-        Description: 'Https Port where Load Balancer listen - empty for default based on env/role'
   Certificates:
     Regional:
       CertificateArn: get_endvalue('RegionalCertificateArn')
-  Port: get_endvalue('ListenerLoadBalancerHttpsPort')
+  Port: 443
   Protocol: HTTPS
   SslPolicy.IBOX_AUTO_PO: {}
   SslPolicy: ELBSecurityPolicy-2016-08
@@ -57,27 +51,20 @@ global:
         Port.IBOX_AUTO_PO: {}
     - EC2HttpInternal:
         IBOX_ENABLED: False
+        <<: *http
         DefaultActions:
           - TG:
               Type: forward
               TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplicationInternal')
         LoadBalancerArn: Ref('LoadBalancerApplicationInternal')
-        Port: 80
-        Protocol: HTTP
     - EC2HttpsExternal:
         IBOX_ENABLED: False
+        <<: *https
         DefaultActions:
           - TG:
               Type: forward
               TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplicationExternal')
         LoadBalancerArn: Ref('LoadBalancerApplicationExternal')
-        Port: 443
-        Protocol: HTTPS
-        Certificates:
-          Regional:
-            CertificateArn: get_endvalue('RegionalCertificateArn')
-        SslPolicy.IBOX_AUTO_PO: {}
-        SslPolicy: ELBSecurityPolicy-2016-08
     - EC2TCPExternal:
         IBOX_ENABLED: False
         DefaultActions:
@@ -126,15 +113,15 @@ global:
               Value: Ref(IBOX_TITLE)
               Export: Export(Sub('%s-${AWS::StackName}' % IBOX_TITLE))
         Condition: LoadBalancerApplicationExternal
-  ListenerV2ECS:
-    - HttpExternal:
+    - ECSHttpExternal:
+        IBOX_ENABLED: False
         <<: *httpexternal
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
-    - HttpInternal:
+    - ECSHttpInternal:
+        IBOX_ENABLED: False
         <<: *httpinternal
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
-    - HttpsExternal:
+    - ECSHttpsExternal:
+        IBOX_ENABLED: False
         <<: *httpsexternal
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
-  ListenerLoadBalancerHttpPort: 80
-  ListenerLoadBalancerHttpsPort: 443

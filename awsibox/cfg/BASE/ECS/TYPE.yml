@@ -11,25 +11,28 @@ IBoxLoader: !include
   - res-elasticloadbalancing/v2-listener.yml
 
 global:
+  Output:
+    - LoadBalancerApplication:
+        Value: get_endvalue('LoadBalancer', nolist=True)
   SecurityGroupIngress:
     - LoadBalancerApplicationHttpExternal:
         IBOX_ENABLED: False
         CidrIp: '0.0.0.0/0'
-        GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
-        FromPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
-        ToPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
+        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpExternalPort')
+        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpExternalPort')
     - LoadBalancerApplicationHttpInternal:
         IBOX_ENABLED: False
         CidrIp: '0.0.0.0/0'
-        GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
-        FromPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
-        ToPort: get_endvalue(f'ListenerLoadBalancerHttpPort')
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
+        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpInternalPort')
+        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpInternalPort')
     - LoadBalancerApplicationHttpsExternal:
         IBOX_ENABLED: False
         CidrIp: '0.0.0.0/0'
-        GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
-        FromPort: get_endvalue(f'ListenerLoadBalancerHttpsPort')
-        ToPort: get_endvalue(f'ListenerLoadBalancerHttpsPort')
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
+        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
+        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
   LaunchType: EC2
   AlarmCPUBase: &cpu
     IBOX_ENABLED: False
@@ -48,9 +51,6 @@ global:
     - CPULow:
         <<: *cpu
         AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyDown')]
-  ElasticLoadBalancingV2TargetGroupECS:
-    - External: {}
-    - Internal: {}
   ListenerRules:
     - 1:
         HostHeader: '*${EnvRole}.*'
