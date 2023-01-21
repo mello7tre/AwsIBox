@@ -68,6 +68,14 @@ global:
               - Service:
                   Name: ServiceName
                   Value: GetAtt('Service', 'Name')
+  CloudFrontDistribution:
+    - IBOX_BASE:
+        DistributionConfig:
+          Origins:
+            - Default:
+                CustomOriginConfig:
+                  HTTPSPort.IBOX_CODE: If(
+                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerECSHttpsExternalPort"))
   ScalableTarget:
     - ECSService:
         ScheduledActions:

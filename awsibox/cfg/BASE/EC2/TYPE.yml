@@ -71,6 +71,14 @@ global:
         MaxSize: CapacityMax
         MinSize: CapacityMin
         Recurrence: '30 08 * * mon-fri'
+  CloudFrontDistribution:
+    - IBOX_BASE:
+        DistributionConfig:
+          Origins:
+            - Default:
+                CustomOriginConfig:
+                  HTTPSPort.IBOX_CODE: If(
+                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerEC2HttpsExternalPort"))
   LoadBalancerType: Classic
   IAMPolicy:
     - CloudFormation:
