@@ -61,7 +61,7 @@ global:
           WebACLId.IBOX_AUTO_PO:
             Description: 'CloudFront WebACLId - empty for default based on env/role'
             CONDITION: get_condition('', 'not_equals', 'none', IBOX_CURNAME)
-            Value: get_endvalue(IBOX_CURNAME)
+            Value: ${WebACLId}
           WebACLId: none
         LogEnabled.IBOX_AUTO_PO:
           Description: 'Empty for mapped value'
