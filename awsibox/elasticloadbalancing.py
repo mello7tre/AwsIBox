@@ -230,7 +230,7 @@ def LB_ListenersV2ECS():
             80,
         ]:
             # Enable the relative LB SecurityGroupIngress
-            cfg.SecurityGroupIngress[f"LoadBalancerApplicationHttp{n}"][
+            cfg.EC2SecurityGroupIngress[f"LoadBalancerApplicationHttp{n}"][
                 "IBOX_ENABLED"
             ] = True
             r_Http = elbv2.Listener(f"ListenerHttp{n}")
@@ -241,7 +241,7 @@ def LB_ListenersV2ECS():
             cfg, f"ElasticLoadBalancingV2ListenerECSHttps{n}Port"
         ) not in ["none", 443]:
             # Enable the relative LB SecurityGroupIngress
-            cfg.SecurityGroupIngress[f"LoadBalancerApplicationHttps{n}"][
+            cfg.EC2SecurityGroupIngress[f"LoadBalancerApplicationHttps{n}"][
                 "IBOX_ENABLED"
             ] = True
             r_Https = elbv2.Listener(f"ListenerHttps{n}")

@@ -311,7 +311,8 @@ def SG_SecurityGroupIngresses(key):
     for n, v in getattr(cfg, key).items():
         if not v.get("IBOX_ENABLED", True):
             continue
-        resname = f"{key}{n}"
+        mapname = f"{key}{n}"
+        resname = f"SecurityGroupIngress{n}"
         try:
             allowed_ip = v["CidrIp"] == "AllowedIp"
         except Exception:
@@ -320,14 +321,14 @@ def SG_SecurityGroupIngresses(key):
             if allowed_ip:
                 for m, w in cfg.AllowedIp.items():
                     r_SGI = SecurityGroupIngress(f"{resname}{m}")
-                    auto_get_props(r_SGI, resname)
+                    auto_get_props(r_SGI, mapname)
                     auto_get_props(r_SGI, f"AllowedIp{m}")
                     r_SGI.Condition = f"AllowedIp{m}"
                     add_obj(r_SGI)
                 continue
 
         r_SGI = SecurityGroupIngress(resname)
-        auto_get_props(r_SGI)
+        auto_get_props(r_SGI, mapname)
         add_obj(r_SGI)
 
 

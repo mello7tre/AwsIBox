@@ -348,6 +348,10 @@ CFG_TO_FUNC = {
     "EC2Route": {"module": "joker", "func": ("ec2", "Route")},
     "EC2RouteTable": {"module": "joker", "func": ("ec2", "RouteTable")},
     "EC2SecurityGroup": {"module": "ec2", "func": "SG_SecurityGroup"},
+    "EC2SecurityGroupIngress": {
+        "module": "ec2",
+        "func": "SG_SecurityGroupIngresses",
+    },
     "EC2Subnet": {"module": "ec2", "func": "EC2_Subnet"},
     "EC2VPC": {"module": "joker", "func": ("ec2", "VPC")},
     "EC2VPCEndpoint": {"module": "joker", "func": ("ec2", "VPCEndpoint")},
@@ -470,10 +474,6 @@ CFG_TO_FUNC = {
     "Route53ResolverRuleAssociation": {
         "module": "joker",
         "func": ("route53resolver", "ResolverRuleAssociation"),
-    },
-    "SecurityGroupIngress": {
-        "module": "ec2",
-        "func": "SG_SecurityGroupIngresses",
     },
     "SecurityGroups": {
         "module": "ec2",

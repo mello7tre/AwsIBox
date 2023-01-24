@@ -65,6 +65,17 @@ global:
         MaxSize: CapacityMax
         MinSize: CapacityMin
         Recurrence: '45 5 * * *'
+  EC2SecurityGroupIngress:
+    - ContainerInstanceExternal:
+        FromPort: 32768
+        GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
+        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal')
+        ToPort: 60999
+    - ContainerInstanceInternal:
+        FromPort: 32768
+        GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
+        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
+        ToPort: 60999
   ECSCluster:
     - Base:
         IBOX_TITLE: Cluster
@@ -116,17 +127,6 @@ global:
     - Instance:
         ManagedPolicyArns++:
           - get_expvalue('IAMPolicyEcs')
-  SecurityGroupIngress:
-    - ContainerInstanceExternal:
-        FromPort: 32768
-        GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
-        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal')
-        ToPort: 60999
-    - ContainerInstanceInternal:
-        FromPort: 32768
-        GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
-        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
-        ToPort: 60999
 
 dev: &cfg_dev
   ASGLifecycleHook:

@@ -14,7 +14,7 @@ global:
   Output:
     - LoadBalancerApplication:
         Value: get_endvalue('LoadBalancer', nolist=True)
-  SecurityGroupIngress:
+  EC2SecurityGroupIngress:
     - LoadBalancerApplicationHttpExternal:
         IBOX_ENABLED: False
         CidrIp: '0.0.0.0/0'
