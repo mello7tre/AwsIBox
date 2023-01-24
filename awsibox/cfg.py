@@ -294,6 +294,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("apigateway", "UsagePlanKey"),
     },
+    "ApplicationAutoScalingScalableTarget": {
+        "module": "joker",
+        "func": ("applicationautoscaling", "ScalableTarget"),
+    },
     "ApplicationAutoScalingScalingPolicy": {
         "module": "autoscaling",
         "func": "AS_ScalingPolicies",
@@ -465,10 +469,6 @@ CFG_TO_FUNC = {
     "Route53ResolverRuleAssociation": {
         "module": "joker",
         "func": ("route53resolver", "ResolverRuleAssociation"),
-    },
-    "ApplicationAutoScalingScalableTarget": {
-        "module": "joker",
-        "func": ("applicationautoscaling", "ScalableTarget"),
     },
     "SecurityGroup": {"module": "ec2", "func": "SG_SecurityGroup"},
     "SecurityGroupIngress": {
