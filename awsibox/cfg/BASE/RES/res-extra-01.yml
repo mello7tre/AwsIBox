@@ -14,7 +14,7 @@ global:
   StackName: r-extra-01
   MappingClass:
     - AZones:
-  SecurityGroup:
+  EC2SecurityGroup:
     - RDS:
         Export: True
         GroupDescription: 'Assign to RDS Client'

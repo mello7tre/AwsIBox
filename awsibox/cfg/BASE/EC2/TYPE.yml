@@ -79,6 +79,10 @@ global:
                 CustomOriginConfig:
                   HTTPSPort.IBOX_CODE: If(
                     f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerEC2HttpsExternalPort"))
+  EC2SecurityGroup:
+    - InstancesRules:
+        IBOX_NO_OUTPUT: True
+        GroupDescription: Enable Access from LoadBalancer to Instances and between Instances
   LoadBalancerType: Classic
   IAMPolicy:
     - CloudFormation:
@@ -101,10 +105,6 @@ global:
           - get_expvalue('IAMPolicyBaseInstance')
           - get_expvalue('IAMPolicySSM')
         Principal: ec2.amazonaws.com
-  SecurityGroup:
-    - InstancesRules:
-        IBOX_NO_OUTPUT: True
-        GroupDescription: Enable Access from LoadBalancer to Instances and between Instances
 
 dev: &cfg_dev
   Alarm:

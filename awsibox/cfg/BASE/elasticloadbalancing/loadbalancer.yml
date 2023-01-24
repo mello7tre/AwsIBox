@@ -4,7 +4,7 @@ IBoxLoader: !include
   - v2-loadbalancer.yml
 
 global:
-  SecurityGroup:
+  EC2SecurityGroup:
     - LoadBalancer:
         GroupDescription: 'Enable access to LoadBalancer'
         SecurityGroupIngress: {}

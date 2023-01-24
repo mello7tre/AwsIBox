@@ -1,5 +1,5 @@
 global:
-  SecurityGroup:
+  EC2SecurityGroup:
     - BaseInstance:
         Export: True
         GroupDescription: 'Enable ICMP Ping [ALL] and SSH on EC2 Instance'

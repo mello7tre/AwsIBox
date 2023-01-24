@@ -271,24 +271,26 @@ def SG_SecurityGroupRules(groupname, ingresses):
 
 def SG_SecurityGroup(key):
     for n, v in getattr(cfg, key).items():
-        resname = f"{key}{n}"
+        # harcode original title, as is used this way in other part of code/cfg
+        mapname = f"{key}{n}"
+        resname = f"SecurityGroup{n}"
 
         # resources
         r_SG = SecurityGroup(resname)
-        auto_get_props(r_SG)
+        auto_get_props(r_SG, mapname=mapname)
         try:
             ingresses = v["SecurityGroupIngress"]
         except Exception:
             pass
         else:
-            r_SG.SecurityGroupIngress = SG_SecurityGroupRules(resname, ingresses)
+            r_SG.SecurityGroupIngress = SG_SecurityGroupRules(mapname, ingresses)
 
         try:
             outname = v["OutputName"]
         except Exception:
             outname = resname
         else:
-            outname = f"{key}{outname}"
+            outname = f"SecurityGroup{outname}"
 
         # outputs
         o_SG = Output(outname)
