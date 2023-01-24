@@ -14,6 +14,13 @@ global:
           Condition('LaunchTypeFarGate'),
           get_condition('', 'equals', 'no', 'FargateSpot')
         )
+  ApplicationAutoScalingScalableTarget:
+    - ECSService:
+        ResourceId:
+          If('FargateSpot',
+            get_subvalue('service/${1E}/${ServiceSpot.Name}', 'Cluster', 'ClusterStack'),
+            get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
+          )
   FargateSpot: 'no'
   CCRFargateSpot: True
   Service:
@@ -25,10 +32,3 @@ global:
           - ServiceBase:
               Key: IBOXFARGATESPOTServiceBase
               Value: GetAtt('Service', 'Name')
-  ScalableTarget:
-    - ECSService:
-        ResourceId:
-          If('FargateSpot',
-            get_subvalue('service/${1E}/${ServiceSpot.Name}', 'Cluster', 'ClusterStack'),
-            get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
-          )

@@ -1,6 +1,6 @@
 Base: &base
   IBOX_ENABLED: False
-  ScalingTargetId: Ref('ScalableTargetECSService')
+  ScalingTargetId: Ref('ApplicationAutoScalingScalableTargetECSService')
   PolicyName: IBOX_RESNAME
 
 Tracking: &tracking

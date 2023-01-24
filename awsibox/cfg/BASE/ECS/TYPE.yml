@@ -51,6 +51,19 @@ global:
     - CPULow:
         <<: *cpu
         AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyDown')]
+  ApplicationAutoScalingScalableTarget:
+    - ECSService:
+        ScheduledActions:
+          - Down:
+              Enabled: 'no'
+              CapacityMax: k
+              CapacityMin: CapacityMin
+              Schedule: 'cron(00 22 * * ? *)'
+          - Up:
+              Enabled: 'no'
+              CapacityMax: k
+              CapacityMin: CapacityMin
+              Schedule: 'cron(00 06 * * ? *)'
   ListenerRules:
     - 1:
         HostHeader: '*${EnvRole}.*'
@@ -76,19 +89,6 @@ global:
                 CustomOriginConfig:
                   HTTPSPort.IBOX_CODE: If(
                     f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerECSHttpsExternalPort"))
-  ScalableTarget:
-    - ECSService:
-        ScheduledActions:
-          - Down:
-              Enabled: 'no'
-              CapacityMax: k
-              CapacityMin: CapacityMin
-              Schedule: 'cron(00 22 * * ? *)'
-          - Up:
-              Enabled: 'no'
-              CapacityMax: k
-              CapacityMin: CapacityMin
-              Schedule: 'cron(00 06 * * ? *)'
   Service:
     - Base:
         IBOX_ENABLED: True
@@ -99,7 +99,7 @@ dev: &cfg_dev
       EvaluationPeriods: 0
     TargetInternal5XX:
       EvaluationPeriods: 0
-  ScalableTargetECSServiceScheduledActions:
+  ApplicationAutoScalingScalableTargetECSServiceScheduledActions:
     Down:
       Enabled: 'yes'
     Up:

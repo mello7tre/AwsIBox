@@ -1,5 +1,5 @@
 global:
-  ScalableTarget:
+  ApplicationAutoScalingScalableTarget:
     - ECSService:
         MaxCapacity: get_endvalue('CapacityMax')
         MinCapacity: get_endvalue('CapacityMin')

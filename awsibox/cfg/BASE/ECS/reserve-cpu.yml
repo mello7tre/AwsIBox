@@ -8,6 +8,7 @@ IBoxLoader: !exclude
 
 global:
   StackName: rsc
+  ApplicationAutoScalingScalableTarget: IBOX_SKIP_FUNC
   ApplicationAutoScalingScalingPolicy: IBOX_SKIP_FUNC
   ContainerDefinitions:
     - 1:
@@ -16,7 +17,6 @@ global:
         Image: 'amazonlinux:2'
         Memory: 64
   LaunchType: EC2
-  ScalableTarget: IBOX_SKIP_FUNC
   Service:
     - Base:
         IBOX_ENABLED: False

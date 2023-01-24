@@ -466,7 +466,7 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("route53resolver", "ResolverRuleAssociation"),
     },
-    "ScalableTarget": {
+    "ApplicationAutoScalingScalableTarget": {
         "module": "joker",
         "func": ("applicationautoscaling", "ScalableTarget"),
     },
