@@ -37,6 +37,11 @@ global:
         IBOX_TITLE: Service
         DesiredCount: get_endvalue('CapacityDesired')
         DeploymentConfiguration:
+          DeploymentCircuitBreaker:
+            Enable.IBOX_AUTO_PO: {}
+            Enable: true
+            Rollback.IBOX_AUTO_PO: {}
+            Rollback: true
           MaximumPercent.IBOX_AUTO_PO: {}
           MaximumPercent: 200
           MinimumHealthyPercent.IBOX_AUTO_PO: {}
