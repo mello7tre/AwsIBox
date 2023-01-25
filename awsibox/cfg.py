@@ -443,6 +443,8 @@ CFG_TO_FUNC = {
     "LoadBalancer": {
         "module": "elasticloadbalancing",
         "func": "LB_ElasticLoadBalancing",
+        # need this for override on ContainerDefinitions1ContainerPort
+        "dep": ["TaskDefinition"],
     },
     "LogsLogGroup": {
         "module": "joker",

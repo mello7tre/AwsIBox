@@ -18,8 +18,6 @@ Base: &base
     - _Command: Or(
         Condition(f'{IBOX_RESNAME}CommandOverride'),
         Equals('yes', 'yes' if isinstance(getattr(cfg, f'{IBOX_RESNAME}Command'), list) else 'no'))
-    - _ContainerPort:
-        get_condition('', 'not_equals', 0, f'{IBOX_RESNAME}ContainerPort')
     - _HostPort:
         get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}HostPort')
     - EnvApp.IBOX_INDEXNAME.Version:
@@ -36,6 +34,8 @@ Base: &base
     - _Image:
         Value: ${Image}
   Command: Ref('AWS::NoValue')
+  ContainerPort.IBOX_AUTO_PO:
+    CONDITION: get_condition('', 'not_equals', 0, f'{IBOX_RESNAME}ContainerPort')
   ContainerPort: 0
   Cpu: 16
   DockerLabels: 
