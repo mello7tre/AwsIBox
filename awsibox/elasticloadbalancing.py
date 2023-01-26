@@ -262,7 +262,7 @@ def LB_TargetGroupsECS():
         add_obj(r_TG)
 
         try:
-            cfg.Alarm[f"Target{lb}5XX"]["IBOX_ENABLED"] = True
+            cfg.CloudWatchAlarm[f"Target{lb}5XX"]["IBOX_ENABLED"] = True
         except Exception:
             pass
 
@@ -288,7 +288,7 @@ def LB_ElasticLoadBalancingClassicEC2():
         auto_get_props(r_LB, mapname=f"ElasticLoadBalancingLoadBalancer{lb}")
         add_obj(r_LB)
 
-        cfg.Alarm[f"Backend{lb}5XX"]["IBOX_ENABLED"] = True
+        cfg.CloudWatchAlarm[f"Backend{lb}5XX"]["IBOX_ENABLED"] = True
 
 
 def LB_ElasticLoadBalancingApplicationEC2():
@@ -313,7 +313,7 @@ def LB_ElasticLoadBalancingApplicationEC2():
             cfg, f"ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplication{lb}"
         )["IBOX_ENABLED"] = True
 
-        cfg.Alarm[f"TargetEC2{lb}5XX"]["IBOX_ENABLED"] = True
+        cfg.CloudWatchAlarm[f"TargetEC2{lb}5XX"]["IBOX_ENABLED"] = True
 
     # update SecurityGroupInstancesRules giving access from LB to Target Ports
     for n, v in cfg.ElasticLoadBalancingV2TargetGroup.items():

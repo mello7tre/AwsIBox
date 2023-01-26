@@ -1,27 +1,4 @@
-Base: &base
-  IBOX_PARAMETER:
-    - _EvaluationPeriods:
-        Description: 'Number of periods for alarm evaluation - 0 to disable - empty for mapped value'
-        AllowedValues: ['', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-#    - _Period:
-#        Description: 'Period lenght in seconds (multiple of 60) - empty for mapped value'
-    - _Threshold:
-        Description: 'Threshold for alarm triggering - empty for mapped value'
-        AllowedValues: ['', '10', '15', '20', '25', '30', '35', '40', '45', '50',
-                        '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
-  IBOX_CONDITION:
-    - _:
-        get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}EvaluationPeriods')
-  IBOX_OUTPUT:
-    - _:
-        Value: Period= ${Period} ,EvaluationPeriods= ${EvaluationPeriods} ,Threshold= ${Threshold}
-  IBOX_ENABLED: False
-  Condition: IBOX_RESNAME
-  ActionsEnabled: true
-  Period: 60
-  Dimensions: {}
-
-AlarmTarget5XX: &target5xx
+Target5XX: &target5xx
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
   EvaluationPeriods: 2
   MetricName: HTTPCode_Target_5XX_Count
@@ -31,7 +8,7 @@ AlarmTarget5XX: &target5xx
   TreatMissingData: 'notBreaching'
   Namespace: 'AWS/ApplicationELB'
 
-AlarmLoadBalancerApplication5XX: &alb5xx
+LoadBalancerApplication5XX: &alb5xx
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
   EvaluationPeriods: 2
   MetricName: HTTPCode_ELB_5XX_Count
@@ -41,7 +18,7 @@ AlarmLoadBalancerApplication5XX: &alb5xx
   TreatMissingData: 'notBreaching'
   Namespace: 'AWS/ApplicationELB'
 
-AlarmBackend5XX: &backend5xx
+Backend5XX: &backend5xx
   AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
   EvaluationPeriods: 2
   MetricName: HTTPCode_Backend_5XX
@@ -51,7 +28,7 @@ AlarmBackend5XX: &backend5xx
   TreatMissingData: 'notBreaching'
   Namespace: 'AWS/ELB'
 
-AlarmASGSpot: &asgspot
+ASGSpot: &asgspot
   Condition: SpotASG
   AlarmActions: [Ref('SNSTopicASGSpot')]
   Period: Ref('AWS::NoValue')
@@ -110,7 +87,7 @@ AlarmASGSpot: &asgspot
           Stat: Average
           Period: 60
 
-AlarmDiskUsed: &diskused
+DiskUsed: &diskused
   EvaluationPeriods: 3
   MetricName: 'root_disk_used_percent'
   Statistic: 'Maximum'
@@ -121,24 +98,74 @@ AlarmDiskUsed: &diskused
         Name: AutoScalingGroupName
         Value: Ref('AutoScalingGroup')
 
+EC2: &ec2
+  Dimensions:
+    - Autoscaling:
+        Name: AutoScalingGroupName
+        Value: Ref('AutoScalingGroup')
+  Namespace: 'AWS/EC2'
+
+ECS: &ecs
+  Dimensions:
+    - Cluster:
+        Name: ClusterName
+        Value: get_expvalue('Cluster', 'ClusterStack')
+    - Service:
+        Name: ServiceName
+        Value: GetAtt('Service', 'Name')
+  Namespace: 'AWS/ECS'
+
+
+CPU: &cpu
+  EvaluationPeriods: 5
+  MetricName: 'CPUUtilization'
+  Statistic: 'Average'
+  Namespace: ''
+  Unit: Percent
+
 
 global:
-  AlarmCPUBase: &cpu
-    EvaluationPeriods: 5
-    MetricName: 'CPUUtilization'
-    Statistic: 'Average'
-    Namespace: ''
-    Unit: Percent
-  Alarm:
-    - IBOX_BASE: *base
-    - CPUHigh:
-        <<: *cpu
+  CloudWatchAlarm:
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        IBOX_PARAMETER:
+          - _EvaluationPeriods:
+              Description: 'Number of periods for alarm evaluation - 0 to disable - empty for mapped value'
+              AllowedValues: ['', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+          - _Threshold:
+              Description: 'Threshold for alarm triggering - empty for mapped value'
+              AllowedValues: ['', '10', '15', '20', '25', '30', '35', '40', '45', '50',
+                              '55', '60', '65', '70', '75', '80', '85', '90', '95', '100']
+        IBOX_CONDITION:
+          - _:
+              get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}EvaluationPeriods')
+        IBOX_OUTPUT:
+          - _:
+              Value: Period= ${Period} ,EvaluationPeriods= ${EvaluationPeriods} ,Threshold= ${Threshold}
+        Condition: IBOX_RESNAME
+        ActionsEnabled: true
+        Period: 60
+        Dimensions: {}
+    - EC2CPUHigh:
+        <<: [*cpu, *ec2]
         AlarmActions: [Ref('AutoScalingScalingPolicyUp')]
         AlarmDescription: 'Alarm if CPU too High'
         ComparisonOperator: 'GreaterThanThreshold'
         Threshold: '60'
-    - CPULow:
-        <<: *cpu
+    - EC2CPULow:
+        <<: [*cpu, *ec2]
+        AlarmActions: [Ref('AutoScalingScalingPolicyDown')]
+        AlarmDescription: 'Alarm if CPU too Low'
+        ComparisonOperator: 'LessThanOrEqualToThreshold'
+        Threshold: '30'
+    - ECSCPUHigh:
+        <<: [*cpu, *ecs]
+        AlarmActions: [Ref('AutoScalingScalingPolicyUp')]
+        AlarmDescription: 'Alarm if CPU too High'
+        ComparisonOperator: 'GreaterThanThreshold'
+        Threshold: '60'
+    - ECSCPULow:
+        <<: [*cpu, *ecs]
         AlarmActions: [Ref('AutoScalingScalingPolicyDown')]
         AlarmDescription: 'Alarm if CPU too Low'
         ComparisonOperator: 'LessThanOrEqualToThreshold'

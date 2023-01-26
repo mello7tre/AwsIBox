@@ -10,6 +10,7 @@ global:
   StackName: rsc
   ApplicationAutoScalingScalableTarget: IBOX_SKIP_FUNC
   ApplicationAutoScalingScalingPolicy: IBOX_SKIP_FUNC
+  CloudWatchAlarm: IBOX_SKIP_FUNC
   ContainerDefinitions:
     - 1:
         Command: ['tail', '-f', '.dockerenv']

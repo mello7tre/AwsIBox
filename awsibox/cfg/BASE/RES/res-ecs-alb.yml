@@ -34,7 +34,7 @@ global:
   Output:
     - LoadBalancerApplication:
         Value: get_endvalue('LoadBalancer', nolist=True)
-  Alarm:
+  CloudWatchAlarm:
     - LoadBalancerApplicationExternal5XX:
         IBOX_ENABLED: True
         Condition: AlarmLoadBalancerApplicationExternal5XXEvaluationPeriods
@@ -91,7 +91,7 @@ global:
               ToPort: 80
 
 dev: &cfg_dev
-  Alarm:
+  CloudWatchAlarm:
     LoadBalancerApplicationExternal5XX:
       EvaluationPeriods: 0
     LoadBalancerApplicationInternal5XX:

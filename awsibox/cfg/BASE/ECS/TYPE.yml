@@ -34,22 +34,10 @@ global:
         FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
         ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
   LaunchType: EC2
-  AlarmCPUBase: &cpu
-    IBOX_ENABLED: False
-    Dimensions:
-      - Cluster:
-          Name: ClusterName
-          Value: get_expvalue('Cluster', 'ClusterStack')
-      - Service:
-          Name: ServiceName
-          Value: GetAtt('Service', 'Name')
-    Namespace: 'AWS/ECS'
-  Alarm:
-    - CPUHigh:
-        <<: *cpu
+  CloudWatchAlarm:
+    - ECSCPUHigh:
         AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyUp')]
-    - CPULow:
-        <<: *cpu
+    - ECSCPULow:
         AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyDown')]
   ApplicationAutoScalingScalableTarget:
     - ECSService:
@@ -94,7 +82,7 @@ global:
         IBOX_ENABLED: True
 
 dev: &cfg_dev
-  Alarm:
+  CloudWatchAlarm:
     TargetExternal5XX:
       EvaluationPeriods: 0
     TargetInternal5XX:

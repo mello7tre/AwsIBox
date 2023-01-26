@@ -32,18 +32,10 @@ global:
   Output:
     - UpdateMode:
         Value: Ref('UpdateMode')
-  AlarmCPUBase: &cpu
-    Dimensions:
-      - Autoscaling:
-          Name: AutoScalingGroupName
-          Value: Ref('AutoScalingGroup')
-    Namespace: 'AWS/EC2'
-  Alarm:
-    - CPUHigh:
-        <<: *cpu
+  CloudWatchAlarm:
+    - EC2CPUHigh:
         IBOX_ENABLED: True
-    - CPULow:
-        <<: *cpu
+    - EC2CPULow:
         IBOX_ENABLED: True
   Apps:
     - IBOX_BASE:
@@ -107,7 +99,7 @@ global:
         Principal: ec2.amazonaws.com
 
 dev: &cfg_dev
-  Alarm:
+  CloudWatchAlarm:
     BackendExternal5XX:
       EvaluationPeriods: 0
     BackendInternal5XX:

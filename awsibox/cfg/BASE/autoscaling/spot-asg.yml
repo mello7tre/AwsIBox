@@ -31,7 +31,7 @@ global:
           Condition('SpotASG'),
           get_condition('', 'equals', 'primary', 'SpotASG')
         )
-  Alarm:
+  CloudWatchAlarm:
     - ASGSpotNotAvailable:
         IBOX_ENABLED: True
     - ASGOnDemandInExcess:

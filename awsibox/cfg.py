@@ -268,11 +268,6 @@ CFG_TO_FUNC = {
     "Parameter": {"module": "cloudformation", "func": "CFM_Parameters"},
     "Condition": {"module": "cloudformation", "func": "CFM_Conditions"},
     "Mapping": {"module": "cloudformation", "func": "CFM_Mappings"},
-    "Alarm": {
-        "module": "joker",
-        "func": ("cloudwatch", "Alarm"),
-        "dep": ["LoadBalancer", "SQSQueue"],
-    },
     "ApiGatewayAccount": {"module": "joker", "func": ("apigateway", "Account")},
     "ApiGatewayApiKey": {"module": "joker", "func": ("apigateway", "ApiKey")},
     "ApiGatewayBasePathMapping": {
@@ -348,6 +343,11 @@ CFG_TO_FUNC = {
     "CloudFrontResponseHeadersPolicy": {
         "module": "joker",
         "func": ("cloudfront", "ResponseHeadersPolicy"),
+    },
+    "CloudWatchAlarm": {
+        "module": "joker",
+        "func": ("cloudwatch", "Alarm"),
+        "dep": ["LoadBalancer", "SQSQueue"],
     },
     "CodeDeployApplication": {"module": "joker", "func": ("codedeploy", "Application")},
     "DynamoDBTable": {"module": "joker", "func": ("dynamodb", "Table")},

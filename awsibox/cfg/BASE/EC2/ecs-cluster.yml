@@ -22,11 +22,6 @@ global:
     - Cluster:
         Value: Ref('Cluster')
         Export: Export(Sub('Cluster-${AWS::StackName}'))
-  Alarm:
-    - CPUHigh:
-        IBOX_ENABLED: False
-    - CPULow:
-        IBOX_ENABLED: False
   AutoScalingLifecycleHook:
     - ECSDrainInstance:
         IBOX_TITLE: ASGLifecycleHookECSDrainInstance
@@ -65,6 +60,11 @@ global:
         MaxSize: CapacityMax
         MinSize: CapacityMin
         Recurrence: '45 5 * * *'
+  CloudWatchAlarm:
+    - EC2CPUHigh:
+        IBOX_ENABLED: False
+    - EC2CPULow:
+        IBOX_ENABLED: False
   EC2SecurityGroupIngress:
     - ContainerInstanceExternal:
         FromPort: 32768
