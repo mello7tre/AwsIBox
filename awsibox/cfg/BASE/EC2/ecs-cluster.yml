@@ -11,8 +11,6 @@ IBoxLoader:
 global:
   StackName: ecs
   Parameter:
-    - ASGLifecycleHookECSDrainInstanceHeartbeatTimeout:
-        Description: 'ECSDrainInstance ASGLifecycleHook and Lambda HeartbeatTimeout - empty for default based on env/role'
     - GPUInstance:
         Description: 'Install Coda and nvidia-docker2'
         AllowedValues: ['yes', 'no']
@@ -29,10 +27,12 @@ global:
         IBOX_ENABLED: False
     - CPULow:
         IBOX_ENABLED: False
-  ASGLifecycleHook:
+  AutoScalingLifecycleHook:
     - ECSDrainInstance:
+        IBOX_TITLE: ASGLifecycleHookECSDrainInstance
         AutoScalingGroupName: Ref('AutoScalingGroup')
         DefaultResult: 'ABANDON'
+        HeartbeatTimeout.IBOX_AUTO_PO: {}
         HeartbeatTimeout: 3600
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
         NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
@@ -129,7 +129,7 @@ global:
           - get_expvalue('IAMPolicyEcs')
 
 dev: &cfg_dev
-  ASGLifecycleHook:
+  AutoScalingLifecycleHook:
     ECSDrainInstance:
       HeartbeatTimeout: 900
   LaunchTemplateData:

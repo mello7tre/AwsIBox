@@ -303,7 +303,10 @@ CFG_TO_FUNC = {
         "func": "AS_ScalingPolicies",
     },
     "Apps": {"module": "joker", "func": ("codedeploy", "DeploymentGroup")},
-    "ASGLifecycleHook": {"module": "joker", "func": ("autoscaling", "LifecycleHook")},
+    "AutoScalingLifecycleHook": {
+        "module": "joker",
+        "func": ("autoscaling", "LifecycleHook"),
+    },
     "AutoScalingGroup": {
         "module": "autoscaling",
         "func": "AS_Autoscaling",
