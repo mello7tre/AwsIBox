@@ -28,7 +28,7 @@ global:
   ElasticLoadBalancingV2TargetGroup:
     - IBOX_BASE:
         IBOX_OUTPUT:
-          - HealthCheck:
+          - _HealthCheck:
               Value: >-
                 Path= ${HealthCheckPath} ,Interval= ${HealthCheckIntervalSeconds} ,Timeout= ${HealthCheckTimeoutSeconds} ,Healthy= ${HealthyThresholdCount} ,Unhealthy= ${UnhealthyThresholdCount}
         HealthCheckIntervalSeconds: Ref('AWS::NoValue')
