@@ -8,7 +8,9 @@ Base: &base
 
 
 global:
-  CacheSubnetGroup:
-    - IBOX_BASE: *base
+  ElastiCacheSubnetGroup:
+    - IBOX_BASE:
+        <<: *base
+        IBOX_RESNAME: CacheSubnetGroup.IBOX_INDEXNAME
     - Private: {}
     - Public: {}

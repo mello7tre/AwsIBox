@@ -316,7 +316,7 @@ CFG_TO_FUNC = {
     },
     "Bucket": {"module": "s3", "func": "S3_Buckets"},
     "Certificate": {"module": "joker", "func": ("certificatemanager", "Certificate")},
-    "CacheSubnetGroup": {"module": "joker", "func": ("elasticache", "SubnetGroup")},
+    "ElastiCacheSubnetGroup": {"module": "joker", "func": ("elasticache", "SubnetGroup")},
     "CloudFrontCachePolicy": {"module": "joker", "func": ("cloudfront", "CachePolicy")},
     "CloudFrontDistribution": {
         "module": "cloudfront",
