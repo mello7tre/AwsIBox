@@ -3,7 +3,7 @@ IBoxLoader: !include [
 ]
 
 global:
-  Certificate:
+  CertificateManagerCertificate:
     - LoadBalancerExternal:
         IBOX_ENABLED: False
         DomainName: Sub('*.%s' % cfg.HostedZoneNameRegionEnv)

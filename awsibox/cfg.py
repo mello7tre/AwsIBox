@@ -315,8 +315,14 @@ CFG_TO_FUNC = {
         "func": ("autoscaling", "ScheduledAction"),
     },
     "Bucket": {"module": "s3", "func": "S3_Buckets"},
-    "Certificate": {"module": "joker", "func": ("certificatemanager", "Certificate")},
-    "ElastiCacheSubnetGroup": {"module": "joker", "func": ("elasticache", "SubnetGroup")},
+    "CertificateManagerCertificate": {
+        "module": "joker",
+        "func": ("certificatemanager", "Certificate"),
+    },
+    "ElastiCacheSubnetGroup": {
+        "module": "joker",
+        "func": ("elasticache", "SubnetGroup"),
+    },
     "CloudFrontCachePolicy": {"module": "joker", "func": ("cloudfront", "CachePolicy")},
     "CloudFrontDistribution": {
         "module": "cloudfront",

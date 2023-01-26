@@ -1,6 +1,7 @@
 global:
-  Certificate:
+  CertificateManagerCertificate:
     - IBOX_BASE:
+        IBOX_RESNAME: Certificate.IBOX_INDEXNAME
         IBOX_OUTPUT:
           - _:
               Value: Ref(IBOX_RESNAME)
