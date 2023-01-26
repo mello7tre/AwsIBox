@@ -14,6 +14,15 @@ global:
         Create: 'yes'
         DistributionConfig:
           Aliases.IBOX_CUSTOM_OBJ:
+            # rename following line to enable Parameter/Output for every Alias
+            Value.IBOX_PCO.DISABLED:
+              IBOX_PARAMETER:
+                - IBOX_REFNAME.DistributionConfigAliases.IBOX_RESNAME:
+                    Description: f"empty for mapped value"
+              IBOX_OUTPUT:
+                - IBOX_REFNAME.DistributionConfigAliases.IBOX_RESNAME:
+                    Condition: IBOX_REFNAME.Create
+                    Value: get_endvalue(f"{IBOX_REFNAME}DistributionConfigAliases{IBOX_RESNAME}")
             Value: get_endvalue(f"{IBOX_REFNAME}DistributionConfigAliases{IBOX_RESNAME}")
           CacheBehaviors:
             - IBOX_BASE: &cache_behavior
