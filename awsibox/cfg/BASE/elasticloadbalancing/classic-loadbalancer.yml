@@ -2,7 +2,7 @@ global:
   ElasticLoadBalancingLoadBalancer:
     - IBOX_BASE:
         IBOX_OUTPUT:
-          - HealthCheck:
+          - _HealthCheck:
               Value:
                 get_subvalue(
                   'Target=${1M},Interval=${2M},Timeout=${3M},Healthy=${4M},Unhealthy=${5M}',
