@@ -338,4 +338,8 @@ def LB_ElasticLoadBalancingECS(key):
         except Exception:
             pass
 
-    LB_ListenerRules()
+        if lb == "External":
+          getattr(cfg, f"ElasticLoadBalancingV2ListenerRuleHttps{lb}Rules1")["IBOX_ENABLED"] = True
+        else:
+          getattr(cfg, f"ElasticLoadBalancingV2ListenerRuleHttp{lb}Rules1")["IBOX_ENABLED"] = True
+    #LB_ListenerRules()

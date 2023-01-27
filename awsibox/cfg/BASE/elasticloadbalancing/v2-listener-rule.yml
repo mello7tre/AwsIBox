@@ -1,0 +1,37 @@
+Base: &base
+  IBOX_ENABLED: False
+  IBOX_RESNAME: Listener.IBOX_INDEXNAME
+  Conditions:
+    - Host:
+        Field: host-header
+        Values.IBOX_CUSTOM_OBJ:
+          Value.IBOX_PCO:
+            IBOX_PARAMETER:
+              - IBOX_REFNAME.ConditionsHostValues.IBOX_RESNAME:
+                  Description: f"empty for mapped value"
+            IBOX_OUTPUT:
+              - IBOX_REFNAME.ConditionsHostValues.IBOX_RESNAME:
+                  Value: get_endvalue(f"{IBOX_REFNAME}ConditionsHostValues{IBOX_RESNAME}")
+          Value: get_endvalue(f"{IBOX_REFNAME}ConditionsHostValues{IBOX_RESNAME}")
+        Values:
+          - 1: Sub('*${EnvRole}.*')
+
+
+global:
+  ElasticLoadBalancingV2ListenerRule:
+    - IBOX_BASE:
+        Priority.IBOX_AUTO_PO: {}
+    - HttpsExternalRules1:
+        <<: *base
+        Actions:
+          - 1:
+              Type: forward
+              TargetGroupArn: Ref("TargetGroupExternal")
+        ListenerArn: get_expvalue("ListenerHttpsDefaultExternal", "LoadBalancerApplicationStack")
+    - HttpInternalRules1:
+        <<: *base
+        Actions:
+          - 1:
+              Type: forward
+              TargetGroupArn: Ref("TargetGroupInternal")
+        ListenerArn: get_expvalue("ListenerHttpDefaultInternal", "LoadBalancerApplicationStack")
