@@ -220,51 +220,6 @@ def LB_ListenerRules():
         add_obj(o_ListenerRule)
 
 
-def LB_ListenersV2ECS():
-    for n in cfg.LoadBalancer:
-        # resources
-        if getattr(cfg, f"ElasticLoadBalancingV2ListenerECSHttp{n}Port") not in [
-            "none",
-            80,
-        ]:
-            # Enable the relative LB SecurityGroupIngress
-            cfg.EC2SecurityGroupIngress[f"LoadBalancerApplicationHttp{n}"][
-                "IBOX_ENABLED"
-            ] = True
-            r_Http = elbv2.Listener(f"ListenerHttp{n}")
-            auto_get_props(r_Http, mapname=f"ElasticLoadBalancingV2ListenerECSHttp{n}")
-            add_obj(r_Http)
-
-        if n == "External" and getattr(
-            cfg, f"ElasticLoadBalancingV2ListenerECSHttps{n}Port"
-        ) not in ["none", 443]:
-            # Enable the relative LB SecurityGroupIngress
-            cfg.EC2SecurityGroupIngress[f"LoadBalancerApplicationHttps{n}"][
-                "IBOX_ENABLED"
-            ] = True
-            r_Https = elbv2.Listener(f"ListenerHttps{n}")
-            auto_get_props(
-                r_Https, mapname=f"ElasticLoadBalancingV2ListenerECSHttps{n}"
-            )
-            add_obj(r_Https)
-
-    # Resources
-    LB_TargetGroupsECS()
-    LB_ListenerRules()
-
-
-def LB_TargetGroupsECS():
-    for lb in cfg.LoadBalancer:
-        r_TG = elbv2.TargetGroup(f"TargetGroup{lb}")
-        auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupECSLoadBalancerApplication{lb}")
-        add_obj(r_TG)
-
-        try:
-            cfg.CloudWatchAlarm[f"Target{lb}5XX"]["IBOX_ENABLED"] = True
-        except Exception:
-            pass
-
-
 def LB_ElasticLoadBalancingClassicEC2():
     for lb in cfg.LoadBalancer:
         # update SecurityGroupInstancesRules Ingress using Listeners
@@ -370,6 +325,17 @@ def LB_ElasticLoadBalancingEC2(key):
 def LB_ElasticLoadBalancingECS(key):
     if not cfg.LoadBalancer:
         return
-    # Resources
-    LB_ListenersV2ECS()
     enable_recordset("ECS")
+
+    for lb in cfg.LoadBalancer:
+        # TargetGroup
+        r_TG = elbv2.TargetGroup(f"TargetGroup{lb}")
+        auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupECSLoadBalancerApplication{lb}")
+        add_obj(r_TG)
+
+        try:
+            cfg.CloudWatchAlarm[f"Target{lb}5XX"]["IBOX_ENABLED"] = True
+        except Exception:
+            pass
+
+    LB_ListenerRules()

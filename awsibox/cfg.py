@@ -325,7 +325,11 @@ CFG_TO_FUNC = {
     "CloudFrontDistribution": {
         "module": "cloudfront",
         "func": "CF_CloudFront",
-        "dep": ["LoadBalancer", "CloudFrontLambdaFunctionAssociation"],
+        "dep": [
+            "ElasticLoadBalancingV2Listener",
+            "LoadBalancer",
+            "CloudFrontLambdaFunctionAssociation",
+        ],
     },
     "CloudFrontLambdaFunctionAssociation": {
         "module": "joker",
@@ -360,6 +364,7 @@ CFG_TO_FUNC = {
     "EC2SecurityGroupIngress": {
         "module": "ec2",
         "func": "SG_SecurityGroupIngresses",
+        "dep": ["ElasticLoadBalancingV2Listener"],
     },
     "EC2Subnet": {"module": "ec2", "func": "EC2_Subnet"},
     "EC2VPC": {"module": "joker", "func": ("ec2", "VPC")},
