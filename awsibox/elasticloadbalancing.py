@@ -221,10 +221,8 @@ def LB_ListenerRules():
 
 
 def LB_ListenersV2ECS():
-    for n in ["External", "Internal"]:
+    for n in cfg.LoadBalancer:
         # resources
-        if n not in cfg.LoadBalancer:
-            continue
         if getattr(cfg, f"ElasticLoadBalancingV2ListenerECSHttp{n}Port") not in [
             "none",
             80,
