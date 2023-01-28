@@ -26,52 +26,6 @@ elb.LoadBalancer.props["LBCookieStickinessPolicy"] = (
 elb.LoadBalancer.props["Listeners"] = ([elb.Listener], False)
 
 
-class ELBV2ListernerRuleECS(elbv2.ListenerRule):
-    def __init__(self, title, key, index, mapname, scheme, **kwargs):
-        super().__init__(title, **kwargs)
-
-        auto_get_props(self, f"ListenerRules{index}")
-        if "Conditions" not in key:
-            self.Conditions = []
-            if "HostHeader" in key:
-                self.Conditions.append(
-                    elbv2.Condition(
-                        Field="host-header",
-                        Values=[get_endvalue(f"{mapname}HostHeader", issub=True)],
-                    )
-                )
-            if "PathPattern" in key:
-                self.Conditions.append(
-                    elbv2.Condition(
-                        Field="path-pattern",
-                        Values=[
-                            Sub(
-                                "${Value}",
-                                **{"Value": get_endvalue(f"{mapname}PathPattern")},
-                            )
-                        ],
-                    )
-                )
-            if "RequestMethod" in key:
-                self.Conditions.append(
-                    elbv2.Condition(
-                        Field="http-request-method",
-                        HttpRequestMethodConfig=elbv2.HttpRequestMethodConfig(
-                            Values=[get_endvalue(f"{mapname}RequestMethod", issub=True)]
-                        ),
-                    )
-                )
-        if "Actions" not in key:
-            tg_prefix = key.get("TargetGroupPrefix", "")
-            self.Actions = [
-                elbv2.ListenerRuleAction(
-                    Type="forward",
-                    TargetGroupArn=Ref(f"TargetGroup{tg_prefix}{scheme}"),
-                )
-            ]
-        self.Priority = get_endvalue(f"{mapname}Priority")
-
-
 def enable_recordset(rtype):
     prefix = f"Route53RecordSet"
     if "External" in cfg.RecordSet:
@@ -86,138 +40,6 @@ def enable_recordset(rtype):
         else:
             record = getattr(cfg, f"{prefix}{rtype}InternalLoadBalancerExternal")
         record["IBOX_ENABLED"] = True
-
-
-def LB_ListenerRulesExternalInternal(index, key, mapname, scheme):
-    # Skip if Rule is only for External/Internal
-    only_scheme = key.get("Scheme")
-    if only_scheme and only_scheme != scheme:
-        return
-
-    # resources
-    R_RuleHttp = ELBV2ListernerRuleECS(
-        f"ListenerHttp{scheme}Rules{index}",
-        key=key,
-        index=index,
-        mapname=mapname,
-        scheme=scheme,
-    )
-    R_RuleHttp.ListenerArn = get_expvalue(
-        f"ListenerHttpDefault{scheme}", "LoadBalancerApplicationStack"
-    )
-
-    R_RuleHttps = ELBV2ListernerRuleECS(
-        f"ListenerHttps{scheme}Rules{index}",
-        key=key,
-        index=index,
-        mapname=mapname,
-        scheme=scheme,
-    )
-    R_RuleHttps.ListenerArn = get_expvalue(
-        f"ListenerHttpsDefault{scheme}", "LoadBalancerApplicationStack"
-    )
-
-    # Create ListenerRule only in stack's specific new Listener
-    ListenerHttpPort = getattr(
-        cfg, f"ElasticLoadBalancingV2ListenerECSHttp{scheme}Port"
-    )
-    ListenerHttpsPort = (
-        getattr(cfg, f"ElasticLoadBalancingV2ListenerECSHttps{scheme}Port")
-        if scheme == "External"
-        else 443
-    )
-
-    Protocol = key.get("Protocol", "auto")
-
-    RuleHttpAdd = None
-    RuleHttpsAdd = None
-
-    if "NoDefault" in key:
-        R_RuleHttp.ListenerArn = Ref(f"ListenerHttp{scheme}")
-        R_RuleHttps.ListenerArn = Ref(f"ListenerHttps{scheme}")
-        if ListenerHttpPort != 80:
-            RuleHttpAdd = True
-        if ListenerHttpsPort != 443:
-            RuleHttpsAdd = True
-    else:
-        # by default create http rules on Internal LB and https rules on External one
-        if scheme == "Internal":
-            RuleHttpAdd = True
-        if scheme == "External":
-            RuleHttpsAdd = True
-            # on External can be forced or overriden by key http/https/any
-            if Protocol == "http":
-                RuleHttpAdd = True
-                RuleHttpsAdd = None
-            if Protocol == "https":
-                RuleHttpAdd = None
-                RuleHttpsAdd = True
-            if Protocol == "any":
-                RuleHttpAdd = True
-                RuleHttpsAdd = True
-
-    if RuleHttpAdd:
-        add_obj(R_RuleHttp)
-    if RuleHttpsAdd:
-        add_obj(R_RuleHttps)
-
-
-def LB_ListenerRules():
-    for n, v in cfg.ListenerRules.items():
-        mapname = f"ListenerRules{n}"  # Ex. ListenerRules1
-
-        # parameters
-        p_Priority = Parameter(
-            f"{mapname}Priority",
-            Description="Listener Rule Priority, lesser value = high priority - empty for default based on env/role",
-        )
-
-        add_obj(p_Priority)
-
-        ListenerRule_Out_String = ["Priority=${Priority}"]
-        ListenerRule_Out_Map = {"Priority": get_endvalue(f"{mapname}Priority")}
-
-        if "HostHeader" in v:
-            p_HostHeader = Parameter(
-                f"{mapname}HostHeader",
-                Description="Listener Rule HostHeader Condition - empty for default based on env/role",
-            )
-
-            add_obj(p_HostHeader)
-
-            # outputs
-            ListenerRule_Out_String.append("HostHeader=${HostHeader}")
-            ListenerRule_Out_Map.update(
-                {"HostHeader": get_endvalue(f"{mapname}HostHeader", issub=True)}
-            )
-
-        if "PathPattern" in v:
-            p_PathPattern = Parameter(
-                f"{mapname}PathPattern",
-                Description="Listener Rule PathPattern Condition - empty for default based on env/role",
-            )
-
-            add_obj(p_PathPattern)
-
-            # outputs
-            ListenerRule_Out_String.append("PathPattern=${PathPattern}")
-            ListenerRule_Out_Map.update(
-                {"PathPattern": get_endvalue(f"{mapname}PathPattern", issub=True)}
-            )
-
-        # resources
-        for lb in cfg.LoadBalancer:
-            LB_ListenerRulesExternalInternal(
-                index=str(n), key=v, mapname=mapname, scheme=lb
-            )
-
-        # outputs
-        o_ListenerRule = Output(mapname)
-        o_ListenerRule.Value = Sub(
-            ",".join(ListenerRule_Out_String), **ListenerRule_Out_Map
-        )
-
-        add_obj(o_ListenerRule)
 
 
 def LB_ElasticLoadBalancingClassicEC2():
@@ -330,7 +152,10 @@ def LB_ElasticLoadBalancingECS(key):
     for lb in cfg.LoadBalancer:
         # TargetGroup
         r_TG = elbv2.TargetGroup(f"TargetGroup{lb}")
-        auto_get_props(r_TG, mapname=f"ElasticLoadBalancingV2TargetGroupECSLoadBalancerApplication{lb}")
+        auto_get_props(
+            r_TG,
+            mapname=f"ElasticLoadBalancingV2TargetGroupECSLoadBalancerApplication{lb}",
+        )
         add_obj(r_TG)
 
         try:
@@ -339,7 +164,10 @@ def LB_ElasticLoadBalancingECS(key):
             pass
 
         if lb == "External":
-          getattr(cfg, f"ElasticLoadBalancingV2ListenerRuleHttps{lb}Rules1")["IBOX_ENABLED"] = True
+            getattr(cfg, f"ElasticLoadBalancingV2ListenerRuleHttps{lb}Rules1")[
+                "IBOX_ENABLED"
+            ] = True
         else:
-          getattr(cfg, f"ElasticLoadBalancingV2ListenerRuleHttp{lb}Rules1")["IBOX_ENABLED"] = True
-    #LB_ListenerRules()
+            getattr(cfg, f"ElasticLoadBalancingV2ListenerRuleHttp{lb}Rules1")[
+                "IBOX_ENABLED"
+            ] = True
