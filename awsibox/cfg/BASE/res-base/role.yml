@@ -40,3 +40,6 @@ global:
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'
         Principal: glue.amazonaws.com
+    - SchedulerExecution:
+        Export: True
+        Principal: scheduler.amazonaws.com

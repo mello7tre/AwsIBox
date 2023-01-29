@@ -1,5 +1,6 @@
 from .common import *
 from .shared import auto_get_props, add_obj, Parameter, get_condition, parse_ibox_key
+from .RP import RP_to_cfg, merge_dict
 
 
 def Joker(key, module, cls):
@@ -37,9 +38,13 @@ def Joker(key, module, cls):
             ibox_source_obj = [ibox_source_obj]
         for source_obj in ibox_source_obj:
             source_obj = parse_ibox_key(source_obj, parse_ibox_key_conf)
-            auto_get_props(obj, mapname=source_obj, indexname=n)
-            # reset obj title, if changed by IBOX_TITLE key
-            obj.title = resname
+            source_obj_conf = getattr(cfg, source_obj)
+            RP_to_cfg(source_obj_conf, prefix=mapname, mappedvalues=cfg.mappedvalues)
+            v = merge_dict(v, source_obj_conf)
+            # Uncomment to use old method: auto_get_props
+            # auto_get_props(obj, mapname=source_obj, indexname=n)
+            # #reset obj title, if changed by IBOX_TITLE key
+            # obj.title = resname
 
         # populate obj
         auto_get_props(
@@ -62,7 +67,9 @@ def Joker(key, module, cls):
                 add_obj(get_condition(resname, "equals", "yes", f"{resname}Create"))
                 add_obj(
                     Output(
-                        resname, Condition=resname, Value=Ref(v.get("IBOX_TITLE", resname))
+                        resname,
+                        Condition=resname,
+                        Value=Ref(v.get("IBOX_TITLE", resname)),
                     )
                 )
                 if not hasattr(obj, "Condition"):

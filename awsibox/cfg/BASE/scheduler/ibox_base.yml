@@ -1,0 +1,8 @@
+global:
+  SchedulerSchedule:
+    - IBOX_BASE:
+        Description: "Events Rule Schedule - empty for default based on mapping"
+        ScheduleExpression.IBOX_AUTO_PO: {}
+        State.IBOX_AUTO_PO: {}
+        Target:
+          RoleArn: ImportValue("RoleSchedulerExecution")

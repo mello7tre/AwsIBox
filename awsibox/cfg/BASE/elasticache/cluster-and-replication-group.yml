@@ -81,12 +81,15 @@ Cluster: &cluster
 
 ReplicationGroup: &replication-group
   Condition: ReplicationGroup
-  ## Internal
-  SecurityGroupIds: [Ref('SecurityGroupCCH')]
-  Enabled: 'no'
   AutomaticFailoverEnabled: false
+  CacheNodeType.IBOX_CODE: get_endvalue(f"ElastiCacheCacheCluster{IBOX_INDEXNAME}CacheNodeType")
+  Enabled: 'no'
+  Engine.IBOX_CODE: get_endvalue(f"ElastiCacheCacheCluster{IBOX_INDEXNAME}Engine")
+  EngineVersion.IBOX_CODE: get_endvalue(f"ElastiCacheCacheCluster{IBOX_INDEXNAME}EngineVersion")
   NumCacheClusters: 1
   ReplicationGroupDescription: 'Redis ReplicaGroup'
+  ## Internal
+  SecurityGroupIds: [Ref('SecurityGroupCCH')]
 
 
 global:
@@ -97,6 +100,5 @@ global:
   
   ElastiCacheReplicationGroup:
     - IBOX_BASE:
-        <<: [*base, *replication-group]
-        IBOX_SOURCE_OBJ: ElastiCacheCacheCluster.IBOX_INDEXNAME
+        <<: [*base, *replication-group, *cluster]
         IBOX_TITLE: ElastiCacheReplicationGroup

@@ -510,8 +510,8 @@ CFG_TO_FUNC = {
         "func": ("servicediscovery", "Service"),
     },
     "SchedulerSchedule": {
-        "module": "joker",
-        "func": ("scheduler", "Schedule"),
+        "module": "scheduler",
+        "func": "SCHEDULER_Schedule",
         "dep": ["SecurityGroups"],
     },
     "SQSQueue": {"module": "joker", "func": ("sqs", "Queue")},

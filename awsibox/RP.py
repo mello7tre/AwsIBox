@@ -31,6 +31,27 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
                     RP_to_cfg({f"{k}{j}": w}, prefix, overwrite)
 
 
+def merge_dict(base, work):
+    if isinstance(work, (str, list)) or not base:
+        return work
+    keys = dict(list(base.items()) + list(work.items())).keys()
+    for k in keys:
+        if k.endswith("**"):
+            # ** is used to replace existing dict instead of merging it
+            base[k.replace("**", "")] = work[k]
+        elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
+            base[k] = merge_dict(base[k], work[k])
+        elif k.endswith("++") and isinstance(work.get(k), list):
+            # ++ is used to append elements to an existing key
+            try:
+                base[k.replace("++", "")] += work[k]
+            except Exception:
+                base[k.replace("++", "")] = work[k]
+        elif k in work:
+            base[k] = work[k]
+    return base
+
+
 def build_RP():
     LD_INCLUDED = []
     LD_EXCLUDED = []
@@ -196,26 +217,6 @@ def build_RP():
             key = key.replace(s, w)
 
         return int(key) if key.isdigit() else key
-
-    def merge_dict(base, work):
-        if isinstance(work, (str, list)) or not base:
-            return work
-        keys = dict(list(base.items()) + list(work.items())).keys()
-        for k in keys:
-            if k.endswith("**"):
-                # ** is used to replace existing dict instead of merging it
-                base[k.replace("**", "")] = work[k]
-            elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
-                base[k] = merge_dict(base[k], work[k])
-            elif k.endswith("++") and isinstance(work.get(k), list):
-                # ++ is used to append elements to an existing key
-                try:
-                    base[k.replace("++", "")] += work[k]
-                except Exception:
-                    base[k.replace("++", "")] = work[k]
-            elif k in work:
-                base[k] = work[k]
-        return base
 
     def merge_RP(data):
         def _process(key, data, RP, merge=True):
