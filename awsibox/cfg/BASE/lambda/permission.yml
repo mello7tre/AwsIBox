@@ -19,4 +19,4 @@ global:
     - SchedulerSchedule:
         Principal: "scheduler.amazonaws.com"
         FunctionName: eval(IBOX_LINKED_OBJ_NAME)
-        SourceArn: eval(IBOX_LINKED_OBJ_INDEX)
+        SourceArn: IBOX_LINKED_OBJ_INDEX

@@ -6,3 +6,15 @@ global:
         State.IBOX_AUTO_PO: {}
         Target:
           RoleArn: ImportValue("RoleSchedulerExecution")
+    - TargetLambda:
+        IBOX_BASE_SKIP: True
+        IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Lambda:
+            Key: LambdaPermission
+            Type: SchedulerSchedule
+            Name: LambdaPermission.IBOX_RESNAME
+            Conf:
+              IBOX_RESNAME: LambdaPermission.IBOX_RESNAME
+              IBOX_LINKED_OBJ_NAME: getattr(cfg, f"{IBOX_RESNAME}TargetArn")
+              IBOX_LINKED_OBJ_INDEX: GetAtt(IBOX_RESNAME, 'Arn')

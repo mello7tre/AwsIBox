@@ -16,7 +16,6 @@ from . import (
     mappings,
     rds,
     s3,
-    scheduler,
     waf,
 )
 

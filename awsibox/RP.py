@@ -283,7 +283,10 @@ def build_RP():
                 base_key_value["IBOX_BASE_REF"] = True
 
                 for resource_key, resource_key_value in main_key_value.items():
-                    if resource_key == base_key:
+                    if (
+                        resource_key == base_key
+                        or "IBOX_BASE_SKIP" in resource_key_value
+                    ):
                         continue
                     # inject in cfg key/value
                     RP_to_cfg(

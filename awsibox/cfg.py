@@ -447,7 +447,7 @@ CFG_TO_FUNC = {
     "LambdaPermission": {
         "module": "joker",
         "func": ("awslambda", "Permission"),
-        "dep": ["SNSSubscription", "Lambda", "EventsRule", "Scheduler"],
+        "dep": ["SNSSubscription", "Lambda", "EventsRule", "SchedulerSchedule"],
     },
     "LambdaVersion": {
         "module": "joker",
@@ -510,8 +510,8 @@ CFG_TO_FUNC = {
         "func": ("servicediscovery", "Service"),
     },
     "SchedulerSchedule": {
-        "module": "scheduler",
-        "func": "SCHEDULER_Schedule",
+        "module": "joker",
+        "func": ("scheduler", "Schedule"),
         "dep": ["SecurityGroups"],
     },
     "SQSQueue": {"module": "joker", "func": ("sqs", "Queue")},
