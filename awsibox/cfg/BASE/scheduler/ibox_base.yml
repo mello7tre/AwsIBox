@@ -18,3 +18,20 @@ global:
               IBOX_RESNAME: LambdaPermission.IBOX_RESNAME
               IBOX_LINKED_OBJ_NAME: getattr(cfg, f"{IBOX_RESNAME}TargetArn")
               IBOX_LINKED_OBJ_INDEX: GetAtt(IBOX_RESNAME, 'Arn')
+    - TargetECSCluster:
+        IBOX_BASE_SKIP: True
+        IBOX_ENABLED: False
+        Target:
+          Arn: 'get_subvalue("arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${1E}", "Cluster", stack="ClusterStack")'
+          EcsParameters:
+            LaunchType: get_endvalue("LaunchType")
+            NetworkConfiguration:
+              IBOX_IF:
+                - NetworkModeAwsVpc
+                - IBOX_IFVALUE
+                - Ref("AWS::NoValue")
+              AwsvpcConfiguration:
+                SecurityGroups: cfg.SecurityGroupsImport
+                Subnets: Split(",", get_expvalue("SubnetsPrivate"))
+            TaskDefinitionArn: Ref("TaskDefinition")
+          RoleArn: get_expvalue("RoleECSEvents")
