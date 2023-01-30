@@ -24,7 +24,7 @@ global:
           - LambdaECSEventsSpot:
               Arn: GetAtt('LambdaECSEventsSpot', 'Arn')
               Id: TargetFunction-01
-    - EC
+    - ECSEventsSpot:
         Description: 'ECSEventsSpot Lambda Trigger for Task Spot RUNNING'
         State: 'DISABLED'
         EventPattern:
