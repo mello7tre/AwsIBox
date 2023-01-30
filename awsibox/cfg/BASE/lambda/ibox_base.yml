@@ -1,71 +1,62 @@
-Permission: &permission
-  IBOX_ENABLED: False
-  Action: "lambda:InvokeFunction"
-
-Function: &function
-  IBOX_ENABLED: True
-  IBOX_LINKED_OBJ:
-    Role:
-      Key: IAMRole
-      Type: Lambda
-      Conf:
-        IBOX_RESNAME: Role.IBOX_RESNAME
-    LogGroup:
-      Key: LogsLogGroup
-      Type: Lambda
-      Conf:
-        IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
-  IBOX_OUTPUT:
-    - _:
-        IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
-        Value: GetAtt(IBOX_RESNAME, "Arn")
-        Export: Export(IBOX_RESNAME)
-  Code:
-    ZipFile.IBOX_CODE_KEY: Join("", import_lambda(get_endvalue(f"{IBOX_RESNAME}CodeZipFile")))
-    S3Key.IBOX_AUTO_PO:
-      Description: str(f"S3Key Name for lambda {IBOX_INDEXNAME} Code")
-  Export: False
-  Layers.IBOX_CUSTOM_OBJ:
-    IBOX_PARAMETER:
-      - _:
-          Description: str(IBOX_RESNAME)
-    IBOX_OUTPUT:
-      - _:
-          Value: get_endvalue(IBOX_RESNAME)
-    Value: get_endvalue(IBOX_RESNAME)
-  LogGroupCreate: "yes"
-  Handler: "index.lambda_handler"
-  Role: GetAtt(f"RoleLambda{IBOX_INDEXNAME}", "Arn")
-  FunctionName: Sub("${AWS::StackName}-${EnvRole}-%s" % IBOX_INDEXNAME)
-  Environment:
-    Variables.IBOX_PCO:
-      IBOX_PARAMETER:
-        - EnvServiceRestartTime:
-            Description: 'Use to force service restart - can use: $(date +%F_%T)'
-    Variables:
-      - Env: Ref('EnvShort')
-      - EnvRole: Ref('EnvRole')
-      - IBox_EnvServiceRestartTime: Ref("EnvServiceRestartTime")
-
-LayerVersion: &layer_version
-  IBOX_ENABLED: True
-  IBOX_LINKED_OBJ:
-    Key: LambdaLayerVersionPermission
-    Type: Base
-    Conf:
-      IBOX_RESNAME: LambdaLayerPermission.IBOX_INDEXNAME
-      IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
-  IBOX_OUTPUT:
-    - _:
-        Value: Ref(IBOX_RESNAME)
-  Content:
-    S3Key.IBOX_AUTO_PO:
-      Description: str(f"S3Key Name for lambda {IBOX_INDEXNAME} Content")
-
 global:
   LambdaPermission:
-    - IBOX_BASE: *permission
+    - IBOX_BASE:
+        Action: "lambda:InvokeFunction"
   Lambda:
-    - IBOX_BASE: *function
+    - IBOX_BASE:
+        IBOX_LINKED_OBJ:
+          Role:
+            Key: IAMRole
+            Type: Lambda
+            Conf:
+              IBOX_RESNAME: Role.IBOX_RESNAME
+          LogGroup:
+            Key: LogsLogGroup
+            Type: Lambda
+            Conf:
+              IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+        IBOX_OUTPUT:
+          - _:
+              IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+              Value: GetAtt(IBOX_RESNAME, "Arn")
+              Export: Export(IBOX_RESNAME)
+        Code:
+          ZipFile.IBOX_CODE_KEY: Join("", import_lambda(get_endvalue(f"{IBOX_RESNAME}CodeZipFile")))
+          S3Key.IBOX_AUTO_PO:
+            Description: str(f"S3Key Name for lambda {IBOX_INDEXNAME} Code")
+        Export: False
+        Layers.IBOX_CUSTOM_OBJ:
+          IBOX_PARAMETER:
+            - _:
+                Description: str(IBOX_RESNAME)
+          IBOX_OUTPUT:
+            - _:
+                Value: get_endvalue(IBOX_RESNAME)
+          Value: get_endvalue(IBOX_RESNAME)
+        LogGroupCreate: "yes"
+        Handler: "index.lambda_handler"
+        Role: GetAtt(f"RoleLambda{IBOX_INDEXNAME}", "Arn")
+        FunctionName: Sub("${AWS::StackName}-${EnvRole}-%s" % IBOX_INDEXNAME)
+        Environment:
+          Variables.IBOX_PCO:
+            IBOX_PARAMETER:
+              - EnvServiceRestartTime:
+                  Description: 'Use to force service restart - can use: $(date +%F_%T)'
+          Variables:
+            - Env: Ref('EnvShort')
+            - EnvRole: Ref('EnvRole')
+            - IBox_EnvServiceRestartTime: Ref("EnvServiceRestartTime")
   LambdaLayerVersion:
-    - IBOX_BASE: *layer_version
+    - IBOX_BASE:
+        IBOX_LINKED_OBJ:
+          Key: LambdaLayerVersionPermission
+          Type: Base
+          Conf:
+            IBOX_RESNAME: LambdaLayerPermission.IBOX_INDEXNAME
+            IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+        Content:
+          S3Key.IBOX_AUTO_PO:
+            Description: str(f"S3Key Name for lambda {IBOX_INDEXNAME} Content")
