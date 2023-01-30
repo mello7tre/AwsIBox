@@ -5,16 +5,18 @@ IBoxLoader:
 global:
   EventsRule:
     - CloudWatchRepeatedNotify:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'Schedule check for alarms in ALARM state and notify'
         State: 'DISABLED'
         ScheduleExpression.IBOX_AUTO_PO: {}
         ScheduleExpression: 'rate(5 minutes)'
         Targets:
-          - LambdaCloudWatchRepeatedNotify:
+          - Lambda0:
               Arn: GetAtt('LambdaCloudWatchRepeatedNotify', 'Arn')
               Id: TargetFunction-01
     - CloudWatchAlarmStateChange:
         IBOX_ENABLED: False
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'Captures all of the alarms state changes to the ALARM event'
         State: 'DISABLED'
         EventPattern:
@@ -26,7 +28,7 @@ global:
           source:
             - aws.cloudwatch
         Targets:
-          - LambdaCloudWatchAlarmStateChange:
+          - Lambda0:
               Arn: GetAtt('LambdaCloudWatchAlarmStateChange', 'Arn')
               Id: TargetFunction-01
   Lambda:

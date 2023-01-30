@@ -412,8 +412,8 @@ CFG_TO_FUNC = {
         "func": ("elasticloadbalancingv2", "TargetGroup"),
     },
     "EventsRule": {
-        "module": "events",
-        "func": "EVE_EventRules",
+        "module": "joker",
+        "func": ("events", "Rule"),
         "dep": ["SecurityGroups"],
     },
     "IAMGroup": {"module": "iam", "func": "IAM_Groups"},

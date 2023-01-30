@@ -8,7 +8,6 @@ IBoxLoader: !include
   - cloudfront/for-services.yml
   - ecs/ecs-task.yml
   - ecs/ecs-service.yml
-  - events/rule_target.yml
   - res-elasticloadbalancing/v2-listener.yml
 
 global:

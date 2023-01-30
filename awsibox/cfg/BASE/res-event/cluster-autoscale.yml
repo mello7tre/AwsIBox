@@ -1,11 +1,12 @@
 global:
   EventsRule:
     - ECSClusterAutoscale:
+       IBOX_SOURCE_OBJ: EventsRuleTargetLambda
        Description: 'Schedule LambaECSClusterAutoscale'
        State: 'DISABLED'
        ScheduleExpression: 'cron(*/2 * * * ? *)'
        Targets:
-         - LambdaECSClusterAutoscale:
+         - Lambda0:
              Arn: GetAtt('LambdaECSClusterAutoscale', 'Arn')
              Id: 'TargetFunction-01'
   Lambda:

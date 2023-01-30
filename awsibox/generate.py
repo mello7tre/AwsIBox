@@ -9,7 +9,6 @@ from . import (
     ecr,
     ecs,
     efs,
-    events,
     iam,
     joker,
     elasticloadbalancing,

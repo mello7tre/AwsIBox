@@ -24,4 +24,4 @@ global:
         IBOX_ENABLED: False
         Principal: "scheduler.amazonaws.com"
         FunctionName: eval(IBOX_LINKED_OBJ_NAME)
-        SourceArn: IBOX_LINKED_OBJ_INDEX
+        SourceArn: eval(IBOX_LINKED_OBJ_INDEX)

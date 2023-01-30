@@ -17,7 +17,7 @@ global:
             Conf:
               IBOX_RESNAME: LambdaPermission.IBOX_RESNAME
               IBOX_LINKED_OBJ_NAME: getattr(cfg, f"{IBOX_RESNAME}TargetArn")
-              IBOX_LINKED_OBJ_INDEX: GetAtt(IBOX_RESNAME, 'Arn')
+              IBOX_LINKED_OBJ_INDEX: GetAtt("IBOX_RESNAME", 'Arn')
     - TargetECSCluster:
         IBOX_BASE_SKIP: True
         IBOX_ENABLED: False

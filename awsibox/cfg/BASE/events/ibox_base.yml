@@ -7,3 +7,34 @@ global:
         State.IBOX_AUTO_PO:
           Description: "Events Rule State - empty for default based on mappings"
           AllowedValues: ["", "DISABLED", "ENABLED"]
+    - TargetLambda:
+        IBOX_BASE_SKIP: True
+        IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Lambda:
+            Key: LambdaPermission
+            Type: EventsRule
+            Name: LambdaPermission.IBOX_INDEXNAME.IBOX_RESNAME
+            Conf:
+              IBOX_RESNAME: LambdaPermission.IBOX_INDEXNAME.IBOX_RESNAME
+              IBOX_LINKED_OBJ_NAME: getattr(cfg, f"{IBOX_RESNAME}TargetsLambda0Arn")
+              IBOX_LINKED_OBJ_INDEX: GetAtt("IBOX_RESNAME", 'Arn')
+    - TargetECSCluster:
+        IBOX_BASE_SKIP: True
+        IBOX_ENABLED: False
+        Targets:
+          - ECSCluster0:
+              Arn: 'get_subvalue("arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${1E}", "Cluster", stack="ClusterStack")'
+              EcsParameters:
+                LaunchType: get_endvalue("LaunchType")
+                NetworkConfiguration:
+                  IBOX_IF:
+                    - NetworkModeAwsVpc
+                    - IBOX_IFVALUE
+                    - Ref("AWS::NoValue")
+                  AwsVpcConfiguration:
+                    SecurityGroups: cfg.SecurityGroupsImport
+                    Subnets: Split(",", get_expvalue("SubnetsPrivate"))
+                TaskDefinitionArn: Ref("TaskDefinition")
+              RoleArn: get_expvalue("RoleECSEvents")
+              Id: str(f"TargetECSCluster0")

@@ -95,6 +95,27 @@ global:
             - HostedZoneName: get_endvalue('HostedZoneNamePrivate')
             - HostedZoneId: get_expvalue('HostedZoneIdPrivate')
             - Topic: Ref('SNSTopicASGNotificationR53')
+  LambdaPermission:
+    - EC2StartStopTaggedEventsRuleEC2StartTagged:
+        FunctionName: GetAtt('LambdaEC2StartStopTagged', 'Arn')
+        Principal: events.amazonaws.com
+        SourceArn: GetAtt("EventsRuleEC2StartTagged", 'Arn')
+    - EC2StartStopTaggedEventsRuleEC2StopTagged:
+        FunctionName: GetAtt('LambdaEC2StartStopTagged', 'Arn')
+        Principal: events.amazonaws.com
+        SourceArn: GetAtt("EventsRuleEC2StopTagged", 'Arn')
+    - ServiceDiscoveryEventsRuleEC2Notification:
+        FunctionName: GetAtt('LambdaServiceDiscovery', 'Arn')
+        Principal: events.amazonaws.com
+        SourceArn: GetAtt("EventsRuleEC2Notification", 'Arn')
+    - R53RecordInstanceIdEventsRuleEC2Notification:
+        FunctionName: GetAtt('LambdaR53RecordInstanceId', 'Arn')
+        Principal: events.amazonaws.com
+        SourceArn: GetAtt("EventsRuleEC2Notification", 'Arn')
+    - ECSDrainTasksEventsRuleEC2SpotInterruption:
+        FunctionName: GetAtt('LambdaECSDrainTasks', 'Arn')
+        Principal: events.amazonaws.com
+        SourceArn: GetAtt("EventsRuleEC2SpotInterruption", 'Arn')
   IAMPolicy:
     - LambdaEC2StartStopTagged:
         Roles:

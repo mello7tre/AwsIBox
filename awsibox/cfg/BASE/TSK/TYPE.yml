@@ -7,10 +7,11 @@ global:
     - EnableExecuteCommand: Equals(True, False)
   EventsRule:
     - ECSRunTask:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'Periodically invoke LambdaECSRunTask'
         State: 'ENABLED'
         Targets:
-          - LambdaECSRunTask:
+          - Lambda0:
               Arn: ImportValue('LambdaECSRunTaskArn')
               Id: 'TargetFunction-01'
               Input: Join('"', [

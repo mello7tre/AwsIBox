@@ -5,6 +5,7 @@ IBoxLoader:
 global:
   EventsRule:
     - ECSEventServiceFailure:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'ECSEventsSpot Lambda Trigger for Cpu and Memory Failure'
         State: 'DISABLED'
         EventPattern:
@@ -21,10 +22,11 @@ global:
           source:
             - aws.ecs
         Targets:
-          - LambdaECSEventsSpot:
+          - Lambda0:
               Arn: GetAtt('LambdaECSEventsSpot', 'Arn')
               Id: TargetFunction-01
     - ECSEventsSpot:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'ECSEventsSpot Lambda Trigger for Task Spot RUNNING'
         State: 'DISABLED'
         EventPattern:
@@ -42,10 +44,11 @@ global:
           source:
             - aws.ecs
         Targets:
-          - LambdaECSEventsSpot:
+          - Lambda0:
               Arn: GetAtt('LambdaECSEventsSpot', 'Arn')
               Id: TargetFunction-01
     - ECSEventServiceFailureSpot:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'ECSEventsSpot Lambda Trigger for Spot Failure'
         State: 'DISABLED'
         EventPattern:
@@ -61,10 +64,11 @@ global:
           source:
             - aws.ecs
         Targets:
-          - LambdaECSEventsSpot:
+          - Lambda0:
               Arn: GetAtt('LambdaECSEventsSpot', 'Arn')
               Id: TargetFunction-01
     - ECSEventServiceSteadySpot:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'ECSEventsSpot Lambda Trigger for Spot Capacity Provider Steady State'
         State: 'DISABLED'
         EventPattern:
@@ -80,7 +84,7 @@ global:
           source:
             - aws.ecs
         Targets:
-          - LambdaECSEventsSpot:
+          - Lambda0:
               Arn: GetAtt('LambdaECSEventsSpot', 'Arn')
               Id: TargetFunction-01
   Lambda:

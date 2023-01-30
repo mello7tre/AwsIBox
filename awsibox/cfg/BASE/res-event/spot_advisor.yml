@@ -1,11 +1,12 @@
 global:
   EventsRule:
     - SpotAdvisor:
+       IBOX_SOURCE_OBJ: EventsRuleTargetLambda
        Description: 'Schedule LambdaSpotAdvisor'
        State: 'DISABLED'
        ScheduleExpression: 'cron(16 * * * ? *)'
        Targets:
-         - LambdaSpotAdvisor:
+         - Lambda0:
              Arn: GetAtt('LambdaSpotAdvisor', 'Arn')
              Id: 'TargetFunction-01'
   Lambda:

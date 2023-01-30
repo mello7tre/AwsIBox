@@ -6,6 +6,7 @@ IBoxLoader:
 global:
   EventsRule:
     - ECSEventTaskStateChange:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'ECSEvents Lambda Trigger for Task STOPPED'
         State: 'DISABLED'
         EventPattern:
@@ -21,7 +22,7 @@ global:
           source:
             - aws.ecs
         Targets:
-          - LambdaECSEventTaskStateChange:
+          - Lambda0:
               Arn: GetAtt('LambdaECSEventTaskStateChange', 'Arn')
               Id: TargetFunction-01
   Lambda:
