@@ -1,15 +1,9 @@
-Base: &base
-  IBOX_PARAMETER:
-    - _State:
-        Description: "Events Rule State - empty for default based on mappings"
-        AllowedValues: ["", "DISABLED", "ENABLED"]
-  IBOX_OUTPUT:
-    - _State:
-        Value: get_endvalue(f"{IBOX_RESNAME}State")
-  Name: Sub("${AWS::StackName}-${EnvRole}-" f"Rule{IBOX_INDEXNAME}")
-  ScheduleExpression.IBOX_AUTO_PO:
-    Description: "Events Rule Schedule - empty for default based on mapping"
-
 global:
   EventsRule:
-    - IBOX_BASE: *base
+    - IBOX_BASE:
+        Name: Sub("${AWS::StackName}-${EnvRole}-" f"Rule{IBOX_INDEXNAME}")
+        ScheduleExpression.IBOX_AUTO_PO:
+          Description: "Events Rule Schedule - empty for default based on mapping"
+        State.IBOX_AUTO_PO:
+          Description: "Events Rule State - empty for default based on mappings"
+          AllowedValues: ["", "DISABLED", "ENABLED"]
