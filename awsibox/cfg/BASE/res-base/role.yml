@@ -42,4 +42,6 @@ global:
         Principal: glue.amazonaws.com
     - SchedulerExecution:
         Export: True
+        ManagedPolicyArns:
+          - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
         Principal: scheduler.amazonaws.com
