@@ -42,6 +42,10 @@ global:
         Principal: glue.amazonaws.com
     - SchedulerExecution:
         Export: True
+        AssumeRolePolicyDocument:
+          Statement:
+            - 1:
+                Condition: {"StringEquals": {"aws:SourceAccount": Ref("AWS::AccountId")}}
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
         Principal: scheduler.amazonaws.com
