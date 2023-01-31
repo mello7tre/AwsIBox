@@ -997,6 +997,12 @@ def auto_get_props(
             ibox_code = f"{propname}.IBOX_CODE"
             ibox_code_key = f"{propname}.IBOX_CODE_KEY"
             ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
+            ibox_propname_fixed = f"{propname}@"
+
+            # need to make work @ override even if propname is not in mapped values
+            if ibox_propname_fixed in key and propname not in cfg.mappedvalues:
+                key[propname] = key[ibox_propname_fixed]
+                cfg.fixedvalues[f"{mapname}{propname}"] = key[propname]
 
             custom_key_only = propname.replace(".IBOX_AUTO_PO", "")
 
