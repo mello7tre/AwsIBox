@@ -1,7 +1,6 @@
 global:
   AutoScalingScheduledAction:
     - IBOX_BASE:
-        IBOX_TITLE: ScheduledAction.IBOX_INDEXNAME
         IBOX_PARAMETER:
           - _DesiredSize:
               Description: 'k to keep current value - empty for mapped value'
