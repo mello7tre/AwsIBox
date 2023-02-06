@@ -17,7 +17,7 @@ global:
                   - 'iam:PassRole'
                 Effect: Allow
                 Resource: GetAtt('RoleTask', 'Arn')
-  TaskDefinition:
+  ECSTaskDefinition:
     - Fargate:
         IBOX_ENABLED: True
         Cpu: '1024'

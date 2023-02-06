@@ -3,7 +3,7 @@ IBoxLoader: !include
 
 
 global:
-  TaskDefinition:
+  ECSTaskDefinition:
     - Base:
         Volumes:
           - EFS:

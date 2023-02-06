@@ -384,6 +384,7 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("ecs", "ClusterCapacityProviderAssociations"),
     },
+    "ECSTaskDefinition": {"module": "ecs", "func": "ECS_TaskDefinition"},
     "EFSAccessPoint": {"module": "joker", "func": ("efs", "AccessPoint")},
     "EFSFileSystem": {"module": "efs", "func": "EFS_FileStorage"},
     "ElastiCacheCacheCluster": {
@@ -458,7 +459,7 @@ CFG_TO_FUNC = {
         "module": "elasticloadbalancing",
         "func": "LB_ElasticLoadBalancing",
         # need this for override on ContainerDefinitions1ContainerPort
-        "dep": ["TaskDefinition"],
+        "dep": ["ECSTaskDefinition"],
     },
     "LogsLogGroup": {
         "module": "joker",
@@ -523,7 +524,6 @@ CFG_TO_FUNC = {
     "SNSSubscription": {"module": "joker", "func": ("sns", "SubscriptionResource")},
     "SNSTopic": {"module": "joker", "func": ("sns", "Topic")},
     "SSMParameter": {"module": "joker", "func": ("ssm", "Parameter")},
-    "TaskDefinition": {"module": "ecs", "func": "ECS_TaskDefinition"},
     "WafByteMatchSet": {
         "module": "waf",
         "func": ["WAF_GlobalByteMatchSets", "WAF_RegionalByteMatchSets"],

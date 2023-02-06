@@ -45,6 +45,6 @@ global:
         Condition: DaemonReserveCpu
         Cluster: Ref('Cluster')
         NetworkConfiguration: IBOX_SKIP_FUNC
-  TaskDefinition:
+  ECSTaskDefinition:
     - Base:
         Condition: DaemonReserveCpu

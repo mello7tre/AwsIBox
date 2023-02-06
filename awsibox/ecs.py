@@ -13,49 +13,6 @@ from .shared import (
 from .ec2 import SecurityGroupEcsService, SecurityGroupRuleEcsService
 
 
-def ECS_ContainerDefinition():
-    Containers = []
-    for n, v in cfg.ContainerDefinitions.items():
-        name = f"ContainerDefinitions{n}"  # Ex. ContainerDefinitions1
-
-        # resources
-        Container = ecs.ContainerDefinition(name)
-        auto_get_props(Container, indexname=n, res_obj_type="AWS::ECS::TaskDefinition")
-
-        if len(cfg.ContainerDefinitions) == 1:
-            # parameters
-            p_UseTaskCpu = Parameter(
-                f"{name}UseTaskCpu",
-                Description="Empty for mapped value - Use Task Cpu Value, if present, for Container Cpu",
-                AllowedValues=["", "true", "false"],
-            )
-
-            add_obj(p_UseTaskCpu)
-
-            # conditions
-            c_UseTaskCpu = {
-                f"{name}UseTaskCpu": And(
-                    Condition("CpuTask"),
-                    get_condition("", "equals", "true", f"{name}UseTaskCpu"),
-                )
-            }
-
-            add_obj(c_UseTaskCpu)
-
-            Container.Cpu = If(
-                f"{name}UseTaskCpu", get_endvalue("Cpu"), get_endvalue(f"{name}Cpu")
-            )
-            Container.Memory = If(
-                "LaunchTypeFarGate",
-                get_endvalue("Memory"),
-                get_endvalue(f"{name}Memory"),
-            )
-
-        Containers.append(Container)
-
-    return Containers
-
-
 def ECS_TaskDefinition(key):
     for n, v in getattr(cfg, key).items():
         if not v.get("IBOX_ENABLED", True):
@@ -65,7 +22,13 @@ def ECS_TaskDefinition(key):
         # Resources
         R_TaskDefinition = ecs.TaskDefinition(mapname)
         auto_get_props(R_TaskDefinition)
-        R_TaskDefinition.ContainerDefinitions = ECS_ContainerDefinition()
+
+        R_TaskDefinition.ContainerDefinitions = []
+        for n, v in cfg.ContainerDefinitions.items():
+            name = f"ContainerDefinitions{n}"  # Ex. ContainerDefinitions1
+            r_Container = ecs.ContainerDefinition(name)
+            auto_get_props(r_Container, indexname=n, res_obj_type="AWS::ECS::TaskDefinition")
+            R_TaskDefinition.ContainerDefinitions.append(r_Container)
 
         add_obj([R_TaskDefinition])
 

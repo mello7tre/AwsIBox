@@ -18,11 +18,20 @@ global:
     - LogDriver:
         Description: 'Log driver for task container - empty for default'
         AllowedValues: ['', 'none', 'awslogs', 'fluentd', 'gelf', 'journald', 'json-file', 'splunk', 'syslog']
+    - NetworkMode:
+        Description: 'Task NetworkMode - empty for default based on env/role'
+        AllowedValues: ['', 'awsvpc', 'bridge']
   Condition:
+    - ECSTaskDefinitionBaseUseOneContainer:
+        Equals(1, len(cfg.ContainerDefinitions))
     - LaunchTypeFarGate:
         get_condition('', 'equals', 'FARGATE', 'LaunchType')
     - LogConfiguration:
         get_condition('', 'not_equals', 'none', 'LogDriver')
+    - NetworkModeAwsVpc:
+        get_condition('', 'equals', 'awsvpc', 'NetworkMode', OrExtend=[Condition('LaunchTypeFarGate')])
+    - NetworkModeStandard:
+        get_condition('', 'not_equals', 'awsvpc', 'NetworkMode')
   Output:
     - LaunchType:
         Value: get_endvalue('LaunchType')
@@ -30,6 +39,8 @@ global:
         Value: get_endvalue('LogDriver')
     - ClusterStack:
         Value: get_endvalue('ClusterStack')
+    - NetworkMode:
+        Value: get_resvalue('TaskDefinition', 'NetworkMode')
   ClusterStack: ecs-a
   LogDriver: awslogs
   LogsLogGroup:
@@ -46,3 +57,4 @@ global:
         ManagedPolicyArns:
           - get_expvalue('IAMPolicyCloudWatchPutMetric')
         Principal: ecs-tasks.amazonaws.com
+  NetworkMode: bridge
