@@ -18,27 +18,6 @@ def ECS_ContainerDefinition():
     for n, v in cfg.ContainerDefinitions.items():
         name = f"ContainerDefinitions{n}"  # Ex. ContainerDefinitions1
 
-        EnvValue_Out_String = []
-        EnvValue_Out_Map = {}
-        for m, w in v["Environment"].items():
-            if m.startswith("Env"):
-                continue
-            envname = f"{name}Environment{m}"
-            envkeyname = w["Name"]
-            # parameters
-            p_EnvValue = Parameter(
-                f"{envname}Value",
-                Description=f"{envkeyname} - empty for default based on env/role",
-            )
-
-            # If key NoParam is present skip adding Parameters
-            # (usefull as they have a limited max number)
-            if "NoParam" not in w:
-                add_obj(p_EnvValue)
-
-            EnvValue_Out_String.append("%s=${%s}" % (envkeyname, envkeyname))
-            EnvValue_Out_Map.update({envkeyname: get_endvalue(f"{envname}Value")})
-
         # resources
         Container = ecs.ContainerDefinition(name)
         auto_get_props(Container, indexname=n, res_obj_type="AWS::ECS::TaskDefinition")
@@ -73,14 +52,6 @@ def ECS_ContainerDefinition():
             )
 
         Containers.append(Container)
-
-        # outputs
-        o_EnvValueOut = Output(
-            f"{name}Environment",
-            Value=Sub(",".join(EnvValue_Out_String), **EnvValue_Out_Map),
-        )
-
-        add_obj(o_EnvValueOut)
 
     return Containers
 
