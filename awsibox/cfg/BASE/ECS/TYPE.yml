@@ -11,9 +11,38 @@ IBoxLoader: !include
   - res-elasticloadbalancing/v2-listener.yml
 
 global:
+  Condition:
+    - LoadBalancerApplicationExternal:
+        Equals(1, cfg.LoadBalancer.count("External"))
+    - LoadBalancerApplicationInternal:
+        Equals(1, cfg.LoadBalancer.count("Internal"))
   Output:
     - LoadBalancerApplication:
         Value: get_endvalue('LoadBalancer', nolist=True)
+  EC2SecurityGroup:
+    - EcsService:
+        IBOX_NO_OUTPUT: True
+        Condition: ECSTaskDefinitionBaseNetworkModeAwsVpc
+        GroupDescription: Enable access to Service
+        SecurityGroupIngress:
+          - External:
+              IBOX_IF:
+                - LoadBalancerApplicationExternal
+                - IBOX_IFVALUE
+                - Ref("AWS::NoValue")
+              FromPort: get_endvalue("ContainerDefinitions1ContainerPort")
+              IpProtocol: tcp
+              SourceSecurityGroupId: ImportValue("SecurityGroupLoadBalancerApplicationExternal")
+              ToPort: get_endvalue("ContainerDefinitions1ContainerPort")
+          - Internal:
+              IBOX_IF:
+                - LoadBalancerApplicationInternal
+                - IBOX_IFVALUE
+                - Ref("AWS::NoValue")
+              FromPort: get_endvalue("ContainerDefinitions1ContainerPort")
+              IpProtocol: tcp
+              SourceSecurityGroupId: ImportValue("SecurityGroupLoadBalancerApplicationInternal")
+              ToPort: get_endvalue("ContainerDefinitions1ContainerPort")
   EC2SecurityGroupIngress:
     - LoadBalancerApplicationHttpExternal:
         IBOX_ENABLED: False
@@ -52,9 +81,6 @@ global:
               CapacityMax: k
               CapacityMin: CapacityMin
               Schedule: 'cron(00 06 * * ? *)'
-  ListenerRules:
-    - 1:
-        HostHeader: '*${EnvRole}.*'
   LoadBalancerType: Application
   ApplicationAutoScalingScalingPolicy:
     - Cpu:

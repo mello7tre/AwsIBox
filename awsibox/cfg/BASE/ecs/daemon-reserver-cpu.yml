@@ -26,6 +26,9 @@ global:
         Image: 'busybox'
         LogConfiguration: IBOX_SKIP_FUNC
         Memory: 32
+  EC2SecurityGroup:
+    - EcsService:
+        IBOX_ENABLED: False
   # Included yaml ecs/ecs-task.yml have changed ParameterStore Roles to RoleTask, need to restore it.
   IAMPolicy:
     - ParameterStore:
@@ -44,6 +47,7 @@ global:
         IBOX_ENABLED: True
         Condition: DaemonReserveCpu
         Cluster: Ref('Cluster')
+        LoadBalancers**: []
         NetworkConfiguration: IBOX_SKIP_FUNC
   ECSTaskDefinition:
     - Base:

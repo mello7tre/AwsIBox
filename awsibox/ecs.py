@@ -10,7 +10,6 @@ from .shared import (
     get_condition,
     add_obj,
 )
-from .ec2 import SecurityGroupEcsService, SecurityGroupRuleEcsService
 
 
 def ECS_TaskDefinition(key):
@@ -34,38 +33,17 @@ def ECS_TaskDefinition(key):
 
 
 def ECS_Service(key):
-    # Resources
-    R_SG = SecurityGroupEcsService("SecurityGroupEcsService")
-    if "External" in cfg.LoadBalancer:
-        SGRule = SecurityGroupRuleEcsService(scheme="External")
-        R_SG.SecurityGroupIngress.append(SGRule)
-
-    if "Internal" in cfg.LoadBalancer:
-        SGRule = SecurityGroupRuleEcsService(scheme="Internal")
-        R_SG.SecurityGroupIngress.append(SGRule)
-
-    add_obj(R_SG)
-
     for n, v in getattr(cfg, key).items():
         if not v["IBOX_ENABLED"]:
             continue
         mapname = f"{key}{n}"
-
-        # delete not used LoadBalancers configuration, so that auto_get_props
-        # do not find it
-        for m in ["External", "Internal"]:
-            if m not in cfg.LoadBalancer:
-                del v["LoadBalancers"][m]
-        if not v["LoadBalancers"]:
-            # delete if empty to maintain compatibility with previous conf
-            del v["LoadBalancers"]
 
         r_Service = ecs.Service(mapname)
         auto_get_props(r_Service)
 
         if cfg.LoadBalancer:
             r_Service.Role = If(
-                "NetworkModeAwsVpc", Ref("AWS::NoValue"), get_expvalue("RoleECSService")
+                "ECSTaskDefinitionBaseNetworkModeAwsVpc", Ref("AWS::NoValue"), get_expvalue("RoleECSService")
             )
 
         # When creating a service that specifies multiple target groups,

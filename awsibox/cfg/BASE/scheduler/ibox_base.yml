@@ -27,7 +27,7 @@ global:
             LaunchType: get_endvalue("LaunchType")
             NetworkConfiguration:
               IBOX_IF:
-                - NetworkModeAwsVpc
+                - ECSTaskDefinitionBaseNetworkModeAwsVpc
                 - IBOX_IFVALUE
                 - Ref("AWS::NoValue")
               AwsvpcConfiguration:

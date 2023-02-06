@@ -44,24 +44,6 @@ class SecurityGroupIngressInstanceELBPorts(SecurityGroupIngress):
         self.GroupId = GetAtt("SecurityGroupInstancesRules", "GroupId")
 
 
-class SecurityGroupEcsService(SecurityGroup):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Condition = "NetworkModeAwsVpc"
-        self.GroupDescription = "Enable access to Service"
-        self.SecurityGroupIngress = []
-
-
-class SecurityGroupRuleEcsService(SecurityGroupRule):
-    def __init__(self, scheme, **kwargs):
-        super().__init__(**kwargs)
-        self.SourceSecurityGroupId = get_expvalue(
-            f"SecurityGroupLoadBalancerApplication{scheme}"
-        )
-        self.FromPort = get_endvalue("ContainerDefinitions1ContainerPort")
-        self.ToPort = self.FromPort
-
-
 class EC2Subnet(ec2.Subnet):
     def __init__(self, title, zone, **kwargs):
         super().__init__(title, **kwargs)
@@ -168,7 +150,7 @@ def SG_SecurityGroupsECS(key):
     SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
     # add Condition to Output created by SG_SecurityGroupsExtra
     try:
-        cfg.Outputs["SecurityGroups"].Condition = "NetworkModeAwsVpc"
+        cfg.Outputs["SecurityGroups"].Condition = "ECSTaskDefinitionBaseNetworkModeAwsVpc"
     except Exception:
         pass
 
@@ -180,19 +162,19 @@ def SG_SecurityGroupsTSK(key):
     SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
     # add Condition to Output created by SG_SecurityGroupsExtra
     try:
-        cfg.Outputs["SecurityGroups"].Condition = "NetworkModeAwsVpc"
+        cfg.Outputs["SecurityGroups"].Condition = "ECSTaskDefinitionBaseNetworkModeAwsVpc"
     except Exception:
         pass
 
 
 def SG_SecurityGroupRules(groupname, ingresses):
     SecurityGroup_Rules = []
+    listeners_cfg = {}
 
     if cfg.LoadBalancer:
         if cfg.LoadBalancerType == "Network":
             return SecurityGroup_Rules
 
-        listeners_cfg = {}
         if cfg.LoadBalancerType == "Classic":
             # get config from ElasticLoadBalancingLoadBalancer key
             for e in cfg.LoadBalancer:
@@ -271,6 +253,8 @@ def SG_SecurityGroupRules(groupname, ingresses):
 
 def SG_SecurityGroup(key):
     for n, v in getattr(cfg, key).items():
+        if not v.get("IBOX_ENABLED", True):
+            continue
         # harcode original title, as is used this way in other part of code/cfg
         mapname = f"{key}{n}"
         resname = f"SecurityGroup{n}"
@@ -278,12 +262,14 @@ def SG_SecurityGroup(key):
         # resources
         r_SG = SecurityGroup(resname)
         auto_get_props(r_SG, mapname=mapname)
+
         try:
-            ingresses = v["SecurityGroupIngress"]
+            # if SecurityGroupIngress is "complete" (have IpProtocol)
+            r_SG.to_dict()
         except Exception:
-            pass
-        else:
-            r_SG.SecurityGroupIngress = SG_SecurityGroupRules(mapname, ingresses)
+            ingress = v.get("SecurityGroupIngress")
+            if ingress:
+                r_SG.SecurityGroupIngress = SG_SecurityGroupRules(mapname, ingress)
 
         try:
             outname = v["OutputName"]

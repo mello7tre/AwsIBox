@@ -91,12 +91,7 @@ global:
           InitProcessEnabled.IBOX_CODE:
             If(f'EnableExecuteCommand', True, get_endvalue(f'{IBOX_RESNAME}LinuxParametersInitProcessEnabled'))
         LogConfiguration:
-          IBOX_IF:
-            - LogConfiguration
-            - IBOX_IFVALUE
-            - Ref('AWS::NoValue')
-          LogDriver:
-            get_endvalue('LogDriver')
+          LogDriver: awslogs
           Options:
             awslogs-group: Ref('LogsLogGroup')
             awslogs-region: Ref('AWS::Region')
@@ -121,7 +116,7 @@ global:
           - 0:
               ContainerPort: get_endvalue(f'{IBOX_RESNAME}ContainerPort')
               HostPort: If(
-                'NetworkModeAwsVpc',
+                'ECSTaskDefinitionBaseNetworkModeAwsVpc',
                 get_endvalue(f'{IBOX_RESNAME}ContainerPort'),
                 If(f'{IBOX_RESNAME}HostPort', get_endvalue(f'{IBOX_RESNAME}HostPort'), 0))
               Protocol: tcp

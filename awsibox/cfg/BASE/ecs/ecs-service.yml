@@ -16,16 +16,24 @@ global:
         HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancer else Ref('AWS::NoValue')")
         LoadBalancers:
           - External:
+              IBOX_IF:
+                - LoadBalancerApplicationExternal
+                - IBOX_IFVALUE
+                - Ref("AWS::NoValue")
               ContainerName: Ref('EnvRole')
               ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
               TargetGroupArn: Ref('TargetGroupExternal')
           - Internal:
+              IBOX_IF:
+                - LoadBalancerApplicationExternal
+                - IBOX_IFVALUE
+                - Ref("AWS::NoValue")
               ContainerName: Ref('EnvRole')
               ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
               TargetGroupArn: Ref('TargetGroupInternal')
         NetworkConfiguration:
           IBOX_IF:
-            - NetworkModeAwsVpc
+            - ECSTaskDefinitionBaseNetworkModeAwsVpc
             - IBOX_IFVALUE
             - Ref('AWS::NoValue')
           AwsvpcConfiguration:

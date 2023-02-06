@@ -158,11 +158,13 @@ def LB_ElasticLoadBalancingECS(key):
         )
         add_obj(r_TG)
 
+        # Alarm
         try:
             cfg.CloudWatchAlarm[f"Target{lb}5XX"]["IBOX_ENABLED"] = True
         except Exception:
             pass
 
+        # ListenerRule
         if lb == "External":
             getattr(cfg, f"ElasticLoadBalancingV2ListenerRuleHttps{lb}Rules1")[
                 "IBOX_ENABLED"

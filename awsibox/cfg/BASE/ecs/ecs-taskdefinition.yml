@@ -19,7 +19,16 @@ global:
           Condition: IBOX_CURNAME
           CONDITION: get_condition('', 'not_equals', 'none', IBOX_CURNAME)
         Memory: none
-        NetworkMode: If('NetworkModeAwsVpc', 'awsvpc', get_endvalue('NetworkMode'))
+        NetworkMode.IBOX_CODE: If("LaunchTypeFarGate", "awsvpc", get_endvalue(IBOX_CURNAME))
+        NetworkMode.IBOX_AUTO_PO:
+          AllowedValues: ['', 'awsvpc', 'bridge']
+        NetworkMode.IBOX_PCO:
+          IBOX_CONDITION:
+            - _NetworkModeAwsVpc:
+                get_condition('', 'equals', 'awsvpc', IBOX_CURNAME, OrExtend=[Condition('LaunchTypeFarGate')])
+            - _NetworkModeStandard:
+                get_condition('', 'not_equals', 'awsvpc', IBOX_CURNAME)
+        NetworkMode: bridge
         RequiresCompatibilities: If('LaunchTypeFarGate', ['EC2', 'FARGATE'], ['EC2'])
         TaskRoleArn: Ref('RoleTask')
     - Fargate:

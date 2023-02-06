@@ -80,9 +80,9 @@ global:
         IBOX_ENABLED: False
         <<: *base
         Port: get_endvalue('ContainerDefinitions1ContainerPort')
-        TargetType: If('NetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))
+        TargetType: If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))
     - ECSLoadBalancerApplicationInternal:
         IBOX_ENABLED: False
         <<: *base
         Port: get_endvalue('ContainerDefinitions1ContainerPort')
-        TargetType: If('NetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))
+        TargetType: If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))
