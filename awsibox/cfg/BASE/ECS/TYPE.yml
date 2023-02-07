@@ -11,11 +11,58 @@ IBoxLoader: !include
   - res-elasticloadbalancing/v2-listener.yml
 
 global:
+  Parameter:
+    - LoadBalancer:
+        Description: "Comma delimited list of enabled LoadBalancerApplication - empty for mapped value - none to disable"
+        AllowedValues: ["", "none", "External", "Internal", "External,Internal"]
   Condition:
+    - ECSServiceDoNotNeedRole:
+        Or(
+          Condition("ECSTaskDefinitionBaseNetworkModeAwsVpc"),
+          And(
+            Condition("LoadBalancerApplicationExternal"),
+            Condition("LoadBalancerApplicationInternal"),
+          )
+        )
     - LoadBalancerApplicationExternal:
-        Equals(1, cfg.LoadBalancer.count("External"))
+        Or(
+          And(
+            Condition("LoadBalancerOverride"),
+            Or(
+              Equals(Ref("LoadBalancer"), "External"),
+              Equals(Ref("LoadBalancer"), "External,Internal"),
+            )
+          ),
+          And(
+            Not(Condition("LoadBalancerOverride")),
+            Or(
+              Equals(Join(",", get_endvalue("LoadBalancer")), "External"),
+              Equals(Join(",", get_endvalue("LoadBalancer")), "External,Internal"),
+            )
+          )
+        )
     - LoadBalancerApplicationInternal:
-        Equals(1, cfg.LoadBalancer.count("Internal"))
+        Or(
+          And(
+            Condition("LoadBalancerOverride"),
+            Or(
+              Equals(Ref("LoadBalancer"), "Internal"),
+              Equals(Ref("LoadBalancer"), "External,Internal"),
+            )
+          ),
+          And(
+            Not(Condition("LoadBalancerOverride")),
+            Or(
+              Equals(Join(",", get_endvalue("LoadBalancer")), "Internal"),
+              Equals(Join(",", get_endvalue("LoadBalancer")), "External,Internal"),
+            )
+          )
+        )
+    - LoadBalancerApplicationNone:
+        And(
+          Not(Condition("LoadBalancerApplicationExternal")),
+          Not(Condition("LoadBalancerApplicationInternal")),
+        )
   Output:
     - LoadBalancerApplication:
         Value: get_endvalue('LoadBalancer', nolist=True)
