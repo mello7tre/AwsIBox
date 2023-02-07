@@ -150,8 +150,10 @@ def add_objoutput(res):
                 condition = res.Condition
             except Exception:
                 try:
+                    # look for condition on current-resource
                     res.Condition = iboxprops[f"{mapname}Condition"][0].Condition
                 except Exception:
+                    # look for condition on root-resource
                     if hasattr(iboxprops["OBJ"], "Condition"):
                         res.Condition = iboxprops["OBJ"].Condition
             else:
