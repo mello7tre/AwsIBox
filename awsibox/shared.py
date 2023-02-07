@@ -150,11 +150,10 @@ def add_objoutput(res):
                 condition = res.Condition
             except Exception:
                 try:
-                    cond = iboxprops[f"{mapname}Condition"][0].Condition
+                    res.Condition = iboxprops[f"{mapname}Condition"][0].Condition
                 except Exception:
-                    pass
-                else:
-                    res.Condition = cond
+                    if hasattr(iboxprops["OBJ"], "Condition"):
+                        res.Condition = iboxprops["OBJ"].Condition
             else:
                 # Use a fake Condition wih value None in cfg to avoid creating a condition
                 if condition == "None":
@@ -591,7 +590,7 @@ def auto_get_props(
     # with the name equals to the mapname and the relative value.
     # Later i will assign this dict to the relative output object using
     # IBOX_OUTPUT
-    IBOX_PROPS = {"MAP": {}}
+    IBOX_PROPS = {"MAP": {}, "OBJ": obj}
 
     res_obj_type = getattr(obj, "resource_type", res_obj_type)
 
