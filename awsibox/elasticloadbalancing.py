@@ -142,34 +142,3 @@ def LB_ElasticLoadBalancingEC2(key):
 
     if cfg.LoadBalancerType == "Network":
         LB_ElasticLoadBalancingNetworkEC2()
-
-
-def LB_ElasticLoadBalancingECS(key):
-    if not cfg.LoadBalancer:
-        return
-    enable_recordset("ECS")
-
-    for lb in cfg.LoadBalancer:
-        # TargetGroup
-        r_TG = elbv2.TargetGroup(f"TargetGroup{lb}")
-        auto_get_props(
-            r_TG,
-            mapname=f"ElasticLoadBalancingV2TargetGroupECSLoadBalancerApplication{lb}",
-        )
-        add_obj(r_TG)
-
-        # Alarm
-        try:
-            cfg.CloudWatchAlarm[f"Target{lb}5XX"]["IBOX_ENABLED"] = True
-        except Exception:
-            pass
-
-        # ListenerRule
-        if lb == "External":
-            getattr(cfg, f"ElasticLoadBalancingV2ListenerRuleHttps{lb}Rules1")[
-                "IBOX_ENABLED"
-            ] = True
-        else:
-            getattr(cfg, f"ElasticLoadBalancingV2ListenerRuleHttp{lb}Rules1")[
-                "IBOX_ENABLED"
-            ] = True

@@ -16,6 +16,16 @@ global:
         Description: "Comma delimited list of enabled LoadBalancerApplication - empty for mapped value - none to disable"
         AllowedValues: ["", "none", "External", "Internal", "External,Internal"]
   Condition:
+    - AlarmTargetExternal5XXAndLoadBalancerApplicationExternal:
+        And(
+          Condition("AlarmTargetExternal5XX"),
+          Condition("LoadBalancerApplicationExternal")
+        )
+    - AlarmTargetInternal5XXAndLoadBalancerApplicationInternal:
+        And(
+          Condition("AlarmTargetInternal5XX"),
+          Condition("LoadBalancerApplicationInternal")
+        )
     - ECSServiceDoNotNeedRole:
         Or(
           Condition("ECSTaskDefinitionBaseNetworkModeAwsVpc"),
@@ -63,9 +73,59 @@ global:
           Not(Condition("LoadBalancerApplicationExternal")),
           Not(Condition("LoadBalancerApplicationInternal")),
         )
+    - LoadBalancerApplicationExternalOrInternal:
+        Or(
+          Condition("LoadBalancerApplicationExternal"),
+          Condition("LoadBalancerApplicationInternal"),
+        )
   Output:
     - LoadBalancerApplication:
         Value: get_endvalue('LoadBalancer', nolist=True)
+  ApplicationAutoScalingScalableTarget:
+    - ECSService:
+        ScheduledActions:
+          - Down:
+              Enabled: 'no'
+              CapacityMax: k
+              CapacityMin: CapacityMin
+              Schedule: 'cron(00 22 * * ? *)'
+          - Up:
+              Enabled: 'no'
+              CapacityMax: k
+              CapacityMin: CapacityMin
+              Schedule: 'cron(00 06 * * ? *)'
+  ApplicationAutoScalingScalingPolicy:
+    - Cpu:
+        IBOX_ENABLED: True
+    - Custom:
+        TargetTrackingScalingPolicyConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions:
+              - Cluster:
+                  Name: ClusterName
+                  Value: get_expvalue('Cluster', 'ClusterStack')
+              - Service:
+                  Name: ServiceName
+                  Value: GetAtt('Service', 'Name')
+  CloudFrontDistribution:
+    - IBOX_BASE:
+        DistributionConfig:
+          Origins:
+            - Default:
+                CustomOriginConfig:
+                  HTTPSPort.IBOX_CODE: If(
+                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerECSHttpsExternalPort"))
+  CloudWatchAlarm:
+    - ECSCPUHigh:
+        AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyUp')]
+    - ECSCPULow:
+        AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyDown')]
+    - TargetExternal5XX:
+        IBOX_ENABLED: True
+        Condition: AlarmTargetExternal5XXAndLoadBalancerApplicationExternal
+    - TargetInternal5XX:
+        IBOX_ENABLED: True
+        Condition: AlarmTargetInternal5XXAndLoadBalancerApplicationInternal
   EC2SecurityGroup:
     - EcsService:
         IBOX_NO_OUTPUT: True
@@ -109,47 +169,31 @@ global:
         GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
         FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
         ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
-  LaunchType: EC2
-  CloudWatchAlarm:
-    - ECSCPUHigh:
-        AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyUp')]
-    - ECSCPULow:
-        AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyDown')]
-  ApplicationAutoScalingScalableTarget:
-    - ECSService:
-        ScheduledActions:
-          - Down:
-              Enabled: 'no'
-              CapacityMax: k
-              CapacityMin: CapacityMin
-              Schedule: 'cron(00 22 * * ? *)'
-          - Up:
-              Enabled: 'no'
-              CapacityMax: k
-              CapacityMin: CapacityMin
-              Schedule: 'cron(00 06 * * ? *)'
-  LoadBalancerType: Application
-  ApplicationAutoScalingScalingPolicy:
-    - Cpu:
+  ElasticLoadBalancingV2ListenerRule:
+    - HttpsExternalRules1:
         IBOX_ENABLED: True
-    - Custom:
-        TargetTrackingScalingPolicyConfiguration:
-          CustomizedMetricSpecification:
-            Dimensions:
-              - Cluster:
-                  Name: ClusterName
-                  Value: get_expvalue('Cluster', 'ClusterStack')
-              - Service:
-                  Name: ServiceName
-                  Value: GetAtt('Service', 'Name')
-  CloudFrontDistribution:
-    - IBOX_BASE:
-        DistributionConfig:
-          Origins:
-            - Default:
-                CustomOriginConfig:
-                  HTTPSPort.IBOX_CODE: If(
-                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerECSHttpsExternalPort"))
+        Condition: LoadBalancerApplicationExternal
+    - HttpInternalRules1:
+        IBOX_ENABLED: True
+        Condition: LoadBalancerApplicationInternal
+  ElasticLoadBalancingV2TargetGroup:
+    - ECSLoadBalancerApplicationExternal:
+        IBOX_ENABLED: True
+        IBOX_RESNAME: TargetGroupExternal
+        Condition: LoadBalancerApplicationExternal
+    - ECSLoadBalancerApplicationInternal:
+        IBOX_ENABLED: True
+        IBOX_RESNAME: TargetGroupInternal
+        Condition: LoadBalancerApplicationInternal
+  LaunchType: EC2
+  LoadBalancerType: Application
+  Route53RecordSet:
+    - ECSExternal:
+        IBOX_ENABLED: True
+        Condition: LoadBalancerApplicationExternalOrInternal
+    - ECSInternal:
+        IBOX_ENABLED: True
+        Condition: LoadBalancerApplicationInternal
   Service:
     - Base:
         IBOX_ENABLED: True

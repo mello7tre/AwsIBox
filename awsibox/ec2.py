@@ -264,12 +264,18 @@ def SG_SecurityGroup(key):
         auto_get_props(r_SG, mapname=mapname)
 
         try:
-            # if SecurityGroupIngress is "complete" (have IpProtocol)
-            r_SG.to_dict()
-        except Exception:
-            ingress = v.get("SecurityGroupIngress")
+            ingress = v["SecurityGroupIngress"]
             if ingress:
-                r_SG.SecurityGroupIngress = SG_SecurityGroupRules(mapname, ingress)
+                # SecurityGroupIngress is not empty, check if is "complete" (have IpProtocol)
+                r_SG.to_dict()
+            else:
+                raise ValueError
+        except KeyError:
+            # key SecurityGroupIngress do not exist
+            pass
+        except ValueError:
+            # to_dict failed or SecurityGroupIngress is empty, populate it using SG_SecurityGroupRules
+            r_SG.SecurityGroupIngress = SG_SecurityGroupRules(mapname, v["SecurityGroupIngress"])
 
         try:
             outname = v["OutputName"]

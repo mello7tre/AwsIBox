@@ -47,8 +47,9 @@ global:
         IBOX_ENABLED: True
         Condition: DaemonReserveCpu
         Cluster: Ref('Cluster')
-        LoadBalancers**: []
+        LoadBalancers: IBOX_SKIP_FUNC
         NetworkConfiguration: IBOX_SKIP_FUNC
+        Role: Ref("AWS::NoValue")
   ECSTaskDefinition:
     - Base:
         Condition: DaemonReserveCpu

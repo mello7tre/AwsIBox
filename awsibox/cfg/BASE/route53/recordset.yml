@@ -156,14 +156,19 @@ global:
         <<: [*zone_internal, *ec2_loadbalancer_target_internal, *loadbalancer, *base_internal]
     - EC2InternalLoadBalancerExternal:
         <<: [*zone_internal, *ec2_loadbalancer_target_external, *loadbalancer, *base_internal]
-    - ECSExternalLoadBalancerExternal:
-        <<: [*zone_external, *ecs_loadbalancer_target_external, *loadbalancer, *base_external]
-    - ECSExternalLoadBalancerInternal:
-        <<: [*zone_external, *ecs_loadbalancer_target_internal, *loadbalancer, *base_external]
-    - ECSInternalLoadBalancerInternal:
-        <<: [*zone_internal, *ecs_loadbalancer_target_internal, *loadbalancer, *base_internal]
-    - ECSInternalLoadBalancerExternal:
-        <<: [*zone_internal, *ecs_loadbalancer_target_external, *loadbalancer, *base_internal]
+    - ECSExternal:
+        <<: [*zone_external, *loadbalancer, *base_external]
+        AliasTarget:
+          <<: *loadbalancer_alias_target
+          DNSName: If(
+            "LoadBalancerApplicationExternal",
+            get_subvalue('dualstack.${1E}', f'LoadBalancerApplicationExternalDNS', 'LoadBalancerApplicationStack'),
+            get_subvalue('dualstack.${1E}', f'LoadBalancerApplicationInternalDNS', 'LoadBalancerApplicationStack'))
+    - ECSInternal:
+        <<: [*zone_internal, *loadbalancer, *base_internal]
+        AliasTarget:
+          <<: *loadbalancer_alias_target
+          DNSName: get_subvalue('dualstack.${1E}', f'LoadBalancerApplicationInternalDNS', 'LoadBalancerApplicationStack')
     - LBDExternalLoadBalancerExternal:
         <<: [*zone_external, *ecs_loadbalancer_target_external, *loadbalancer, *base_external]
     - EFS: *efs

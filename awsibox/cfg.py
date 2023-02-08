@@ -360,7 +360,11 @@ CFG_TO_FUNC = {
     "EC2NatGateway": {"module": "joker", "func": ("ec2", "NatGateway")},
     "EC2Route": {"module": "joker", "func": ("ec2", "Route")},
     "EC2RouteTable": {"module": "joker", "func": ("ec2", "RouteTable")},
-    "EC2SecurityGroup": {"module": "ec2", "func": "SG_SecurityGroup"},
+    "EC2SecurityGroup": {
+        "module": "ec2",
+        "func": "SG_SecurityGroup",
+        "dep": ["ECSTaskDefinition"],
+    },
     "EC2SecurityGroupIngress": {
         "module": "ec2",
         "func": "SG_SecurityGroupIngresses",
@@ -411,6 +415,8 @@ CFG_TO_FUNC = {
     "ElasticLoadBalancingV2TargetGroup": {
         "module": "joker",
         "func": ("elasticloadbalancingv2", "TargetGroup"),
+        # need this for override on ContainerDefinitions1ContainerPort
+        "dep": ["ECSTaskDefinition"],
     },
     "EventsRule": {
         "module": "joker",
@@ -458,8 +464,6 @@ CFG_TO_FUNC = {
     "LoadBalancer": {
         "module": "elasticloadbalancing",
         "func": "LB_ElasticLoadBalancing",
-        # need this for override on ContainerDefinitions1ContainerPort
-        "dep": ["ECSTaskDefinition"],
     },
     "LogsLogGroup": {
         "module": "joker",

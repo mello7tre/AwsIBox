@@ -41,16 +41,4 @@ def ECS_Service(key):
         r_Service = ecs.Service(mapname)
         auto_get_props(r_Service)
 
-        if cfg.LoadBalancer:
-            r_Service.Role = If(
-                "ECSTaskDefinitionBaseNetworkModeAwsVpc", Ref("AWS::NoValue"), get_expvalue("RoleECSService")
-            )
-
-        # When creating a service that specifies multiple target groups,
-        # the Amazon ECS service-linked role must be created.
-        # The role is created by omitting the Role property
-        # in AWS CloudFormation
-        if all(k in cfg.LoadBalancer for k in ["External", "Internal"]):
-            r_Service.Role = Ref("AWS::NoValue")
-
         add_obj(r_Service)
