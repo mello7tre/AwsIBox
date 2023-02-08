@@ -592,7 +592,8 @@ def auto_get_props(
     # with the name equals to the mapname and the relative value.
     # Later i will assign this dict to the relative output object using
     # IBOX_OUTPUT
-    IBOX_PROPS = {"MAP": {}, "OBJ": obj}
+    if not "IBOX_PROPS" in globals():
+        IBOX_PROPS = {"MAP": {}, "OBJ": obj}
 
     res_obj_type = getattr(obj, "resource_type", res_obj_type)
 
@@ -871,6 +872,8 @@ def auto_get_props(
                 _try_PCO_in_obj(key[ibox_pco])
 
         def _proc_custom_obj(base_rootdict, key_value, mapname, propname):
+            global IBOX_RESNAME, IBOX_MAPNAME
+
             values = []
             if not base_rootdict:
                 base_rootdict = getattr(cfg, f"{mapname}IBOX_CUSTOM_OBJ{propname}")
@@ -890,7 +893,19 @@ def auto_get_props(
                     obj_title = f"{n}Value"
                 rootdict.update(base_rootdict)
                 obj = IBOX_Custom_Obj(obj_title)
-                auto_get_props(obj, rootdict=rootdict, mapname=f"{mapname}{propname}")
+
+                # save IBOX_RESNAME and IBOX_MAPNAME
+                IBOX_RESNAME_SAVE = IBOX_RESNAME
+                IBOX_MAPNAME_SAVE = IBOX_MAPNAME
+                # set IBOX_RESNAME and IBOX_MAPNAME to call _populate like auto_get_props
+                IBOX_RESNAME = obj_title
+                IBOX_MAPNAME = f"{mapname}{propname}"
+                # populate OBJ
+                _populate(obj, rootdict=rootdict, mapname=IBOX_MAPNAME)
+                # restore IBOX_RESNAME and IBOX_MAPNAME
+                IBOX_RESNAME = IBOX_RESNAME_SAVE
+                IBOX_MAPNAME = IBOX_MAPNAME_SAVE
+
                 value = getattr(obj, "Value")
                 if v == "IBOX_IFCONDVALUE":
                     condname = f"{mapname}{propname}{n}"
@@ -1052,12 +1067,9 @@ def auto_get_props(
                 # set value
                 elif isinstance(key_value, (list, dict)) and ibox_custom_obj in key:
                     # to process a list like a custom obj
-                    save_ibox_resname = IBOX_RESNAME
                     value = _proc_custom_obj(
                         key[ibox_custom_obj], key_value, mapname, propname
                     )
-                    # need to save and restore IBOX_RESNAME because during processing _proc_custom_obj it change
-                    IBOX_RESNAME = save_ibox_resname
                 elif isinstance(key_value, dict):
                     # key value is a dict, get populated object
                     value = _get_obj(obj, key, propname, mapname)
