@@ -25,7 +25,7 @@ global:
               TargetGroupArn: Ref('TargetGroupExternal')
           - Internal:
               IBOX_IF:
-                - LoadBalancerApplicationExternal
+                - LoadBalancerApplicationInternal
                 - IBOX_IFVALUE
                 - Ref("AWS::NoValue")
               ContainerName: Ref('EnvRole')
