@@ -18,12 +18,12 @@ global:
   Condition:
     - AlarmTargetExternal5XXAndLoadBalancerApplicationExternal:
         And(
-          Condition("AlarmTargetExternal5XX"),
+          Condition("CloudWatchAlarmTargetExternal5XX"),
           Condition("LoadBalancerApplicationExternal")
         )
     - AlarmTargetInternal5XXAndLoadBalancerApplicationInternal:
         And(
-          Condition("AlarmTargetInternal5XX"),
+          Condition("CloudWatchAlarmTargetInternal5XX"),
           Condition("LoadBalancerApplicationInternal")
         )
     - ECSServiceDoNotNeedRole:
