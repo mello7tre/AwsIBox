@@ -502,8 +502,8 @@ CFG_TO_FUNC = {
         "dep": ["LoadBalancer"],
     },
     "Service": {
-        "module": "ecs",
-        "func": "ECS_Service",
+        "module": "joker",
+        "func": ("ecs", "Service"),
         "dep": ["SecurityGroups"],
     },
     "ServiceDiscoveryPublicDnsNamespace": {
