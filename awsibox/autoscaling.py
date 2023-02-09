@@ -216,7 +216,8 @@ def AS_Autoscaling(key):
             )
     if cfg.LoadBalancerType in ["Application", "Network"]:
         for n, v in getattr(cfg, "ElasticLoadBalancingV2TargetGroup", {}).items():
-            if v.get("IBOX_ENABLED", True):
+            # check for enabled only for EC2 ones
+            if n.startswith("EC2") and v.get("IBOX_ENABLED", True):
                 TargetGroups.append(
                     Ref(f"ElasticLoadBalancingV2TargetGroupEC2LoadBalancer{n}")
                 )
