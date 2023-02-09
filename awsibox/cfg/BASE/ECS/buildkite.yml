@@ -1,7 +1,6 @@
 IBoxLoader:
   - !exclude
-    - cloudfront/for-services.yml
-    - elasticloadbalancing/base.yml
+    - ecs/service-elasticloadbalancing.yml
     - application-autoscaling/scalingpolicy.yml
   - !include
     - iam/policy-update_stack.yml
