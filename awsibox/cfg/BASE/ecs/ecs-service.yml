@@ -14,23 +14,6 @@ global:
         # not directly used, but needed to autocreate EnableExecuteCommandOverride Condition
         EnableExecuteCommand: false
         HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancer else Ref('AWS::NoValue')")
-        LoadBalancers:
-          - External:
-              IBOX_IF:
-                - LoadBalancerApplicationExternal
-                - IBOX_IFVALUE
-                - Ref("AWS::NoValue")
-              ContainerName: Ref('EnvRole')
-              ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
-              TargetGroupArn: Ref('TargetGroupExternal')
-          - Internal:
-              IBOX_IF:
-                - LoadBalancerApplicationInternal
-                - IBOX_IFVALUE
-                - Ref("AWS::NoValue")
-              ContainerName: Ref('EnvRole')
-              ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
-              TargetGroupArn: Ref('TargetGroupInternal')
         NetworkConfiguration:
           IBOX_IF:
             - ECSTaskDefinitionBaseNetworkModeAwsVpc
@@ -40,7 +23,6 @@ global:
             SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + cfg.SecurityGroupsImport
             Subnets: Split(',', get_expvalue('SubnetsPrivate'))
         PlatformVersion: If('LaunchTypeFarGate', 'LATEST', Ref('AWS::NoValue'))
-        Role: If("ECSServiceDoNotNeedRole", Ref("AWS::NoValue"), ImportValue("RoleECSService"))
         TaskDefinition: Ref('TaskDefinition')
     - Base:
         IBOX_TITLE: Service
