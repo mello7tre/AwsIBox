@@ -46,8 +46,8 @@ global:
           And(
             Not(Condition("LoadBalancerOverride")),
             Or(
-              Equals(Join(",", get_endvalue("LoadBalancer")), "External"),
-              Equals(Join(",", get_endvalue("LoadBalancer")), "External,Internal"),
+              Equals(get_endvalue("LoadBalancer"), "External"),
+              Equals(get_endvalue("LoadBalancer"), "External,Internal"),
             )
           )
         )
@@ -63,8 +63,8 @@ global:
           And(
             Not(Condition("LoadBalancerOverride")),
             Or(
-              Equals(Join(",", get_endvalue("LoadBalancer")), "Internal"),
-              Equals(Join(",", get_endvalue("LoadBalancer")), "External,Internal"),
+              Equals(get_endvalue("LoadBalancer"), "Internal"),
+              Equals(get_endvalue("LoadBalancer"), "External,Internal"),
             )
           )
         )
@@ -80,7 +80,7 @@ global:
         )
   Output:
     - LoadBalancerApplication:
-        Value: get_endvalue('LoadBalancer', nolist=True)
+        Value: get_endvalue('LoadBalancer')
   ApplicationAutoScalingScalableTarget:
     - ECSService:
         ScheduledActions:
@@ -186,6 +186,7 @@ global:
         IBOX_RESNAME: TargetGroupInternal
         Condition: LoadBalancerApplicationInternal
   LaunchType: EC2
+  LoadBalancer: ''
   LoadBalancerType: Application
   Route53RecordSet:
     - ECSExternal:
