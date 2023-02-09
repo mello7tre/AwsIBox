@@ -1,5 +1,5 @@
 IBoxLoader: !include
-  - base.yml
+  - elasticloadbalancing/base.yml
   - classic-loadbalancer.yml
   - v2-loadbalancer.yml
 

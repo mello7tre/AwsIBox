@@ -1,5 +1,5 @@
 IBoxLoader: !include
-  - base.yml
+  - cloudfront/base.yml
   - route53/recordset.yml
 
 global:
