@@ -16,7 +16,6 @@ global:
         Cpu: 512
         Image: 'amazonlinux:2'
         Memory: 64
-  LaunchType: EC2
   Service:
     - Base:
         IBOX_ENABLED: False

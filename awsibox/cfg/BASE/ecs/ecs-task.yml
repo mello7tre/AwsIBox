@@ -12,17 +12,10 @@ global:
         Description: 'Cluster Stack Name used to launch service on - empty for default based on env/role'
     - DockerLabelLastUpdate:
         Description: 'Use to force redeploy - can use: $(date +%F_%T)'
-    - LaunchType:
-        Description: RunTask LaunchType - empty for default based on env/role
-        AllowedValues: ['', 'EC2', 'FARGATE']
   Condition:
     - ECSTaskDefinitionBaseUseOneContainer:
         Equals(1, len(cfg.ContainerDefinitions))
-    - LaunchTypeFarGate:
-        get_condition('', 'equals', 'FARGATE', 'LaunchType')
   Output:
-    - LaunchType:
-        Value: get_endvalue('LaunchType')
     - ClusterStack:
         Value: get_endvalue('ClusterStack')
   ClusterStack: ecs-a

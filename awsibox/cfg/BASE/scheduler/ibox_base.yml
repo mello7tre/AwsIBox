@@ -24,7 +24,7 @@ global:
         Target:
           Arn: 'get_subvalue("arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${1E}", "Cluster", stack="ClusterStack")'
           EcsParameters:
-            LaunchType: get_endvalue("LaunchType")
+            LaunchType: get_endvalue("ServiceBaseLaunchType")
             NetworkConfiguration:
               IBOX_IF:
                 - ECSTaskDefinitionBaseNetworkModeAwsVpc

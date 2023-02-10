@@ -12,6 +12,17 @@ global:
     - ECSRunTask:
         IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'Periodically invoke LambdaECSRunTask'
+        LaunchType.IBOX_PCO:
+          IBOX_PARAMETER:
+            - _LaunchType:
+                AllowedValues: ['', 'EC2', 'FARGATE']
+          IBOX_CONDITION:
+            - ECSTasksLaunchOnFargate:
+                get_condition('', 'equals', 'FARGATE', 'EventsRuleECSRunTaskLaunchType')
+          IBOX_OUTPUT:
+            - _LaunchType:
+                Value: Ref(IBOX_CURNAME)
+        LaunchType: FARGATE
         State: 'ENABLED'
         Targets:
           - Lambda0:
@@ -21,7 +32,7 @@ global:
                   '{',
                   'Cluster":', get_expvalue('Cluster', 'ClusterStack'), ',',
                   'ECSInstancesStackName":', get_endvalue('ClusterStack'), ',',
-                  'LaunchType":', get_endvalue('LaunchType'), ',',
+                  'LaunchType":', get_endvalue('EventsRuleECSRunTaskLaunchType'), ',',
                   If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'NetworkModeAwsVpc":"awsvpc",', Ref('AWS::NoValue')),
                   'TaskDefinition":', Ref('TaskDefinition'), ',',
                   'Subnets":', get_expvalue('SubnetsPrivate'), ',',
@@ -49,4 +60,3 @@ global:
                 Resource: 
                   - GetAtt('RoleTask', 'Arn')
                   - get_expvalue('RoleECSTaskExecution')
-  LaunchType: EC2

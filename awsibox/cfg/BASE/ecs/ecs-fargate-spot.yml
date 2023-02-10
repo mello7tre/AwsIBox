@@ -6,12 +6,12 @@ global:
   Condition:
     - FargateSpot:
         And(
-          Condition('LaunchTypeFarGate'),
+          Condition('ECSTasksLaunchOnFargate'),
           get_condition('', 'equals', 'yes', 'FargateSpot')
         )
     - FargateBase:
         And(
-          Condition('LaunchTypeFarGate'),
+          Condition('ECSTasksLaunchOnFargate'),
           get_condition('', 'equals', 'no', 'FargateSpot')
         )
   ApplicationAutoScalingScalableTarget:

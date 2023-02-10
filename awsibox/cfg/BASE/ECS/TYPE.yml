@@ -53,10 +53,17 @@ global:
         Condition: ECSTaskDefinitionBaseNetworkModeAwsVpc
         GroupDescription: Enable access to Service
         SecurityGroupIngress: {}
-  LaunchType: EC2
   Service:
     - Base:
         IBOX_ENABLED: True
+        LaunchType.IBOX_AUTO_PO:
+          AllowedValues: ['', 'EC2', 'FARGATE']
+        LaunchType.IBOX_PCO:
+          IBOX_CONDITION:
+            - ECSTasksLaunchOnFargate:
+                get_condition('', 'equals', 'FARGATE', 'ServiceBaseLaunchType')
+        LaunchType:IBOX_CODE: If('ECSTasksLaunchOnFargate', get_endvalue('ServiceBaseLaunchType'), Ref('AWS::NoValue'))
+        LaunchType: EC2
 
 dev: &cfg_dev
   CloudWatchAlarm:

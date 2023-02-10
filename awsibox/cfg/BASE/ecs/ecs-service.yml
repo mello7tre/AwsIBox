@@ -4,7 +4,7 @@ global:
         IBOX_ENABLED: False
         Cluster: get_expvalue('Cluster', 'ClusterStack')
         EnableExecuteCommand.IBOX_CODE: If(
-            'LaunchTypeFarGate',
+            'ECSTasksLaunchOnFargate',
             If(f'{IBOX_RESNAME}EnableExecuteCommandOverride', Ref(f'{IBOX_RESNAME}EnableExecuteCommand'), True),
             get_endvalue(f'EnableExecuteCommand'))
         EnableExecuteCommand.IBOX_AUTO_PO:
@@ -22,7 +22,7 @@ global:
           AwsvpcConfiguration:
             SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + cfg.SecurityGroupsImport
             Subnets: Split(',', get_expvalue('SubnetsPrivate'))
-        PlatformVersion: If('LaunchTypeFarGate', 'LATEST', Ref('AWS::NoValue'))
+        PlatformVersion: If('ECSTasksLaunchOnFargate', 'LATEST', Ref('AWS::NoValue'))
         TaskDefinition: Ref('TaskDefinition')
     - Base:
         IBOX_TITLE: Service
@@ -37,10 +37,9 @@ global:
           MaximumPercent: 200
           MinimumHealthyPercent.IBOX_AUTO_PO: {}
           MinimumHealthyPercent: 100
-        LaunchType: If('LaunchTypeFarGate', get_endvalue('LaunchType'), Ref('AWS::NoValue'))
         PlacementStrategies:
           - IBOX_IF:
-              - LaunchTypeFarGate
+              - ECSTasksLaunchOnFargate
               - Ref('AWS::NoValue')
               - IBOX_IFVALUE
           - 0:
@@ -59,7 +58,7 @@ global:
                 f'{IBOX_RESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
                 get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Field'))
               Field: instanceId
-      #    If('LaunchTypeFarGate', Ref('AWS::NoValue'),
+      #    If('ECSTasksLaunchOnFargate', Ref('AWS::NoValue'),
       #                          [ecs.PlacementStrategy(Type='spread', Field='instanceId')])
       #                          #ecs.PlacementStrategy(Type='spread', Field='attribute:ecs.availability-zone')
         SchedulingStrategy: REPLICA

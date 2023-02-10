@@ -13,23 +13,23 @@ global:
           ]
           CONDITION: get_condition('', 'not_equals', 'none', IBOX_CURNAME)
         Cpu: none
-        ExecutionRoleArn: If('LaunchTypeFarGate', get_expvalue('RoleECSTaskExecution'), Ref('AWS::NoValue'))
+        ExecutionRoleArn: If('ECSTasksLaunchOnFargate', get_expvalue('RoleECSTaskExecution'), Ref('AWS::NoValue'))
         Memory.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
         Memory.IBOX_AUTO_PO:
           Condition: IBOX_CURNAME
           CONDITION: get_condition('', 'not_equals', 'none', IBOX_CURNAME)
         Memory: none
-        NetworkMode.IBOX_CODE: If("LaunchTypeFarGate", "awsvpc", get_endvalue(IBOX_CURNAME))
+        NetworkMode.IBOX_CODE: If("ECSTasksLaunchOnFargate", "awsvpc", get_endvalue(IBOX_CURNAME))
         NetworkMode.IBOX_AUTO_PO:
           AllowedValues: ['', 'awsvpc', 'bridge']
         NetworkMode.IBOX_PCO:
           IBOX_CONDITION:
             - _NetworkModeAwsVpc:
-                get_condition('', 'equals', 'awsvpc', IBOX_CURNAME, OrExtend=[Condition('LaunchTypeFarGate')])
+                get_condition('', 'equals', 'awsvpc', IBOX_CURNAME, OrExtend=[Condition('ECSTasksLaunchOnFargate')])
             - _NetworkModeStandard:
                 get_condition('', 'not_equals', 'awsvpc', IBOX_CURNAME)
         NetworkMode: bridge
-        RequiresCompatibilities: If('LaunchTypeFarGate', ['EC2', 'FARGATE'], ['EC2'])
+        RequiresCompatibilities: If('ECSTasksLaunchOnFargate', ['EC2', 'FARGATE'], ['EC2'])
         TaskRoleArn: Ref('RoleTask')
     - Fargate:
         IBOX_TITLE: TaskDefinitionFargate
