@@ -33,8 +33,6 @@ global:
                 Condition("ECSTaskDefinitionBaseMemory"),
                 get_condition("", "equals", "yes", f"{IBOX_RESNAME}UseTaskDefinitionBaseMemory")
               )
-          - EnvApp.IBOX_INDEXNAME.Version:
-              Not(Equals('', Ref(f'EnvApp{IBOX_INDEXNAME}Version')))
         IBOX_OUTPUT:
           - EnvApp.IBOX_INDEXNAME.Version:
               Value: Ref(f'EnvApp{IBOX_INDEXNAME}Version')
@@ -81,10 +79,7 @@ global:
         HostPort: none
         Image: Join('', [
             get_endvalue('EcrAccount'), '.dkr.ecr.', Ref('AWS::Region'), '.amazonaws.com/',
-            get_endvalue(f'{IBOX_RESNAME}RepoName' if 'RepoName' in getattr(cfg, IBOX_RESNAME) else 'RepoName'), ':',
-            If(
-              f'EnvApp{IBOX_INDEXNAME}Version', Ref(f'EnvApp{IBOX_INDEXNAME}Version'), Ref('EnvApp1Version')
-            ) if 'RepoName' not in getattr(cfg, IBOX_RESNAME) else Ref(f'EnvApp{IBOX_INDEXNAME}Version'),
+            Sub(getattr(cfg, f'{IBOX_RESNAME}ImageSuffix'))
           ])
         LinuxParameters:
           InitProcessEnabled: false
