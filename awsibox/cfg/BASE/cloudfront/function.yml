@@ -1,0 +1,13 @@
+global:
+  CloudFrontFunction:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _:
+              Value: GetAtt(IBOX_RESNAME, "FunctionARN")
+              Export: Export(IBOX_RESNAME)
+        AutoPublish: True
+        FunctionCode: Join("", import_lambda(IBOX_INDEXNAME))
+        FunctionConfig:
+          Comment: str(IBOX_INDEXNAME)
+          Runtime: cloudfront-js-1.0
+        Name: str(IBOX_INDEXNAME)

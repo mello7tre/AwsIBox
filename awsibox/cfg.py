@@ -331,6 +331,10 @@ CFG_TO_FUNC = {
             "CloudFrontLambdaFunctionAssociation",
         ],
     },
+    "CloudFrontFunction": {
+        "module": "joker",
+        "func": ("cloudfront", "Function"),
+    },
     "CloudFrontLambdaFunctionAssociation": {
         "module": "joker",
         "func": ("cloudfront", "LambdaFunctionAssociation"),

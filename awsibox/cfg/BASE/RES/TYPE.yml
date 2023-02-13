@@ -4,5 +4,6 @@ IBoxLoader:
     - cloudfront/origin-access-identity.yml
     - sns/subscription.yml
     - lambda/base.yml
+    - cloudfront/function.yml
 
 global:
