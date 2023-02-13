@@ -22,13 +22,13 @@ global:
             Key: IAMRole
             Type: BucketReplica
             Conf:
-              IBOX_RESNAME: Role.IBOX_RESNAME.Replica
+              IBOX_RESNAME: Role.IBOX_TITLE.Replica
               Condition: IBOX_RESNAME.Replica
           IAMPolicy:
             Key: IAMPolicy
             Type: BucketReplica
             Conf:
-              IBOX_RESNAME: IAMPolicyReplica.IBOX_RESNAME
+              IBOX_RESNAME: IAMPolicyReplica.IBOX_TITLE
               IBOX_LINKED_OBJ_NAME: IBOX_REMAPNAME
               IBOX_LINKED_OBJ_INDEX: IBOX_RESNAME
         IBOX_CONDITION:
