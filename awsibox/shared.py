@@ -37,11 +37,11 @@ class Parameter(Parameter):
         if title.startswith("EnvApp") and title.endswith("Version"):
             add_obj(
                 [
-                    get_condition(title, "not_equals", "", nomap=True),
+                    # get_condition(title, "not_equals", "", nomap=True),
                     ssm.Parameter(
                         f"SSMParameter{title}",
                         Type="String",
-                        Condition=title,
+                        # Condition=title,
                         Name=Sub(
                             "/EnvAppVersions/${EnvRole}/${AWS::StackName}/%s" % title
                         ),
