@@ -13,9 +13,6 @@ global:
           - _Command:
               Description: 'Command to execute'
               Type: 'CommaDelimitedList'
-          - _LinuxParametersInitProcessEnabled:
-              Description: 'Empty for mapped value - "true" if EnableExecuteCommand'
-              AllowedValues: ['', 'true', 'false']
         IBOX_CONDITION:
           - _Command: Or(
               Condition(f'{IBOX_RESNAME}CommandOverride'),
@@ -83,9 +80,9 @@ global:
             Sub(getattr(cfg, f'{IBOX_RESNAME}ImageSuffix'))
           ])
         LinuxParameters:
+          InitProcessEnabled.IBOX_AUTO_P:
+            AllowedValues: ['', 'true', 'false']
           InitProcessEnabled: false
-          InitProcessEnabled.IBOX_CODE:
-            If(f'EnableExecuteCommand', True, get_endvalue(f'{IBOX_RESNAME}LinuxParametersInitProcessEnabled'))
         LogConfiguration:
           LogDriver: awslogs
           Options:

@@ -4,14 +4,13 @@ global:
         IBOX_ENABLED: False
         Cluster: get_expvalue('Cluster', 'ClusterStack')
         EnableExecuteCommand.IBOX_CODE: If(
-            'ECSTasksLaunchOnFargate',
-            If(f'{IBOX_RESNAME}EnableExecuteCommandOverride', Ref(f'{IBOX_RESNAME}EnableExecuteCommand'), True),
-            get_endvalue(f'EnableExecuteCommand'))
+            f'{IBOX_RESNAME}EnableExecuteCommandOverride',
+            Ref(f'{IBOX_RESNAME}EnableExecuteCommand'),
+            If('ECSTasksLaunchOnFargate', True, get_endvalue(f'{IBOX_RESNAME}EnableExecuteCommand', add_override=False)))
         EnableExecuteCommand.IBOX_AUTO_PO:
           Description: 'empty for mapped value - Default to "true" for FARGATE'
           AllowedValues: ['', 'true', 'false']
           Value: ${EnableExecuteCommand}
-        # not directly used, but needed to autocreate EnableExecuteCommandOverride Condition
         EnableExecuteCommand: false
         HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancer else Ref('AWS::NoValue')")
         NetworkConfiguration:
@@ -72,7 +71,3 @@ global:
               CapacityProvider: FARGATE_SPOT
               Weight: 1
         DesiredCount: get_endvalue('CapacityDesired')
-  Condition:
-    - EnableExecuteCommand:
-        get_condition('', 'equals', True, f'EnableExecuteCommand')
-  EnableExecuteCommand: false

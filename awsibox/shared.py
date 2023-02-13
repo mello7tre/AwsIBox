@@ -184,6 +184,7 @@ def get_endvalue(
     fixedvalues=None,
     mapinlist=False,
     no_check_for_mappedvalues=False,
+    add_override=True,
 ):
     if not fixedvalues:
         # set default if not defined
@@ -194,6 +195,7 @@ def get_endvalue(
             param = condname
         if (
             cfg.no_override is False
+            and add_override
             and param in cfg.Parameters
             and param in list(cfg.fixedvalues) + cfg.mappedvalues
         ):
