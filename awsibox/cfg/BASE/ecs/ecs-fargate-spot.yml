@@ -23,7 +23,7 @@ global:
           )
   FargateSpot: 'no'
   CCRFargateSpot: True
-  Service:
+  ECSService:
     - Spot:
         IBOX_ENABLED: True
         Condition: FargateSpot

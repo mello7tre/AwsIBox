@@ -39,7 +39,7 @@ global:
   IAMRole:
     - Task:
         Condition: DaemonReserveCpu
-  Service:
+  ECSService:
     - Base:
         IBOX_ENABLED: False
     - Daemon:

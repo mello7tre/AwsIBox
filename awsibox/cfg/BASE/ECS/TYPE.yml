@@ -53,7 +53,7 @@ global:
         Condition: ECSTaskDefinitionBaseNetworkModeAwsVpc
         GroupDescription: Enable access to Service
         SecurityGroupIngress: {}
-  Service:
+  ECSService:
     - Base:
         IBOX_ENABLED: True
         LaunchType.IBOX_AUTO_PO:
@@ -62,8 +62,8 @@ global:
         LaunchType.IBOX_PCO:
           IBOX_CONDITION:
             - ECSTasksLaunchOnFargate:
-                get_condition('', 'equals', 'FARGATE', 'ServiceBaseLaunchType')
-        LaunchType.IBOX_CODE: If('ECSTasksLaunchOnFargate', get_endvalue('ServiceBaseLaunchType'), Ref('AWS::NoValue'))
+                get_condition('', 'equals', 'FARGATE', IBOX_CURNAME)
+        LaunchType.IBOX_CODE: If('ECSTasksLaunchOnFargate', get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
         LaunchType: EC2
 
 dev: &cfg_dev

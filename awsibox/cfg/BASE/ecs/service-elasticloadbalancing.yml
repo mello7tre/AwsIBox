@@ -148,7 +148,7 @@ global:
     - ECSInternal:
         IBOX_ENABLED: True
         Condition: LoadBalancerApplicationInternal
-  Service:
+  ECSService:
     - IBOX_BASE:
         LoadBalancers:
           - External:

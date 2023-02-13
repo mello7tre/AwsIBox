@@ -90,7 +90,7 @@ global:
                 - ImportValue('SecurityGroupBaseInstance')
   LoadBalancerType: Application
   RecordSet: ['External', 'Internal']
-  Service:
+  ECSService:
     - Base:
         DependsOn: ECSClusterCapacityProviderAssociationsBase
         Cluster: Ref('Cluster')

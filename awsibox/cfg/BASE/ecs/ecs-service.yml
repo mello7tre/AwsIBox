@@ -1,5 +1,5 @@
 global:
-  Service:
+  ECSService:
     - IBOX_BASE:
         IBOX_ENABLED: False
         Cluster: get_expvalue('Cluster', 'ClusterStack')

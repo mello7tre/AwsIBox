@@ -392,6 +392,11 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("ecs", "ClusterCapacityProviderAssociations"),
     },
+    "ECSService": {
+        "module": "joker",
+        "func": ("ecs", "Service"),
+        "dep": ["SecurityGroups"],
+    },
     "ECSTaskDefinition": {"module": "ecs", "func": "ECS_TaskDefinition"},
     "EFSAccessPoint": {"module": "joker", "func": ("efs", "AccessPoint")},
     "EFSFileSystem": {"module": "efs", "func": "EFS_FileStorage"},
@@ -504,11 +509,6 @@ CFG_TO_FUNC = {
         "module": "ec2",
         "func": "SG_SecurityGroups",
         "dep": ["LoadBalancer"],
-    },
-    "Service": {
-        "module": "joker",
-        "func": ("ecs", "Service"),
-        "dep": ["SecurityGroups"],
     },
     "ServiceDiscoveryPublicDnsNamespace": {
         "module": "joker",
