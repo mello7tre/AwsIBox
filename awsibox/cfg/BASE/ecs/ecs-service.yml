@@ -76,4 +76,3 @@ global:
     - EnableExecuteCommand:
         get_condition('', 'equals', True, f'EnableExecuteCommand')
   EnableExecuteCommand: false
-  LoadBalancers: {}
