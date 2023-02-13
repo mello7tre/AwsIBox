@@ -92,7 +92,7 @@ def CFM_CustomResourceLightHouse(key):
         ServiceToken=get_expvalue("LambdaCCRLightHouse"),
         EnvRole=Ref("EnvRole"),
         EnvApp1Version=Ref("EnvApp1Version"),
-        RepoName=get_endvalue("RepoName"),
+        RepoName=getattr(cfg, "ContainerDefinitions1ImageSuffix").split(":")[0],
     )
 
     add_obj(R_LightHouse)
