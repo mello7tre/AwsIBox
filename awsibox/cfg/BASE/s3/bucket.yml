@@ -50,7 +50,7 @@ global:
               get_condition("", "not_equals", "Disabled", f"{IBOX_RESNAME}VersioningConfigurationStatus")
         IBOX_OUTPUT:
           - _:
-              Value: If(IBOX_RESNAME, Ref(IBOX_RESNAME), Sub(IBOX_REMAPNAME))
+              Value: If(IBOX_RESNAME, Ref(IBOX_TITLE), Sub(IBOX_REMAPNAME))
         OutputValueRegion.IBOX_PCO:
           IBOX_CONDITION:
             - _OutputValueRegion:
@@ -121,7 +121,7 @@ global:
                 IBOX_CONDITION:
                   - CloudFrontOriginAccessIdentity.IBOX_INDEXNAME:
                       And(
-                        Condition(f"Bucket{IBOX_INDEXNAME}"),
+                        Condition(f"S3Bucket{IBOX_INDEXNAME}"),
                         get_condition("", "not_equals", "none", f"{IBOX_CURNAME}baseEnabled")
                       )
               Enabled: 'yes'
