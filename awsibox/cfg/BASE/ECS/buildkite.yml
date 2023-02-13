@@ -25,7 +25,6 @@ global:
               ReadOnly: false
               SourceVolume: DockerSock
               ContainerPath: /var/run/docker.sock
-  RepoName: get_subvalue('${1M}.${2M}.services.buildkite', ['BrandRegion', 'Brand'])
   ECSTaskDefinition:
     - Base:
         Volumes:
