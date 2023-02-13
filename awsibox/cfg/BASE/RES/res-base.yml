@@ -16,7 +16,7 @@ IBoxLoader: !include
 
 global:
   StackName: r-base
-  Bucket:
+  S3Bucket:
     - AppRepository:
         OutputValueRegion: 'AWSRegion'
         VersioningConfiguration:

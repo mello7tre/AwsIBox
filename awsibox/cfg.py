@@ -312,7 +312,6 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("autoscaling", "ScheduledAction"),
     },
-    "Bucket": {"module": "s3", "func": "S3_Buckets"},
     "CertificateManagerCertificate": {
         "module": "joker",
         "func": ("certificatemanager", "Certificate"),
@@ -342,7 +341,7 @@ CFG_TO_FUNC = {
     "CloudFrontOriginAccessIdentity": {
         "module": "joker",
         "func": ("cloudfront", "CloudFrontOriginAccessIdentity"),
-        "dep": ["Bucket"],
+        "dep": ["S3Bucket"],
     },
     "CloudFrontOriginRequestPolicy": {
         "module": "joker",
@@ -435,11 +434,11 @@ CFG_TO_FUNC = {
     "IAMGroup": {"module": "iam", "func": "IAM_Groups"},
     "IAMInstanceProfile": {"module": "joker", "func": ("iam", "InstanceProfile")},
     "IAMManagedPolicy": {"module": "joker", "func": ("iam", "ManagedPolicy")},
-    "IAMPolicy": {"module": "joker", "func": ("iam", "PolicyType"), "dep": ["Bucket"]},
+    "IAMPolicy": {"module": "joker", "func": ("iam", "PolicyType"), "dep": ["S3Bucket"]},
     "IAMRole": {
         "module": "joker",
         "func": ("iam", "Role"),
-        "dep": ["Lambda", "Bucket"],
+        "dep": ["Lambda", "S3Bucket"],
     },
     "IAMUser": {"module": "iam", "func": "IAM_Users"},
     "IAMUserToGroupAddition": {"module": "iam", "func": "IAM_UserToGroupAdditions"},
@@ -505,6 +504,7 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("route53resolver", "ResolverRuleAssociation"),
     },
+    "S3Bucket": {"module": "s3", "func": "S3_Buckets"},
     "SecurityGroups": {
         "module": "ec2",
         "func": "SG_SecurityGroups",

@@ -16,7 +16,7 @@ from .shared import (
 def S3_Buckets(key):
     for n, v in getattr(cfg, key).items():
         resname = f"{key}{n}"
-        bucket_name = getattr(cfg, f"{key}Name{n}")
+        bucket_name = getattr(cfg, f"BucketName{n}")
 
         # resources
         r_Bucket = s3.Bucket(resname)
@@ -25,7 +25,7 @@ def S3_Buckets(key):
         r_Policy = s3.BucketPolicy(
             f"BucketPolicy{n}",
             Condition=resname,
-            Bucket=Ref(resname),
+            Bucket=Ref(r_Bucket.title),
         )
         # BucketPolicy Statements are read from yaml cfg, so update it with dynamic data
         base_statements = cfg.S3BucketPolicyBasePolicyDocumentStatement

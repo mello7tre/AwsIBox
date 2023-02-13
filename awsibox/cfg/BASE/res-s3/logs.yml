@@ -1,5 +1,5 @@
 global:
-  Bucket:
+  S3Bucket:
     - Logs:
         BucketPolicy:
           - AllowLBLogs:
