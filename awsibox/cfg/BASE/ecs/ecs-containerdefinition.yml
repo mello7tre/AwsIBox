@@ -3,6 +3,7 @@ global:
     - IBOX_BASE:
         IBOX_PARAMETER:
           - EnvApp.IBOX_INDEXNAME.Version:
+              IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_RESNAME}ImageSuffix")
               Description: str(f'EnvApp{IBOX_INDEXNAME}Version')
               AllowedPattern: '^[a-zA-Z0-9-_.]*$'
           - _Cpu:

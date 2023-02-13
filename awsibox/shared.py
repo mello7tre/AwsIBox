@@ -788,6 +788,8 @@ def auto_get_props(
         def _try_PCO_in_obj(key):
             def _parameter(k):
                 for n, v in k.items():
+                    if not eval(v.get("IBOX_ENABLED_IF", "True")):
+                        continue
                     n = parse_ibox_key(n)
                     parameter = Parameter(n)
                     _populate(parameter, rootdict=v)
