@@ -36,5 +36,3 @@ global:
                          Ref("AWS::NoValue"),
                       ) for n in getattr(cfg, IBOX_LINKED_OBJ_INDEX)["ReplicationConfiguration"]["Rules"]
                     ])
-        Roles:
-          - Ref(f"Role{IBOX_LINKED_OBJ_INDEX}Replica")

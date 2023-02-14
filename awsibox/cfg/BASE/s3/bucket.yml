@@ -31,6 +31,8 @@ global:
               IBOX_RESNAME: IAMPolicyReplica.IBOX_TITLE
               IBOX_LINKED_OBJ_NAME: IBOX_REMAPNAME
               IBOX_LINKED_OBJ_INDEX: IBOX_RESNAME
+              Roles:
+                - Ref(f"Role{IBOX_TITLE}Replica")
         IBOX_CONDITION:
           - _:
               get_condition("", "equals", "yes", f"{IBOX_RESNAME}Create")
