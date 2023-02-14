@@ -63,7 +63,7 @@ global:
                   If(f"{IBOX_RESNAME}OutputValueRegion",
                      Sub("${Region}-%s" % IBOX_REMAPNAME.replace("${AWS::Region}-", "", 1),
                          **{"Region": get_endvalue(f"{IBOX_RESNAME}OutputValueRegion")}),
-                     If(IBOX_RESNAME, Ref(IBOX_RESNAME), Sub(IBOX_REMAPNAME))
+                     If(IBOX_RESNAME, Ref(IBOX_TITLE), Sub(IBOX_REMAPNAME))
                   )
         Condition: IBOX_RESNAME
         BucketName: Sub(IBOX_REMAPNAME)
@@ -139,7 +139,7 @@ global:
             - IBOX_IFVALUE
             - Ref("AWS::NoValue")
           Enabled: "no"
-          Role: GetAtt(f"Role{IBOX_RESNAME}Replica", "Arn")
+          Role: GetAtt(f"Role{IBOX_TITLE}Replica", "Arn")
           Rules:
             - IBOX_BASE:
                 IBOX_IF:
