@@ -36,3 +36,6 @@ global:
                          Ref("AWS::NoValue"),
                       ) for n in getattr(cfg, IBOX_LINKED_OBJ_INDEX)["ReplicationConfiguration"]["Rules"]
                     ])
+        Roles:
+          # trick to find the common suffix of IBOX_LINKED_OBJ_INDEX [= Bucket IBOX_TITLE] and IBOX_RESNAME
+          - Ref(f"Role{os.path.commonprefix([IBOX_LINKED_OBJ_INDEX[::-1], IBOX_RESNAME[::-1]])[::-1]}Replica")
