@@ -24,12 +24,12 @@ global:
     - AlarmLoadBalancerApplicationExternal5XXEvaluationPeriods:
         And(
           Condition('LoadBalancerApplicationExternal'),
-          Condition('AlarmLoadBalancerApplicationExternal5XX'),
+          Condition('CloudWatchAlarmLoadBalancerApplicationExternal5XX'),
         )
     - AlarmLoadBalancerApplicationInternal5XXEvaluationPeriods:
         And(
           Condition('LoadBalancerApplicationInternal'),
-          Condition('AlarmLoadBalancerApplicationInternal5XX'),
+          Condition('CloudWatchAlarmLoadBalancerApplicationInternal5XX'),
         )
   Output:
     - LoadBalancerApplication:
