@@ -24,6 +24,9 @@ global:
           Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
         MaxInstanceLifetime.IBOX_AUTO_PO:
           Description: 'Empty for mapped value - 0 to disable'
+          CONDITION: get_condition('', 'not_equals', '0', IBOX_CURNAME)
+          Value: ${MaxInstanceLifetime}
+        MaxInstanceLifetime.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
         MaxInstanceLifetime: 0
         MaxSize: get_endvalue('CapacityMax')
         MetricsCollection:
