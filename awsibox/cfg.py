@@ -297,7 +297,6 @@ CFG_TO_FUNC = {
         "module": "autoscaling",
         "func": "AS_ScalingPolicies",
     },
-    "Apps": {"module": "joker", "func": ("codedeploy", "DeploymentGroup")},
     "AutoScalingLifecycleHook": {
         "module": "joker",
         "func": ("autoscaling", "LifecycleHook"),
@@ -315,10 +314,6 @@ CFG_TO_FUNC = {
     "CertificateManagerCertificate": {
         "module": "joker",
         "func": ("certificatemanager", "Certificate"),
-    },
-    "ElastiCacheSubnetGroup": {
-        "module": "joker",
-        "func": ("elasticache", "SubnetGroup"),
     },
     "CloudFrontCachePolicy": {"module": "joker", "func": ("cloudfront", "CachePolicy")},
     "CloudFrontDistribution": {
@@ -357,6 +352,10 @@ CFG_TO_FUNC = {
         "dep": ["LoadBalancer", "SQSQueue"],
     },
     "CodeDeployApplication": {"module": "joker", "func": ("codedeploy", "Application")},
+    "CodeDeployDeploymentGroup": {
+        "module": "joker",
+        "func": ("codedeploy", "DeploymentGroup"),
+    },
     "DynamoDBTable": {"module": "joker", "func": ("dynamodb", "Table")},
     "EC2EIP": {"module": "joker", "func": ("ec2", "EIP")},
     "EC2InternetGateway": {"module": "joker", "func": ("ec2", "InternetGateway")},
@@ -407,6 +406,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("elasticache", "ReplicationGroup"),
     },
+    "ElastiCacheSubnetGroup": {
+        "module": "joker",
+        "func": ("elasticache", "SubnetGroup"),
+    },
     "ElasticLoadBalancingV2LoadBalancer": {
         "module": "joker",
         "func": ("elasticloadbalancingv2", "LoadBalancer"),
@@ -434,7 +437,11 @@ CFG_TO_FUNC = {
     "IAMGroup": {"module": "iam", "func": "IAM_Groups"},
     "IAMInstanceProfile": {"module": "joker", "func": ("iam", "InstanceProfile")},
     "IAMManagedPolicy": {"module": "joker", "func": ("iam", "ManagedPolicy")},
-    "IAMPolicy": {"module": "joker", "func": ("iam", "PolicyType"), "dep": ["S3Bucket"]},
+    "IAMPolicy": {
+        "module": "joker",
+        "func": ("iam", "PolicyType"),
+        "dep": ["S3Bucket"],
+    },
     "IAMRole": {
         "module": "joker",
         "func": ("iam", "Role"),

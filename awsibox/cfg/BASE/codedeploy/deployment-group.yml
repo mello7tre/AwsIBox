@@ -1,42 +1,44 @@
-Base: &base
-  IBOX_ENABLED: True
-  IBOX_TITLE: 'DeploymentGroup{IBOX_RESNAME}'
-  IBOX_CONDITION:
-    - DeploymentGroup: And(
-        Condition(IBOX_RESNAME),
-        get_condition("", "equals", "yes", "DeploymentGroup"))
-    - DeployRevision:
-        Equals(Ref("UpdateMode"), "CodeDeploy")
-  Condition: DeploymentGroup
-  ApplicationName: get_endvalue(f"{IBOX_RESNAME}RepoName")
-  Ec2TagFilters:
-    - IBOX_IF:
-      - DeployRevision
-      - IBOX_IFVALUE
-      - Ref('AWS::NoValue')
-    - EnvStackName:
-        Key: EnvStackName
-        Type: KEY_AND_VALUE
-        Value: Ref("AWS::StackName")
-  Deployment:
-    IBOX_IF:
-      - DeployRevision
-      - IBOX_IFVALUE
-      - Ref('AWS::NoValue')
-    Revision:
-      RevisionType: S3
-      S3Location:
-        Bucket: Sub(cfg.BucketNameAppRepository)
-        BundleType: tgz
-        Key: get_subvalue("${1M}/${1M}-${%s}.tar.gz" % f"EnvApp{IBOX_INDEXNAME}Version", f"{IBOX_RESNAME}RepoName")
-  DeploymentGroupName: Sub("${AWS::StackName}.${EnvRole}")
-  ServiceRoleArn: get_expvalue("RoleCodeDeploy", "")
-
 global:
   Parameter:
     - UpdateMode:
         AllowedValues: ['none', 'Replace', 'Rolling', 'CodeDeploy']
-  Apps:
-    - IBOX_BASE: *base
-  CodeDeploy: True
-  DeploymentGroup: 'yes'
+  CodeDeployDeploymentGroup:
+    - IBOX_BASE:
+        IBOX_ENABLED: True
+        IBOX_CONDITION:
+          - DeployRevision:
+              Equals(Ref("UpdateMode"), "CodeDeploy")
+        Ec2TagFilters:
+          - IBOX_IF:
+            - DeployRevision
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
+          - EnvStackName:
+              Key: EnvStackName
+              Type: KEY_AND_VALUE
+              Value: Ref("AWS::StackName")
+        Deployment:
+          IBOX_IF:
+            - DeployRevision
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
+          Revision:
+            RevisionType: S3
+            S3Location:
+              Bucket: Sub(cfg.BucketNameAppRepository)
+              BundleType: tgz
+              Key: Join('', [
+                  get_endvalue(f"{IBOX_RESNAME}ApplicationName"), "/", get_endvalue(f"{IBOX_RESNAME}ApplicationName"), "-",
+                  Sub(getattr(cfg, f'{IBOX_CURNAME}Suffix')),
+                ])
+        DeploymentGroupName: get_subvalue("${AWS::StackName}.${EnvRole}-${1M}", f"{IBOX_RESNAME}ApplicationName")
+        ServiceRoleArn: get_expvalue("RoleCodeDeploy", "")
+  - Test01:
+      IBOX_ENABLED: False
+      ApplicationName: "name.of.a.git.repo"
+      Deployment:
+        Revision:
+          S3Location:
+            # equals to:
+            # Key: Sub("name.of.a.git.repo/name.of.a.git.repo-${EnvApp1Version}.tar.gz")
+            KeySuffix: Sub("${EnvApp1Version}.tar.gz")

@@ -81,62 +81,7 @@ def AS_ScalingPolicies(key):
 
 
 def AS_LaunchTemplate():
-    IBoxEnvApp = []
     Tags_List = []
-
-    for n in cfg.Apps:
-        name = f"Apps{n}"  # Ex. Apps1
-        envname = f"EnvApp{n}Version"  # Ex EnvApp1Version
-        reponame = f"{name}RepoName"  # Ex Apps1RepoName
-
-        # parameters
-        p_EnvAppVersion = Parameter(
-            envname,
-            Description=f"Application {n} version",
-            AllowedPattern="^[a-zA-Z0-9-_.]*$",
-        )
-
-        p_AppsRepoName = Parameter(
-            reponame,
-            Description=f"App {n} Repo Name - empty for default based on env/role",
-            AllowedPattern="^[a-zA-Z0-9-_.]*$",
-        )
-
-        add_obj(
-            [
-                p_EnvAppVersion,
-                p_AppsRepoName,
-            ]
-        )
-
-        # conditions
-        add_obj(
-            {
-                name: And(
-                    Not(Equals(Ref(envname), "")),
-                    Not(get_condition("", "equals", "None", reponame)),
-                )
-            }
-        )
-
-        IBoxEnvApp.extend(
-            [
-                f"export EnvApp{n}Version=",
-                Ref(envname),
-                "\n",
-                f"export EnvRepo{n}Name=",
-                get_endvalue(reponame),
-                "\n",
-            ]
-        )
-
-        Tags_List.append(asg.Tag(envname, Ref(envname), True))
-
-        # outputs
-        Output_app = Output(envname, Value=Ref(envname))
-        Output_repo = Output(reponame, Value=get_endvalue(reponame))
-
-        add_obj([Output_app, Output_repo])
 
     # Resources
     R_LaunchTemplate = ec2.LaunchTemplate(
