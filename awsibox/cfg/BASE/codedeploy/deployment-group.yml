@@ -2,12 +2,11 @@ global:
   Parameter:
     - UpdateMode:
         AllowedValues: ['none', 'Replace', 'Rolling', 'CodeDeploy']
+  Condition:
+    - DeployRevision:
+        Equals(Ref("UpdateMode"), "CodeDeploy")
   CodeDeployDeploymentGroup:
     - IBOX_BASE:
-        IBOX_ENABLED: True
-        IBOX_CONDITION:
-          - DeployRevision:
-              Equals(Ref("UpdateMode"), "CodeDeploy")
         Ec2TagFilters:
           - IBOX_IF:
             - DeployRevision
