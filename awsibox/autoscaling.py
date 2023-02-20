@@ -17,69 +17,6 @@ from .shared import (
 )
 
 
-def AS_ScalingPolicies(key):
-    Out_String = []
-    Out_Map = {}
-    for n, v in getattr(cfg, key).items():
-        if not v["IBOX_ENABLED"]:
-            continue
-
-        resname = f"{key}{n}"
-
-        # resources
-        if key == "AutoScalingScalingPolicy":
-            r_Policy = asg.ScalingPolicy(resname)
-        else:
-            r_Policy = aas.ScalingPolicy(resname)
-
-        auto_get_props(r_Policy)
-        add_obj(r_Policy)
-
-        # for tracking create output
-        if v["PolicyType"] == "TargetTrackingScaling":
-            # Autoscaling
-            if "TargetTrackingConfiguration" in v:
-                TargetTrackingConfigurationName = "TargetTrackingConfiguration"
-            # Application Autoscaling
-            elif "TargetTrackingScalingPolicyConfiguration" in v:
-                TargetTrackingConfigurationName = (
-                    "TargetTrackingScalingPolicyConfiguration"
-                )
-
-            basename = f"{resname}{TargetTrackingConfigurationName}"
-
-            # outputs
-            if v["Type"] == "Cpu" or (
-                v["Type"] == "Custom"
-                and v[TargetTrackingConfigurationName]["CustomizedMetricSpecification"][
-                    "MetricName"
-                ]
-                == "CPUUtilization"
-            ):
-                # Use Cpu Metric
-                Out_String.append("Cpu${Statistic}:${Cpu}")
-
-                if v["Type"] == "Custom":
-                    statistic = get_endvalue(
-                        f"{basename}" "CustomizedMetricSpecificationStatistic"
-                    )
-                else:
-                    statistic = ""
-
-                Out_Map.update(
-                    {
-                        "Statistic": statistic,
-                        "Cpu": get_endvalue(f"{basename}TargetValue"),
-                    }
-                )
-
-    if Out_String:
-        # Outputs
-        O_Policy = Output(key, Value=Sub(",".join(Out_String), **Out_Map))
-
-        add_obj(O_Policy)
-
-
 def AS_LaunchTemplate():
     Tags_List = []
 

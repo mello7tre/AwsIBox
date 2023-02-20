@@ -294,8 +294,8 @@ CFG_TO_FUNC = {
         "func": ("applicationautoscaling", "ScalableTarget"),
     },
     "ApplicationAutoScalingScalingPolicy": {
-        "module": "autoscaling",
-        "func": "AS_ScalingPolicies",
+        "module": "joker",
+        "func": ("applicationautoscaling", "ScalingPolicy"),
     },
     "AutoScalingLifecycleHook": {
         "module": "joker",
@@ -306,7 +306,10 @@ CFG_TO_FUNC = {
         "func": "AS_Autoscaling",
         "dep": ["SecurityGroups"],
     },
-    "AutoScalingScalingPolicy": {"module": "autoscaling", "func": "AS_ScalingPolicies"},
+    "AutoScalingScalingPolicy": {
+        "module": "joker",
+        "func": ("autoscaling", "ScalingPolicy"),
+    },
     "AutoScalingScheduledAction": {
         "module": "joker",
         "func": ("autoscaling", "ScheduledAction"),
