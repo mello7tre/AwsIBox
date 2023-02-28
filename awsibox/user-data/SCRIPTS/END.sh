@@ -29,5 +29,5 @@ fi
 if [ "$(type -t FINAL_EXT)" = "function" ];then
   FINAL_EXT
 fi
-# Uncomment to avoid re-running user-data if instance reboot
+# Uncomment to re-execute user-data if instance reboot
 # rm /var/lib/cloud/instance/sem/config_scripts_user
