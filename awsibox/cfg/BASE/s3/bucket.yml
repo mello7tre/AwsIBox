@@ -58,7 +58,7 @@ global:
           IBOX_OUTPUT:
             - _:
                 Condition: None
-                Export: Export(IBOX_RESNAME)
+                Export: Export(IBOX_TITLE)
                 Value: >-
                   If(f"{IBOX_RESNAME}OutputValueRegion",
                      Sub("${Region}-%s" % IBOX_REMAPNAME.replace("${AWS::Region}-", "", 1),
