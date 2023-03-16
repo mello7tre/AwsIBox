@@ -67,7 +67,7 @@ global:
             - '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
             - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2'
             - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-arm64-gp2'
-            - '/aws/service/ami-amazon-linux-latest/al2022-ami-minimal-kernel-default-x86_64'
+            - '/aws/service/ami-amazon-linux-latest/al2023-ami-minimal-kernel-default-x86_64'
           Type: 'AWS::SSM::Parameter::Value<String>'
           CONDITION: get_condition('', 'equals', 'latest', f'{IBOX_RESNAME}ImageId')
           Condition: IBOX_RESNAME.ImageIdLatest
