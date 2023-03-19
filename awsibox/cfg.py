@@ -318,6 +318,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("certificatemanager", "Certificate"),
     },
+    "CloudFormationCustomResource": {
+        "module": "joker",
+        "func": ("cloudformation", "CustomResource"),
+    },
     "CloudFrontCachePolicy": {"module": "joker", "func": ("cloudfront", "CachePolicy")},
     "CloudFrontDistribution": {
         "module": "cloudfront",

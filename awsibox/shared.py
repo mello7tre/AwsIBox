@@ -1054,10 +1054,10 @@ def auto_get_props(
                 # First process IBOX_AUTO_PO and IBOX_PCO keys
                 _process_ibox_auto_pco_key(propname)
                 value = eval(key[ibox_code])
-            elif (
-                propname in key
-                and propname in props
-                or (propname in key and ibox_custom_obj in key)
+            elif propname in key and (
+                propname in props
+                or ibox_custom_obj in key
+                or res_obj_type == "AWS::CloudFormation::CustomResource"
             ):
                 # there is match between obj prop and a dict key or there is a custom obj
                 key_value = key[propname]
