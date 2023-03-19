@@ -96,20 +96,3 @@ def CFM_CustomResourceLightHouse(key):
     )
 
     add_obj(R_LightHouse)
-
-
-def CFM_CustomResourceFargateSpot(key):
-    resname = "CloudFormationCustomResourceFargateSpot"
-    R_FargateSpot = cfm.CustomResource(
-        resname,
-        Condition="FargateSpot",
-        DependsOn="ServiceSpot",
-        ServiceToken=get_expvalue("LambdaCCRFargateSpot"),
-        ServiceArn=Ref("ServiceSpot"),
-        ServiceBase=GetAtt("Service", "Name"),
-        ServiceSpot=GetAtt("ServiceSpot", "Name"),
-        Cluster=get_expvalue("Cluster", "ClusterStack"),
-        ScalingPolicy=Ref("ApplicationAutoScalingScalingPolicyCpu"),
-    )
-
-    add_obj(R_FargateSpot)

@@ -565,10 +565,6 @@ CFG_TO_FUNC = {
         "func": ("wafv2", "WebACL"),
     },
     # CloudformationCustomResource begin here
-    "CCRFargateSpot": {
-        "module": "cloudformation",
-        "func": "CFM_CustomResourceFargateSpot",
-    },
     "CCRLightHouse": {
         "module": "cloudformation",
         "func": "CFM_CustomResourceLightHouse",

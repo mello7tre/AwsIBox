@@ -21,8 +21,16 @@ global:
             get_subvalue('service/${1E}/${ServiceSpot.Name}', 'Cluster', 'ClusterStack'),
             get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
           )
-  FargateSpot: 'no'
-  CCRFargateSpot: True
+  CloudFormationCustomResource:
+    - FargateSpot:
+        Condition: FargateSpot
+        DependsOn: ServiceSpot
+        ServiceToken: get_expvalue("LambdaCCRFargateSpot")
+        ServiceArn: Ref("ServiceSpot")
+        ServiceBase: GetAtt("Service", "Name")
+        ServiceSpot: GetAtt("ServiceSpot", "Name")
+        Cluster: get_expvalue("Cluster", "ClusterStack")
+        ScalingPolicy: Ref("ApplicationAutoScalingScalingPolicyCpu")
   ECSService:
     - Spot:
         IBOX_ENABLED: True
@@ -32,3 +40,4 @@ global:
           - ServiceBase:
               Key: IBOXFARGATESPOTServiceBase
               Value: GetAtt('Service', 'Name')
+  FargateSpot: 'no'
