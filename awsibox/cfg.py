@@ -564,11 +564,6 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("wafv2", "WebACL"),
     },
-    # CloudformationCustomResource begin here
-    "CCRLightHouse": {
-        "module": "cloudformation",
-        "func": "CFM_CustomResourceLightHouse",
-    },
     # ReplicateRegions need to be the last one
     "CCRReplicateRegions": {
         "module": "cloudformation",

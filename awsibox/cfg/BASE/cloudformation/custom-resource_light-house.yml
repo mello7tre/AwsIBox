@@ -1,0 +1,16 @@
+global:
+  Parameter:
+    - CCRLightHouse:
+        Description: Enable CustomResource for LightHouse - empty for mapped value
+        AllowedValues: ["", "yes", "no"]
+  Condition:
+    - CloudFormationCustomResourceLightHouse:
+        get_condition("", "equals", "yes", "CCRLightHouse")
+  CloudFormationCustomResource:
+    - LightHouse:
+        Condition: CloudFormationCustomResourceLightHouse
+        DependsOn: Service
+        ServiceToken: get_expvalue("LambdaCCRLightHouse")
+        EnvRole: Ref("EnvRole")
+        EnvApp1Version: Ref("EnvApp1Version")
+        RepoName: getattr(cfg, "ContainerDefinitions1ImageSuffix").split(":")[0]

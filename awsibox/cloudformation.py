@@ -66,33 +66,3 @@ def CFM_CustomResourceReplicator(key):
         setattr(R_Replicator, p, value)
 
     add_obj(R_Replicator)
-
-
-def CFM_CustomResourceLightHouse(key):
-    resname = "CloudFormationCustomResourceLightHouse"
-    # Parameters
-    P_LightHouse = Parameter(
-        "CCRLightHouse",
-        Description="Enable CustomResource for LightHouse - " "empty for mapped value",
-        AllowedValues=["", "yes", "no"],
-    )
-
-    add_obj(P_LightHouse)
-
-    # Conditions
-    C_LightHouse = get_condition(resname, "equals", "yes", "CCRLightHouse")
-
-    add_obj(C_LightHouse)
-
-    # Resources
-    R_LightHouse = cfm.CustomResource(
-        resname,
-        Condition=resname,
-        DependsOn="Service",
-        ServiceToken=get_expvalue("LambdaCCRLightHouse"),
-        EnvRole=Ref("EnvRole"),
-        EnvApp1Version=Ref("EnvApp1Version"),
-        RepoName=getattr(cfg, "ContainerDefinitions1ImageSuffix").split(":")[0],
-    )
-
-    add_obj(R_LightHouse)
