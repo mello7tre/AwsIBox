@@ -18,17 +18,17 @@ global:
     - ECSService:
         ResourceId:
           If('FargateSpot',
-            get_subvalue('service/${1E}/${ServiceSpot.Name}', 'Cluster', 'ClusterStack'),
+            get_subvalue('service/${1E}/${ECSServiceSpot.Name}', 'Cluster', 'ClusterStack'),
             get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
           )
   CloudFormationCustomResource:
     - FargateSpot:
         Condition: FargateSpot
-        DependsOn: ServiceSpot
+        DependsOn: ECSServiceSpot
         ServiceToken: get_expvalue("LambdaCCRFargateSpot")
-        ServiceArn: Ref("ServiceSpot")
+        ServiceArn: Ref("ECSServiceSpot")
         ServiceBase: GetAtt("Service", "Name")
-        ServiceSpot: GetAtt("ServiceSpot", "Name")
+        ServiceSpot: GetAtt("ECSServiceSpot", "Name")
         Cluster: get_expvalue("Cluster", "ClusterStack")
         ScalingPolicy: Ref("ApplicationAutoScalingScalingPolicyCpu")
   ECSService:
