@@ -19,7 +19,7 @@ global:
         Default: dev
     - EnvRole:
         Description: 'Service Role'
-        AllowedPattern: '^[a-zA-Z0-9-_.]*$'
+        AllowedPattern: '^[a-zA-Z0-9-_.]+$'
     - EnvStackVersion:
         Description: 'Stack version'
         Default: '1'
