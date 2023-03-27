@@ -5,7 +5,7 @@ global:
           - EnvApp.IBOX_INDEXNAME.Version:
               IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_RESNAME}ImageSuffix")
               Description: str(f'EnvApp{IBOX_INDEXNAME}Version')
-              Default: 1
+              Default: "1"
               AllowedPattern: '^[a-zA-Z0-9-_.]+$'
           - _Cpu:
               Description: 'Cpu Share - empty for mapped value'
