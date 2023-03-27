@@ -34,6 +34,7 @@ global:
               )
         IBOX_OUTPUT:
           - EnvApp.IBOX_INDEXNAME.Version:
+              IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_RESNAME}ImageSuffix")
               Value: Ref(f'EnvApp{IBOX_INDEXNAME}Version')
           - _Command:
               Condition: IBOX_RESNAME.Command
