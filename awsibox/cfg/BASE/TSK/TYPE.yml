@@ -17,6 +17,7 @@ global:
         LaunchType.IBOX_PCO:
           IBOX_PARAMETER:
             - _LaunchType:
+                Description: Empty for mapped value
                 AllowedValues: ['', 'EC2', 'FARGATE']
           IBOX_CONDITION:
             - ECSTasksLaunchOnFargate:
