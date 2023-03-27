@@ -1008,6 +1008,11 @@ def auto_get_props(
             list(key.items()) + list(dict.fromkeys(props, None).items())
         ).keys():
             if key.get(propname) == "IBOX_SKIP":
+                # remove existing property if exist
+                try:
+                    del obj.properties[propname]
+                except Exception:
+                    pass
                 continue
 
             # IBOX KEY TO LOOK FOR
