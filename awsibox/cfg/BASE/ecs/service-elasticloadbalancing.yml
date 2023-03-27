@@ -130,6 +130,8 @@ global:
     - HttpInternalRules1:
         IBOX_ENABLED: True
         Condition: LoadBalancerApplicationInternal
+    - HttpExternalRules1:
+        Condition: LoadBalancerApplicationExternal
   ElasticLoadBalancingV2TargetGroup:
     - ECSLoadBalancerApplicationExternal:
         IBOX_ENABLED: True
