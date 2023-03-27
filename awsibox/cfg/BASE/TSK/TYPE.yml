@@ -24,7 +24,7 @@ global:
                 get_condition('', 'equals', 'FARGATE', 'EventsRuleECSRunTaskLaunchType')
           IBOX_OUTPUT:
             - _LaunchType:
-                Value: Ref(IBOX_CURNAME)
+                Value: get_endvalue(IBOX_CURNAME)
         LaunchType: FARGATE
         State: 'ENABLED'
         Targets:
