@@ -1,13 +1,13 @@
 BaseExternal: &base_external
   IBOX_TITLE: RecordSetExternal
   IBOX_OUTPUT:
-    - RecordSetExternal:
+    - Route53RecordSetExternal:
         Value: Ref("RecordSetExternal")
 
 BaseInternal: &base_internal
   IBOX_TITLE: RecordSetInternal
   IBOX_OUTPUT:
-    - RecordSetInternal:
+    - Route53RecordSetInternal:
         Value: Ref("RecordSetInternal")
 
 ZoneExternal: &zone_external
