@@ -13,6 +13,10 @@ global:
           Value: ${EnableExecuteCommand}
         EnableExecuteCommand: false
         HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancer else Ref('AWS::NoValue')")
+        LaunchType.IBOX_PCO:
+          IBOX_CONDITION:
+            - ECSTasksLaunchOnFargate:
+                get_condition('', 'equals', 'FARGATE', IBOX_CURNAME)
         NetworkConfiguration:
           IBOX_IF:
             - ECSTaskDefinitionBaseNetworkModeAwsVpc

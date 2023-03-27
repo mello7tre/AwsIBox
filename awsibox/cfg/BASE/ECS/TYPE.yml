@@ -59,10 +59,6 @@ global:
         LaunchType.IBOX_AUTO_PO:
           AllowedValues: ['', 'EC2', 'FARGATE']
           Value: get_endvalue(IBOX_CURNAME)
-        LaunchType.IBOX_PCO:
-          IBOX_CONDITION:
-            - ECSTasksLaunchOnFargate:
-                get_condition('', 'equals', 'FARGATE', IBOX_CURNAME)
         LaunchType.IBOX_CODE: If('ECSTasksLaunchOnFargate', get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
         LaunchType: EC2
 
