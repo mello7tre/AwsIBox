@@ -135,11 +135,11 @@ global:
   ElasticLoadBalancingV2TargetGroup:
     - ECSLoadBalancerApplicationExternal:
         IBOX_ENABLED: True
-        IBOX_RESNAME: TargetGroupExternal
+        IBOX_TITLE: TargetGroupExternal
         Condition: LoadBalancerApplicationExternal
     - ECSLoadBalancerApplicationInternal:
         IBOX_ENABLED: True
-        IBOX_RESNAME: TargetGroupInternal
+        IBOX_TITLE: TargetGroupInternal
         Condition: LoadBalancerApplicationInternal
   LoadBalancer: ''
   LoadBalancerType: Application
