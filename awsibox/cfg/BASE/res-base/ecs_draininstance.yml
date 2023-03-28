@@ -54,7 +54,6 @@ global:
         Environment:
           Variables:
             - SQSQueue: Ref("SQSQueueECSDrainInstance")
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 29
   LambdaEventSourceMapping:

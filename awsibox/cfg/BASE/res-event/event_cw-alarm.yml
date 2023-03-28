@@ -39,7 +39,6 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         Layers:
           - LambdaLayerVersionPython37SSM
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 30
         Environment:
@@ -53,7 +52,6 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         Layers:
           - LambdaLayerVersionPython37SSM
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 30
   IAMPolicy:

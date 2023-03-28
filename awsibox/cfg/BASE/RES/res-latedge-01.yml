@@ -19,7 +19,6 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         AtEdge: True
         Description: 'Lambda@Edge add Headers'
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 10
         Version: True

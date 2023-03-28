@@ -58,7 +58,6 @@ global:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Start and Stop EC2 Tagged Instances'
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 10
         Environment:
@@ -68,14 +67,12 @@ global:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Drain and stop Tasks from ECS container spot instances scheduled for termination'
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 300
     - ServiceDiscovery:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'ServiceDiscovery'
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 30
         Environment:
@@ -87,7 +84,6 @@ global:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'R53 Record InstanceId Automatic Creation'
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 30
         Environment:

@@ -43,7 +43,6 @@ global:
         Description: 'Custom Resource for executing lighthouse-task'
         Layers:
           - LambdaLayerVersionPython39CRHelper
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 300
         Environment:

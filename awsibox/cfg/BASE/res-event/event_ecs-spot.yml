@@ -95,7 +95,6 @@ global:
           S3Key: ibox-tools/ecs-events/master-444dd76.zip
         Layers:
           - LambdaLayerVersionPython37SSM
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 30
         Environment:

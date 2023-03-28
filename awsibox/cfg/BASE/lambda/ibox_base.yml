@@ -35,6 +35,7 @@ global:
           Value: get_endvalue(IBOX_RESNAME)
         LogGroupCreate: "yes"
         Handler: "index.lambda_handler"
+        MemorySize: 128
         Role: GetAtt(f"RoleLambda{IBOX_INDEXNAME}", "Arn")
         FunctionName: Sub("${AWS::StackName}-${EnvRole}-%s" % IBOX_INDEXNAME)
         Environment:

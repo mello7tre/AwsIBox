@@ -33,7 +33,6 @@ global:
         Layers:
           - LambdaLayerVersionPython37SSM
           - LambdaLayerVersionPython39SlackClient
-        MemorySize: 128
         Runtime: python3.9
         Timeout: 30
         Environment:
