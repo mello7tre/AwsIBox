@@ -31,7 +31,8 @@ Backend5XX: &backend5xx
 ASGSpot: &asgspot
   Condition: SpotASG
   AlarmActions: [Ref('SNSTopicASGSpot')]
-  Period: Ref('AWS::NoValue')
+  Dimensions: IBOX_SKIP
+  Period: IBOX_SKIP
   Metrics: &asgspotmetrics
     - Expression:
     - MinOnDemand:
@@ -145,7 +146,6 @@ global:
         Condition: IBOX_RESNAME
         ActionsEnabled: true
         Period: 60
-        Dimensions: {}
     - EC2CPUHigh:
         <<: [*cpu, *ec2]
         AlarmActions: [Ref('AutoScalingScalingPolicyUp')]
