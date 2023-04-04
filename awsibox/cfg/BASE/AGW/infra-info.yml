@@ -73,5 +73,6 @@ global:
           S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: 'ibox-tools/infra-info/infra-info-01.zip'
         Description: 'Infrastracture Informations'
+        MemorySize: 512
         Runtime: python3.9
         Timeout: 60

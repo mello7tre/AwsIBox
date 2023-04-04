@@ -73,24 +73,26 @@ global:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'ServiceDiscovery'
-        Runtime: python3.9
-        Timeout: 30
         Environment:
           Variables:
             - NameSpaceID: get_expvalue('ServiceDiscoveryPublicDnsNamespaceId')
             - PublicDnsNamespaceName: Sub(f'find.{cfg.HostedZoneNameEnv}')
             - HostedZoneId: get_expvalue('HostedZoneIdEnv')
+        MemorySize: 256
+        Runtime: python3.9
+        Timeout: 30
     - R53RecordInstanceId:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'R53 Record InstanceId Automatic Creation'
-        Runtime: python3.9
-        Timeout: 30
         Environment:
           Variables:
             - HostedZoneName: get_endvalue('HostedZoneNamePrivate')
             - HostedZoneId: get_expvalue('HostedZoneIdPrivate')
             - Topic: Ref('SNSTopicASGNotificationR53')
+        MemorySize: 256
+        Runtime: python3.9
+        Timeout: 30
   LambdaPermission:
     - EC2StartStopTaggedEventsRuleEC2StartTagged:
         FunctionName: GetAtt('LambdaEC2StartStopTagged', 'Arn')
