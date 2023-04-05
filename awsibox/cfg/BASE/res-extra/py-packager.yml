@@ -5,6 +5,9 @@ global:
           - arm64
         Code:
           ZipFile: str(IBOX_INDEXNAME)
+        Environment:
+          Variables:
+            - BUCKET: Sub(cfg.BucketNameAppRepository)
         Description: 'Lambda to create packages for Arm based LambdaLayers'
         Runtime: python3.9
         Timeout: 120
