@@ -1,0 +1,87 @@
+# vim: ft=python
+import sys
+import os
+import boto3
+import logging
+import zipfile
+import subprocess
+import pip
+
+logger = logging.getLogger(__name__)
+logging_handler = logging.StreamHandler()
+logger.addHandler(logging_handler)
+logger.setLevel(logging.INFO)
+logger.propagate = False
+
+DIST_PY = "/var/task/dist/python"
+PY_VERSION = "%s%s" % (sys.version_info[0], sys.version_info[1])
+S3_CLIENT = boto3.client("s3")
+BUCKET = os.environ.get("BUCKET", "eu-west-1-it-casa-app-repository")
+
+
+def install_module(module):
+    subprocess.check_call(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "-I",
+            "-q",
+            "--target",
+            DIST_PY,
+            "--no-cache-dir",
+            "--disable-pip-version-check",
+            module,
+        ]
+    )
+
+    sys.path.insert(0, DIST_PY)
+    from pkg_resources import get_distribution
+
+    mod_version = get_distribution(module).version
+    return f"python{PY_VERSION}-arm64-{module}-{mod_version}.zip"
+
+
+def remove_boto():
+    sys.path.insert(0, "/opt/python")
+    from pip_autoremove import list_dead
+
+    to_remove_list = list_dead(["botocore", "boto3"])
+    to_remove_mod = []
+    for mod in to_remove_list:
+        if mod.location == DIST_PY:
+            to_remove_mod.append(mod.project_name)
+    if to_remove_mod:
+        logger.info(f"Removing: {to_remove_mod}")
+        pip._internal.main(["uninstall", "-y"] + to_remove_mod)
+
+
+def create_zip(zip_name):
+    folder = "dist"
+    with zipfile.ZipFile(zip_name, "w") as outzip:
+        for subdir, dirs, files in os.walk(folder):
+            for file in files:
+                # Read file
+                srcpath = os.path.join(subdir, file)
+                dstpath_in_zip = os.path.relpath(srcpath, start=folder)
+                with open(srcpath, "rb") as infile:
+                    # Write to zip
+                    outzip.writestr(dstpath_in_zip, infile.read())
+    return zip_name
+
+
+def upload_to_s3(s3_key):
+    resp = S3_CLIENT.upload_file(s3_key, BUCKET, f"lambda-layers/{s3_key}")
+    logger.info(resp)
+
+
+def lambda_handler(events, context):
+    module = events["module"]
+    s3_key = install_module(module)
+    remove_boto()
+    create_zip(s3_key)
+    upload_to_s3(s3_key)
+
+
+lambda_handler({"module": "iboxstacksops"}, {})
