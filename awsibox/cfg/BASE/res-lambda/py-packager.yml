@@ -23,5 +23,5 @@ global:
                   - 's3:Put*'
                 Effect: Allow
                 Resource:
-                  - Sub('arn:aws:s3:::%s' % BucketNameAppRepository)
-                  - Sub('arn:aws:s3:::%s/lambda-layers/python*' % BucketNameAppRepository)
+                  - Sub('arn:aws:s3:::%s' % cfg.BucketNameAppRepository)
+                  - Sub('arn:aws:s3:::%s/lambda-layers/python*' % cfg.BucketNameAppRepository)
