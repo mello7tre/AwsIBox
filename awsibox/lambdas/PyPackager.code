@@ -13,7 +13,8 @@ logger.addHandler(logging_handler)
 logger.setLevel(logging.INFO)
 logger.propagate = False
 
-DIST_PY = "/var/task/dist/python"
+WORK_DIR = "/tmp"
+DIST_PY = f"{WORK_DIR}/dist/python"
 PY_VERSION = "%s%s" % (sys.version_info[0], sys.version_info[1])
 S3_CLIENT = boto3.client("s3")
 BUCKET = os.environ.get("BUCKET", "eu-west-1-it-casa-app-repository")
@@ -72,7 +73,7 @@ def get_s3key_and_module_to_remove(module):
 
 
 def create_zip(zip_name):
-    folder = "dist"
+    folder = f"{WORK_DIR}/dist"
     with zipfile.ZipFile(zip_name, "w") as outzip:
         for subdir, dirs, files in os.walk(folder):
             for file in files:
@@ -86,7 +87,9 @@ def create_zip(zip_name):
 
 
 def upload_to_s3(s3_key):
-    resp = S3_CLIENT.upload_file(s3_key, BUCKET, f"lambda-layers/{s3_key}")
+    resp = S3_CLIENT.upload_file(
+        f"{WORK_DIR}/{s3_key}", BUCKET, f"lambda-layers/{s3_key}"
+    )
     logger.info(resp)
 
 
@@ -95,9 +98,9 @@ def lambda_handler(events, context):
     install_module(module)
     s3_key, to_remove_mod = get_s3key_and_module_to_remove(module)
     remove_boto(to_remove_mod)
-    create_zip(s3_key)
+    create_zip(f"{WORK_DIR}/{s3_key}")
     upload_to_s3(s3_key)
     logger.info(s3_key)
 
 
-#lambda_handler({"module": "iboxstacksops"}, {})
+# lambda_handler({"module": "iboxstacksops"}, {})
