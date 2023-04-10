@@ -89,6 +89,8 @@ global:
               Id: TargetFunction-01
   Lambda:
     - ECSEventsSpot:
+        Architectures:
+          - arm64
         Description: 'ECSEventsSpot'
         Code:
           S3Bucket: Sub(cfg.BucketNameAppRepository)

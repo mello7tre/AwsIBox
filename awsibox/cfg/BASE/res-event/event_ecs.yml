@@ -27,12 +27,14 @@ global:
               Id: TargetFunction-01
   Lambda:
     - ECSEventTaskStateChange:
+        Architectures:
+          - arm64
         Description: 'ECSEventTaskStateChange'
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Layers:
           - LambdaLayerVersionPython37SSM
-          - LambdaLayerVersionPython39SlackClient
+          - LambdaLayerVersionPythonArm64SlackClient
         Runtime: python3.9
         Timeout: 30
         Environment:
