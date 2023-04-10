@@ -46,15 +46,7 @@ def Joker(key, module, cls):
             # #reset obj title, if changed by IBOX_TITLE key
             # obj.title = resname
 
-        # populate obj
-        auto_get_props(
-            obj,
-            mapname=mapname,
-            indexname=n,
-            linked_obj_name=linked_obj_name,
-            linked_obj_index=linked_obj_index,
-        )
-
+        # autocreate condition
         if v.get("Create"):
             add_obj(
                 Parameter(
@@ -74,5 +66,14 @@ def Joker(key, module, cls):
                 )
                 if not hasattr(obj, "Condition"):
                     obj.Condition = resname
+
+        # populate obj
+        auto_get_props(
+            obj,
+            mapname=mapname,
+            indexname=n,
+            linked_obj_name=linked_obj_name,
+            linked_obj_index=linked_obj_index,
+        )
 
         add_obj(obj)
