@@ -11,6 +11,8 @@ global:
              Id: 'TargetFunction-01'
   Lambda:
     - ECSClusterAutoscale:
+        Architectures:
+          - arm64
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Export: True

@@ -1,6 +1,8 @@
 global:
   Lambda:
     - CCRFargateSpot:
+        Architectures:
+          - arm64
         Export: True
         Code:
           ZipFile: str(IBOX_INDEXNAME)

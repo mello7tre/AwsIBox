@@ -55,6 +55,8 @@ global:
               Id: 'TargetFunction-01'
   Lambda:
     - EC2StartStopTagged:
+        Architectures:
+          - arm64
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Start and Stop EC2 Tagged Instances'
@@ -64,12 +66,16 @@ global:
           Variables:
             - TagName: 'AutoStartStop'
     - ECSDrainTasks:
+        Architectures:
+          - arm64
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Drain and stop Tasks from ECS container spot instances scheduled for termination'
         Runtime: python3.9
         Timeout: 300
     - ServiceDiscovery:
+        Architectures:
+          - arm64
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'ServiceDiscovery'
@@ -82,6 +88,8 @@ global:
         Runtime: python3.9
         Timeout: 30
     - R53RecordInstanceId:
+        Architectures:
+          - arm64
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'R53 Record InstanceId Automatic Creation'

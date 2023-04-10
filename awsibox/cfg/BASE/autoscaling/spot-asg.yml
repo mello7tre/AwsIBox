@@ -59,6 +59,8 @@ global:
                 Resource: Sub('arn:aws:autoscaling:*:*:autoScalingGroup:*:autoScalingGroupName/${AutoScalingGroup}')
   Lambda:
     - ASGSpot:
+        Architectures:
+          - arm64
         Condition: SpotASG
         Code:
           ZipFile: str(IBOX_INDEXNAME)

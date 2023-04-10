@@ -36,6 +36,8 @@ global:
         IBOX_LINKED_OBJ:
           Role:
             Conf: *policies_iamrole_lamba_ecs_runtask
+        Architectures:
+          - arm64
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Run ECS Task'
