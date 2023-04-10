@@ -1,0 +1,160 @@
+# vim: ft=python
+import logging
+from crhelper import CfnResource
+from iboxstacksops import cfg as i_cfg, commands as i_commands
+
+
+class MyCfnResource(CfnResource):
+    def _put_rule(self):
+        if self._polling_interval == 1:
+            unit = "minute"
+        else:
+            unit = "minutes"
+        response = self._events_client.put_rule(
+            Name=self._event["LogicalResourceId"] + self._rand_string(8),
+            ScheduleExpression=f"rate({self._polling_interval} {unit})",
+            State="ENABLED",
+        )
+
+        return response["RuleArn"]
+
+
+logger = logging.getLogger(__name__)
+# Initialise the helper
+helper = MyCfnResource(
+    json_logging=False,
+    log_level="DEBUG",
+    boto_level="CRITICAL",
+    polling_interval=1,
+    sleep_on_delete=30,
+)
+
+try:
+    # Init code goes here
+    is_success = True
+except Exception as e:
+    helper.init_failure(e)
+
+
+def set_cfg_stackparams(resource_properties):
+    exclude_list = [
+        "ServiceToken",
+        "EnvStackVersion",
+        "CCRReplicateRegions",
+    ]
+    for p, v in resource_properties.items():
+        if p not in exclude_list:
+            setattr(i_cfg, p, v)
+
+
+def run_stackops(regions, mode):
+    i_cfg.nochangeset = True
+    i_cfg.nowait = True
+    i_cfg.regions = regions
+    i_cfg.no_replicate_current = True
+    i_cfg.stack = [stack_name]
+    i_cfg.version = resource_properties["EnvStackVersion"]
+
+    set_cfg_stackparams(resource_properties)
+
+    # set CCRReplicateRegions to None to avoid circular replication
+    i_cfg.CCRReplicateRegions = None
+
+    if mode == "action":
+        i_cfg.command_replicate = stack_action
+    else:
+        i_cfg.fields = ["StackStatus"]
+        i_cfg.output = "bare"
+        i_cfg.command_replicate = "show"
+
+    result = i_commands.replicate()
+
+    return result
+
+
+def check_status(value):
+    if not value and stack_action == "delete":
+        status = True
+    elif not value:
+        status = None
+    elif value.endswith("FAILED") or "ROLLBACK" in value:
+        status = None
+    elif value.endswith("COMPLETE"):
+        status = True
+    else:
+        status = "wait"
+
+    return status
+
+
+def do_main(event):
+    global stack_action
+    global resource_properties
+    global regions
+    global stack_name
+    global physical_resourceid
+
+    stack_action = event["RequestType"].lower()
+    stack_name = event["StackId"].split("/")[1]
+    resource_properties = event["ResourceProperties"]
+
+    # set regions where to act
+    regions = resource_properties["CCRReplicateRegions"]
+
+    physical_resourceid = f"{stack_name}-CustomResourceStackReplicator"
+
+
+@helper.update
+@helper.create
+@helper.delete
+def do_replicate(event, context):
+    do_main(event)
+
+    # None is used to disable, remove it so that the list is empty
+    # and no action is performed
+    try:
+        regions.remove("none")
+    except Exception:
+        pass
+
+    if regions:
+        # execute action in all regions
+        try:
+            response_data = run_stackops(regions, mode="action")
+            helper.Data.update(response_data)
+        except Exception:
+            raise ValueError(response_data)
+    else:
+        # trick to avoid using polling if regions list is empty
+        helper.PhysicalResourceId = physical_resourceid
+        helper._sam_local = True
+        helper._cfn_response(event)
+
+    return physical_resourceid
+
+
+@helper.poll_create
+@helper.poll_update
+@helper.poll_delete
+def do_check(event, context):
+    do_main(event)
+
+    response_data = run_stackops(regions, mode="status")
+    helper.Data.update(response_data)
+
+    for r, v in response_data.items():
+        is_success = check_status(v)
+
+        if not is_success:
+            raise ValueError(response_data)
+        elif is_success is True:
+            regions.remove(r)
+
+    if regions:
+        return None
+    else:
+        return physical_resourceid
+
+
+def lambda_handler(event, context):
+    helper(event, context)

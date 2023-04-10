@@ -26,8 +26,7 @@ global:
     - CCRStackReplicator:
         Export: True
         Code:
-          S3Bucket: Sub(cfg.BucketNameAppRepository)
-          S3Key: 'ibox-tools/stack-replicator/stack_replicator.zip'
+          ZipFile: str(IBOX_INDEXNAME)
         Description: 'Replicate Stacks'
         Runtime: python3.9
         Timeout: 300
