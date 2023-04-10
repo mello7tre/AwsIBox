@@ -1,4 +1,6 @@
 IBoxLoader:
+  - !include
+    - lambda/layers.yml
   - !exclude
     - cloudfront/for-services.yml
 
@@ -69,10 +71,14 @@ global:
                 Resource: '*'
   Lambda:
     - InfraInfov1:
+        Architectures:
+          - arm64
         Code:
           S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: 'ibox-tools/infra-info/infra-info-01.zip'
         Description: 'Infrastracture Informations'
+        Layers:
+          - LambdaLayerVersionPythonArm64IboxStacksOps
         MemorySize: 512
         Runtime: python3.9
         Timeout: 60
