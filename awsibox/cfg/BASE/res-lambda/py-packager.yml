@@ -15,6 +15,7 @@ global:
         Timeout: 120
   IAMPolicy:
     - LambdaPyPackager:
+        Condition: LambdaPyPackager
         Roles:
           - Ref("RoleLambdaPyPackager")
         PolicyDocument:
