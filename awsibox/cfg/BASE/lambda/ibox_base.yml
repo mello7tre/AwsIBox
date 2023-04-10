@@ -59,6 +59,8 @@ global:
         IBOX_OUTPUT:
           - _:
               Value: Ref(IBOX_RESNAME)
+        # Uncomment to retain previous layerversion
+        #UpdateReplacePolicy: Retain
         Content:
           S3Key.IBOX_AUTO_PO:
             Description: str(f"S3Key Name for lambda {IBOX_INDEXNAME} Content")
