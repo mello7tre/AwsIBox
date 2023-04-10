@@ -1,6 +1,7 @@
 global:
   Lambda:
     - PyPackager:
+        Create: 'no'
         Architectures:
           - arm64
         Code:
@@ -26,3 +27,6 @@ global:
                 Resource:
                   - Sub('arn:aws:s3:::%s' % cfg.BucketNameAppRepository)
                   - Sub('arn:aws:s3:::%s/lambda-layers/python*' % cfg.BucketNameAppRepository)
+
+dev:
+  LambdaPyPackagerCreate: 'yes'
