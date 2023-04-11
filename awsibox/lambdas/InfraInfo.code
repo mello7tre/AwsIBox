@@ -1,0 +1,174 @@
+# vim: ft=python
+import logging
+import base64
+from prettytable import PrettyTable
+from iboxstacksops import cfg as i_cfg, commands as i_commands
+from iboxstacksops.aws import myboto3 as i_myboto3
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Init Clients out of lambda_handler to speed it up
+myboto3 = i_myboto3()
+myboto3.init_clients(["cloudformation", "ecs", "application-autoscaling"])
+
+CLIENT_ECS = myboto3.client("ecs")
+CLIENT_APP_AUTOSCALING = myboto3.client("application-autoscaling")
+
+
+def send_response(code, body, headers, b64=True):
+    return {
+        "isBase64Encoded": b64,
+        "statusCode": code,
+        "headers": headers,
+        "body": body,
+    }
+
+
+def show():
+    i_cfg.type = ["ec2", "ecs", "tsk", "lbd"]
+    i_cfg.output = "text"
+    i_cfg.fields = [
+        "LastUpdatedTime",
+        "StackName",
+        "EnvRole",
+        "StackType",
+        "EnvApp1Version",
+        "ContainerDefinitions1Constraints",
+        "Capacity",
+        "StackStatus",
+    ]
+
+    table = i_commands.show_table()
+
+    headers["Content-Type"] = "text/plain"
+
+    return table
+
+
+def ecs_list_services():
+    headers["Content-Type"] = "text/plain"
+    services_tdd = list_services()
+    return show_table(services_tdd)
+
+
+def process_scalable_targets(resource_id_list, tdd):
+    targets = CLIENT_APP_AUTOSCALING.describe_scalable_targets(
+        ServiceNamespace="ecs",
+        ResourceIds=resource_id_list,
+        ScalableDimension="ecs:service:DesiredCount",
+    )["ScalableTargets"]
+    for t in targets:
+        rid = t["ResourceId"]
+        tdd[rid].update(
+            {
+                "Max": t["MaxCapacity"],
+                "Min": t["MinCapacity"],
+            }
+        )
+        running_over_min = tdd[rid]["running"] - tdd[rid]["Min"]
+        running_vs_desired = tdd[rid]["running"] - tdd[rid]["desired"]
+        running = str(tdd[rid]["running"])
+        if running_over_min != 0:
+            running += f"({running_over_min})"
+        if running_vs_desired != 0:
+            running += "*" if running_vs_desired != 0 else ""
+
+        tdd[rid]["running"] = running
+
+
+def list_services():
+    services_tdd = {}
+
+    clusters = CLIENT_ECS.list_clusters()["clusterArns"]
+    resource_id_list = []
+    for c in clusters:
+        paginator_service = CLIENT_ECS.get_paginator("list_services")
+        response_iterator_service = paginator_service.paginate(
+            cluster=c,
+            PaginationConfig={
+                "PageSize": 10,
+            },
+        )
+        for s in response_iterator_service:
+            if not s["serviceArns"]:
+                continue
+            s_d = CLIENT_ECS.describe_services(
+                cluster=c,
+                services=s["serviceArns"],
+            )["services"]
+            for srv in s_d:
+                cluster_name = c.split("/")[-1]
+                ResourceId = f"service/{cluster_name}/" + srv["serviceName"]
+                deploymentConf = srv["deploymentConfiguration"]
+                services_tdd.update(
+                    {
+                        ResourceId: {
+                            "cluster": cluster_name[0:7],
+                            "stack": srv["serviceName"][0:7],
+                            "desired": srv["desiredCount"],
+                            "running": srv["runningCount"],
+                            "pending": srv["pendingCount"],
+                            "launchType": srv.get("launchType"),
+                            "role": (
+                                srv["loadBalancers"][0]["containerName"]
+                                if srv["loadBalancers"]
+                                else None
+                            ),
+                            "max%": deploymentConf["maximumPercent"],
+                            "min%": deploymentConf["minimumHealthyPercent"],
+                        }
+                    }
+                )
+                resource_id_list.append(ResourceId)
+
+        # describe_scalable_targets support only at max 50 ResourceIds
+        while resource_id_list:
+            ril = resource_id_list[0:50]
+            process_scalable_targets(ril, services_tdd)
+            del resource_id_list[0:50]
+
+    return services_tdd
+
+
+def show_table(tdd):
+    table = PrettyTable()
+    fields = [
+        "stack",
+        "role",
+        "desired",
+        "running",
+        "pending",
+        "Min",
+        "Max",
+        "launchType",
+        "max%",
+        "min%",
+        "cluster",
+    ]
+    table.field_names = fields
+    table.padding_width = 1
+    table.align["serviceName"] = "l"
+    table.align["role"] = "l"
+    for row, data in tdd.items():
+        table.add_row(["None" if i not in data else data[i] for i in fields])
+
+    return table.get_string(fields=fields)
+
+
+def lambda_handler(event, context):
+    global headers
+
+    headers = {}
+    path = event.get("path")
+
+    if path == "/infra-info/ecs":
+        outbody = ecs_list_services()
+    elif path == "/infra-info/stacks":
+        outbody = show()
+    else:
+        outbody = ""
+
+    outb64 = base64.b64encode(outbody.encode()).decode("ascii")
+
+    return send_response(200, outb64, headers)

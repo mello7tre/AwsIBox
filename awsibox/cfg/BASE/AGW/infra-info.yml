@@ -74,8 +74,7 @@ global:
         Architectures:
           - arm64
         Code:
-          S3Bucket: Sub(cfg.BucketNameAppRepository)
-          S3Key: 'ibox-tools/infra-info/infra-info-01.zip'
+          ZipFile: InfraInfo
         Description: 'Infrastracture Informations'
         Layers:
           - LambdaLayerVersionPythonArm64IboxStacksOps
