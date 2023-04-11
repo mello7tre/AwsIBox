@@ -1,0 +1,134 @@
+# vim: ft=python
+import boto3
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+CLIENT_ECS = boto3.client("ecs")
+
+
+def get_service(cluster, service):
+    try:
+        service = CLIENT_ECS.describe_services(
+            cluster=cluster, services=[service], include=["TAGS"]
+        )["services"][0]
+    except Exception as e:
+        logger.error(f"Error describing service {service}: {e}")
+        return
+
+    return service
+
+
+def change_baseservice(cluster, service_spot, started=False, steady=False):
+    if not service_spot:
+        return
+
+    service_base_name = None
+    for n in service_spot.get("tags", []):
+        if n["key"] == "IBOXFARGATESPOTServiceBase":
+            service_base_name = n["value"]
+            break
+    if not service_base_name:
+        return
+
+    service_base = get_service(cluster, service_base_name)
+
+    desired_base = service_base["desiredCount"]
+    running_base = service_base["runningCount"]
+    pending_base = service_base["pendingCount"]
+
+    desired_spot = service_spot["desiredCount"]
+    running_spot = service_spot["runningCount"]
+    pending_spot = service_spot["pendingCount"]
+
+    if steady and (len(service_base["deployments"]) > 1 or desired_base > running_base):
+        # if service spot is steady but service base is doing a deployment
+        # or if service base is updating for increasing capacity: skip running
+        return
+
+    desired_change = desired_spot - running_spot - running_base - pending_base
+
+    if desired_change == 0 or (started and desired_change > 0):
+        # When a spot task successful startup never increase desired base, even if
+        # there are previous failed pending tasks as they should be already taken in account
+        # in the previous runs.
+        return
+
+    desired = max(0, desired_base + desired_change)
+
+    if desired_base == desired:
+        return
+
+    if started:
+        event = "Spot task started"
+    elif steady:
+        event = "Spot service steady"
+    else:
+        event = "Spot task failed to start"
+
+    logger.info(
+        f"Service {service_base_name} desiredCount must be changed: {desired_change} task/s\n"
+        f"\tEvent: {event}\n"
+        f"\t\tServiceBase: {desired_base}D {running_base}R {pending_base}P\n"
+        f"\t\tServiceSpot: {desired_spot}D {running_spot}R {pending_spot}P"
+    )
+
+    response = CLIENT_ECS.update_service(
+        cluster=cluster, service=service_base_name, desiredCount=desired
+    )
+    desired_response = response["service"]["desiredCount"]
+
+    logger.info(
+        f"Service {service_base_name} desiredCount = {desired_response}"
+        f" (was {desired_base})"
+    )
+
+
+def spot_task_started(detail):
+    group = detail.get("group")
+    cluster = detail.get("clusterArn")
+    if not group or not cluster or "ServiceSpot" not in group:
+        return
+
+    service_name = group.split(":")[1]
+    service = get_service(cluster, service_name)
+    change_baseservice(cluster, service, started=True)
+
+
+def spot_task_failed_to_start(detail, resources):
+    cluster = detail.get("clusterArn")
+
+    for r in resources:
+        service_name = r.split("/")[2]
+        service = get_service(cluster, service_name)
+        change_baseservice(cluster, service)
+
+
+def spot_service_is_steady(detail, resources):
+    cluster = detail.get("clusterArn")
+
+    for r in resources:
+        service_name = r.split("/")[2]
+        service = get_service(cluster, service_name)
+        change_baseservice(cluster, service, steady=True)
+
+
+def lambda_handler(event, context):
+    detail = event["detail"]
+    eventName = detail["eventName"]
+
+    if event["detail-type"] == "ECS Service Action":
+        if eventName == "CAPACITY_PROVIDER_STEADY_STATE":
+            spot_service_is_steady(detail, event["resources"])
+        elif (
+            eventName == "SERVICE_TASK_PLACEMENT_FAILURE"
+            and detail.get("reason") == "RESOURCE:FARGATE"
+        ):
+            spot_task_failed_to_start(detail, event["resources"])
+    elif (
+        event["detail-type"] == "ECS Task State Change"
+        and detail.get("startedAt")
+        and detail.get("capacityProviderName") == "FARGATE_SPOT"
+    ):
+        spot_task_started(detail)

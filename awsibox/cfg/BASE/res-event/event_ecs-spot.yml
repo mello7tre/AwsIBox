@@ -93,8 +93,7 @@ global:
           - arm64
         Description: 'ECSEventsSpot'
         Code:
-          S3Bucket: Sub(cfg.BucketNameAppRepository)
-          S3Key: ibox-tools/ecs-events/master-444dd76.zip
+          ZipFile: str(IBOX_INDEXNAME)
         Layers:
           - LambdaLayerVersionPython37SSM
         Runtime: python3.9
