@@ -1,0 +1,208 @@
+# vim: ft=python
+import boto3
+import logging
+import json
+from datetime import datetime, timedelta
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+REASONS = ["RESOURCE:MEMORY", "RESOURCE:CPU"]
+
+CLIENT_ECS = boto3.client("ecs")
+CLIENT_CLOUDWATCH = boto3.client("cloudwatch")
+CLIENT_EVENTS = boto3.client("events")
+CLIENT_AUTOSCALING = boto3.client("autoscaling")
+CLIENT_LAMBDA = boto3.client("lambda")
+
+
+def getAsg(container, cluster):
+    response = CLIENT_ECS.describe_container_instances(
+        cluster=cluster, containerInstances=[container]
+    )
+
+    if response["containerInstances"]:
+        ec2InstanceId = response["containerInstances"][0]["ec2InstanceId"]
+
+        response = CLIENT_AUTOSCALING.describe_auto_scaling_instances(
+            InstanceIds=[ec2InstanceId]
+        )
+
+        if response["AutoScalingInstances"]:
+            return response["AutoScalingInstances"][0]["AutoScalingGroupName"]
+
+
+def put_rule(expression, eventName):
+    response = CLIENT_EVENTS.put_rule(
+        Name=eventName, ScheduleExpression=expression, State="ENABLED"
+    )
+
+    return response["RuleArn"]
+
+
+def add_permission(ruleArn, eventName):
+    CLIENT_LAMBDA.add_permission(
+        FunctionName=function_name,
+        StatementId=eventName,
+        Action="lambda:InvokeFunction",
+        Principal="events.amazonaws.com",
+        SourceArn=ruleArn,
+    )
+
+
+def put_targets(alarm, eventName):
+    CLIENT_EVENTS.put_targets(
+        Rule=eventName,
+        Targets=[
+            {
+                "Id": "1",
+                "Arn": invoked_function_arn,
+                "Input": json.dumps(
+                    {
+                        "detail-type": "Scheduled Event",
+                        "event-name": eventName,
+                        "alarm-name": alarm,
+                    }
+                ),
+            }
+        ],
+    )
+
+
+def remove_targets(eventName):
+    CLIENT_EVENTS.remove_targets(Rule=eventName, Ids=["1"])
+
+
+def remove_permission(eventName):
+    try:
+        CLIENT_LAMBDA.remove_permission(
+            FunctionName=function_name, StatementId=eventName
+        )
+    except Exception:
+        pass
+
+
+def delete_rule(eventName):
+    CLIENT_EVENTS.delete_rule(Name=eventName)
+
+
+def rescheduleEvent(eventName):
+    CLIENT_EVENTS.put_rule(Name=eventName, ScheduleExpression="rate(1 minute)")
+
+
+def scheduleEnableAlarm(period, alarm):
+    eventName = "STPF_%s_%s" % (
+        event["resources"][0].split("/")[1],
+        event["time"].replace(":", "-"),
+    )
+
+    disableUntil = datetime.utcnow() + timedelta(seconds=period)
+    scheduleExp = "cron(%s %s * * ? *)" % (
+        disableUntil.strftime("%M"),
+        disableUntil.strftime("%H"),
+    )
+    logger.info(scheduleExp)
+    ruleArn = put_rule(scheduleExp, eventName)
+    add_permission(ruleArn, eventName)
+    put_targets(alarm, eventName)
+    logger.info(f"Added event: {eventName}")
+
+
+def buildStateReasonData(alarmName):
+    response = CLIENT_CLOUDWATCH.describe_alarms(AlarmNames=[alarmName])
+
+    if response["MetricAlarms"]:
+        alarm = response["MetricAlarms"][0]
+        unit = alarm["Unit"]
+        period = alarm["Period"]
+        statistic = alarm["Statistic"]
+        threshold = alarm["Threshold"]
+        evaluationPeriods = alarm["EvaluationPeriods"]
+        stateReasonData = {
+            "version": "1.0",
+            "queryDate": datetime.utcnow().strftime("%Y-%m-%dT%X.000+0000"),
+            "startDate": (
+                datetime.utcnow() - timedelta(seconds=period * evaluationPeriods)
+            ).strftime("%Y-%m-%dT%X.000+0000"),
+            "unit": unit,
+            "statistic": statistic,
+            "period": period,
+            "recentDatapoints": [threshold + 1 for n in range(evaluationPeriods)],
+            "threshold": threshold,
+        }
+
+        return json.dumps(stateReasonData), period * evaluationPeriods
+
+
+def getAlarms(asgName):
+    alarms = {}
+
+    response = CLIENT_AUTOSCALING.describe_policies(
+        AutoScalingGroupName=asgName, PolicyTypes=["TargetTrackingScaling"]
+    )
+
+    if response["ScalingPolicies"]:
+        for a in response["ScalingPolicies"][0]["Alarms"]:
+            if f"{asgName}-AlarmHigh-" in a["AlarmName"]:
+                alarms["ALARM"] = a["AlarmName"]
+            elif f"{asgName}-AlarmLow-" in a["AlarmName"]:
+                alarms["OK"] = a["AlarmName"]
+
+    return alarms
+
+
+def raiseAlarm(reason, asgName):
+    alarms = getAlarms(asgName)
+    if not alarms:
+        return
+
+    for alarmState, alarm in alarms.items():
+        stateReasonData, fullPeriod = buildStateReasonData(alarm)
+        logger.info(stateReasonData)
+        CLIENT_CLOUDWATCH.set_alarm_state(
+            AlarmName=alarm,
+            StateValue=alarmState,
+            StateReason=f"SERVICE_TASK_PLACEMENT_FAILURE-{reason}",
+            StateReasonData=stateReasonData,
+        )
+        if alarmState == "OK":
+            CLIENT_CLOUDWATCH.disable_alarm_actions(AlarmNames=[alarm])
+            logger.info(f"Disabled alarm: {alarm}")
+            scheduleEnableAlarm(fullPeriod, alarm)
+
+
+def EnableAlarm(event):
+    eventName = event["event-name"]
+    alarmName = event["alarm-name"]
+
+    try:
+        CLIENT_CLOUDWATCH.enable_alarm_actions(AlarmNames=[alarmName])
+        logger.info(f"Enabled alarm: {alarmName}")
+    except Exception:
+        rescheduleEvent(eventName)
+        logger.warning(f"Failed to enable alarm: {alarmName}, rescheduled")
+    else:
+        remove_targets(eventName)
+        remove_permission(eventName)
+        delete_rule(eventName)
+        logger.info(f"Removed event: {eventName}")
+
+
+def lambda_handler(event, context):
+    global event
+    global invoked_function_arn
+    global function_name
+
+    invoked_function_arn = context.invoked_function_arn
+    function_name = context.function_name
+    detail = event["detail"]
+
+    if event["detail-type"] == "Scheduled Event":
+        EnableAlarm(event)
+    elif event["detail-type"] == "ECS Service Action":
+        logger.info(event)
+        cluster = detail["clusterArn"]
+        asgName = getAsg(detail["containerInstanceArns"][0], cluster)
+        if asgName:
+            logger.info(asgName)
+            raiseAlarm(detail["reason"], asgName)
