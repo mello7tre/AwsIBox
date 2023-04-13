@@ -87,6 +87,8 @@ def IAM_UserToGroupAdditions(key):
 
 def IAM_Groups(key):
     for n, v in getattr(cfg, key).items():
+        if not v.get("IBOX_ENABLED", True):
+            continue
         resname = f"{key}{n}"  # Ex. IAMGroupBase
 
         # conditions
