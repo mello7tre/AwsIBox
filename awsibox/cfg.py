@@ -537,6 +537,7 @@ CFG_TO_FUNC = {
         "func": ("scheduler", "Schedule"),
         "dep": ["SecurityGroups"],
     },
+    "SSOPermissionSet": {"module": "joker", "func": ("sso", "PermissionSet")},
     "SQSQueue": {"module": "joker", "func": ("sqs", "Queue")},
     "SQSQueuePolicy": {
         "module": "joker",
