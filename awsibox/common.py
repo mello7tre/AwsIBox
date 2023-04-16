@@ -10,6 +10,7 @@ from pathlib import PurePath
 from troposphere import validators
 from troposphere.autoscaling import Tags as asgTags
 import troposphere.ssm as ssm
+import troposphere.sso as sso
 
 from troposphere import (
     And,
@@ -47,6 +48,8 @@ from .cfg import (
     SECURITY_GROUPS_DEFAULT,
 )
 
+# Temporary fix for https://github.com/cloudtools/troposphere/issues/2146
+sso.PermissionSet.props["InlinePolicy"] = (str, False)
 
 # Temporary fix for https://github.com/cloudtools/troposphere/issues/1474
 def my_one_of(class_name, properties, property, conditionals):
