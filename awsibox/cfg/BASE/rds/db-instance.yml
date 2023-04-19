@@ -56,7 +56,7 @@ Base: &base
         Description: 'The amount of time, in days, to retain Performance Insights data - empty for mapped value - 0 to disable'
     - IBOX_MAPNAME.StorageType:
         Description: 'empty for mapped value'
-        AllowedValues: ['', 'standard', 'gp2']
+        AllowedValues: ['', 'standard', 'io1', 'gp2', 'gp3']
   IBOX_CONDITION:
     - IBOX_MAPNAME.DBSnapshotIdentifier:
         get_condition('', 'not_equals', 'none', f'{IBOX_MAPNAME}DBSnapshotIdentifier')
@@ -122,7 +122,8 @@ Base: &base
   PerformanceInsightsRetentionPeriod:
     If(f'{IBOX_MAPNAME}PerformanceInsights', get_endvalue(f'{IBOX_MAPNAME}PerformanceInsights'), Ref('AWS::NoValue'))
   SourceDBInstanceIdentifier: none
-  StorageType: gp2
+  StorageThroughput: 12000
+  StorageType: gp3
   VPCSecurityGroups:
     - Ref(f'SecurityGroup{IBOX_MAPNAME}')
 
