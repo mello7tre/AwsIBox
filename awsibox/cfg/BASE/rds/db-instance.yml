@@ -57,6 +57,8 @@ Base: &base
     - IBOX_MAPNAME.StorageType:
         Description: 'empty for mapped value'
         AllowedValues: ['', 'standard', 'io1', 'gp2', 'gp3']
+    - IBOX_MAPNAME.StorageThroughput:
+        Description: 'empty for mapped value'
   IBOX_CONDITION:
     - IBOX_MAPNAME.DBSnapshotIdentifier:
         get_condition('', 'not_equals', 'none', f'{IBOX_MAPNAME}DBSnapshotIdentifier')
@@ -70,6 +72,8 @@ Base: &base
         get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}PerformanceInsights')
     - IBOX_MAPNAME.StorageAutoScaling:
         get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}MaxAllocatedStorage')
+    - IBOX_MAPNAME.StorageThroughput:
+        get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}StorageThroughput')
   IBOX_OUTPUT:
     - IBOX_MAPNAME.AllocatedStorage:
         Value: ${AllocatedStorage}
@@ -101,6 +105,8 @@ Base: &base
         Value: ${SourceDBInstanceIdentifier}
     - IBOX_MAPNAME.StorageType:
         Value: ${StorageType}
+    - IBOX_MAPNAME.StorageThroughput:
+        Value: ${StorageThroughput}
   AllocatedStorage: 50
   AllowMajorVersionUpgrade: true
   DBInstanceClass: db.t3.micro
@@ -122,7 +128,9 @@ Base: &base
   PerformanceInsightsRetentionPeriod:
     If(f'{IBOX_MAPNAME}PerformanceInsights', get_endvalue(f'{IBOX_MAPNAME}PerformanceInsights'), Ref('AWS::NoValue'))
   SourceDBInstanceIdentifier: none
-  StorageThroughput: 3000
+  StorageThroughput.IBOX_CODE:
+    If(f'{IBOX_MAPNAME}StorageThroughput', get_endvalue(f'{IBOX_MAPNAME}StorageThroughput'), Ref('AWS::NoValue'))
+  StorageThroughput: 0
   StorageType: gp3
   VPCSecurityGroups:
     - Ref(f'SecurityGroup{IBOX_MAPNAME}')
