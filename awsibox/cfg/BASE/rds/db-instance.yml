@@ -122,7 +122,7 @@ Base: &base
   PerformanceInsightsRetentionPeriod:
     If(f'{IBOX_MAPNAME}PerformanceInsights', get_endvalue(f'{IBOX_MAPNAME}PerformanceInsights'), Ref('AWS::NoValue'))
   SourceDBInstanceIdentifier: none
-  StorageThroughput: 12000
+  StorageThroughput: 3000
   StorageType: gp3
   VPCSecurityGroups:
     - Ref(f'SecurityGroup{IBOX_MAPNAME}')
