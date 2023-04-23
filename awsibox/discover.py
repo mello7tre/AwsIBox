@@ -6,13 +6,8 @@ from . import cfg
 
 
 def get_brands():
-    brand_int = os.listdir(cfg.PATH_INT)
-    brand_ext = os.listdir(cfg.PATH_EXT)
-
-    brands = set(brand_int + brand_ext)
-
+    brands = os.listdir(cfg.PATH_EXT)
     brands.remove("BASE")
-
     return brands
 
 
