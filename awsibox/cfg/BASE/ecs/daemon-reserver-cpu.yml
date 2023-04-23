@@ -1,9 +1,9 @@
 IBoxLoader:
   - !exclude
-    - iam/ecs-exec.yml
+    - iam/policy-ecs-exec.yml
   - !include
-    - ecs/ecs-task.yml
-    - ecs/ecs-service.yml
+    - ecs/task.yml
+    - ecs/service.yml
 
 global:
   Parameter:
@@ -29,7 +29,7 @@ global:
   EC2SecurityGroup:
     - EcsService:
         IBOX_ENABLED: False
-  # Included yaml ecs/ecs-task.yml have changed ParameterStore Roles to RoleTask, need to restore it.
+  # Included yaml ecs/task.yml have changed ParameterStore Roles to RoleTask, need to restore it.
   IAMPolicy:
     - ParameterStore:
         Roles:

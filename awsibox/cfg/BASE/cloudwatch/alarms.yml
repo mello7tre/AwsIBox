@@ -88,17 +88,6 @@ ASGSpot: &asgspot
           Stat: Average
           Period: 60
 
-DiskUsed: &diskused
-  EvaluationPeriods: 3
-  MetricName: 'root_disk_used_percent'
-  Statistic: 'Maximum'
-  Namespace: 'CWAgent'
-  Unit: Percent
-  Dimensions:
-    - RootDisk:
-        Name: AutoScalingGroupName
-        Value: Ref('AutoScalingGroup')
-
 EC2: &ec2
   Dimensions:
     - Autoscaling:
@@ -249,9 +238,17 @@ global:
             Label: OnDemandInExcess
         Threshold: -1
     - DiskUsed:
-        <<: *diskused
         ComparisonOperator: GreaterThanOrEqualToThreshold
+        Dimensions:
+          - RootDisk:
+              Name: AutoScalingGroupName
+              Value: Ref('AutoScalingGroup')
+        EvaluationPeriods: 3
+        MetricName: 'root_disk_used_percent'
+        Namespace: 'CWAgent'
+        Statistic: 'Maximum'
         Threshold: '80'
+        Unit: Percent
     - SQSQueueDeadLetter:
         IBOX_PARAMETER:
           - _Threshold:

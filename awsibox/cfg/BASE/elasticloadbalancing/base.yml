@@ -1,7 +1,7 @@
 IBoxLoader: !include
   - hostedzoneid.yml
   - listener.yml
-  - targetgroup.yml
+  - v2-targetgroup.yml
   - crm/certificate-regional.yml
   - ec2/securitygroup.yml
   - route53/recordset.yml

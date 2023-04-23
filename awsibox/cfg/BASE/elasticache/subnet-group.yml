@@ -1,16 +1,12 @@
-Base: &base
-  IBOX_OUTPUT:
-    - _:
-        Value: Ref(IBOX_RESNAME)
-        Export: Export(IBOX_RESNAME)
-  Description: Sub("${EnvShort}-%s" % IBOX_INDEXNAME)
-  SubnetIds: Split(",", ImportValue(f"Subnets{IBOX_INDEXNAME}"))
-
-
 global:
   ElastiCacheSubnetGroup:
     - IBOX_BASE:
-        <<: *base
         IBOX_RESNAME: CacheSubnetGroup.IBOX_INDEXNAME
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)
+        Description: Sub("${EnvShort}-%s" % IBOX_INDEXNAME)
+        SubnetIds: Split(",", ImportValue(f"Subnets{IBOX_INDEXNAME}"))
     - Private: {}
     - Public: {}

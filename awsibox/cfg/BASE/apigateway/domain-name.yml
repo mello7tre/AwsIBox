@@ -1,19 +1,16 @@
-Base: &base
-  IBOX_ENABLED: False
-  IBOX_LINKED_OBJ:
-    Key: Route53RecordSet
-    Type: ApiGatewayDomainName.IBOX_INDEXNAME
-    Conf:
-      IBOX_RESNAME: RecordSet.IBOX_RESNAME
-  IBOX_OUTPUT:
-    - _:
-        Value: Ref(IBOX_RESNAME)
-        Export: Export(IBOX_RESNAME)
-
-
 global:
   ApiGatewayDomainName:
-    - IBOX_BASE: *base
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Key: Route53RecordSet
+          Type: ApiGatewayDomainName.IBOX_INDEXNAME
+          Conf:
+            IBOX_RESNAME: RecordSet.IBOX_RESNAME
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)
     - Global:
         CertificateArn: get_endvalue('GlobalCertificateArn')
         DomainName: Sub('saas-apis.%s' % cfg.HostedZoneNameEnv)

@@ -1,17 +1,13 @@
-SubscriptionBase: &subscription_base
-  IBOX_ENABLED: True
-
-TopicBase: &topic_base
-  DisplayName: Sub("${AWS::StackName}.${EnvRole}-SNS%s" % IBOX_INDEXNAME)
-  Export: False
-  IBOX_OUTPUT:
-    - _:
-        IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
-        Value: Ref(IBOX_RESNAME)
-        Export: Export(IBOX_RESNAME)
-
 global:
   SNSSubscription:
-    - IBOX_BASE: *subscription_base
+    - IBOX_BASE:
+        IBOX_ENABLED: True
   SNSTopic:
-    - IBOX_BASE: *topic_base
+    - IBOX_BASE:
+        DisplayName: Sub("${AWS::StackName}.${EnvRole}-SNS%s" % IBOX_INDEXNAME)
+        Export: False
+        IBOX_OUTPUT:
+          - _:
+              IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)

@@ -1,14 +1,12 @@
-Base: &base
-  IBOX_RESNAME: DBSubnetGroup.IBOX_INDEXNAME
-  IBOX_OUTPUT:
-    - _:
-        Value: Ref(IBOX_RESNAME)
-        Export: Export(IBOX_RESNAME)
-  DBSubnetGroupDescription: Sub("${EnvShort}-%s" % IBOX_INDEXNAME)
-  SubnetIds: Split(",", ImportValue(f"Subnets{IBOX_INDEXNAME}"))
-
 global:
   RDSDBSubnetGroup:
-    - IBOX_BASE: *base
+    - IBOX_BASE:
+        IBOX_RESNAME: DBSubnetGroup.IBOX_INDEXNAME
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)
+        DBSubnetGroupDescription: Sub("${EnvShort}-%s" % IBOX_INDEXNAME)
+        SubnetIds: Split(",", ImportValue(f"Subnets{IBOX_INDEXNAME}"))
     - Private: {}
     - Public: {}

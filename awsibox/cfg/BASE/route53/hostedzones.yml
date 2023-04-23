@@ -1,12 +1,3 @@
-Base: &base
-  IBOX_RESNAME: HostedZone.IBOX_INDEXNAME
-  Enabled: 'no'
-  Id: none
-  IBOX_OUTPUT:
-    - HostedZoneName.IBOX_INDEXNAME:
-        Condition: None
-        Value: get_endvalue(f"Route53{IBOX_RESNAME}Name")
-
 Public: &public
   IBOX_PARAMETER:
     - Route53.IBOX_RESNAME.Enabled:
@@ -33,7 +24,14 @@ Private: &private
 
 global:
   Route53HostedZone:
-    - IBOX_BASE: *base
+    - IBOX_BASE:
+        IBOX_RESNAME: HostedZone.IBOX_INDEXNAME
+        Enabled: 'no'
+        Id: none
+        IBOX_OUTPUT:
+          - HostedZoneName.IBOX_INDEXNAME:
+              Condition: None
+              Value: get_endvalue(f"Route53{IBOX_RESNAME}Name")
     - Env:
         <<: *public
         HostedZoneConfig:

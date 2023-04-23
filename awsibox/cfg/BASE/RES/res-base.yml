@@ -1,6 +1,5 @@
 IBoxLoader: !include
   - elasticloadbalancing/accountid.yml
-  - iam/ssm.yml
   - route53/hostedzones.yml
   - ec2/securitygroup.yml
   - res-base/iam-managed-policy.yml

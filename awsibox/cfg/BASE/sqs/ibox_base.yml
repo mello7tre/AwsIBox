@@ -1,22 +1,18 @@
 IBoxLoader: !include
   - sqs/queue-policy.yml
 
-QueuePolicyBase: &queue_policy_base
-  IBOX_ENABLED: False
-  PolicyDocument:
-    Version: "2012-10-17"
-    Statement:
-      - IBOX_LIST:
-
-QueueBase: &queue_base
-  IBOX_OUTPUT:
-    - _:
-        IBOX_ENABLED_IF: getattr(cfg, f"{IBOX_RESNAME}Export", False) == True
-        Value: GetAtt(IBOX_RESNAME, "Arn")
-        Export: Export(IBOX_RESNAME)
-
 global:
   SQSQueuePolicy:
-    - IBOX_BASE: *queue_policy_base
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - IBOX_LIST:
   SQSQueue:
-    - IBOX_BASE: *queue_base
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _:
+              IBOX_ENABLED_IF: getattr(cfg, f"{IBOX_RESNAME}Export", False) == True
+              Value: GetAtt(IBOX_RESNAME, "Arn")
+              Export: Export(IBOX_RESNAME)
