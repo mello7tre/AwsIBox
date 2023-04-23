@@ -4,7 +4,7 @@ IBoxLoader: !include
   - ec2/securitygroup.yml
   - cloudwatch/alarms.yml
   - cloudfront/for-services.yml
-  - iam/parameterstore.yml
+  - iam/policy-parameterstore.yml
   - iam/instance-profile.yml
   - sns/subscription.yml
   - sqs/queue-policy.yml

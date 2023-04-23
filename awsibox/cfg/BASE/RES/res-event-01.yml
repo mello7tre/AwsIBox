@@ -1,5 +1,5 @@
 IBoxLoader: !include [
-  iam/parameterstore.yml,
+  iam/policy-parameterstore.yml,
   res-event/event_ec2.yml,
   res-event/event_ecs.yml,
 ]
