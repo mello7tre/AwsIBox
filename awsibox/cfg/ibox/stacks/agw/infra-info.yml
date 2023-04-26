@@ -63,6 +63,7 @@ global:
             - 1:
                 Action:
                   - 'cloudformation:DescribeStack*'
+                  - 'cloudformation:ListStacks'
                   - 'ecs:ListClusters'
                   - 'ecs:ListServices'
                   - 'ecs:DescribeServices'
