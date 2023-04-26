@@ -1,8 +1,0 @@
-res-ecr-01:
-  StackType: ecr
-  StackName: r-ecr-01
-  Repository:
-    - Secrets: secrets
-    - BuildKite: arda.numenor.services.buildkite
-    - ApiPortal: arda.numenor.api.portal
-    - ApiLogin: arda.numenor.api.login

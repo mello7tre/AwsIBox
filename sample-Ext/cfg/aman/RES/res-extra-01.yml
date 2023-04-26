@@ -1,5 +1,0 @@
-res-extra-01:
-  SecurityGroup:
-    - ElasticSearch:
-        Export: True
-        GroupDescription: 'Assign to ElasticSearch Clients'
