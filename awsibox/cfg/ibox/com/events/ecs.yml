@@ -1,0 +1,55 @@
+IBoxLoader:
+  - !include
+    - com/lambda/layers.yml
+    #- com/events/ecs-spot.yml
+
+global:
+  EventsRule:
+    - ECSEventTaskStateChange:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
+        Description: 'ECSEvents Lambda Trigger for Task STOPPED'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            lastStatus:
+              - STOPPED
+            desiredStatus:
+              - STOPPED
+            stopCode:
+              - EssentialContainerExited
+          detail-type:
+            - ECS Task State Change
+          source:
+            - aws.ecs
+        Targets:
+          - Lambda0:
+              Arn: GetAtt('LambdaECSEventTaskStateChange', 'Arn')
+              Id: TargetFunction-01
+  Lambda:
+    - ECSEventTaskStateChange:
+        Architectures:
+          - arm64
+        Description: 'ECSEventTaskStateChange'
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
+        Layers:
+          - LambdaLayerVersionPython37SSM
+          - LambdaLayerVersionPythonArm64SlackClient
+        Runtime: python3.9
+        Timeout: 30
+        Environment:
+          Variables:
+            - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+  IAMPolicy:
+    - LambdaECSEventTaskStateChange:
+        Roles:
+          - Ref('RoleLambdaECSEventTaskStateChange')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action: 'sns:Publish'
+                Effect: Allow
+                Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+    - ParameterStore:
+        Roles++:
+          - Ref('RoleLambdaECSEventTaskStateChange')

@@ -1,0 +1,14 @@
+IBoxLoader: !include
+  - com/codedeploy/deployment-group.yml
+
+global:
+  CodeDeployDeploymentGroup:
+    - Test01:
+        IBOX_ENABLED: False
+        ApplicationName: "name.of.a.git.repo"
+        Deployment:
+          Revision:
+            S3Location:
+              # equals to:
+              # Key: Sub("name.of.a.git.repo/name.of.a.git.repo-${EnvApp1Version}.tar.gz")
+              KeySuffix: Sub("${EnvApp1Version}.tar.gz")

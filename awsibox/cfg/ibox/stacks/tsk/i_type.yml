@@ -1,0 +1,65 @@
+IBoxLoader: !include
+  - com/ecs/task.yml
+  - res/lambda/permissions.yml
+
+global:
+  Condition:
+    - EnableExecuteCommand: Equals(True, False)
+      # Need to create a "dummy" Condition for tasks that do not use EventsRuleECSRunTask, where there is the "right" one
+    - ECSTasksLaunchOnFargate: Equals(True, True)
+  ECSTaskDefinition:
+    - Base:
+        NetworkMode: awsvpc
+  EventsRule:
+    - ECSRunTask:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
+        Description: 'Periodically invoke LambdaECSRunTask'
+        LaunchType.IBOX_PCO:
+          IBOX_PARAMETER:
+            - _LaunchType:
+                Description: Empty for mapped value
+                AllowedValues: ['', 'EC2', 'FARGATE']
+          IBOX_CONDITION:
+            - ECSTasksLaunchOnFargate:
+                get_condition('', 'equals', 'FARGATE', 'EventsRuleECSRunTaskLaunchType')
+          IBOX_OUTPUT:
+            - _LaunchType:
+                Value: get_endvalue(IBOX_CURNAME)
+        LaunchType: FARGATE
+        State: 'ENABLED'
+        Targets:
+          - Lambda0:
+              Arn: ImportValue('LambdaECSRunTaskArn')
+              Id: 'TargetFunction-01'
+              Input: Join('"', [
+                  '{',
+                  'Cluster":', get_expvalue('Cluster', 'ClusterStack'), ',',
+                  'ECSInstancesStackName":', get_endvalue('ClusterStack'), ',',
+                  'LaunchType":', get_endvalue('EventsRuleECSRunTaskLaunchType'), ',',
+                  If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'NetworkModeAwsVpc":"awsvpc",', Ref('AWS::NoValue')),
+                  'TaskDefinition":', Ref('TaskDefinition'), ',',
+                  'Subnets":', get_expvalue('SubnetsPrivate'), ',',
+                  'SecurityGroups":', Join(' ', cfg.SecurityGroupsImport),
+                  '}',
+                ])
+  IAMPolicy:
+    - LambdaECSRunTaskTrigger:
+        PolicyName: Sub('LambdaECSRunTaskTrigger_${AWS::StackName}')
+        Roles:
+          - get_expvalue('RoleLambdaECSRunTask')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:RunTask'
+                  - 'ecs:StartTask'
+                Effect: Allow
+                Resource: Ref('TaskDefinition')
+            - 2:
+                Action:
+                  - 'iam:GetRole'
+                  - 'iam:PassRole'
+                Effect: Allow
+                Resource: 
+                  - GetAtt('RoleTask', 'Arn')
+                  - get_expvalue('RoleECSTaskExecution')

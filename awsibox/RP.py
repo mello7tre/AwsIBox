@@ -89,29 +89,24 @@ def build_RP():
 
     class Loader(yaml.Loader):
         def __init__(self, stream):
-            # This way for include relative to file with include statement
-            self._root_current = os.path.split(stream.name)[0]
-            # This way for include BASE relative on BASE dir
-            self._root_base = os.path.join(CFG_FILE_INT, "BASE")
-            # This way for include relative on BASE EXT dir
-            self._root_base_ext = os.path.join(CFG_FILE_EXT, "BASE")
+            #            # This way for include relative to file with include statement
+            #            self._root_current = os.path.split(stream.name)[0]
+            # This way for include relative on ibox dir
+            self._root_base = os.path.join(CFG_FILE_INT, cfg.IBOX_BRAND_DIR)
+            # This way for include relative on ibox EXT dir
+            self._root_base_ext = os.path.join(CFG_FILE_EXT, cfg.IBOX_BRAND_DIR)
             # This way for include relative on brand EXT dir
             self._root_brand_ext = os.path.join(CFG_FILE_EXT, brand)
 
-            # try to find out if source file is in a subfolder
-            if self._root_base in self._root_current:
-                suffix = self._root_current.replace(self._root_base, "")
-            elif self._root_base_ext in self._root_current:
-                suffix = self._root_current.replace(self._root_base_ext, "")
-            else:
-                suffix = self._root_current.replace(self._root_brand_ext, "")
-
-            # self.root_current_suffix will be empty if source file is in root
-            self.root_current_suffix = os.path.basename(suffix)
-            if self.root_current_suffix.upper() in cfg.STACK_TYPES:
-                # set to empty even if UPPERCASE subfolders is in
-                # cfg.STACK_TYPES to not be searched for include files
-                self.root_current_suffix = ""
+            #            # find out suffix to use for file included withouth a path (no more used)
+            #            if self._root_base in self._root_current:
+            #                suffix = self._root_current.replace(self._root_base, "")
+            #            elif self._root_base_ext in self._root_current:
+            #                suffix = self._root_current.replace(self._root_base_ext, "")
+            #            else:
+            #                suffix = self._root_current.replace(self._root_brand_ext, "")
+            #
+            #            self.root_current_suffix = os.path.basename(suffix)
 
             self.stream = stream
             super(Loader, self).__init__(stream)
@@ -138,10 +133,9 @@ def build_RP():
                         self._root_base_ext,
                         self._root_brand_ext,
                     ]:
-                        if "/" not in filename and self.root_current_suffix:
-                            # for file in subfolder that include file without a path
-                            # search only in current subfolder
-                            path = os.path.join(path, self.root_current_suffix)
+                        #                        if "/" not in filename:
+                        #                            # for include without a path search only in current subfolder
+                        #                            path = os.path.join(path, self.root_current_suffix)
 
                         contents = self.extractFile(filename, path)
                         if contents:
@@ -262,8 +256,8 @@ def build_RP():
 
         return _recurse(data)
 
-    def read_yaml(file_type, brand, base_dir, stacktype=""):
-        cfg_file = os.path.join(base_dir, brand, stacktype.upper(), f"{file_type}.yml")
+    def read_yaml(file_type, brand, base_dir, stacktype="", prefix=""):
+        cfg_file = os.path.join(base_dir, brand, prefix, stacktype, f"{file_type}.yml")
 
         try:
             with open(cfg_file, "r") as ymlfile:
@@ -403,21 +397,33 @@ def build_RP():
 
     # envrole type files must be read first
     yaml_role = [
-        read_yaml(envrole, "BASE", CFG_FILE_INT, stacktype),
-        read_yaml(envrole, "BASE", CFG_FILE_EXT, stacktype),
-        read_yaml(envrole, brand, CFG_FILE_EXT, stacktype),
+        read_yaml(envrole, cfg.IBOX_BRAND_DIR, CFG_FILE_INT, stacktype, cfg.STACKS_DIR),
+        read_yaml(envrole, cfg.IBOX_BRAND_DIR, CFG_FILE_EXT, stacktype, cfg.STACKS_DIR),
+        read_yaml(envrole, brand, CFG_FILE_EXT, stacktype, cfg.STACKS_DIR),
     ]
 
     yaml_cfg = {
         "common": [
-            read_yaml("common", "BASE", CFG_FILE_INT),
-            read_yaml("common", "BASE", CFG_FILE_EXT),
+            read_yaml("common", cfg.IBOX_BRAND_DIR, CFG_FILE_INT),
+            read_yaml("common", cfg.IBOX_BRAND_DIR, CFG_FILE_EXT),
             read_yaml("common", brand, CFG_FILE_EXT),
         ],
         "type": [
-            read_yaml("TYPE", "BASE", CFG_FILE_INT, stacktype),
-            read_yaml("TYPE", "BASE", CFG_FILE_EXT, stacktype),
-            read_yaml("TYPE", brand, CFG_FILE_EXT, stacktype),
+            read_yaml(
+                "i_type",
+                cfg.IBOX_BRAND_DIR,
+                CFG_FILE_INT,
+                stacktype,
+                cfg.STACKS_DIR,
+            ),
+            read_yaml(
+                "i_type",
+                cfg.IBOX_BRAND_DIR,
+                CFG_FILE_EXT,
+                stacktype,
+                cfg.STACKS_DIR,
+            ),
+            read_yaml("i_type", brand, CFG_FILE_EXT, stacktype, cfg.STACKS_DIR),
         ],
         "role": yaml_role,
     }

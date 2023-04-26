@@ -1,0 +1,18 @@
+IBoxLoader: !include
+  - res/sqs/queue-policies.yml
+
+global:
+  SQSQueuePolicy:
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - IBOX_LIST:
+  SQSQueue:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _:
+              IBOX_ENABLED_IF: getattr(cfg, f"{IBOX_RESNAME}Export", False) == True
+              Value: GetAtt(IBOX_RESNAME, "Arn")
+              Export: Export(IBOX_RESNAME)

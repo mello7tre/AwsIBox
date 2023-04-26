@@ -1,0 +1,14 @@
+IBoxLoader: !include
+  - com/ec2/securitygroup.yml
+  - res/route53/recordsets.yml
+
+global:
+  Route53RecordSet:
+    - CCHExternal:
+        IBOX_ENABLED: True
+    - CCHInternal:
+        IBOX_ENABLED: True
+    - CCHReadOnlyExternal:
+        IBOX_ENABLED: True
+    - CCHReadOnlyInternal:
+        IBOX_ENABLED: True

@@ -5,12 +5,6 @@ import mmap
 from . import cfg
 
 
-def get_brands():
-    brands = os.listdir(cfg.PATH_EXT)
-    brands.remove("BASE")
-    return brands
-
-
 def build_discover_map(brand, stacktypes, envroles):
     if not stacktypes and not envroles:
         # include all roles in all stacktypes
@@ -18,8 +12,8 @@ def build_discover_map(brand, stacktypes, envroles):
 
     roles = []
 
-    path_int = os.path.join(cfg.PATH_INT, brand)
-    path_ext = os.path.join(cfg.PATH_EXT, brand)
+    path_int = os.path.join(cfg.PATH_INT, brand, cfg.STACKS_DIR)
+    path_ext = os.path.join(cfg.PATH_EXT, brand, cfg.STACKS_DIR)
 
     for n in [path_int, path_ext]:
         for root, directories, filenames in os.walk(n, topdown=True):
@@ -28,21 +22,22 @@ def build_discover_map(brand, stacktypes, envroles):
             except Exception:
                 pass
             for filename in filenames:
-                root_dir = os.path.basename(root)
-                stacktype = root_dir.lower()
+                stacktype = os.path.basename(root)
                 role = os.path.splitext(os.path.basename(filename))[0]
                 if (
-                    root_dir.isupper()
-                    and not filename.startswith(".")
-                    and not filename == "TYPE.yml"
+                    not filename.startswith(".")
+                    and not filename == "i_type.yml"
                     and (stacktype in stacktypes or role in envroles)
                 ):
                     roles.append((stacktype, role))
 
-    if brand == "BASE":
+    if brand == cfg.IBOX_BRAND_DIR:
+        # add all roles found in ibox conf to all other brands
         for n in ext_brands:
-            add_to_map(n, roles)
+            if n != cfg.IBOX_BRAND_DIR:
+                add_to_map(n, roles)
     else:
+        # add roles to brand
         add_to_map(brand, roles)
 
 
@@ -64,12 +59,10 @@ def discover(brands, envroles, stacktypes):
     if brands:
         ext_brands = list(brands)
     else:
-        ext_brands = get_brands()
-        brands = list(ext_brands)
+        ext_brands = os.listdir(cfg.PATH_EXT)
 
-    brands.append("BASE")
-
-    for brand in brands:
+    # cycle on external brands + ibox one
+    for brand in set(ext_brands + [cfg.IBOX_BRAND_DIR]):
         build_discover_map(brand, stacktypes, envroles)
 
     return discover_map

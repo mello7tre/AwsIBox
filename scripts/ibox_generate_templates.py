@@ -83,8 +83,11 @@ def concurrent_exec(roles, kwargs):
         for future in future_to_role:
             future.cancel()
 
+
 # read CloudFormationResourceSpecification to get CloudFormation Resources Properties
-with open(f"{cfg.PATH_INT}/CloudFormationResourceSpecification.json", "r") as cfm_res_spec_json:
+with open(
+    os.path.join(cfg.APP_DIR, "aws", "CloudFormationResourceSpecification.json"), "r"
+) as cfm_res_spec_json:
     cfg.cfm_res_spec = json.load(cfm_res_spec_json)
 
 if args.action == "view":

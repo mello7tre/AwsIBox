@@ -1,0 +1,63 @@
+Tracking: &tracking
+  Condition: IBOX_RESNAME
+  IBOX_PARAMETER:
+    - _TargetTrackingConfigurationTargetValue:
+        Description: '0 to disable - empty for mapped value'
+  IBOX_CONDITION:
+    - _:
+        get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}TargetTrackingConfigurationTargetValue')
+  EstimatedInstanceWarmup: 120
+  PolicyType: TargetTrackingScaling
+
+Step: &step
+  AdjustmentType: ChangeInCapacity
+  EstimatedInstanceWarmup: 600
+  PolicyType: StepScaling
+             
+global:
+  AutoScalingScalingPolicy:
+    - Cpu:
+        <<: *tracking
+        IBOX_ENABLED: False
+        TargetTrackingConfiguration:
+          PredefinedMetricSpecification:
+            PredefinedMetricType: 'ASGAverageCPUUtilization'
+          TargetValue: 70
+    - Custom:
+        <<: *tracking
+        IBOX_ENABLED: False
+        TargetTrackingConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions: []
+            Namespace: 'AWS/EC2'
+            Statistic.IBOX_AUTO_P: {} 
+    - Down:
+        <<: *step
+        IBOX_ENABLED: False
+        StepAdjustments:
+          - 0:
+              MetricIntervalLowerBound: -10
+              MetricIntervalUpperBound: 0
+              ScalingAdjustment: -1
+          - 1:
+              MetricIntervalLowerBound: -20
+              MetricIntervalUpperBound: -10
+              ScalingAdjustment: -2
+          - 2:
+              MetricIntervalUpperBound: -20
+              ScalingAdjustment: -2
+    - Up:
+        <<: *step
+        IBOX_ENABLED: False
+        StepAdjustments:
+          - 0:
+              MetricIntervalLowerBound: 0
+              MetricIntervalUpperBound: 10
+              ScalingAdjustment: 1
+          - 1:
+              MetricIntervalLowerBound: 10
+              MetricIntervalUpperBound: 20
+              ScalingAdjustment: 2
+          - 2:
+              MetricIntervalLowerBound: 20
+              ScalingAdjustment: 2

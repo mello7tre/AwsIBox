@@ -5,7 +5,8 @@ setuptools.setup(
         'awsibox',
     ],
     package_data={
-        'awsibox': ['cfg/BASE/*'],
+        'awsibox': ['cfg/*'],
+        'awsibox': ['aws/*'],
         'awsibox': ['templates/*'],
         'awsibox': ['lambdas/*'],
         'awsibox': ['user-data/*'],

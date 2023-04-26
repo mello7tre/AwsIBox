@@ -1,0 +1,23 @@
+IBoxLoader: !include
+  - com/certificatemanager/certificate-global.yml
+  - com/certificatemanager/certificate-regional.yml
+  - res/cloudfront/policies.yml
+  - com/iam/roles-cloudformation-stackset.yml
+  - res/elasticache/subnet-groups.yml
+  - res/rds/db-subnet-groups.yml
+  - res/apigateway/accounts.yml
+  - res/route53/recordsets.yml
+  - res/efs/filesystems.yml
+
+
+global:
+  StackName: r-extra-01
+  MappingClass:
+    - AZones:
+  EC2SecurityGroup:
+    - RDS:
+        Export: True
+        GroupDescription: 'Assign to RDS Client'
+  SNSTopic:
+    - CloudFormationNotification:
+        Export: True

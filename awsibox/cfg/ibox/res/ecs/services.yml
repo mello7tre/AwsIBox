@@ -1,0 +1,50 @@
+global:
+  ECSService:
+    - Base:
+        IBOX_TITLE: Service
+        DesiredCount: get_endvalue('CapacityDesired')
+        DeploymentConfiguration:
+          DeploymentCircuitBreaker:
+            Enable.IBOX_AUTO_PO: {}
+            Enable: true
+            Rollback.IBOX_AUTO_PO: {}
+            Rollback: true
+          MaximumPercent.IBOX_AUTO_PO: {}
+          MaximumPercent: 200
+          MinimumHealthyPercent.IBOX_AUTO_PO: {}
+          MinimumHealthyPercent: 100
+        PlacementStrategies:
+          - IBOX_IF:
+              - ECSTasksLaunchOnFargate
+              - Ref('AWS::NoValue')
+              - IBOX_IFVALUE
+          - 0:
+              IBOX_OUTPUT:
+                - _PlacementStrategies0:
+                    Value: Type= ${Type} ,Field= ${Field}
+              Type.IBOX_AUTO_P:
+                AllowedValues: ['', 'binpack', 'random', 'spread']
+              Type: spread
+              Field.IBOX_PCO:
+                IBOX_CONDITION:
+                  - _PlacementStrategies0TypeRandom:
+                      get_condition('', 'equals', 'random', f'{IBOX_RESNAME}PlacementStrategies0Type')
+              Field.IBOX_AUTO_P: {}
+              Field.IBOX_CODE: If(
+                f'{IBOX_RESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
+                get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Field'))
+              Field: instanceId
+      #    If('ECSTasksLaunchOnFargate', Ref('AWS::NoValue'),
+      #                          [ecs.PlacementStrategy(Type='spread', Field='instanceId')])
+      #                          #ecs.PlacementStrategy(Type='spread', Field='attribute:ecs.availability-zone')
+        SchedulingStrategy: REPLICA
+    - Daemon:
+        SchedulingStrategy: DAEMON
+        LaunchType: EC2
+    - Spot:
+        CapacityProviderStrategy:
+          - FargateSpot:
+              Base: 1
+              CapacityProvider: FARGATE_SPOT
+              Weight: 1
+        DesiredCount: get_endvalue('CapacityDesired')

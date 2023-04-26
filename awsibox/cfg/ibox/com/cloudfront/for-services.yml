@@ -1,0 +1,40 @@
+IBoxLoader: !include
+  - com/cloudfront/i_base.yml
+  - res/route53/recordsets.yml
+
+global:
+  CloudFrontDistribution:
+    - IBOX_BASE:
+        IBOX_LINKED_OBJ:
+          Route53RecordSet:
+            Key: Route53RecordSet
+            Conf:
+              IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+              IBOX_TITLE: RecordSetCloudFront
+            Type: CloudFront
+        Create: 'no'
+        DistributionConfig:
+          # need to escape Sub bracket {} using double ones
+          # and use IBOX_REFNAME in place of IBOX_RESNAME because i am inside a key processed by IBOX_CUSTOM_OBJ
+          Aliases:
+            - Cdn: Sub(f'${{EnvRole}}${{{IBOX_REFNAME}DnsSuffix}}.cdn.%s' % cfg.HostedZoneNameEnv)
+            - Env: Sub(f'${{EnvRole}}${{{IBOX_REFNAME}DnsSuffix}}.%s' % cfg.HostedZoneNameEnv)
+          Comment: Sub('${AWS::StackName}-${EnvRole}')
+          DefaultCacheBehavior:
+            TargetOriginId: Sub(f'${{EnvRole}}${{{IBOX_RESNAME}DnsSuffix}}.origin.%s' % cfg.HostedZoneNameEnv)
+          Origins:
+            - Default:
+                CustomOriginConfig:
+                  HTTPSPort.IBOX_AUTO_PO: {}
+                  HTTPSPort: 443
+                  HTTPPort.IBOX_AUTO_PO: {}
+                  HTTPPort: 80
+                DomainName: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
+                Id: get_endvalue('CloudFrontDistributionBaseDistributionConfigDefaultCacheBehaviorTargetOriginId')
+        DnsSuffix.IBOX_AUTO_PO:
+          Description: 'Useful to create duplicate stack that use CloudFront; change Aliases and DefaultOriginDomainName'
+
+
+IBoxLoaderAfter: !include [
+  #com/cloudfront/origin-adhoc.yml,
+]

@@ -1,0 +1,51 @@
+IBoxLoader: !include
+  - res/apigateway/deployments.yml
+  - com/cloudfront/for-services.yml
+  - com/lambda/i_base.yml
+
+global:
+  Output:
+    - InvokeUrl:
+        Value: Sub('https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/%s' % cfg.ApiGatewayRestApi['Base']['Stage'])
+  ApiGatewayRestApi:
+    - Base:
+        IBOX_TITLE: ApiGatewayRestApi
+        ApiKeySourceType: HEADER
+        BinaryMediaTypes:
+          - '*/*'
+        Description: 'Api-Gateway Description is missing'
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+        Name: 'Api-Gateway Name is missing'
+        Policy:
+          Statement:
+            - IBOX_LIST:
+            - invoke:
+                Action: "execute-api:Invoke"
+                Effect: Allow
+                Principal: '*'
+                Resource: "execute-api:/*"
+          Version: "2012-10-17"
+  CloudFrontDistribution:
+    - IBOX_BASE:
+        Create: 'yes'
+        DistributionConfig:
+          Aliases:
+            - Cdn: Sub(f'${{EnvRole}}${{{IBOX_RESNAME}DnsSuffix}}.cdn.%s' % cfg.HostedZoneNameEnv)
+          Origins:
+            - Default:
+                CustomOriginConfig:
+                  HTTPSPort: '443'
+                  HTTPPort: Ref('AWS::NoValue')
+                DomainName:  Sub('${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com')
+  Lambda:
+    - IBOX_BASE:
+        IBOX_LINKED_OBJ:
+          Permission:
+            Key: LambdaPermission
+            Type: ApiGateway
+            Conf:
+              IBOX_RESNAME: LambdaPermission.IBOX_INDEXNAME
+              IBOX_LINKED_OBJ_NAME: Ref(f"Lambda.IBOX_INDEXNAME")
+              IBOX_LINKED_OBJ_INDEX: Sub("arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/*/*")

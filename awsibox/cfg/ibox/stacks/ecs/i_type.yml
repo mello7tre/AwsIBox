@@ -1,0 +1,82 @@
+IBoxLoader: !include
+  - com/autoscaling/capacity.yml
+  - res/application-autoscaling/scalingpolicies.yml
+  - res/application-autoscaling/scalabletargets.yml
+  - res/cloudwatch/alarms.yml
+  - com/ecs/task.yml
+  - res/ecs/services.yml
+  - com/ecs/service-elasticloadbalancing.yml
+
+global:
+  ApplicationAutoScalingScalableTarget:
+    - ECSService:
+        ScheduledActions:
+          - Down:
+              Enabled: 'no'
+              CapacityMax: k
+              CapacityMin: CapacityMin
+              Schedule: 'cron(00 22 * * ? *)'
+          - Up:
+              Enabled: 'no'
+              CapacityMax: k
+              CapacityMin: CapacityMin
+              Schedule: 'cron(00 06 * * ? *)'
+  ApplicationAutoScalingScalingPolicy:
+    - Cpu:
+        IBOX_ENABLED: True
+    - Custom:
+        TargetTrackingScalingPolicyConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions:
+              - Cluster:
+                  Name: ClusterName
+                  Value: get_expvalue('Cluster', 'ClusterStack')
+              - Service:
+                  Name: ServiceName
+                  Value: GetAtt('Service', 'Name')
+  CloudFrontDistribution:
+    - IBOX_BASE:
+        DistributionConfig:
+          Origins:
+            - Default:
+                CustomOriginConfig:
+                  HTTPSPort.IBOX_CODE: If(
+                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerECSHttpsExternalPort"))
+  CloudWatchAlarm:
+    - ECSCPUHigh:
+        AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyUp')]
+    - ECSCPULow:
+        AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyDown')]
+  EC2SecurityGroup:
+    - EcsService:
+        IBOX_NO_OUTPUT: True
+        Condition: ECSTaskDefinitionBaseNetworkModeAwsVpc
+        GroupDescription: Enable access to Service
+        SecurityGroupIngress: {}
+  ECSService:
+    - Base:
+        IBOX_ENABLED: True
+        LaunchType.IBOX_AUTO_PO:
+          AllowedValues: ['', 'EC2', 'FARGATE']
+          Value: get_endvalue(IBOX_CURNAME)
+        LaunchType.IBOX_CODE: If('ECSTasksLaunchOnFargate', get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
+        LaunchType: EC2
+
+dev: &cfg_dev
+  CloudWatchAlarm:
+    TargetExternal5XX:
+      EvaluationPeriods: 0
+    TargetInternal5XX:
+      EvaluationPeriods: 0
+  ApplicationAutoScalingScalableTargetECSServiceScheduledActions:
+    Down:
+      Enabled: 'yes'
+    Up:
+      Enabled: 'yes'
+
+stg: *cfg_dev
+
+
+IBoxLoaderAfter: !include [
+  #com/ecs/fargate-spot.yml,
+]

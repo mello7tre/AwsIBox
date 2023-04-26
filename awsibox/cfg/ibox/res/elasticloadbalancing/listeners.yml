@@ -1,0 +1,137 @@
+Http: &http
+  Port: 80
+  Protocol: HTTP
+
+Https: &https
+  Certificates:
+    Regional:
+      CertificateArn: get_endvalue('RegionalCertificateArn')
+  Port: 443
+  Protocol: HTTPS
+  SslPolicy.IBOX_AUTO_PO: {}
+  SslPolicy: ELBSecurityPolicy-2016-08
+
+External: &external
+  DefaultActions:
+    - TG:
+        Type: forward
+        TargetGroupArn: Ref(f'TargetGroupExternal')
+  LoadBalancerArn: Ref(f'LoadBalancerApplicationExternal')
+  
+Internal: &internal
+  DefaultActions:
+    - TG:
+        Type: forward
+        TargetGroupArn: Ref(f'TargetGroupInternal')
+  LoadBalancerArn: Ref(f'LoadBalancerApplicationInternal')
+
+HttpExternal: &httpexternal
+  <<: [*external, *http]
+
+HttpInternal: &httpinternal
+  <<: [*internal, *http]
+
+HttpsExternal: &httpsexternal
+  <<: [*external, *https]
+
+ALB: &alb
+  DefaultActions:
+    - 404:
+        FixedResponseConfig:
+          ContentType: 'text/plain'
+          MessageBody: "404 Not Found\n"
+          StatusCode: '404'
+        Type: 'fixed-response' 
+
+
+global:
+  ElasticLoadBalancingV2Listener:
+    - EC2HttpInternal:
+        IBOX_ENABLED: False
+        <<: *http
+        DefaultActions:
+          - TG:
+              Type: forward
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplicationInternal')
+        LoadBalancerArn: Ref('LoadBalancerApplicationInternal')
+    - EC2HttpsExternal:
+        IBOX_ENABLED: False
+        <<: *https
+        DefaultActions:
+          - TG:
+              Type: forward
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplicationExternal')
+        LoadBalancerArn: Ref('LoadBalancerApplicationExternal')
+    - EC2TCPExternal:
+        IBOX_ENABLED: False
+        DefaultActions:
+          - TG:
+              Type: forward
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerNetworkExternal')
+        LoadBalancerArn: Ref('LoadBalancerNetworkExternal')
+        Protocol: TCP
+        Port: 80
+    - EC2TCPInternal:
+        IBOX_ENABLED: False
+        DefaultActions:
+          - TG:
+              Type: forward
+              TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerNetworkInternal')
+        LoadBalancerArn: Ref('LoadBalancerNetworkInternal')
+        Protocol: TCP
+        Port: 80
+    - ECSHttpDefaultExternal:
+        IBOX_ENABLED: False
+        IBOX_TITLE: ListenerHttpDefaultExternal
+        <<: [*alb, *httpexternal]
+        IBOX_OUTPUT:
+          - _:
+              Condition: LoadBalancerApplicationExternal
+              Value: Ref(IBOX_TITLE)
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_TITLE))
+        Condition: LoadBalancerApplicationExternal
+    - ECSHttpDefaultInternal:
+        IBOX_ENABLED: False
+        IBOX_TITLE: ListenerHttpDefaultInternal
+        <<: [*alb, *httpinternal]
+        IBOX_OUTPUT:
+          - _:
+              Condition: LoadBalancerApplicationInternal
+              Value: Ref(IBOX_TITLE)
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_TITLE))
+        Condition: LoadBalancerApplicationInternal
+    - ECSHttpsDefaultExternal:
+        IBOX_ENABLED: False
+        IBOX_TITLE: ListenerHttpsDefaultExternal
+        <<: [*alb, *httpsexternal]
+        IBOX_OUTPUT:
+          - _:
+              Condition: LoadBalancerApplicationExternal
+              Value: Ref(IBOX_TITLE)
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_TITLE))
+        Condition: LoadBalancerApplicationExternal
+    - ECSHttpExternal:
+        IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Name: LoadBalancerApplicationHttpExternal
+          Key: EC2SecurityGroupIngress
+          Type: LoadBalancerApplicationHttpExternal
+        <<: *httpexternal
+        LoadBalancerArn: get_expvalue('LoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
+    - ECSHttpInternal:
+        IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Name: LoadBalancerApplicationHttpInternal
+          Key: EC2SecurityGroupIngress
+          Type: LoadBalancerApplicationHttpInternal
+        <<: *httpinternal
+        LoadBalancerArn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
+    - ECSHttpsExternal:
+        IBOX_ENABLED: False
+        IBOX_RESNAME: ListenerHttpsExternal
+        IBOX_LINKED_OBJ:
+          Name: LoadBalancerApplicationHttpsExternal
+          Key: EC2SecurityGroupIngress
+          Type: LoadBalancerApplicationHttpsExternal
+        <<: *httpsexternal
+        LoadBalancerArn: get_expvalue('LoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')

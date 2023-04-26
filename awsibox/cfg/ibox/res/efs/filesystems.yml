@@ -1,0 +1,4 @@
+global:
+  EFSFileSystem:
+    - EcsCluster:
+        Name: EcsCluster

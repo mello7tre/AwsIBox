@@ -1,0 +1,65 @@
+IBoxLoader:
+  - !include
+    - res/sns/ibox_base.yml
+    - res/iam/ibox_base.yml
+    - res/sqs/ibox_base.yml
+    - res/lambda/ibox_base.yml
+    - res/events/ibox_base.yml
+    - res/scheduler/ibox_base.yml
+    - res/cloudwatch/ibox_base.yml
+    - res/codedeploy/ibox_base.yml
+    - res/certificatemanager/ibox_base.yml
+    - res/ec2/ibox_base.yml
+    - res/ecr/ibox_base.yml
+    - res/ecs/ibox_base.yml
+    - res/efs/ibox_base.yml
+    - res/elasticache/ibox_base.yml
+    - res/elasticloadbalancing/ibox_base.yml
+    - res/rds/ibox_base.yml
+    - res/route53/ibox_base.yml
+    - res/s3/ibox_base.yml
+    - res/cloudfront/ibox_base.yml
+    - res/application-autoscaling/ibox_base.yml
+    - res/autoscaling/ibox_base.yml
+    - res/apigateway/ibox_base.yml
+
+global:
+  Parameter:
+    - Env:
+        Description: Environment
+        AllowedValues: ['dev', 'stg', 'prod']
+        Default: dev
+    - EnvShort:
+        Description: 'Environment Short - NEVER CHANGE!'
+        AllowedValues: ['dev', 'stg', 'prd']
+        Default: dev
+    - EnvRole:
+        Description: 'Service Role'
+        AllowedPattern: '^[a-zA-Z0-9-_.]+$'
+        Default: IBOX_SKIP
+    - EnvStackVersion:
+        Description: 'Stack version'
+        Default: '1'
+  Condition:
+    - BaseRegion:
+        Equals(get_endvalue('BaseRegion'), Ref('AWS::Region'))
+  Output:
+    - BrandDomain:
+        Value: cfg.BrandDomain
+    - Env:
+        Value: Ref('Env')
+    - EnvRole:
+        Value: Ref('EnvRole')
+    - EnvStackVersion:
+        Value: Ref('EnvStackVersion')
+    - StackType:
+        Value: cfg.stacktype
+  BaseRegion: eu-west-1
+  MappingClass:
+    - EnvRegion:
+  AllowedIp: [{}]
+  CloudWatchAlarmEndpoint: 'mello+aws@ankot.org'
+  HostedZoneIdCF: Z2FDTNDATAQYW2
+  LoadBalancer: []
+  RecordSet: ['Internal', 'External']
+  SecurityGroupsImport: []

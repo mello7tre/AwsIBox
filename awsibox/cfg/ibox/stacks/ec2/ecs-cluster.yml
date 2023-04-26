@@ -1,0 +1,138 @@
+IBoxLoader: 
+  - !exclude
+      - com/cloudfront/for-services.yml
+      - com/elasticloadbalancing/loadbalancer.yml
+  - !include
+      #- com/autoscaling/imageid-ecs.yml
+      - com/ecs/capacityprovider.yml
+      - com/ecs/daemon-reserver-cpu.yml
+      - com/ec2/bottlerocket.yml
+
+global:
+  StackName: ecs
+  Parameter:
+    - GPUInstance:
+        Description: 'Install Coda and nvidia-docker2'
+        AllowedValues: ['yes', 'no']
+        Default: 'no'
+  Condition:
+    - GPUInstance:
+        Equals(Ref('GPUInstance'), 'yes')
+  Output:
+    - Cluster:
+        Value: Ref('Cluster')
+        Export: Export(Sub('Cluster-${AWS::StackName}'))
+  AutoScalingLifecycleHook:
+    - ECSDrainInstance:
+        IBOX_TITLE: ASGLifecycleHookECSDrainInstance
+        AutoScalingGroupName: Ref('AutoScalingGroup')
+        DefaultResult: 'ABANDON'
+        HeartbeatTimeout.IBOX_AUTO_PO: {}
+        HeartbeatTimeout: 3600
+        LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
+        NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
+        RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance')
+  AutoScalingGroup:
+    - Base:
+        Tags:
+          - ECSCluster:
+              Key: ECSCluster
+              Value: Ref('Cluster')
+              PropagateAtLaunch: true
+  AutoScalingScalingPolicy:
+    - Custom:
+        IBOX_ENABLED: True
+        EstimatedInstanceWarmup: 60
+        TargetTrackingConfiguration:
+          CustomizedMetricSpecification:
+            MetricName: CPUUtilization
+            Statistic: Maximum
+            Unit: Percent
+          TargetValue: 60
+    - Down:
+        IBOX_ENABLED: False
+    - Up:
+        IBOX_ENABLED: False
+  Apps: {}
+  AutoScalingScheduledAction:
+    - Rotate:
+        DesiredSize: CapacityDesired
+        MaxSize: CapacityMax
+        MinSize: CapacityMin
+        Recurrence: '45 5 * * *'
+  CloudWatchAlarm:
+    - EC2CPUHigh:
+        IBOX_ENABLED: False
+    - EC2CPULow:
+        IBOX_ENABLED: False
+  EC2SecurityGroupIngress:
+    - ContainerInstanceExternal:
+        FromPort: 32768
+        GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
+        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal')
+        ToPort: 60999
+    - ContainerInstanceInternal:
+        FromPort: 32768
+        GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
+        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
+        ToPort: 60999
+  ECSCluster:
+    - Base:
+        IBOX_TITLE: Cluster
+        IBOX_PARAMETER:
+          - _ClusterAutoReduceTag:
+              Description: Empty for mapped value
+        IBOX_CONDITION:
+          - _ClusterAutoReduceTag:
+              get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}ClusterAutoReduceTag')
+        AgentCfg:
+          EcsEnableSpotInstanceDraining: true
+          EcsImagePullBehavior: once
+          EcsWarmPoolsCheck: true
+          EcsNumImagesDeletePerCycle: 10
+          EcsEngineTaskCleanupWaitDuration: 7m
+          EcsImageCleanupInterval: 10m
+          EcsImageMinimumCleanupAge: 5m
+          EcsEnableUntrackedImageCleanup: true
+          NonEcsImageMinimumCleanupAge: 15m
+          EcsExcludeUntrackedImage: ''
+        ClusterAutoReduceTag: 'no'
+        Tags:
+          - ClusterAutoReduce:
+              IBOX_IF:
+                - _ClusterAutoReduceTag
+                - IBOX_IFVALUE
+                - Ref('AWS::NoValue')
+              Key: IBOX_CLUSTER_AUTO_REDUCE
+              Value: 'yes'
+  LaunchTemplate:
+    - Data:
+        BlockDeviceMappings:
+          - Xvda:
+              Ebs:
+                VolumeSize: 30
+        ImageIdLatest.IBOX_AUTO_PO:
+          Description: 'Latest ecs ami available from SSM'
+          Default: '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+          AllowedValues:
+            - '/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
+            - '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+            - '/aws/service/ecs/optimized-ami/amazon-linux-2/arm64/recommended/image_id'
+            - '/aws/service/ecs/optimized-ami/amazon-linux-2022/recommended/image_id'
+            - '/aws/service/bottlerocket/aws-ecs-1/x86_64/latest/image_id'
+            - '/aws/service/bottlerocket/aws-ecs-1/arm64/latest/image_id'
+  Listeners: []
+  RecordSet: []
+  IAMRole:
+    - Instance:
+        ManagedPolicyArns++:
+          - get_expvalue('IAMPolicyEcs')
+
+dev: &cfg_dev
+  AutoScalingLifecycleHook:
+    ECSDrainInstance:
+      HeartbeatTimeout: 900
+  LaunchTemplateData:
+    ImageId: latest
+
+stg: *cfg_dev

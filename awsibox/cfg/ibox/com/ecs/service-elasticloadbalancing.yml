@@ -1,0 +1,172 @@
+IBoxLoader: !include
+  - com/elasticloadbalancing/i_base.yml
+  - res/elasticloadbalancing/v2-listener-rules.yml
+  - com/cloudfront/for-services.yml
+  - com/elasticloadbalancing/v2-listener.yml
+
+global:
+  Parameter:
+    - LoadBalancer:
+        Description: "Comma delimited list of enabled LoadBalancerApplication - empty for mapped value - none to disable"
+        AllowedValues: ["", "none", "External", "Internal", "External,Internal"]
+  Condition:
+    - AlarmTargetExternal5XXAndLoadBalancerApplicationExternal:
+        And(
+          Condition("CloudWatchAlarmTargetExternal5XX"),
+          Condition("LoadBalancerApplicationExternal")
+        )
+    - AlarmTargetInternal5XXAndLoadBalancerApplicationInternal:
+        And(
+          Condition("CloudWatchAlarmTargetInternal5XX"),
+          Condition("LoadBalancerApplicationInternal")
+        )
+    - ECSServiceDoNotNeedRole:
+        Or(
+          Condition("ECSTaskDefinitionBaseNetworkModeAwsVpc"),
+          And(
+            Condition("LoadBalancerApplicationExternal"),
+            Condition("LoadBalancerApplicationInternal"),
+          )
+        )
+    - LoadBalancerApplicationExternal:
+        Or(
+          And(
+            Condition("LoadBalancerOverride"),
+            Or(
+              Equals(Ref("LoadBalancer"), "External"),
+              Equals(Ref("LoadBalancer"), "External,Internal"),
+            )
+          ),
+          And(
+            Not(Condition("LoadBalancerOverride")),
+            Or(
+              Equals(get_endvalue("LoadBalancer"), "External"),
+              Equals(get_endvalue("LoadBalancer"), "External,Internal"),
+            )
+          )
+        )
+    - LoadBalancerApplicationInternal:
+        Or(
+          And(
+            Condition("LoadBalancerOverride"),
+            Or(
+              Equals(Ref("LoadBalancer"), "Internal"),
+              Equals(Ref("LoadBalancer"), "External,Internal"),
+            )
+          ),
+          And(
+            Not(Condition("LoadBalancerOverride")),
+            Or(
+              Equals(get_endvalue("LoadBalancer"), "Internal"),
+              Equals(get_endvalue("LoadBalancer"), "External,Internal"),
+            )
+          )
+        )
+    - LoadBalancerApplicationNone:
+        And(
+          Not(Condition("LoadBalancerApplicationExternal")),
+          Not(Condition("LoadBalancerApplicationInternal")),
+        )
+    - LoadBalancerApplicationExternalOrInternal:
+        Or(
+          Condition("LoadBalancerApplicationExternal"),
+          Condition("LoadBalancerApplicationInternal"),
+        )
+  Output:
+    - LoadBalancerApplication:
+        Value: get_endvalue('LoadBalancer')
+  CloudWatchAlarm:
+    - TargetExternal5XX:
+        IBOX_ENABLED: True
+        Condition: AlarmTargetExternal5XXAndLoadBalancerApplicationExternal
+    - TargetInternal5XX:
+        IBOX_ENABLED: True
+        Condition: AlarmTargetInternal5XXAndLoadBalancerApplicationInternal
+  EC2SecurityGroup:
+    - EcsService:
+        IBOX_NO_OUTPUT: True
+        SecurityGroupIngress:
+          - External:
+              IBOX_IF:
+                - LoadBalancerApplicationExternal
+                - IBOX_IFVALUE
+                - Ref("AWS::NoValue")
+              FromPort: get_endvalue("ContainerDefinitions1ContainerPort")
+              IpProtocol: tcp
+              SourceSecurityGroupId: ImportValue("SecurityGroupLoadBalancerApplicationExternal")
+              ToPort: get_endvalue("ContainerDefinitions1ContainerPort")
+          - Internal:
+              IBOX_IF:
+                - LoadBalancerApplicationInternal
+                - IBOX_IFVALUE
+                - Ref("AWS::NoValue")
+              FromPort: get_endvalue("ContainerDefinitions1ContainerPort")
+              IpProtocol: tcp
+              SourceSecurityGroupId: ImportValue("SecurityGroupLoadBalancerApplicationInternal")
+              ToPort: get_endvalue("ContainerDefinitions1ContainerPort")
+  EC2SecurityGroupIngress:
+    - LoadBalancerApplicationHttpExternal:
+        IBOX_ENABLED: False
+        CidrIp: '0.0.0.0/0'
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
+        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpExternalPort')
+        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpExternalPort')
+    - LoadBalancerApplicationHttpInternal:
+        IBOX_ENABLED: False
+        CidrIp: '0.0.0.0/0'
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
+        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpInternalPort')
+        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpInternalPort')
+    - LoadBalancerApplicationHttpsExternal:
+        IBOX_ENABLED: False
+        CidrIp: '0.0.0.0/0'
+        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
+        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
+        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
+  ElasticLoadBalancingV2ListenerRule:
+    - HttpsExternalRules1:
+        IBOX_ENABLED: True
+        Condition: LoadBalancerApplicationExternal
+    - HttpInternalRules1:
+        IBOX_ENABLED: True
+        Condition: LoadBalancerApplicationInternal
+    - HttpExternalRules1:
+        Condition: LoadBalancerApplicationExternal
+  ElasticLoadBalancingV2TargetGroup:
+    - ECSLoadBalancerApplicationExternal:
+        IBOX_ENABLED: True
+        IBOX_TITLE: TargetGroupExternal
+        Condition: LoadBalancerApplicationExternal
+    - ECSLoadBalancerApplicationInternal:
+        IBOX_ENABLED: True
+        IBOX_TITLE: TargetGroupInternal
+        Condition: LoadBalancerApplicationInternal
+  LoadBalancer: ''
+  LoadBalancerType: Application
+  Route53RecordSet:
+    - ECSExternal:
+        IBOX_ENABLED: True
+        Condition: LoadBalancerApplicationExternalOrInternal
+    - ECSInternal:
+        IBOX_ENABLED: True
+        Condition: LoadBalancerApplicationInternal
+  ECSService:
+    - IBOX_BASE:
+        LoadBalancers:
+          - External:
+              IBOX_IF:
+                - LoadBalancerApplicationExternal
+                - IBOX_IFVALUE
+                - Ref("AWS::NoValue")
+              ContainerName: Ref('EnvRole')
+              ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
+              TargetGroupArn: Ref('TargetGroupExternal')
+          - Internal:
+              IBOX_IF:
+                - LoadBalancerApplicationInternal
+                - IBOX_IFVALUE
+                - Ref("AWS::NoValue")
+              ContainerName: Ref('EnvRole')
+              ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
+              TargetGroupArn: Ref('TargetGroupInternal')
+        Role: If("ECSServiceDoNotNeedRole", Ref("AWS::NoValue"), ImportValue("RoleECSService"))

@@ -1,0 +1,96 @@
+global:
+  ElasticLoadBalancingLoadBalancer:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _HealthCheck:
+              Value:
+                get_subvalue(
+                  'Target=${1M},Interval=${2M},Timeout=${3M},Healthy=${4M},Unhealthy=${5M}',
+                  [
+                    f'{IBOX_MAPNAME}HealthCheckTarget',
+                    f'{IBOX_MAPNAME}HealthCheckInterval',
+                    f'{IBOX_MAPNAME}HealthCheckTimeout',
+                    f'{IBOX_MAPNAME}HealthCheckHealthyThreshold',
+                    f'{IBOX_MAPNAME}HealthCheckUnhealthyThreshold'])
+        AccessLoggingPolicy:
+          IBOX_IF:
+            - IBOX_MAPNAME.AccessLoggingPolicyEnabled
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
+          EmitInterval.IBOX_AUTO_PO: {}
+          EmitInterval: 5
+          Enabled.IBOX_AUTO_PO:
+            CONDITION: get_condition('', 'equals', True, f'{IBOX_MAPNAME}AccessLoggingPolicyEnabled')
+          Enabled: false
+          S3BucketName: Sub(cfg.BucketNameLogs)
+          S3BucketPrefix: ''
+        ConnectionDrainingPolicy:
+          Enabled: true
+          Timeout: 5
+        ConnectionSettings:
+          IdleTimeout: 60
+        CrossZone: true
+        HealthCheck:
+          HealthyThreshold: '2'
+          Interval: '30'
+          Timeout: '6'
+          UnhealthyThreshold: '3'
+        LBCookieStickinessPolicy:
+          - IBOX_IF:
+              - IBOX_MAPNAME.LBCookieStickinessPolicyBaseCookieExpirationPeriod
+              - IBOX_IFVALUE
+              - Ref('AWS::NoValue')
+          - Base:
+              PolicyName: LBCookieStickinessPolicyBase
+              CookieExpirationPeriod.IBOX_AUTO_PO:
+                CONDITION: get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}LBCookieStickinessPolicyBaseCookieExpirationPeriod')
+              CookieExpirationPeriod: '0'
+        Listeners:
+          - IBOX_BASE:
+              IBOX_OUTPUT:
+                - IBOX_MAPNAME.Listeners.IBOX_PROPNAME:
+                    Value: >-
+                      LoadBalancerPort= ${LoadBalancerPort} ,InstancePort= ${InstancePort} ,Protocol= ${Protocol} ,Access= get_endvalue(f"{IBOX_MAPNAME}Access")
+              PolicyNames:
+                - If(f'{IBOX_MAPNAME}LBCookieStickinessPolicyBaseCookieExpirationPeriod', 'LBCookieStickinessPolicyBase', Ref('AWS::NoValue'))
+              SSLCertificateId: get_endvalue('RegionalCertificateArn')
+        SecurityGroups:
+          - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
+    - External:
+        Scheme: 'internet-facing'
+        Subnets: Split(',', get_expvalue('SubnetsPublic'))
+    - Internal:
+        Scheme: 'internal'
+        Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+
+  ElasticLoadBalancingV2Listener:
+    - IBOX_BASE:
+        Access: Public
+        Port.IBOX_AUTO_PO: {}
+
+  ElasticLoadBalancingV2ListenerRule:
+    - IBOX_BASE:
+        Conditions:
+          - IBOX_BASE:
+              Values.IBOX_CUSTOM_OBJ:
+                Value.IBOX_PCO:
+                  IBOX_PARAMETER:
+                    - IBOX_REFNAME.Values.IBOX_RESNAME:
+                        Description: "Empty for mapped value"
+                  IBOX_OUTPUT:
+                    - IBOX_REFNAME.Values.IBOX_RESNAME:
+                        Value: get_endvalue(f"{IBOX_REFNAME}Values{IBOX_RESNAME}")
+                Value: get_endvalue(f"{IBOX_REFNAME}Values{IBOX_RESNAME}")
+        Priority.IBOX_AUTO_PO: {}
+
+  ElasticLoadBalancingV2TargetGroup:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _HealthCheck:
+              Value: >-
+                Path= ${HealthCheckPath} ,Interval= ${HealthCheckIntervalSeconds} ,Timeout= ${HealthCheckTimeoutSeconds} ,Healthy= ${HealthyThresholdCount} ,Unhealthy= ${UnhealthyThresholdCount}
+        HealthCheckIntervalSeconds: Ref('AWS::NoValue')
+        HealthCheckPath: Ref('AWS::NoValue')
+        HealthCheckTimeoutSeconds: Ref('AWS::NoValue')
+        HealthyThresholdCount: Ref('AWS::NoValue')
+        UnhealthyThresholdCount: Ref('AWS::NoValue')

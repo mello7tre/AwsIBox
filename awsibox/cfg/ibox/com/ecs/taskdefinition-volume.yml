@@ -1,0 +1,15 @@
+IBoxLoader: !include
+  - com/efs/accesspoint-app.yml
+
+
+global:
+  ECSTaskDefinition:
+    - Base:
+        Volumes:
+          - EFS:
+              EFSVolumeConfiguration:
+                AuthorizationConfig:
+                  AccessPointId: Ref('EFSAccessPointApp')
+                FilesystemId: ImportValue('EFSFileSystemEcsCluster')
+                TransitEncryption: ENABLED
+              Name: EFS

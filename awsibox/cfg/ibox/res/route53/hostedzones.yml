@@ -1,0 +1,44 @@
+Public: &public
+  IBOX_PARAMETER:
+    - Route53.IBOX_RESNAME.Enabled:
+        Description: 'Create Zone - can be created in only one Region - empty for default based on mapping'
+    - Route53.IBOX_RESNAME.Id:
+        Description: 'Id of Zone - required in all Regions where zone is not created - empty for default based on mapping'
+  IBOX_CONDITION:
+    - _:
+        get_condition("", "equals", "yes", f"Route53{IBOX_RESNAME}Enabled")
+  IBOX_OUTPUT:
+    - HostedZoneId.IBOX_INDEXNAME:
+        Condition: None
+        Value: If(IBOX_RESNAME, Ref(IBOX_RESNAME), get_endvalue(f"Route53{IBOX_RESNAME}Id"))
+        Export: Export(f"HostedZoneId{IBOX_INDEXNAME}")
+  Condition: IBOX_RESNAME
+
+Private: &private
+  IBOX_OUTPUT:
+    - HostedZoneId.IBOX_INDEXNAME:
+        Condition: None
+        Value: Ref(IBOX_RESNAME)
+        Export: Export(f"HostedZoneId{IBOX_INDEXNAME}")
+
+
+global:
+  Route53HostedZone:
+    - Env:
+        <<: *public
+        HostedZoneConfig:
+          Comment: Sub('${EnvShort} public zone')
+        Name: Sub(cfg.HostedZoneNameEnv)
+    - EnvExtra1:
+        <<: *public
+        IBOX_ENABLED: False
+    - Private:
+        <<: *private
+        Enabled: 'yes'
+        HostedZoneConfig:
+            Comment: Sub('${EnvShort} private zone ${AWS::Region}')
+        Name: Sub(cfg.HostedZoneNamePrivate)
+        VPCs:
+          - Vpc1:
+              VPCId: get_expvalue('VpcId')
+              VPCRegion: Ref('AWS::Region')

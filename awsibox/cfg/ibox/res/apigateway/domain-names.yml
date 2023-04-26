@@ -1,0 +1,15 @@
+global:
+  ApiGatewayDomainName:
+    - Global:
+        CertificateArn: get_endvalue('GlobalCertificateArn')
+        DomainName: Sub('saas-apis.%s' % cfg.HostedZoneNameEnv)
+        EndpointConfiguration:
+          Types:
+            - 'EDGE'
+    - Regional:
+        IBOX_ENABLED: True
+        DomainName: Sub('api.%s' % cfg.HostedZoneNameRegionEnv)
+        EndpointConfiguration:
+          Types:
+            - 'REGIONAL'
+        RegionalCertificateArn: get_endvalue('RegionalCertificateArn')

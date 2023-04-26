@@ -1,0 +1,14 @@
+global:
+  ApplicationAutoScalingScalingPolicy:
+    - IBOX_BASE:
+        PolicyName: IBOX_RESNAME
+        ScalingTargetId: Ref('ApplicationAutoScalingScalableTargetECSService')
+        TargetTrackingScalingPolicyConfiguration:
+          PredefinedMetricSpecification.IBOX_PCO:
+            IBOX_OUTPUT:
+              - _:
+                  Value: PredefinedMetricType= ${PredefinedMetricSpecificationPredefinedMetricType} ,TargetValue= ${TargetValue}
+          CustomizedMetricSpecification.IBOX_PCO:
+            IBOX_OUTPUT:
+              - _:
+                  Value: MetricName= ${CustomizedMetricSpecificationMetricName} ,Statistic= ${CustomizedMetricSpecificationStatistic} ,TargetValue= ${TargetValue}

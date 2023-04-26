@@ -1,0 +1,19 @@
+global:
+  EFSFileSystem:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _:
+              Condition: IBOX_RESNAME
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)
+        IBOX_LINKED_OBJ:
+          Key: Route53RecordSet
+          Type: EFS
+          Conf:
+            IBOX_RESNAME: RecordSetEFS.IBOX_INDEXNAME
+            IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+            IBOX_LINKED_OBJ_INDEX: IBOX_INDEXNAME
+        Condition: IBOX_RESNAME
+        Enabled: 'no'
+        Encrypted: false
+        PerformanceMode: generalPurpose

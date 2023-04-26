@@ -1,0 +1,120 @@
+IBoxLoader: !include
+  - res/autoscaling/autoscalinggroups.yml
+  - com/elasticloadbalancing/loadbalancer.yml
+  - com/ec2/securitygroup.yml
+  - res/cloudwatch/alarms.yml
+  - com/cloudfront/for-services.yml
+  - com/iam/policy-parameterstore.yml
+  - res/iam/instance-profiles.yml
+  - res/sns/subscriptions.yml
+  - res/sqs/queue-policies.yml
+  - com/lambda/i_base.yml
+  - res/iam/roles.yml
+
+global:
+  Parameter:
+    - UpdateMode:
+        Description: 'How to update Instances'
+        AllowedValues: ['none', 'Replace', 'Rolling']
+        Default: 'none'
+    - AutoScalingGroupBaseHealthCheckGracePeriod:
+        Description: 'How long to wait before ASG check instance health - empty for default based on env/role'
+  Condition:
+    - RollingUpdate:
+        Equals(Ref('UpdateMode'), 'Rolling')
+    - WillReplace:
+        Equals(Ref('UpdateMode'), 'Replace')
+    - Spot:
+        And(
+          Condition('LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice'),
+          Equals('1', '1'),
+        )
+  Output:
+    - UpdateMode:
+        Value: Ref('UpdateMode')
+  CloudWatchAlarm:
+    - EC2CPUHigh:
+        IBOX_ENABLED: True
+    - EC2CPULow:
+        IBOX_ENABLED: True
+  Apps:
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+  AutoScalingScalingPolicy:
+    - Custom:
+        TargetTrackingConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions:
+              - AutoScaling:
+                  Name: AutoScalingGroupName
+                  Value: Ref('AutoScalingGroup')
+    - Down:
+        IBOX_ENABLED: True
+    - Up:
+        IBOX_ENABLED: True
+  AutoScalingScheduledAction:
+    - Down:
+        DesiredSize: k
+        MaxSize: k
+        MinSize: CapacityMin
+        Recurrence: '00 19 * * *'
+    - Up:
+        DesiredSize: CapacityDesired
+        MaxSize: CapacityMax
+        MinSize: CapacityMin
+        Recurrence: '30 08 * * mon-fri'
+  CloudFrontDistribution:
+    - IBOX_BASE:
+        DistributionConfig:
+          Origins:
+            - Default:
+                CustomOriginConfig:
+                  HTTPSPort.IBOX_CODE: If(
+                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerEC2HttpsExternalPort"))
+  EC2SecurityGroup:
+    - InstancesRules:
+        IBOX_NO_OUTPUT: True
+        GroupDescription: Enable Access from LoadBalancer to Instances and between Instances
+  LoadBalancerType: Classic
+  IAMPolicy:
+    - CloudFormation:
+        Roles:
+          - Ref('RoleInstance')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'cloudformation:DescribeStackResource'
+                  - 'cloudformation:SignalResource'
+                Effect: Allow
+                Resource: Sub('arn:aws:cloudformation:*:*:stack/${AWS::StackName}/*')
+    - ParameterStore:
+        Roles:
+          - Ref('RoleInstance')
+  IAMRole:
+    - Instance:
+        ManagedPolicyArns:
+          - get_expvalue('IAMPolicyBaseInstance')
+          - get_expvalue('IAMPolicySSM')
+        Principal: ec2.amazonaws.com
+
+dev: &cfg_dev
+  CloudWatchAlarm:
+    BackendExternal5XX:
+      EvaluationPeriods: 0
+    BackendInternal5XX:
+      EvaluationPeriods: 0
+    TargetEC2External5XX:
+      EvaluationPeriods: 0
+    TargetEC2Internal5XX:
+      EvaluationPeriods: 0
+
+stg: *cfg_dev 
+
+
+prd:
+  #AutoScalingGroupBaseHealthCheckType: ELB
+
+IBoxLoaderAfter: !include
+  - com/autoscaling/spot-auto.yml
+  - com/autoscaling/cloudwatch-agent.yml

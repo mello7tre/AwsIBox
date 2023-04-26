@@ -1,0 +1,120 @@
+IBoxLoader: !include [
+  #com/autoscaling/ephemeral.yml,
+]
+
+global:
+  LaunchTemplate:
+    - Data:
+        IBOX_PARAMETER:
+          - DoNotSignal:
+              Description: 'Avoid signaling ASG and instance shutdown if user-data fail.'
+              AllowedValues: ['yes', 'no']
+              Default: 'no'
+          - EfsMounts:
+              Description: 'Efs Mounts List'
+              Type: 'CommaDelimitedList'
+          - _BlockDeviceMappingsAdditionalStorageEbsVolumeSize:
+              Description: 'Size in GiB of additional EBS storage - 0 to disable - empty for default'
+              AllowedValues: ['', '0', '4', '8', '16', '32', '64', '128', '256', '512', '1024']
+        IBOX_CONDITION:
+          - DoNotSignal:
+              Equals(Ref('DoNotSignal'), 'yes')
+          - EfsMounts:
+               Not(Equals(Select('0', Ref('EfsMounts')), ''))
+          - _BlockDeviceMappingsAdditionalStorage:
+              get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}BlockDeviceMappingsAdditionalStorageEbsVolumeSize')
+          - _BlockDeviceMappingsAdditionalStorageMount:
+              And(
+                Condition(f'{IBOX_RESNAME}BlockDeviceMappingsAdditionalStorage'),
+                get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}BlockDeviceMappingsAdditionalStorageMount')
+              )
+        IBOX_OUTPUT:
+          - DoNotSignal:
+              Value: Ref('DoNotSignal')
+          - EfsMounts:
+              Condition: 'EfsMounts'
+              Value: Join(',', Ref('EfsMounts'))
+          - _BlockDeviceMappingsAdditionalStorageEbsVolumeSize:
+              Value: get_endvalue(f'{IBOX_RESNAME}BlockDeviceMappingsAdditionalStorageEbsVolumeSize')
+        BlockDeviceMappings:
+          - Xvda:
+              DeviceName: /dev/xvda
+              Ebs:
+                VolumeSize.IBOX_AUTO_PO:
+                  Description: 'Size of HD in GB - empty for default based on env/role'
+                VolumeSize: 8
+                VolumeType: gp3
+          - AdditionalStorage:
+              IBOX_IF:
+                - LaunchTemplateDataBlockDeviceMappingsAdditionalStorage
+                - IBOX_IFVALUE
+                - Ref('AWS::NoValue')
+              DeviceName: /dev/xvdx
+              Ebs:
+                VolumeSize: 0
+                VolumeType: gp3
+              Mount: 'yes'
+        IamInstanceProfile:
+          Arn: GetAtt('InstanceProfile', 'Arn')
+        ImageId.IBOX_CODE: If(
+          'LaunchTemplateDataImageIdLatest', Ref('LaunchTemplateDataImageIdLatest'), get_endvalue('LaunchTemplateDataImageId'))
+        ImageId.IBOX_AUTO_PO: {}
+        ImageId: latest
+        ImageIdLatest.IBOX_AUTO_PO:
+          Description: 'Latest Amazon Linux2 ami available from SSM'
+          Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+          AllowedValues:
+            - '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+            - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-x86_64-gp2'
+            - '/aws/service/ami-amazon-linux-latest/amzn2-ami-kernel-5.10-hvm-arm64-gp2'
+            - '/aws/service/ami-amazon-linux-latest/al2023-ami-minimal-kernel-default-x86_64'
+          Type: 'AWS::SSM::Parameter::Value<String>'
+          CONDITION: get_condition('', 'equals', 'latest', f'{IBOX_RESNAME}ImageId')
+          Condition: IBOX_RESNAME.ImageIdLatest
+        InstanceMarketOptions:
+          IBOX_IF:
+            - LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
+          MarketType: spot
+          SpotOptions:
+            MaxPrice.IBOX_AUTO_P:
+              Description: 'Maximum Spot Price of ASG - empty for default based on env/role - 0 to disable'
+              CONDITION: get_condition('', 'not_equals', '0', 'LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice')
+            MaxPrice: '0'
+        InstanceType.IBOX_AUTO_PO:
+          Description: 'InstanceType - default for default based on env/role'
+          ConstraintDescription: 'must be a valid EC2 instance type.'
+          AllowedValues: cfg.INSTANCE_LIST
+          Default: 'default'
+        InstanceType: t3.micro
+        KeyName.IBOX_AUTO_PO:
+          Description: 'EC2 SSH Key - empty for default'
+        KeyName: none
+        Monitoring:
+          Enabled: false
+        NetworkInterfaces:
+          - eth0:
+              AssociatePublicIpAddress: false
+              DeviceIndex: 0
+              Groups:
+                - GetAtt('SecurityGroupInstancesRules', 'GroupId')
+        TagSpecifications:
+          - instance:
+              ResourceType: instance
+              Tags:
+                - Name:
+                    Key: Name
+                    Value: Ref('EnvRole')
+                - EnvStackName:
+                    Key: EnvStackName
+                    Value: Ref('AWS::StackName')
+          - volume:
+              ResourceType: volume
+              Tags:
+                - Name:
+                    Key: Name
+                    Value: Ref('EnvRole')
+                - EnvStackName:
+                    Key: EnvStackName
+                    Value: Ref('AWS::StackName')

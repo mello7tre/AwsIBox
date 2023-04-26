@@ -1,0 +1,68 @@
+IBoxLoader: !include
+  - com/autoscaling/capacity.yml
+  #- com/autoscaling/imageid-ec2.yml
+  - res/autoscaling/launchtemplates.yml
+  - res/autoscaling/scalingpolicies.yml
+
+global:
+  AutoScalingGroup:
+    - Base:
+        IBOX_TITLE: AutoScalingGroup
+        AvailabilityZones: GetAZs()
+        DesiredCapacity: get_endvalue('CapacityDesired')
+        MinSize: get_endvalue('CapacityMin')
+        CreationPolicy:
+          ResourceSignal:
+            Count: get_endvalue('CapacityDesired')
+            Timeout: PT15M
+        HealthCheckGracePeriod: 600
+        HealthCheckType.IBOX_AUTO_PO: {}
+        HealthCheckType: EC2
+        LaunchTemplate:
+          LaunchTemplateId: Ref('LaunchTemplate')
+          Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
+        MaxInstanceLifetime.IBOX_AUTO_PO:
+          Description: 'Empty for mapped value - 0 to disable'
+          CONDITION: get_condition('', 'not_equals', '0', IBOX_CURNAME)
+          Value: ${MaxInstanceLifetime}
+        MaxInstanceLifetime.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
+        MaxInstanceLifetime: 0
+        MaxSize: get_endvalue('CapacityMax')
+        MetricsCollection:
+          - 0:
+              Granularity: 1Minute
+        Tags:
+          - Name:
+              Key: Name
+              Value: Ref('EnvRole')
+              PropagateAtLaunch: true
+          - EnvStackName:
+              Key: EnvStackName
+              Value: Ref('AWS::StackName')
+              PropagateAtLaunch: true
+        TerminationPolicies: ['OldestInstance']
+        UpdatePolicy:
+          AutoScalingReplacingUpdate:
+            IBOX_IF:
+              - WillReplace
+              - IBOX_IFVALUE
+              - Ref('AWS::NoValue')
+            WillReplace: true
+          AutoScalingRollingUpdate:
+            IBOX_IF:
+              - RollingUpdate
+              - IBOX_IFVALUE
+              - Ref('AWS::NoValue')
+            MaxBatchSize: 1
+            MinInstancesInService: get_endvalue('CapacityDesired')
+            MinSuccessfulInstancesPercent: 100 
+            PauseTime: PT20M
+            SuspendProcesses:
+              - HealthCheck
+              - ReplaceUnhealthy
+              - AlarmNotification
+              - ScheduledActions
+            WaitOnResourceSignals: true
+          AutoScalingScheduledAction:
+            IgnoreUnmodifiedGroupSizeProperties: true
+        VPCZoneIdentifier: Split(',', get_expvalue('SubnetsPrivate'))

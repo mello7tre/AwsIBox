@@ -1,0 +1,6 @@
+global:
+  EC2VPCEndpoint:
+    - IBOX_BASE:
+        Create: 'no'
+        RouteTableIds: [get_expvalue("RouteTablePrivate")]
+        VpcId: get_expvalue("VpcId")

@@ -1,0 +1,65 @@
+global:
+  AutoScalingScalingPolicy:
+    - IBOX_BASE:
+        AutoScalingGroupName: Ref('AutoScalingGroup')
+        TargetTrackingConfiguration:
+          PredefinedMetricSpecification.IBOX_PCO:
+            IBOX_OUTPUT:
+              - _:
+                  Value: PredefinedMetricType= ${PredefinedMetricSpecificationPredefinedMetricType} ,TargetValue= ${TargetValue}
+          CustomizedMetricSpecification.IBOX_PCO:
+            IBOX_OUTPUT:
+              - _:
+                  Value: MetricName= ${CustomizedMetricSpecificationMetricName} ,Statistic= ${CustomizedMetricSpecificationStatistic} ,TargetValue= ${TargetValue}
+
+  AutoScalingScheduledAction:
+    - IBOX_BASE:
+        IBOX_PARAMETER:
+          - _DesiredSize:
+              Description: 'k to keep current value - empty for mapped value'
+          - _MinSize:
+              Description: 'k to keep current value - empty for mapped value'
+          - _MaxSize:
+              Description: 'k to keep current value - empty for mapped value'
+          - _Recurrence:
+              Description: 'empty for mapped value - "none" to disable'
+          - _StartTime:
+              Description: ''
+          - _TimeZone:
+              Description: 'empty for mapped value - https://en.wikipedia.org/wiki/List_of_tz_database_time_zones'
+        IBOX_CONDITION:
+          - _KeepDesiredSize:
+              get_condition('', 'equals', 'k', f'{IBOX_RESNAME}DesiredSize')
+          - _KeepMinSize:
+              get_condition('', 'equals', 'k', f'{IBOX_RESNAME}MinSize')
+          - _KeepMaxSize:
+              get_condition('', 'equals', 'k', f'{IBOX_RESNAME}MaxSize')
+          - _CapacityDesiredSize:
+              get_condition('', 'equals', 'CapacityDesired', f'{IBOX_RESNAME}DesiredSize')
+          - _CapacityMinSize:
+              get_condition('', 'equals', 'CapacityMin', f'{IBOX_RESNAME}MinSize')
+          - _CapacityMaxSize:
+              get_condition('', 'equals', 'CapacityMax', f'{IBOX_RESNAME}MaxSize')
+          - _:
+              get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}Recurrence')
+        IBOX_OUTPUT:
+          - _:
+              Value: >-
+                DesiredSize= ${DesiredCapacity} ,MinSize= ${MinSize} ,MaxSize= ${MaxSize}
+                ,Recurrence= ${Recurrence} ,StartTime= ${StartTime} ,TimeZone= ${TimeZone}
+        Condition: IBOX_RESNAME
+        AutoScalingGroupName: Ref('AutoScalingGroup')
+        DesiredCapacity.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityDesiredSize',
+          get_endvalue('CapacityDesired'),
+          get_endvalue(f'{IBOX_RESNAME}DesiredSize', nocondition=f'{IBOX_RESNAME}KeepDesiredSize'))
+        MinSize.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityMinSize',
+          get_endvalue('CapacityMin'),
+          get_endvalue(f'{IBOX_RESNAME}MinSize', nocondition=f'{IBOX_RESNAME}KeepMinSize'))
+        MaxSize.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityMaxSize',
+          get_endvalue('CapacityMax'),
+          get_endvalue(f'{IBOX_RESNAME}MaxSize', nocondition=f'{IBOX_RESNAME}KeepMaxSize'))
+        StartTime: Ref('AWS::NoValue')
+        TimeZone: Etc/UTC

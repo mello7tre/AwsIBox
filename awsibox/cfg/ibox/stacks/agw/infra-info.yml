@@ -1,0 +1,83 @@
+IBoxLoader:
+  - !include
+    - com/lambda/layers.yml
+  - !exclude
+    - com/cloudfront/for-services.yml
+
+global:
+  StackName: iif
+  ApiGatewayRestApi:
+    - Base:
+        Description: 'Infrastracture Informations'
+        Name: 'InfraInfo'
+        Stage: v1
+        BinaryMediaTypes: ['*/*']
+  ApiGatewayMethod:
+    - Resource01RootGET:
+        ApiKeyRequired: false
+        AuthorizationType: NONE
+        HttpMethod: GET
+        Integration:
+          ContentHandling: CONVERT_TO_TEXT
+          IntegrationHttpMethod: POST
+          IntegrationResponses:
+            - 200:
+                ResponseTemplates:
+                  'text/html': '{}'
+                StatusCode: '200'
+          Uri: Sub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaInfraInfo%s.Arn}/invocations' % cfg.ApiGatewayRestApi['Base']['Stage'])
+          PassthroughBehavior: WHEN_NO_MATCH
+          TimeoutInMillis: 29000
+          Type: AWS_PROXY
+        RequestParameters:
+          'method.request.path.proxy': True
+        ResourceId: Ref("ApiGatewayResource01Root")
+        RestApiId: Ref("ApiGatewayRestApi")
+  ApiGatewayResource:
+    - 01Root:
+        PathPart: '{proxy+}'
+        ParentId: GetAtt('ApiGatewayRestApi', 'RootResourceId')
+        RestApiId: Ref("ApiGatewayRestApi")
+  ApiGatewayStage:
+    - v1:
+        IBOX_LINKED_OBJ:
+          Conf:
+            DependsOn: ApiGatewayMethodResource01RootGET
+        CacheClusterEnabled: false
+        MethodSettings:
+          - 1:
+              CachingEnabled: false
+              DataTraceEnabled: false
+              HttpMethod: '*'
+              MetricsEnabled: true
+              ResourcePath: '/*'
+              ThrottlingBurstLimit: 5000
+              ThrottlingRateLimit: 10000
+        TracingEnabled: false
+  IAMPolicy:
+    - LambdaInfraInfo:
+        Roles:
+          - Ref('RoleLambdaInfraInfov1')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'cloudformation:DescribeStack*'
+                  - 'ecs:ListClusters'
+                  - 'ecs:ListServices'
+                  - 'ecs:DescribeServices'
+                  - 'application-autoscaling:DescribeScalableTargets'
+                Effect: Allow
+                Resource: '*'
+  Lambda:
+    - InfraInfov1:
+        Architectures:
+          - arm64
+        Code:
+          ZipFile: InfraInfo
+        Description: 'Infrastracture Informations'
+        Layers:
+          - LambdaLayerVersionPythonArm64IboxStacksOps
+        MemorySize: 512
+        Runtime: python3.9
+        Timeout: 60

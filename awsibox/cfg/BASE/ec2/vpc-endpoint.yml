@@ -1,9 +1,0 @@
-global:
-  EC2VPCEndpoint:
-    - IBOX_BASE:
-        Create: 'no'
-        RouteTableIds: [get_expvalue("RouteTablePrivate")]
-        VpcId: get_expvalue("VpcId")
-    - S3:
-        Create: 'yes'
-        ServiceName: Sub("com.amazonaws.${AWS::Region}.s3")

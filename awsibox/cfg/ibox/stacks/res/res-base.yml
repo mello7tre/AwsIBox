@@ -1,0 +1,22 @@
+IBoxLoader: !include
+  - com/elasticloadbalancing/accountid.yml
+  - res/route53/hostedzones.yml
+  - com/ec2/securitygroup.yml
+  - com/iam/managed-policies.yml
+  - com/iam/roles.yml
+  - com/ec2/securitygroups-base.yml
+  - com/lambda/ecs-draininstance.yml
+  - com/lambda/ecs-runtask.yml
+  - com/sns/cloudwatch-alarm.yml
+  - com/servicediscovery/publicdnsnamespace-find.yml
+  - com/kms/key-and-alias-parameter-store.yml
+  - res/ec2/vpc-endpoints.yml
+  - com/s3/bucket-log.yml
+
+global:
+  StackName: r-base
+  S3Bucket:
+    - AppRepository:
+        OutputValueRegion: 'AWSRegion'
+        VersioningConfiguration:
+          Status: Enabled

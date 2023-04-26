@@ -1,0 +1,52 @@
+IBoxLoader: !include
+  - com/lambda/layers.yml
+
+global:
+  StackName: r-ccr-lth
+  Parameter:
+    - EnvApp1Version:
+        Description: EnvApp1Version used by Lambda
+    - LightHouseTaskStackName:
+        Description: LightHouseTask StackName
+  Output:
+    - EnvApp1Version:
+        Value: Ref('EnvApp1Version')
+  IAMPolicy:
+    - LambdaCCRLightHouse:
+        Roles:
+          - Ref('RoleLambdaCCRLightHouse')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:RunTask'
+                  - 'ecs:StartTask'
+                Effect: Allow
+                Resource: Sub('arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/lth-t-*')
+            - 2:
+                Action:
+                  - 'iam:PassRole'
+                Effect: Allow
+                Resource:
+                  - Sub('arn:aws:iam::${AWS::AccountId}:role/lth-t-*')
+                  - get_expvalue('RoleECSTaskExecution')
+            - 3:
+                Action:
+                  - 'events:ListTargetsByRule'
+                Effect: Allow
+                Resource: '*'
+  Lambda:
+    - CCRLightHouse:
+        Architectures:
+          - arm64
+        Export: True
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
+        Description: 'Custom Resource for executing lighthouse-task'
+        Layers:
+          - LambdaLayerVersionPython39CRHelper
+        Runtime: python3.9
+        Timeout: 300
+        Environment:
+          Variables:
+            - LightHouseTaskStackName: Ref('LightHouseTaskStackName')

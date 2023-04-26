@@ -1,0 +1,78 @@
+Base: &base
+  HealthCheckIntervalSeconds: 30
+  HealthCheckTimeoutSeconds: 6
+  HealthyThresholdCount: 2
+  UnhealthyThresholdCount: 3
+  TargetGroupAttributes:
+    - CookieDuration:
+        IBOX_IF:
+          - IBOX_MAPNAME.TargetGroupAttributesCookieDurationValue
+          - IBOX_IFVALUE
+          - Ref('AWS::NoValue')
+        Key: 'stickiness.lb_cookie.duration_seconds'
+        Value.IBOX_AUTO_PO:
+          Description: Sticky Cookie duration in seconds - empty for mapped value - 0 to disable
+          CONDITION: get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}TargetGroupAttributesCookieDurationValue')
+        Value: '0'
+    - DeregistrationDelay:
+        Key: 'deregistration_delay.timeout_seconds'
+        Value.IBOX_AUTO_PO: {}
+        Value: '30'
+    - GroupCookieSticky:
+        Key: 'stickiness.enabled'
+        Value: If(f'{IBOX_MAPNAME}TargetGroupAttributesCookieDurationValue', 'true', 'false')
+  Protocol: HTTP
+  VpcId: get_expvalue('VpcId')
+
+global:
+  ElasticLoadBalancingV2TargetGroup:
+    - EC2LoadBalancerApplicationExternal:
+        IBOX_ENABLED: False
+        <<: *base
+        Port: 80
+    - EC2LoadBalancerApplicationInternal:
+        IBOX_ENABLED: False
+        <<: *base
+        Port: 80
+    - EC2LoadBalancerNetworkExternal:
+        IBOX_ENABLED: False
+        Port: 80
+        Protocol: TCP
+        VpcId: get_expvalue('VpcId')
+    - EC2LoadBalancerNetworkInternal:
+        IBOX_ENABLED: False
+        Port: 80
+        Protocol: TCP
+        VpcId: get_expvalue('VpcId')
+    - ECSLoadBalancerApplicationDefaultExternal:
+        IBOX_ENABLED: False
+        IBOX_TITLE: TargetGroupServiceUnavailableExternal
+        IBOX_OUTPUT:
+          - TargetGroupServiceUnavailableExternal:
+              Value: Ref("TargetGroupServiceUnavailableExternal")
+        Condition: LoadBalancerApplicationExternal
+        Targets:
+          - ServiceUnavailable:
+              Id: get_expvalue(f'LambdaServiceUnavailableArn')
+        TargetType: lambda
+    - ECSLoadBalancerApplicationDefaultInternal:
+        IBOX_ENABLED: False
+        IBOX_TITLE: TargetGroupServiceUnavailableInternal
+        IBOX_OUTPUT:
+          - TargetGroupServiceUnavailableInternal:
+              Value: Ref("TargetGroupServiceUnavailableInternal")
+        Condition: LoadBalancerApplicationInternal
+        Targets:
+          - ServiceUnavailable:
+              Id: get_expvalue(f'LambdaServiceUnavailableArn')
+        TargetType: lambda
+    - ECSLoadBalancerApplicationExternal:
+        IBOX_ENABLED: False
+        <<: *base
+        Port: get_endvalue('ContainerDefinitions1ContainerPort')
+        TargetType: If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))
+    - ECSLoadBalancerApplicationInternal:
+        IBOX_ENABLED: False
+        <<: *base
+        Port: get_endvalue('ContainerDefinitions1ContainerPort')
+        TargetType: If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'ip', Ref('AWS::NoValue'))

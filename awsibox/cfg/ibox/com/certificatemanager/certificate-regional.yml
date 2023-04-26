@@ -1,0 +1,29 @@
+global:
+  CertificateManagerCertificate:
+    - LoadBalancerExternal:
+        IBOX_ENABLED: False
+        DomainName: Sub('*.%s' % cfg.HostedZoneNameRegionEnv)
+        DomainValidationOptions:
+          - Region:
+              DomainName: Sub('*.%s' % cfg.HostedZoneNameRegionEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
+          - Origin:
+              DomainName: Sub('*.origin.%s' % cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
+          - Cdn:
+              DomainName: Sub('*.cdn.%s' % cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
+          - Env:
+              DomainName: Sub('*.%s' % cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
+          - Zone:
+              DomainName: Sub(cfg.HostedZoneNameEnv)
+              ValidationDomain: Sub(cfg.HostedZoneNameEnv)
+        SubjectAlternativeNames:
+          - Sub('*.origin.%s' % cfg.HostedZoneNameEnv)
+          - Sub('*.cdn.%s' % cfg.HostedZoneNameEnv)
+          - Sub('*.%s' % cfg.HostedZoneNameEnv)
+          - Sub(cfg.HostedZoneNameEnv)
+        ValidationMethod: 'EMAIL'
+        #ValidationMethod: 'DNS'
+  RegionalCertificateArn: none

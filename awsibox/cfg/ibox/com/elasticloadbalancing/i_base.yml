@@ -1,0 +1,15 @@
+IBoxLoader: !include
+  - com/elasticloadbalancing/hostedzoneid.yml
+  - res/elasticloadbalancing/listeners.yml
+  - res/elasticloadbalancing/v2-targetgroups.yml
+  - com/certificatemanager/certificate-regional.yml
+  - com/ec2/securitygroup.yml
+  - res/route53/recordsets.yml
+
+global:
+
+
+IBoxLoaderAfter: !include [
+  #com/elasticloadbalancing/certificate-adhoc.yml,
+]
+

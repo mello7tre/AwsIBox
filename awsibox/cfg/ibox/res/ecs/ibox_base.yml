@@ -1,0 +1,151 @@
+global:
+  ContainerDefinitions:
+    - IBOX_BASE:
+        IBOX_PARAMETER:
+          - EnvApp.IBOX_INDEXNAME.Version:
+              IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_RESNAME}ImageSuffix")
+              Description: str(f'EnvApp{IBOX_INDEXNAME}Version')
+              Default: "1"
+              AllowedPattern: '^[a-zA-Z0-9-_.]+$'
+          - _Cpu:
+              Description: 'Cpu Share - empty for mapped value'
+          - _Memory:
+              Description: 'Memory hard limit - empty for mapped value'
+          - _Command:
+              Description: 'Command to execute'
+              Type: 'CommaDelimitedList'
+        IBOX_CONDITION:
+          - _Command: Or(
+              Condition(f'{IBOX_RESNAME}CommandOverride'),
+              Equals('yes', 'yes' if isinstance(getattr(cfg, f'{IBOX_RESNAME}Command'), list) else 'no'))
+          - _HostPort:
+              get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}HostPort')
+          - _UseTaskDefinitionBaseCpu:
+              And(
+                Condition("ECSTaskDefinitionBaseUseOneContainer"),
+                Condition("ECSTaskDefinitionBaseCpu"),
+                get_condition("", "equals", "yes", f"{IBOX_RESNAME}UseTaskDefinitionBaseCpu")
+              )
+          - _UseTaskDefinitionBaseMemory:
+              And(
+                Condition("ECSTaskDefinitionBaseUseOneContainer"),
+                Condition("ECSTaskDefinitionBaseMemory"),
+                get_condition("", "equals", "yes", f"{IBOX_RESNAME}UseTaskDefinitionBaseMemory")
+              )
+        IBOX_OUTPUT:
+          - EnvApp.IBOX_INDEXNAME.Version:
+              IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_RESNAME}ImageSuffix")
+              Value: Ref(f'EnvApp{IBOX_INDEXNAME}Version')
+          - _Command:
+              Condition: IBOX_RESNAME.Command
+              Value: Join(',', get_endvalue(f'{IBOX_RESNAME}Command')) 
+          - _Constraints:
+              Value: >-
+                Cpu= ${Cpu} ,Memory= ${Memory} If(f"{IBOX_MAPNAME}MemoryReservation",",MemoryReservation=",Ref("AWS::NoValue")) ${MemoryReservation}
+          - _Image:
+              Value: ${Image}
+        Command: Ref('AWS::NoValue')
+        ContainerPort.IBOX_AUTO_PO:
+          CONDITION: get_condition('', 'not_equals', 0, f'{IBOX_RESNAME}ContainerPort')
+        ContainerPort: 0
+        Cpu.IBOX_CODE: If(
+          f"{IBOX_RESNAME}UseTaskDefinitionBaseCpu", get_endvalue("ECSTaskDefinitionBaseCpu"), get_endvalue(IBOX_CURNAME))
+        Cpu: 16
+        DockerLabels: 
+          LastUpdate: Ref('DockerLabelLastUpdate')
+        Environment:
+          - Env:
+              Name: Env
+              Value: Ref('Env')
+          - EnvAbbr:
+              Name: EnvAbbr
+              Value: Ref('EnvShort')
+          - EnvRole:
+              Name: EnvRole
+              Value: Ref('EnvRole')
+          - EnvStackName:
+              Name: EnvStackName
+              Value: Ref('AWS::StackName')
+          - EnvRegion:
+              Name: EnvRegion
+              Value: Ref('AWS::Region')
+          - EnvBrand:
+              Name: EnvBrand
+              Value: cfg.BrandDomain
+          - EnvClusterStackName:
+              Name: EnvClusterStackName
+              Value: get_endvalue('ClusterStack')
+        Essential: true
+        HostPort: none
+        Image: Join('', [
+            get_endvalue('EcrAccount'), '.dkr.ecr.', Ref('AWS::Region'), '.amazonaws.com/',
+            Sub(getattr(cfg, f'{IBOX_RESNAME}ImageSuffix'))
+          ])
+        LinuxParameters:
+          InitProcessEnabled.IBOX_AUTO_P:
+            AllowedValues: ['', 'true', 'false']
+          InitProcessEnabled: false
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-group: Ref('LogsLogGroup')
+            awslogs-region: Ref('AWS::Region')
+            awslogs-stream-prefix: Ref('AWS::StackName')
+        Memory.IBOX_CODE: If(
+          f"{IBOX_RESNAME}UseTaskDefinitionBaseMemory", get_endvalue("ECSTaskDefinitionBaseMemory"), get_endvalue(IBOX_CURNAME))
+        Memory: 128
+        MemoryReservation.IBOX_CODE: If(
+          f'{IBOX_RESNAME}MemoryReservation', get_endvalue(f'{IBOX_RESNAME}MemoryReservation'), Ref('AWS::NoValue'))
+        MemoryReservation.IBOX_AUTO_PO:
+          Description: 'Memory soft limit - empty for mapped value - 0 to disable'
+          CONDITION: get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}MemoryReservation')
+          Value: IBOX_SKIP
+        MemoryReservation: 0
+        Name.IBOX_CODE: get_subvalue(
+          '${EnvRole}%s' % ('-${1M}' if 'Name' in getattr(cfg, IBOX_RESNAME) else ''), f'{IBOX_RESNAME}Name')
+        PortMappings:
+          - IBOX_IF:
+            - _ContainerPort
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
+          - 0:
+              ContainerPort: get_endvalue(f'{IBOX_RESNAME}ContainerPort')
+              HostPort: If(
+                'ECSTaskDefinitionBaseNetworkModeAwsVpc',
+                get_endvalue(f'{IBOX_RESNAME}ContainerPort'),
+                If(f'{IBOX_RESNAME}HostPort', get_endvalue(f'{IBOX_RESNAME}HostPort'), 0))
+              Protocol: tcp
+        StopTimeout.IBOX_AUTO_PO: {}
+        StopTimeout: 30
+        UseTaskDefinitionBase:
+          Cpu: 'yes'
+          Memory: 'yes'
+
+  ECSService:
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        Cluster: get_expvalue('Cluster', 'ClusterStack')
+        EnableExecuteCommand.IBOX_CODE: If(
+            f'{IBOX_RESNAME}EnableExecuteCommandOverride',
+            Ref(f'{IBOX_RESNAME}EnableExecuteCommand'),
+            If('ECSTasksLaunchOnFargate', True, get_endvalue(f'{IBOX_RESNAME}EnableExecuteCommand', add_override=False)))
+        EnableExecuteCommand.IBOX_AUTO_PO:
+          Description: 'empty for mapped value - Default to "true" for FARGATE'
+          AllowedValues: ['', 'true', 'false']
+          Value: ${EnableExecuteCommand}
+        EnableExecuteCommand: false
+        HealthCheckGracePeriodSeconds: eval("0 if cfg.LoadBalancer else Ref('AWS::NoValue')")
+        LaunchType.IBOX_PCO:
+          IBOX_CONDITION:
+            - ECSTasksLaunchOnFargate:
+                get_condition('', 'equals', 'FARGATE', IBOX_CURNAME)
+        NetworkConfiguration:
+          IBOX_IF:
+            - ECSTaskDefinitionBaseNetworkModeAwsVpc
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
+          AwsvpcConfiguration:
+            SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + cfg.SecurityGroupsImport
+            Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+        PlatformVersion: If('ECSTasksLaunchOnFargate', 'LATEST', Ref('AWS::NoValue'))
+        TaskDefinition: Ref('TaskDefinition')

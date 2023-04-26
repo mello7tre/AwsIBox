@@ -1,0 +1,5 @@
+global:
+  EC2VPCEndpoint:
+    - S3:
+        Create: 'yes'
+        ServiceName: Sub("com.amazonaws.${AWS::Region}.s3")

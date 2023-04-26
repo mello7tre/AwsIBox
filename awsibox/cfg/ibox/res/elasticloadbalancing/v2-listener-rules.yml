@@ -1,0 +1,32 @@
+Base: &base
+  IBOX_ENABLED: False
+  IBOX_RESNAME: Listener.IBOX_INDEXNAME
+  Conditions:
+    - Host:
+        Field: host-header
+        Values:
+          - 1: Sub('*${EnvRole}.*')
+
+global:
+  ElasticLoadBalancingV2ListenerRule:
+    - HttpsExternalRules1:
+        <<: *base
+        Actions:
+          - 1:
+              Type: forward
+              TargetGroupArn: Ref("TargetGroupExternal")
+        ListenerArn: get_expvalue("ListenerHttpsDefaultExternal", "LoadBalancerApplicationStack")
+    - HttpExternalRules1:
+        <<: *base
+        Actions:
+          - 1:
+              Type: forward
+              TargetGroupArn: Ref("TargetGroupExternal")
+        ListenerArn: get_expvalue("ListenerHttpDefaultExternal", "LoadBalancerApplicationStack")
+    - HttpInternalRules1:
+        <<: *base
+        Actions:
+          - 1:
+              Type: forward
+              TargetGroupArn: Ref("TargetGroupInternal")
+        ListenerArn: get_expvalue("ListenerHttpDefaultInternal", "LoadBalancerApplicationStack")

@@ -1,0 +1,34 @@
+IBoxLoader: !include
+  - res/ecs/taskdefinitions.yml
+  - com/iam/policy-parameterstore.yml
+  - com/iam/policy-ecs-exec.yml
+  - com/ec2/securitygroup.yml
+
+
+global:
+  Parameter:
+    - ClusterStack:
+        Description: 'Cluster Stack Name used to launch service on - empty for default based on env/role'
+    - DockerLabelLastUpdate:
+        Description: 'Use to force redeploy - can use: $(date +%F_%T)'
+  Condition:
+    - ECSTaskDefinitionBaseUseOneContainer:
+        Equals(1, len(cfg.ContainerDefinitions))
+  Output:
+    - ClusterStack:
+        Value: get_endvalue('ClusterStack')
+  ClusterStack: ecs-a
+  LogsLogGroup:
+    - Base:
+        IBOX_TITLE: LogsLogGroup
+        LogGroupName: Sub('/aws/ecs/${AWS::StackName}')
+        RetentionInDays: 30
+  IAMPolicy:
+    - ParameterStore:
+        Roles:
+          - Ref('RoleTask')
+  IAMRole:
+    - Task:
+        ManagedPolicyArns:
+          - get_expvalue('IAMPolicyCloudWatchPutMetric')
+        Principal: ecs-tasks.amazonaws.com

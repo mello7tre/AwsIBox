@@ -1,0 +1,107 @@
+global:
+  CloudFrontDistribution:
+    - IBOX_BASE:
+        IBOX_TITLE: CloudFrontDistribution
+        Condition: IBOX_RESNAME.Create
+        AcmCertificate.IBOX_PCO:
+          IBOX_CONDITION:
+            - _AcmCertificate:
+                get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}AcmCertificate')
+        AcmCertificate: 'yes'
+        Create.IBOX_AUTO_PO:
+          AllowedValues: ['', 'yes', 'no']
+          CONDITION: get_condition('', 'equals', 'yes', f"{IBOX_RESNAME}Create")
+        Create: 'yes'
+        DistributionConfig:
+          Aliases.IBOX_CUSTOM_OBJ:
+            # rename following line to enable Parameter/Output for every Alias
+            Value.IBOX_PCO.DISABLED:
+              IBOX_PARAMETER:
+                - IBOX_REFNAME.DistributionConfigAliases.IBOX_RESNAME:
+                    Description: f"empty for mapped value"
+              IBOX_OUTPUT:
+                - IBOX_REFNAME.DistributionConfigAliases.IBOX_RESNAME:
+                    Condition: IBOX_REFNAME.Create
+                    Value: get_endvalue(f"{IBOX_REFNAME}DistributionConfigAliases{IBOX_RESNAME}")
+            Value: get_endvalue(f"{IBOX_REFNAME}DistributionConfigAliases{IBOX_RESNAME}")
+          CacheBehaviors:
+            - IBOX_BASE: &cache_behavior
+                Compress: True
+                ForwardedValues:
+                  QueryString: True
+                  Headers: []
+                ViewerProtocolPolicy: redirect-to-https
+          CustomErrorResponses: []
+          DefaultCacheBehavior: *cache_behavior
+          Enabled: true
+          HttpVersion: http2
+          Logging:
+            IBOX_IF:
+              - _LogEnabled
+              - IBOX_IFVALUE
+              - Ref('AWS::NoValue')
+            Bucket: Sub(f'{cfg.BucketNameLogs}.s3.amazonaws.com')
+            Prefix: Sub('${EnvRole}.${AWS::StackName}/')
+          Origins:
+            - IBOX_BASE:
+                IBOX_PARAMETER:
+                  - IBOX_REFNAME.DomainName:
+                      Description: 'empty for mapped value'
+                CustomOriginConfig:
+                  IBOX_PARAMETER:
+                    - IBOX_REFNAME.CustomOriginConfigHTTPSPort:
+                        Description: 'empty for mapped value'
+                  OriginProtocolPolicy: https-only
+                OriginPath: ''
+                S3OriginConfig:
+                  IBOX_PARAMETER:
+                    - IBOX_REFNAME.S3OriginConfigOriginAccessIdentity:
+                        Description: 'empty for mapped value'
+          PriceClass: PriceClass_100
+          ViewerCertificate:
+            AcmCertificateArn: If(f'{IBOX_RESNAME}AcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))
+            CloudFrontDefaultCertificate: If(f'{IBOX_RESNAME}AcmCertificate', Ref('AWS::NoValue'), True)
+            SslSupportMethod: If(f'{IBOX_RESNAME}AcmCertificate', 'sni-only', Ref('AWS::NoValue'))
+            MinimumProtocolVersion.IBOX_CODE: If(f'{IBOX_RESNAME}AcmCertificate', get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
+            MinimumProtocolVersion.IBOX_AUTO_PO:
+              Description: 'The minimum SSL/TLS protocol and ciphers that CloudFront can use to communicate with viewers'
+            MinimumProtocolVersion: TLSv1.2_2018
+          WebACLId.IBOX_CODE: get_endvalue(IBOX_CURNAME, condition=True)
+          WebACLId.IBOX_AUTO_PO:
+            Description: 'CloudFront WebACLId - empty for default based on env/role'
+            CONDITION: get_condition('', 'not_equals', 'none', IBOX_CURNAME)
+            Value: ${WebACLId}
+          WebACLId: none
+        LogEnabled.IBOX_AUTO_PO:
+          Description: 'Empty for mapped value'
+          AllowedValues: ['', 'yes', 'no']
+          CONDITION: get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}LogEnabled')
+        LogEnabled: 'no'
+
+  CloudFrontFunction:
+    - IBOX_BASE:
+        IBOX_OUTPUT:
+          - _:
+              Value: GetAtt(IBOX_RESNAME, "FunctionARN")
+              Export: Export(IBOX_RESNAME)
+        AutoPublish: True
+        FunctionCode: Join("", import_lambda(IBOX_INDEXNAME))
+        FunctionConfig:
+          Comment: str(IBOX_INDEXNAME)
+          Runtime: cloudfront-js-1.0
+        Name: str(IBOX_INDEXNAME)
+
+  CloudFrontLambdaFunctionAssociation:
+    - IBOX_BASE:
+        IBOX_PARAMETER:
+          - _LambdaFunctionARN:
+              Description: LambdaAtEdge Version Arn - empty for mapped value - none to disable
+        IBOX_CONDITION:
+          - _LambdaFunctionARN:
+              get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}LambdaFunctionARN')
+        IBOX_OUTPUT:
+          - _LambdaFunctionARN:
+              Value: ${LambdaFunctionARN}
+        Condition: IBOX_RESNAME.LambdaFunctionARN
+        EventType: viewer-request
+        LambdaFunctionARN: none

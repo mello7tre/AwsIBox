@@ -1,0 +1,23 @@
+IBoxLoader: !exclude
+  - res/application-autoscaling/scalingpolicies.yml
+  - com/autoscaling/capacity.yml
+  - com/ecs/service-elasticloadbalancing.yml
+  - com/ec2/securitygroup.yml
+  - res/cloudwatch/alarms.yml
+
+global:
+  StackName: rsc
+  ApplicationAutoScalingScalableTarget: IBOX_SKIP_FUNC
+  ApplicationAutoScalingScalingPolicy: IBOX_SKIP_FUNC
+  CloudWatchAlarm: IBOX_SKIP_FUNC
+  ContainerDefinitions:
+    - 1:
+        Command: ['tail', '-f', '.dockerenv']
+        Cpu: 512
+        Image: 'amazonlinux:2'
+        Memory: 64
+  ECSService:
+    - Base:
+        IBOX_ENABLED: False
+    - Daemon:
+        IBOX_ENABLED: True

@@ -15,11 +15,16 @@ Outputs = {}
 
 OBJS = {}
 
-PATH_INT = os.path.join(os.path.dirname(os.path.realpath(__file__)), "cfg")
+APP_DIR = os.path.dirname(os.path.realpath(__file__))
+
+PATH_INT = os.path.join(APP_DIR, "cfg")
 PATH_INT = os.path.normpath(PATH_INT)
 
 PATH_EXT = os.path.join(cwd, "cfg")
 PATH_EXT = os.path.normpath(PATH_EXT)
+
+IBOX_BRAND_DIR = "ibox"
+STACKS_DIR = "stacks"
 
 STACK_TYPES = [
     "agw",

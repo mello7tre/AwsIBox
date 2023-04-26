@@ -1,0 +1,28 @@
+global:
+  CodeDeployDeploymentGroup:
+    - IBOX_BASE:
+        Ec2TagFilters:
+          - IBOX_IF:
+            - DeployRevision
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
+          - EnvStackName:
+              Key: EnvStackName
+              Type: KEY_AND_VALUE
+              Value: Ref("AWS::StackName")
+        Deployment:
+          IBOX_IF:
+            - DeployRevision
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
+          Revision:
+            RevisionType: S3
+            S3Location:
+              Bucket: Sub(cfg.BucketNameAppRepository)
+              BundleType: tgz
+              Key: Join('', [
+                  get_endvalue(f"{IBOX_RESNAME}ApplicationName"), "/", get_endvalue(f"{IBOX_RESNAME}ApplicationName"), "-",
+                  Sub(getattr(cfg, f'{IBOX_CURNAME}Suffix')),
+                ])
+        DeploymentGroupName: get_subvalue("${AWS::StackName}.${EnvRole}-${1M}", f"{IBOX_RESNAME}ApplicationName")
+        ServiceRoleArn: get_expvalue("RoleCodeDeploy", "")

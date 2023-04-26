@@ -1,0 +1,182 @@
+IBoxLoader: !include
+  - res/s3/bucket-policies.yml
+  - com/iam/policy-bucket-replica.yml
+
+global:
+  S3Bucket:
+    - IBOX_BASE:
+        IBOX_TITLE: Bucket.IBOX_INDEXNAME
+        IBOX_CUSTOM_OBJ:
+          - PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
+              Value: 'Sub("arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}", **{"CloudFrontOriginAccessIdentity": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")})'
+          - PolicyStatementAccountsReadPrincipal:
+              Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          - PolicyStatementAccountsWritePrincipal:
+              Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          - PolicyStatementAccountsDeletePrincipal:
+              Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          - PolicyStatementReplicaResourcePrefix:
+              Value: get_subvalue("arn:aws:s3:::%s/${1M}*" % IBOX_REMAPNAME, f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+        IBOX_LINKED_OBJ:
+          IAMRole:
+            Key: IAMRole
+            Type: BucketReplica
+            Conf:
+              IBOX_RESNAME: Role.IBOX_TITLE.Replica
+              Condition: IBOX_RESNAME.Replica
+          IAMPolicy:
+            Key: IAMPolicy
+            Type: BucketReplica
+            Conf:
+              IBOX_RESNAME: IAMPolicyReplica.IBOX_TITLE
+              IBOX_LINKED_OBJ_NAME: IBOX_REMAPNAME
+              IBOX_LINKED_OBJ_INDEX: IBOX_RESNAME
+        IBOX_CONDITION:
+          - _:
+              get_condition("", "equals", "yes", f"{IBOX_RESNAME}Create")
+          - _Cors:
+              get_condition("", "equals", "yes", f"{IBOX_RESNAME}CorsConfigurationEnabled")
+          - _PolicyStatementReplicaPrincipal:
+              get_condition("", "not_equals", "none", f"{IBOX_RESNAME}PolicyStatementReplicaPrincipal")
+          - _PolicyStatementRead: >-
+             Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementAccountsReadPrincipal{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementAccountsReadPrincipal")])
+          - _PolicyStatementWrite: >-
+             Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementAccountsWritePrincipal{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementAccountsWritePrincipal")])
+          - _PolicyStatementDelete: >-
+             Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementAccountsDeletePrincipal{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementAccountsDeletePrincipal")])
+          - _Replica:
+              And(Condition(IBOX_RESNAME), get_condition("", "equals", "yes", f"{IBOX_RESNAME}ReplicationConfigurationEnabled"))
+          - _Versioning:
+              get_condition("", "not_equals", "Disabled", f"{IBOX_RESNAME}VersioningConfigurationStatus")
+        IBOX_OUTPUT:
+          - _:
+              Value: If(IBOX_RESNAME, Ref(IBOX_TITLE), Sub(IBOX_REMAPNAME))
+        OutputValueRegion.IBOX_PCO:
+          IBOX_CONDITION:
+            - _OutputValueRegion:
+                get_condition("", "not_equals", "AWSRegion", f"{IBOX_RESNAME}OutputValueRegion")
+          IBOX_OUTPUT:
+            - _:
+                Condition: None
+                Export: Export(IBOX_TITLE)
+                Value: >-
+                  If(f"{IBOX_RESNAME}OutputValueRegion",
+                     Sub("${Region}-%s" % IBOX_REMAPNAME.replace("${AWS::Region}-", "", 1),
+                         **{"Region": get_endvalue(f"{IBOX_RESNAME}OutputValueRegion")}),
+                     If(IBOX_RESNAME, Ref(IBOX_TITLE), Sub(IBOX_REMAPNAME))
+                  )
+        Condition: IBOX_RESNAME
+        BucketName: Sub(IBOX_REMAPNAME)
+        Create: "no"
+        CorsConfiguration:
+          Enabled: "no"
+          IBOX_IF:
+            - _Cors
+            - IBOX_IFVALUE
+            - Ref("AWS::NoValue")
+          CorsRules:
+            - 0:
+                AllowedHeaders: ["Authorization"]
+                AllowedMethods: ["GET"]
+                AllowedOrigins: ["*"]
+                MaxAge: 3000
+        CloudFrontOriginAccessIdentity.IBOX_PCO_NO:
+          IBOX_CONDITION:
+            - IBOX_CURNAME:
+                And(
+                  Condition(IBOX_RESNAME),
+                  get_condition("", "not_equals", "none", IBOX_CURNAME)
+                )
+        LifecycleConfiguration:
+          Rules:
+            - IBOX_BASE:
+                Status.IBOX_AUTO_PO: {}
+                Status: Disabled
+        PolicyStatementAccountsReadPrincipal.IBOX_CUSTOM_OBJ:
+        PolicyStatementAccountsReadPrincipal:
+          dev: IBOX_IFCONDVALUE
+          stg: IBOX_IFCONDVALUE
+          prd: IBOX_IFCONDVALUE
+        PolicyStatementAccountsWritePrincipal.IBOX_CUSTOM_OBJ:
+        PolicyStatementAccountsWritePrincipal:
+          dev: IBOX_IFCONDVALUE
+          stg: IBOX_IFCONDVALUE
+          prd: IBOX_IFCONDVALUE
+        PolicyStatementAccountsDeletePrincipal.IBOX_CUSTOM_OBJ:
+        PolicyStatementAccountsDeletePrincipal:
+          dev: IBOX_IFCONDVALUE
+          stg: IBOX_IFCONDVALUE
+          prd: IBOX_IFCONDVALUE
+        PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
+          - base:
+              Conf:
+                IBOX_LINKED_OBJ:
+                  Key: CloudFrontOriginAccessIdentity
+                  Type: Base
+                  Name: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
+                  Conf:
+                    Condition: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
+                    IBOX_RESNAME: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
+                    IBOX_LINKED_OBJ_NAME: IBOX_INDEXNAME
+                IBOX_CONDITION:
+                  - CloudFrontOriginAccessIdentity.IBOX_INDEXNAME:
+                      And(
+                        Condition(f"S3Bucket{IBOX_INDEXNAME}"),
+                        get_condition("", "not_equals", "none", f"{IBOX_CURNAME}baseEnabled")
+                      )
+              Enabled: 'yes'
+              Value: Ref(f"CloudFrontOriginAccessIdentity{IBOX_INDEXNAME}")
+          - dev: IBOX_IFCONDVALUE
+          - stg: IBOX_IFCONDVALUE
+          - prd: IBOX_IFCONDVALUE
+        PolicyStatementReplicaPrincipal: none
+        PolicyStatementReplicaResourcePrefix.IBOX_CUSTOM_OBJ:
+        PolicyStatementReplicaResourcePrefix:
+          1: ""
+        ReplicationConfiguration:
+          IBOX_IF:
+            - _Replica
+            - IBOX_IFVALUE
+            - Ref("AWS::NoValue")
+          Enabled: "no"
+          Role: GetAtt(f"Role{IBOX_TITLE}Replica", "Arn")
+          Rules:
+            - IBOX_BASE:
+                IBOX_IF:
+                  - IBOX_CURNAME.DestinationBucket
+                  - IBOX_IFVALUE
+                  - Ref("AWS::NoValue")
+                DeleteMarkerReplication:
+                  Status: Enabled
+                Destination:
+                  Bucket.IBOX_PCO:
+                    IBOX_PARAMETER:
+                      - IBOX_CURNAME:
+                          Description: "Replica Destination Bucket - empty for default based on Env/Roles/Region"
+                    IBOX_CONDITION:
+                      - IBOX_CURNAME:
+                          get_condition("", "not_equals", "none", IBOX_CURNAME)
+                  Bucket: none
+                  Account: IBOX_IFCONDVALUE
+                  AccessControlTranslation:
+                    IBOX_IF:
+                      - IBOX_MAPNAME.Account
+                      - IBOX_IFVALUE
+                      - Ref('AWS::NoValue')
+                    Owner: Destination
+                Filter:
+                  Prefix: ''
+                Priority: >-
+                  int(
+                    IBOX_PROPNAME if IBOX_PROPNAME.isdigit() else
+                    list(getattr(cfg, f"{IBOX_RESNAME}ReplicationConfigurationRules").keys()).index(IBOX_PROPNAME) + 1)
+                Status.IBOX_AUTO_PO: {}
+                Status: Enabled
+        VersioningConfiguration:
+          IBOX_IF:
+            - _Versioning
+            - IBOX_IFVALUE
+            - Ref("AWS::NoValue")
+          Status.IBOX_AUTO_PO:
+            AllowedValues: ["", "Enabled", "Suspended", "Disabled"]
+          Status: Disabled

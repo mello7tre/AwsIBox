@@ -1,0 +1,6 @@
+IBoxLoader: !include
+  - com/ssm/parameter-user-password.yml
+
+global:
+  StackName: iam-u-01
+  IAMUser: [{}]

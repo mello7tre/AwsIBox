@@ -1,0 +1,152 @@
+Mysql: &mysql
+  Engine: mysql
+  EngineVersion: '5.7'
+
+MysqlInternal:
+  <<: *mysql
+  PubliclyAccessible: false
+  DBSubnetGroupName: get_expvalue('DBSubnetGroupPrivate')
+MysqlExternal:
+  <<: *mysql
+  PubliclyAccessible: true
+  DBSubnetGroupName: get_expvalue('DBSubnetGroupPublic')
+
+global:
+  RDSDBInstance:
+    # Here i use IBOX_MAPNAME in place of IBOX_RESNAME because current resource name IBOX_RESNAME is simply DBInstance.
+    # Instead i want to have a code that permit to create multiple rds resources in the same stack.
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Key: Route53RecordSet
+          Conf:
+            IBOX_RESNAME: RecordSet
+            IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+          Type: RDS
+          For: ["External", "Internal"]
+        IBOX_PARAMETER:
+          - IBOX_MAPNAME.AllocatedStorage:
+              Description: 'Storage Size in GB - empty for mapped value'
+          - IBOX_MAPNAME.MaxAllocatedStorage:
+              Description: 'Max Storage Size in GB (Enable Storage Autoscaling)- empty for mapped value - 0 to disable'
+          - IBOX_MAPNAME.DBInstanceClass:
+              Description: 'Instance Type - empty for mapped value'
+              AllowedValues: [
+                '', 'db.m3.medium', 'db.m3.large', 'db.m3.xlarge', 'db.m3.2xlarge',
+                'db.m4.large', 'db.m4.xlarge', 'db.m4.2xlarge', 'db.m4.4xlarge', 'db.m4.10xlarge',
+                'db.m5.large', 'db.m5.xlarge', 'db.m5.2xlarge', 'db.m5.4xlarge', 'db.m5.12xlarge',
+                'db.r3.large', 'db.r3.xlarge', 'db.r3.2xlarge', 'db.r3.4xlarge', 'db.r3.8xlarge',
+                'db.r5.large', 'db.r5.xlarge', 'db.r5.2xlarge', 'db.r5.4xlarge', 'db.r5.12xlarge',
+                'db.t2.micro', 'db.t2.small', 'db.t2.medium', 'db.t2.large',
+                'db.t3.micro', 'db.t3.small', 'db.t3.medium', 'db.t3.large']
+          - IBOX_MAPNAME.DBName:
+              Description: 'Empty for mapped value'
+          - IBOX_MAPNAME.DBSnapshotIdentifier:
+              Description: 'DB snapshot used to restore the DB instance - "none" for not using one - empty for mapped value'
+          - IBOX_MAPNAME.DeletionProtection:
+              Description: 'empty for mapped value'
+              AllowedValues: ['', 'true', 'false']
+          - IBOX_MAPNAME.SourceDBInstanceIdentifier:
+              Description: 'ID of the source DB instance to create ReadReplica - "none" for not using one - empty for mapped value'
+          - IBOX_MAPNAME.Engine:
+              Description: 'Engine - empty for mapped value'
+              AllowedValues: [
+                '', 'mysql', 'mariadb', 'oracle-se1', 'oracle-se2', 'oracle-se', 'oracle-ee',
+                'sqlserver-ee', 'sqlserver-se', 'sqlserver-ex', 'sqlserver-web', 'postgres', 'aurora'
+              ]
+          - IBOX_MAPNAME.EngineVersion:
+              Description: 'Engine Version - empty for mapped value'
+          - IBOX_MAPNAME.MasterUsername:
+              Description: 'Username - empty for mapped value'
+          - IBOX_MAPNAME.MasterUserPassword:
+              Description: 'Password - empty for mapped value'
+              NoEcho: true
+          - IBOX_MAPNAME.MonitoringInterval:
+              Description: 'The interval, in seconds, for Enhanced Monitoring metrics - empty for mapped value - 0 to disable'
+              AllowedValues: ['', '0', '1', '5', '10', '15', '30', '60']
+          - IBOX_MAPNAME.MultiAZ:
+              Description: 'Use multiple Availability Zone - empty for mapped value'
+              AllowedValues: ['', 'true', 'false']
+          - IBOX_MAPNAME.PerformanceInsights:
+              Description: 'The amount of time, in days, to retain Performance Insights data - empty for mapped value - 0 to disable'
+          - IBOX_MAPNAME.StorageType:
+              Description: 'empty for mapped value'
+              AllowedValues: ['', 'standard', 'io1', 'gp2', 'gp3']
+          - IBOX_MAPNAME.StorageThroughput:
+              Description: 'empty for mapped value'
+        IBOX_CONDITION:
+          - IBOX_MAPNAME.DBSnapshotIdentifier:
+              get_condition('', 'not_equals', 'none', f'{IBOX_MAPNAME}DBSnapshotIdentifier')
+          - IBOX_MAPNAME.SourceDBInstanceIdentifier:
+              get_condition('', 'not_equals', 'none', f'{IBOX_MAPNAME}SourceDBInstanceIdentifier')
+          - IBOX_MAPNAME.DBInstanceSkipProperties:
+              Or(Condition(f'{IBOX_MAPNAME}DBSnapshotIdentifier'), Condition(f'{IBOX_MAPNAME}SourceDBInstanceIdentifier'))
+          - IBOX_MAPNAME.MonitoringInterval:
+              get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}MonitoringInterval')
+          - IBOX_MAPNAME.PerformanceInsights:
+              get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}PerformanceInsights')
+          - IBOX_MAPNAME.StorageAutoScaling:
+              get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}MaxAllocatedStorage')
+          - IBOX_MAPNAME.StorageThroughput:
+              get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}StorageThroughput')
+        IBOX_OUTPUT:
+          - IBOX_MAPNAME.AllocatedStorage:
+              Value: ${AllocatedStorage}
+          - IBOX_MAPNAME.MaxAllocatedStorage:
+              Value: ${MaxAllocatedStorage}
+          - IBOX_MAPNAME.DBInstanceClass:
+              Value: ${DBInstanceClass}
+          - IBOX_MAPNAME.DBName:
+              Value: ${DBName}
+          - IBOX_MAPNAME.DBSnapshotIdentifier:
+              Value: ${DBSnapshotIdentifier}
+          - IBOX_MAPNAME.DeletionProtection:
+              Value: ${DeletionProtection}
+          - IBOX_MAPNAME.Engine:
+              Value: ${Engine}
+          - IBOX_MAPNAME.EngineVersion:
+              Value: ${EngineVersion}
+          - IBOX_MAPNAME.MasterUsername:
+              Value: ${MasterUsername}
+          - IBOX_MAPNAME.MonitoringInterval:
+              Value: ${MonitoringInterval}
+          - IBOX_MAPNAME.MultiAZ:
+              Value: ${MultiAZ}
+          - IBOX_MAPNAME.PerformanceInsightsRetentionPeriod:
+              Value: ${PerformanceInsightsRetentionPeriod}
+          - IBOX_MAPNAME.PubliclyAccessible:
+              Value: ${PubliclyAccessible}
+          - IBOX_MAPNAME.SourceDBInstanceIdentifier:
+              Value: ${SourceDBInstanceIdentifier}
+          - IBOX_MAPNAME.StorageType:
+              Value: ${StorageType}
+          - IBOX_MAPNAME.StorageThroughput:
+              Value: ${StorageThroughput}
+        AllocatedStorage: 50
+        AllowMajorVersionUpgrade: true
+        DBInstanceClass: db.t3.micro
+        DBName: dbname
+        DBParameterGroupName: Ref('DBParameterGroup1')
+        DBSnapshotIdentifier: none
+        DeletionProtection: false
+        EnablePerformanceInsights:
+          If(f'{IBOX_MAPNAME}PerformanceInsights', True, False)
+        MasterUsername: masterusername
+        MasterUserPassword: masteruserpassword
+        MaxAllocatedStorage: 0
+        MaxAllocatedStorage.IBOX_CODE:
+          If(f'{IBOX_MAPNAME}StorageAutoScaling', get_endvalue(f'{IBOX_MAPNAME}MaxAllocatedStorage'), Ref('AWS::NoValue'))
+        MonitoringInterval: 0
+        MonitoringRoleArn: If(f'{IBOX_MAPNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
+        MultiAZ: false
+        PerformanceInsights: 0
+        PerformanceInsightsRetentionPeriod:
+          If(f'{IBOX_MAPNAME}PerformanceInsights', get_endvalue(f'{IBOX_MAPNAME}PerformanceInsights'), Ref('AWS::NoValue'))
+        SourceDBInstanceIdentifier: none
+        StorageThroughput.IBOX_CODE:
+          If(f'{IBOX_MAPNAME}StorageThroughput', get_endvalue(f'{IBOX_MAPNAME}StorageThroughput'), Ref('AWS::NoValue'))
+        StorageThroughput: 0
+        StorageType: gp3
+        VPCSecurityGroups:
+          - Ref(f'SecurityGroup{IBOX_MAPNAME}')
+

@@ -1,0 +1,100 @@
+IBoxLoader: !include
+  - com/elasticloadbalancing/loadbalancer.yml
+  - res/cloudwatch/alarms.yml
+
+global:
+  StackName: alb
+  Parameter:
+    - LoadBalancer:
+        Description: 'Application Load Balancer to conditionally create - empty for default based on role - need to be already defined'
+        AllowedValues: ['External', 'Internal', '']
+    - RegionalCertificateArn:
+        Description: 'LoadBalancer CertificateArn - empty for default based on env/role'
+  Condition:
+    - LoadBalancerApplicationExternal:
+        Or(
+          Equals(Ref('LoadBalancer'), 'External'),
+          Equals(Ref('LoadBalancer'), '')
+        )
+    - LoadBalancerApplicationInternal:
+        Or(
+          Equals(Ref('LoadBalancer'), 'Internal'),
+          Equals(Ref('LoadBalancer'), ''),
+        )
+    - AlarmLoadBalancerApplicationExternal5XXEvaluationPeriods:
+        And(
+          Condition('LoadBalancerApplicationExternal'),
+          Condition('CloudWatchAlarmLoadBalancerApplicationExternal5XX'),
+        )
+    - AlarmLoadBalancerApplicationInternal5XXEvaluationPeriods:
+        And(
+          Condition('LoadBalancerApplicationInternal'),
+          Condition('CloudWatchAlarmLoadBalancerApplicationInternal5XX'),
+        )
+  Output:
+    - LoadBalancerApplication:
+        Value: get_endvalue('LoadBalancer', nolist=True)
+  CloudWatchAlarm:
+    - LoadBalancerApplicationExternal5XX:
+        IBOX_ENABLED: True
+        Condition: AlarmLoadBalancerApplicationExternal5XXEvaluationPeriods
+        EvaluationPeriods: 3
+    - LoadBalancerApplicationInternal5XX:
+        Condition: AlarmLoadBalancerApplicationInternal5XXEvaluationPeriods
+        IBOX_ENABLED: True
+        EvaluationPeriods: 3
+  ElasticLoadBalancingV2Listener:
+    - ECSHttpDefaultExternal:
+        IBOX_ENABLED: True
+    - ECSHttpDefaultInternal:
+        IBOX_ENABLED: True
+    - ECSHttpsDefaultExternal:
+        IBOX_ENABLED: True
+  ElasticLoadBalancingV2LoadBalancer:
+    - ECSApplicationExternal:
+        IBOX_ENABLED: True
+    - ECSApplicationInternal:
+        IBOX_ENABLED: True
+  LoadBalancer: ['External', 'Internal']
+  LoadBalancerType: Application
+  RecordSet: []
+  EC2SecurityGroup**:
+    - LoadBalancerApplicationExternal:
+        IBOX_OUTPUT:
+          - _:
+              Condition: LoadBalancerApplicationExternal
+              Value:  GetAtt(f'{IBOX_RESNAME}', 'GroupId')
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
+        Condition: LoadBalancerApplicationExternal
+        GroupDescription: Sub('Access to LoadBalancerApplicationExternal ${AWS::StackName}')
+        SecurityGroupIngress:
+          - Http:
+              CidrIp: '0.0.0.0/0'
+              FromPort: 80
+              ToPort: 80
+          - Https:
+              CidrIp: '0.0.0.0/0'
+              FromPort: 443
+              ToPort: 443
+    - LoadBalancerApplicationInternal:
+        IBOX_OUTPUT:
+          - _:
+              Condition: LoadBalancerApplicationInternal
+              Value:  GetAtt(f'{IBOX_RESNAME}', 'GroupId')
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
+        Condition: LoadBalancerApplicationInternal
+        GroupDescription: Sub('Access to LoadBalancerApplicationInternal ${AWS::StackName}')
+        SecurityGroupIngress:
+          - Http:
+              CidrIp: '0.0.0.0/0'
+              FromPort: 80
+              ToPort: 80
+
+dev: &cfg_dev
+  CloudWatchAlarm:
+    LoadBalancerApplicationExternal5XX:
+      EvaluationPeriods: 0
+    LoadBalancerApplicationInternal5XX:
+      EvaluationPeriods: 0
+
+stg: *cfg_dev

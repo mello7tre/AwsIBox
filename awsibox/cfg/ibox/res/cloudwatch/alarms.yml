@@ -1,0 +1,249 @@
+Target5XX: &target5xx
+  AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
+  EvaluationPeriods: 2
+  MetricName: HTTPCode_Target_5XX_Count
+  Statistic: Sum
+  ComparisonOperator: 'GreaterThanThreshold'
+  Threshold: '50'
+  TreatMissingData: 'notBreaching'
+  Namespace: 'AWS/ApplicationELB'
+
+LoadBalancerApplication5XX: &alb5xx
+  AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
+  EvaluationPeriods: 2
+  MetricName: HTTPCode_ELB_5XX_Count
+  Statistic: Sum
+  ComparisonOperator: 'GreaterThanThreshold'
+  Threshold: '50'
+  TreatMissingData: 'notBreaching'
+  Namespace: 'AWS/ApplicationELB'
+
+Backend5XX: &backend5xx
+  AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
+  EvaluationPeriods: 2
+  MetricName: HTTPCode_Backend_5XX
+  Statistic: Sum
+  ComparisonOperator: GreaterThanThreshold
+  Threshold: '50'
+  TreatMissingData: 'notBreaching'
+  Namespace: 'AWS/ELB'
+
+ASGSpot: &asgspot
+  Condition: SpotASG
+  AlarmActions: [Ref('SNSTopicASGSpot')]
+  Dimensions: IBOX_SKIP
+  Period: IBOX_SKIP
+  Metrics: &asgspotmetrics
+    - Expression:
+    - MinOnDemand:
+        ReturnData: false
+        Id: m1
+        MetricStat:
+          Metric:
+            Namespace: AWS/AutoScaling
+            Dimensions:
+              - ASGOnDemand:
+                  Name: AutoScalingGroupName
+                  Value: Ref('AutoScalingGroup')
+            MetricName: GroupMinSize
+          Stat: Average
+          Period: 60
+    - InServiceDemand:
+        ReturnData: false
+        Id: m2
+        MetricStat:
+          Metric:
+            Namespace: AWS/AutoScaling
+            Dimensions:
+              - ASGOnDemand:
+                  Name: AutoScalingGroupName
+                  Value: Ref('AutoScalingGroup')
+            MetricName: GroupInServiceInstances
+          Stat: Average
+          Period: 60
+    - DesiredSpot:
+        ReturnData: false
+        Id: m3
+        MetricStat:
+          Metric:
+            Namespace: AWS/AutoScaling
+            Dimensions:
+              - ASGOnDemand:
+                  Name: AutoScalingGroupName
+                  Value: Ref('AutoScalingGroupSpot')
+            MetricName: GroupDesiredCapacity
+          Stat: Average
+          Period: 60
+    - InServiceSpot:
+        ReturnData: false
+        Id: m4
+        MetricStat:
+          Metric:
+            Namespace: AWS/AutoScaling
+            Dimensions:
+              - ASGOnDemand:
+                  Name: AutoScalingGroupName
+                  Value: Ref('AutoScalingGroupSpot')
+            MetricName: GroupInServiceInstances
+          Stat: Average
+          Period: 60
+
+EC2: &ec2
+  Dimensions:
+    - Autoscaling:
+        Name: AutoScalingGroupName
+        Value: Ref('AutoScalingGroup')
+  Namespace: 'AWS/EC2'
+
+ECS: &ecs
+  Dimensions:
+    - Cluster:
+        Name: ClusterName
+        Value: get_expvalue('Cluster', 'ClusterStack')
+    - Service:
+        Name: ServiceName
+        Value: GetAtt('Service', 'Name')
+  Namespace: 'AWS/ECS'
+
+
+CPU: &cpu
+  EvaluationPeriods: 5
+  MetricName: 'CPUUtilization'
+  Statistic: 'Average'
+  Namespace: ''
+  Unit: Percent
+
+
+global:
+  CloudWatchAlarm:
+    - EC2CPUHigh:
+        <<: [*cpu, *ec2]
+        AlarmActions: [Ref('AutoScalingScalingPolicyUp')]
+        AlarmDescription: 'Alarm if CPU too High'
+        ComparisonOperator: 'GreaterThanThreshold'
+        Threshold: '60'
+    - EC2CPULow:
+        <<: [*cpu, *ec2]
+        AlarmActions: [Ref('AutoScalingScalingPolicyDown')]
+        AlarmDescription: 'Alarm if CPU too Low'
+        ComparisonOperator: 'LessThanOrEqualToThreshold'
+        Threshold: '30'
+    - ECSCPUHigh:
+        <<: [*cpu, *ecs]
+        AlarmActions: [Ref('AutoScalingScalingPolicyUp')]
+        AlarmDescription: 'Alarm if CPU too High'
+        ComparisonOperator: 'GreaterThanThreshold'
+        Threshold: '60'
+    - ECSCPULow:
+        <<: [*cpu, *ecs]
+        AlarmActions: [Ref('AutoScalingScalingPolicyDown')]
+        AlarmDescription: 'Alarm if CPU too Low'
+        ComparisonOperator: 'LessThanOrEqualToThreshold'
+        Threshold: '30'
+    - TargetExternal5XX:
+        <<: *target5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: get_expvalue('LoadBalancerApplicationExternalFullName', 'LoadBalancerApplicationStack')
+          - TargetGroup:
+              Name: TargetGroup
+              Value: Sub('${TargetGroupExternal.TargetGroupFullName}')
+    - TargetInternal5XX:
+        <<: *target5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: get_expvalue('LoadBalancerApplicationInternalFullName', 'LoadBalancerApplicationStack')
+          - TargetGroup:
+              Name: TargetGroup
+              Value: Sub('${TargetGroupInternal.TargetGroupFullName}')
+    - TargetEC2External5XX:
+        <<: *target5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: Sub('${LoadBalancerApplicationExternal.LoadBalancerFullName}')
+    - TargetEC2Internal5XX:
+        <<: *target5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: Sub('${LoadBalancerApplicationInternal.LoadBalancerFullName}')
+    - BackendExternal5XX:
+        <<: *backend5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancerName
+              Value: Ref('LoadBalancerClassicExternal')
+    - BackendInternal5XX:
+        <<: *backend5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancerName
+              Value: Ref('LoadBalancerClassicInternal')
+    - LoadBalancerApplicationExternal5XX:
+        <<: *alb5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: Sub('${LoadBalancerApplicationExternal.LoadBalancerFullName}')
+    - LoadBalancerApplicationInternal5XX:
+        <<: *alb5xx
+        Dimensions:
+          - LoadBalancer:
+              Name: LoadBalancer
+              Value: Sub('${LoadBalancerApplicationInternal.LoadBalancerFullName}')
+    - ASGSpotNotAvailable:
+        <<: *asgspot
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        EvaluationPeriods: 3
+        Metrics:
+          <<: *asgspotmetrics
+          Expression:
+            ReturnData: true
+            Expression: m1 - m2 + m3 - m4
+            Id: e1
+            Label: SpotNotAvailable
+        Threshold: 1
+    - ASGOnDemandInExcess:
+        <<: *asgspot
+        ComparisonOperator: LessThanOrEqualToThreshold
+        EvaluationPeriods: 7
+        Metrics:
+          <<: *asgspotmetrics
+          Expression:
+            ReturnData: true
+            Expression: m1 - m2 + m3 - m4
+            Id: e1
+            Label: OnDemandInExcess
+        Threshold: -1
+    - DiskUsed:
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Dimensions:
+          - RootDisk:
+              Name: AutoScalingGroupName
+              Value: Ref('AutoScalingGroup')
+        EvaluationPeriods: 3
+        MetricName: 'root_disk_used_percent'
+        Namespace: 'CWAgent'
+        Statistic: 'Maximum'
+        Threshold: '80'
+        Unit: Percent
+    - SQSQueueDeadLetter:
+        IBOX_PARAMETER:
+          - _Threshold:
+              AllowedValues: ['', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+              AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
+        AlarmActions: [get_expvalue('SNSTopicCloudWatchAlarm')]
+        EvaluationPeriods: 1
+        ComparisonOperator: GreaterThanThreshold
+        Dimensions:
+          - SQSQueue:
+              Name: QueueName
+              Value: GetAtt(IBOX_LINKED_OBJ_NAME, 'QueueName')
+        MetricName: ApproximateNumberOfMessagesVisible
+        Namespace: AWS/SQS
+        Statistic: Average
+        Threshold: '0'
+        TreatMissingData: 'notBreaching'

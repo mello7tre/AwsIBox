@@ -1,0 +1,6 @@
+IBoxLoader: !include
+  - com/certificatemanager/certificate-global.yml
+
+global:
+  CloudFrontDistribution:
+    - Base: {}

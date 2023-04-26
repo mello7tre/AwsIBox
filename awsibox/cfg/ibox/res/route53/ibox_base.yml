@@ -1,0 +1,14 @@
+global:
+  Route53HostedZone:
+    - IBOX_BASE:
+        IBOX_RESNAME: HostedZone.IBOX_INDEXNAME
+        Enabled: 'no'
+        Id: none
+        IBOX_OUTPUT:
+          - HostedZoneName.IBOX_INDEXNAME:
+              Condition: None
+              Value: get_endvalue(f"Route53{IBOX_RESNAME}Name")
+
+  Route53RecordSet:
+    - IBOX_BASE:
+        IBOX_ENABLED: False

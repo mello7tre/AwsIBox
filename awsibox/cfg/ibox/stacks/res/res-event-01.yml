@@ -1,0 +1,8 @@
+IBoxLoader: !include [
+  com/iam/policy-parameterstore.yml,
+  com/events/ec2.yml,
+  com/events/ecs.yml,
+]
+
+global:
+  StackName: r-event-01

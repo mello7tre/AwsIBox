@@ -1,0 +1,76 @@
+global:
+  S3BucketPolicy:
+    - Base:
+        IBOX_ENABLED: False
+        PolicyDocument:
+          Statement:
+            - IBOX_LIST:
+            - Base:
+                Action:
+                  - "s3:GetBucketLocation"
+                Effect: Allow
+                Resource: Sub("arn:aws:s3:::%s" % IBOX_LINKED_OBJ_NAME)
+                Principal:
+                  AWS: Sub("arn:aws:iam::${AWS::AccountId}:root")
+                Sid: Base
+            - AllowReplica:
+                IBOX_IF:
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementReplicaPrincipal
+                  - IBOX_IFVALUE
+                  - Ref("AWS::NoValue")
+                Action:
+                  - "s3:ReplicateObject"
+                  - "s3:ReplicateDelete"
+                  - "s3:ObjectOwnerOverrideToBucketOwner"
+                Effect: Allow
+                Resource: []
+                Principal:
+                  AWS:
+                    - get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementReplicaPrincipal")
+                Sid: AllowReplica
+            - AllowAccountsRead:
+                IBOX_IF:
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementRead
+                  - IBOX_IFVALUE
+                  - Ref("AWS::NoValue")
+                Action:
+                  - 's3:ListBucket'
+                  - 's3:GetBucketLocation'
+                  - 's3:ListBucketMultipartUploads'
+                  - 's3:ListBucketVersions'
+                  - 's3:GetObject*'
+                  - 's3:ListMultipartUploadParts'
+                Effect: Allow
+                Resource:
+                  - Sub("arn:aws:s3:::%s" % IBOX_LINKED_OBJ_NAME)
+                  - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
+                Principal:
+                  AWS: ""
+                Sid: AllowAccountsRead
+            - AllowAccountsWrite:
+                IBOX_IF:
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementWrite
+                  - IBOX_IFVALUE
+                  - Ref("AWS::NoValue")
+                Action:
+                  - "s3:Put*"
+                Effect: Allow
+                Resource:
+                  - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
+                Principal:
+                  AWS: ""
+                Sid: AllowAccountsWrite
+            - AllowAccountsDelete:
+                IBOX_IF:
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementDelete
+                  - IBOX_IFVALUE
+                  - Ref("AWS::NoValue")
+                Action:
+                  - "s3:DeleteObject*"
+                Effect: Allow
+                Resource:
+                  - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
+                Principal:
+                  AWS: ""
+                Sid: AllowAccountsDelete
+          Version: "2012-10-17"

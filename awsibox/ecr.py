@@ -53,6 +53,8 @@ def ECRRepositoryPolicyStatementAccountPush(name):
 
 
 def ECR_Repositories(key):
+    if not getattr(cfg, key):
+        return
     PolicyStatementAccounts = []
     for n, v in cfg.EcrAccount.items():
         mapname = f"EcrAccount{n}Id"  # Ex. EcrAccountPrdId

@@ -3,7 +3,7 @@
 Templates are built starting from a yaml file named as the EnvRole of the Cloudformation Stack that will be created.\
 The EnvRole should be a short name with only alphanumeric characters and dash `[a-Z,-]`, it's name should describe the Main Role of the AWS Resources created by the Stack.
 
-The EnvRole yaml files are located in subdir named as the relative UPPERCASE StackType.
+The EnvRole yaml files are located in subdir named as the relative StackType.
 
 Current StackTypes are:
 - agw - ApiGateway
@@ -36,7 +36,7 @@ Contains the files under path `cfg/{Brand}/` in the working directory where is e
 ### Types of file
 There are four types of file for yaml configurations:
 - EnvRole files - named as {STACKTYPE}/{EnvRole}.yml.
-- StackType files - named as {STACKTYPE}/TYPE.yml.
+- StackType files - named as {STACKTYPE}/i_type.yml.
 - common files - named as common.yml
 - included files - named as you like but limited to only alphanumeric characters and dash. Can be found under the relative service lowercase dir (Ex. loadbalancing, autoscaling). 
 
@@ -55,9 +55,9 @@ Every time a new template is generated yaml files are read and processed in the 
   - common.yml - BaseExt
   - common.yml - BrandExt
 - {StackType}
-  - {STACKTYPE}/TYPE.yml - BaseInt
-  - {STACKTYPE}/TYPE.yml - BaseExt
-  - {STACKTYPE}/TYPE.yml - BrandExt
+  - {STACKTYPE}/i_type.yml - BaseInt
+  - {STACKTYPE}/i_type.yml - BaseExt
+  - {STACKTYPE}/i_type.yml - BrandExt
 - {EnvRole}
   - {STACKTYPE}/{EnvRole}.yml - BaseInt
   - {STACKTYPE}/{EnvRole}.yml - BaseExt
@@ -81,7 +81,6 @@ IBoxLoader: !include [
 ```
 For every yaml file in the list, we proceed in this order:
 - if source file, the one with the !include key, is in Ext dirs (Base, Brand) - we try to read the included file from BaseInt too
-- we try to read the included file from the same dir of the source file
 - we try to read the included file from BaseExt
 - we try to read the included file from BrandExt
 
@@ -91,17 +90,14 @@ So we can, potentially, rewrite the previous syntax as:
 IBoxLoader: !include [
  included_yaml_file_one.yml,
    included_yaml_file_one.yml - BaseInt,
-   included_yaml_file_one.yml - SameDir,
    included_yaml_file_one.yml - BaseExt,
    included_yaml_file_one.yml - BrandExt,
  included_yaml_file_two.yml,
    included_yaml_file_two.yml - BaseInt,
-   included_yaml_file_two.yml - SameDir,
    included_yaml_file_two.yml - BaseExt,
    included_yaml_file_two.yml - BrandExt,
  included_yaml_file_three.yml,
    included_yaml_file_three.yml - BaseInt,
-   included_yaml_file_three.yml - SameDir,
    included_yaml_file_three.yml - BaseExt,
    included_yaml_file_three.yml - BrandExt,
 ]
@@ -277,27 +273,27 @@ So the full order would be:
 - Env
   - common.yml - BaseInt
   - common.yml - BaseExt
-  - {STACKTYPE}/TYPE.yml - BaseInt
-  - {STACKTYPE}/TYPE.yml - BaseExt
-  - {STACKTYPE}/TYPE.yml - BrandExt
+  - {STACKTYPE}/i_type.yml - BaseInt
+  - {STACKTYPE}/i_type.yml - BaseExt
+  - {STACKTYPE}/i_type.yml - BrandExt
   - {STACKTYPE}/{EnvRole}.yml - BaseInt
   - {STACKTYPE}/{EnvRole}.yml - BaseExt
   - {STACKTYPE}/{EnvRole}.yml - BrandExt
 - Region
   - common.yml - BaseInt
   - common.yml - BaseExt
-  - {STACKTYPE}/TYPE.yml - BaseInt
-  - {STACKTYPE}/TYPE.yml - BaseExt
-  - {STACKTYPE}/TYPE.yml - BrandExt
+  - {STACKTYPE}/i_type.yml - BaseInt
+  - {STACKTYPE}/i_type.yml - BaseExt
+  - {STACKTYPE}/i_type.yml - BrandExt
   - {STACKTYPE}/{EnvRole}.yml - BaseInt
   - {STACKTYPE}/{EnvRole}.yml - BaseExt
   - {STACKTYPE}/{EnvRole}.yml - BrandExt
 - Region/Env
   - common.yml - BaseInt
   - common.yml - BaseExt
-  - {STACKTYPE}/TYPE.yml - BaseInt
-  - {STACKTYPE}/TYPE.yml - BaseExt
-  - {STACKTYPE}/TYPE.yml - BrandExt
+  - {STACKTYPE}/i_type.yml - BaseInt
+  - {STACKTYPE}/i_type.yml - BaseExt
+  - {STACKTYPE}/i_type.yml - BrandExt
   - {STACKTYPE}/{EnvRole}.yml - BaseInt
   - {STACKTYPE}/{EnvRole}.yml - BaseExt
   - {STACKTYPE}/{EnvRole}.yml - BrandExt

@@ -1,0 +1,96 @@
+IBoxLoader:
+  - !exclude
+      - com/ecs/daemon-reserver-cpu.yml
+      - com/elasticloadbalancing/loadbalancer.yml
+  - !include
+      - stacks/ec2/i_type.yml
+      - stacks/ec2/ecs-cluster.yml
+
+global:
+  IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA: True
+  IBOX_ROLE_EX: ecs-cluster
+  Output:
+    - StackType:
+        Value: ec2 ecs
+    - ClusterStack:
+        Value: Ref("AWS::StackName")
+  ApplicationAutoScalingScalableTarget:
+    - ECSService:
+        ResourceId: Sub('service/${Cluster}/${Service.Name}')
+  ApplicationAutoScalingScalingPolicy:
+    - Cpu:
+        IBOX_ENABLED: False
+    - Custom:
+        IBOX_ENABLED: True
+        TargetTrackingScalingPolicyConfiguration:
+          CustomizedMetricSpecification:
+            Dimensions:
+              - Cluster:
+                  Name: ClusterName
+                  Value: Ref('Cluster')
+            MetricName: CPUUtilization
+            Statistic: Average
+            Unit: Percent
+          TargetValue: 70
+  AutoScalingGroup:
+    - Base:
+        DesiredCapacity.IBOX_AUTO_P: {}
+        DesiredCapacity: 1
+        MaxSize.IBOX_AUTO_P: {}
+        MaxSize: 10
+        MinSize.IBOX_AUTO_P: {}
+        MinSize: 1
+        DesiredCapacity.IBOX_PCO:
+          IBOX_OUTPUT:
+            - _Capacity:
+                Value: Desired= ${DesiredCapacity} ,Max= ${MaxSize} ,Min= ${MinSize} 
+        CreationPolicy:
+          ResourceSignal:
+            Count: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
+        TargetGroupARNs: []
+        UpdatePolicy:
+          AutoScalingRollingUpdate:
+            MinInstancesInService: get_endvalue(f'{IBOX_RESNAME}DesiredCapacity')
+  AutoScalingScalingPolicy:
+    - Custom:
+        DependsOn: ECSClusterCapacityProviderAssociationsBase
+        TargetTrackingConfiguration:
+          DisableScaleIn: true
+  AutoScalingScheduledAction:
+    - IBOX_BASE:
+        DesiredCapacity.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityDesiredSize',
+          get_endvalue('AutoScalingGroupBaseDesiredCapacity'),
+          get_endvalue(f'{IBOX_RESNAME}DesiredSize', nocondition=f'{IBOX_RESNAME}KeepDesiredSize'))
+        MinSize.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityMinSize',
+          get_endvalue('AutoScalingGroupBaseMinSize'),
+          get_endvalue(f'{IBOX_RESNAME}MinSize', nocondition=f'{IBOX_RESNAME}KeepMinSize'))
+        MaxSize.IBOX_CODE: If(
+          f'{IBOX_RESNAME}CapacityMaxSize',
+          get_endvalue('AutoScalingGroupBaseMaxSize'),
+          get_endvalue(f'{IBOX_RESNAME}MaxSize', nocondition=f'{IBOX_RESNAME}KeepMaxSize'))
+    - Rotate:
+        IBOX_ENABLED: False
+  ECSCapacityProvider:
+    - Base:
+        Enabled: 'yes'
+        AutoScalingGroupProvider:
+          ManagedScaling:
+            TargetCapacity: 100
+  IAMPolicy:
+    - ParameterStore:
+        Roles:
+          - Ref('RoleTask')
+  LaunchTemplate:
+    - Data:
+        NetworkInterfaces:
+          - eth0:
+              Groups++:
+                - ImportValue('SecurityGroupBaseInstance')
+  LoadBalancerType: Application
+  RecordSet: ['External', 'Internal']
+  ECSService:
+    - Base:
+        DependsOn: ECSClusterCapacityProviderAssociationsBase
+        Cluster: Ref('Cluster')

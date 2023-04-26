@@ -1,0 +1,91 @@
+IBoxLoader:
+  - !include
+    - com/lambda/layers.yml
+
+global:
+  EventsRule:
+    - CloudWatchRepeatedNotify:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
+        Description: 'Schedule check for alarms in ALARM state and notify'
+        State: 'DISABLED'
+        ScheduleExpression.IBOX_AUTO_PO: {}
+        ScheduleExpression: 'rate(5 minutes)'
+        Targets:
+          - Lambda0:
+              Arn: GetAtt('LambdaCloudWatchRepeatedNotify', 'Arn')
+              Id: TargetFunction-01
+    - CloudWatchAlarmStateChange:
+        IBOX_ENABLED: False
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
+        Description: 'Captures all of the alarms state changes to the ALARM event'
+        State: 'DISABLED'
+        EventPattern:
+          detail:
+            state:
+              value: ['ALARM']
+          detail-type:
+            - CloudWatch Alarm State Change
+          source:
+            - aws.cloudwatch
+        Targets:
+          - Lambda0:
+              Arn: GetAtt('LambdaCloudWatchAlarmStateChange', 'Arn')
+              Id: TargetFunction-01
+  Lambda:
+    - CloudWatchRepeatedNotify:
+        Architectures: ['arm64']
+        Description: 'CloudWatch Repeated Notify'
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
+        Layers:
+          - LambdaLayerVersionPython37SSM
+        Runtime: python3.9
+        Timeout: 30
+        Environment:
+          Variables:
+            - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+    - CloudWatchAlarmStateChange:
+        IBOX_ENABLED: False
+        Architectures: ['arm64']
+        Description: 'CloudWatch Alarm State change to Alarm'
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
+        Layers:
+          - LambdaLayerVersionPython37SSM
+        Runtime: python3.9
+        Timeout: 30
+  IAMPolicy:
+    - LambdaCloudWatchRepeatedNotify:
+        Roles:
+          - Ref('RoleLambdaCloudWatchRepeatedNotify')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'cloudwatch:DescribeAlarms'
+                Effect: Allow
+                Resource: '*'
+            - 2:
+                Action: 'sns:Publish'
+                Effect: Allow
+                Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+    - LambdaCloudWatchAlarmStateChange:
+        IBOX_ENABLED: False
+        Roles:
+          - Ref('RoleLambdaCloudWatchAlarmStateChange')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'events:DescribeRule'
+                  - 'events:PutRule'
+                  - 'events:DeleteRule'
+                  - 'events:PutTargets'
+                  - 'events:RemoveTargets'
+                  - 'lambda:AddPermission'
+                  - 'lambda:RemovePermission'
+                Effect: Allow
+                Resource: '*'
+    - ParameterStore:
+        Roles++:
+          - Ref('RoleLambdaCloudWatchRepeatedNotify')

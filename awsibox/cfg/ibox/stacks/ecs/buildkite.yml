@@ -1,0 +1,34 @@
+IBoxLoader:
+  - !exclude
+    - com/ecs/service-elasticloadbalancing.yml
+    - res/application-autoscaling/scalingpolicies.yml
+  - !include
+    - com/iam/policy-update_stack.yml
+
+global:
+  StackName: bkt
+  ApplicationAutoScalingScalingPolicy: IBOX_SKIP_FUNC
+  Capacity:
+    Desired: 3
+    Max: 4
+    Min: 3
+  ContainerDefinitions:
+    - 1:
+        Cpu: 128
+        Environment:
+          - AWSDEFAULTREGION:
+              Name: AWS_DEFAULT_REGION
+              Value: Ref('AWS::Region')
+        Memory: 128
+        MountPoints:
+          - DockerSock:
+              ReadOnly: false
+              SourceVolume: DockerSock
+              ContainerPath: /var/run/docker.sock
+  ECSTaskDefinition:
+    - Base:
+        Volumes:
+          - DockerSock:
+              Name: DockerSock
+              Host:
+                SourcePath: '/var/run/docker.sock'
