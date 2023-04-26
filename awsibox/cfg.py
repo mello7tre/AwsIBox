@@ -28,11 +28,9 @@ STACKS_DIR = "stacks"
 
 STACK_TYPES = [
     "agw",
-    "alb",
     "cch",
     "clf",
     "ec2",
-    "ecr",
     "ecs",
     "rds",
     "res",
