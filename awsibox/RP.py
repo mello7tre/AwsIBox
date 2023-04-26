@@ -404,9 +404,9 @@ def build_RP():
 
     yaml_cfg = {
         "common": [
-            read_yaml("common", cfg.IBOX_BRAND_DIR, CFG_FILE_INT),
-            read_yaml("common", cfg.IBOX_BRAND_DIR, CFG_FILE_EXT),
-            read_yaml("common", brand, CFG_FILE_EXT),
+            read_yaml("common", cfg.IBOX_BRAND_DIR, CFG_FILE_INT, prefix="com"),
+            read_yaml("common", cfg.IBOX_BRAND_DIR, CFG_FILE_EXT, prefix="com"),
+            read_yaml("common", brand, CFG_FILE_EXT, prefix="com"),
         ],
         "type": [
             read_yaml(
