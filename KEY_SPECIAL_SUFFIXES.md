@@ -13,7 +13,7 @@ Only on key that have as value a dict.
 Usually dict keys, in different yaml files, with the same name are, recursive, merged.
 If you append \*\* to a key it will not be merged and only it's value will taken in account.
 
-#### DOUBLE\_PLUS
+#### DOUBLE\_PLUS ++
 Only on key that have as value a list.
 Usually list keys, in different yaml files, with the same name are replaced/overwritten.
 If you append ++ to a key it's element will be appended to the ones of a key with the same name.
