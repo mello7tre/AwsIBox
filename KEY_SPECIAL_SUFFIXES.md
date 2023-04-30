@@ -2,18 +2,18 @@
 There some special suffixes that can be appended to yaml cfg keys to change how they are precessed.
 
 ## Key Suffixes ##
-- [\*\*]()
-- [++]()
-- [@]()
+- [\*\*](DOUBLE_STAR)
+- [++](DOUBLES_PLUS)
+- [@](AT_SIGN)
 
 ### Usage ###
 
-#### \*\*
+#### DOUBLE\_STAR \*\*
 Only on key that have as value a dict.
 Usually dict keys, in different yaml files, with the same name are, recursive, merged.
 If you append \*\* to a key it will not be merged and only it's value will taken in account.
 
-#### ++
+#### DOUBLES\_PLUS
 Only on key that have as value a list.
 Usually list keys, in different yaml files, with the same name are replaced/overwritten.
 If you append ++ to a key it's element will be appended to the ones of a key with the same name.
@@ -38,7 +38,7 @@ Later in file `cfg/ibox/stacks/ec2/ecs-cluster.yml` for stack `ecs-cluster` of t
 To do this i append `++` to the list key name: `ManagedPolicyArns`.
 
 
-#### @
+#### AT\_SIGN @
 Only on key that have as value a string or int, in general key that represent a final value (no list/dict).
 Usally if a final key value change in environment or region, it's automatically created a CloudFormation Map and to get it's value is used FindInMap.
 In `global` section if you want to avoid that this happen just append `@` at the key name.
