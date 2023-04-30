@@ -2,9 +2,9 @@
 There some special suffixes that can be appended to yaml cfg keys to change how they are precessed.
 
 ## Key Suffixes ##
-- [\*\*] (#**)
-- [++] (#++)
-- [@] (#@)
+- [\*\*](#**)
+- [++](#++)
+- [@](#@)
 
 ### Usage ###
 
