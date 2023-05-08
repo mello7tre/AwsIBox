@@ -83,6 +83,7 @@ ReplicationGroup: &replication-group
   Condition: ReplicationGroup
   AutomaticFailoverEnabled: false
   CacheNodeType.IBOX_CODE: get_endvalue(f"ElastiCacheCacheCluster{IBOX_INDEXNAME}CacheNodeType")
+  CacheParameterGroupName: get_endvalue(f"ElastiCacheCacheCluster{IBOX_INDEXNAME}CacheParameterGroupName")
   Enabled: 'no'
   Engine.IBOX_CODE: get_endvalue(f"ElastiCacheCacheCluster{IBOX_INDEXNAME}Engine")
   EngineVersion.IBOX_CODE: get_endvalue(f"ElastiCacheCacheCluster{IBOX_INDEXNAME}EngineVersion")
