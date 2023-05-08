@@ -412,6 +412,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("elasticache", "CacheCluster"),
     },
+    "ElastiCacheParameterGroup": {
+        "module": "joker",
+        "func": ("elasticache", "ParameterGroup"),
+    },
     "ElastiCacheReplicationGroup": {
         "module": "joker",
         "func": ("elasticache", "ReplicationGroup"),
