@@ -74,6 +74,8 @@ global:
               AllowedValues: ['', 'standard', 'io1', 'gp2', 'gp3']
           - IBOX_MAPNAME.StorageThroughput:
               Description: 'empty for mapped value'
+          - IBOX_MAPNAME.Iops:
+              Description: 'empty for mapped value'
         IBOX_CONDITION:
           - IBOX_MAPNAME.DBSnapshotIdentifier:
               get_condition('', 'not_equals', 'none', f'{IBOX_MAPNAME}DBSnapshotIdentifier')
@@ -89,6 +91,8 @@ global:
               get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}MaxAllocatedStorage')
           - IBOX_MAPNAME.StorageThroughput:
               get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}StorageThroughput')
+          - IBOX_MAPNAME.Iops:
+              get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}Iops')
         IBOX_OUTPUT:
           - IBOX_MAPNAME.AllocatedStorage:
               Value: ${AllocatedStorage}
@@ -122,6 +126,8 @@ global:
               Value: ${StorageType}
           - IBOX_MAPNAME.StorageThroughput:
               Value: ${StorageThroughput}
+          - IBOX_MAPNAME.Iops:
+              Value: ${Iops}
         AllocatedStorage: 50
         AllowMajorVersionUpgrade: true
         DBInstanceClass: db.t3.micro
@@ -131,6 +137,9 @@ global:
         DeletionProtection: false
         EnablePerformanceInsights:
           If(f'{IBOX_MAPNAME}PerformanceInsights', True, False)
+        Iops.IBOX_CODE:
+          If(f'{IBOX_MAPNAME}Iops', get_endvalue(f'{IBOX_MAPNAME}Iops'), Ref('AWS::NoValue'))
+        Iops: 0
         MasterUsername: masterusername
         MasterUserPassword: masteruserpassword
         MaxAllocatedStorage: 0
