@@ -115,6 +115,7 @@ global:
           Description: 'Latest ecs ami available from SSM'
           Default: '/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id'
           AllowedValues:
+            - '/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id'
             - '/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
             - '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
             - '/aws/service/ecs/optimized-ami/amazon-linux-2/arm64/recommended/image_id'
