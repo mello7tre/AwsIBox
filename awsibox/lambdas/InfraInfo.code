@@ -96,25 +96,30 @@ def list_services():
             s_d = CLIENT_ECS.describe_services(
                 cluster=c,
                 services=s["serviceArns"],
+                include=["TAGS"],
             )["services"]
             for srv in s_d:
                 cluster_name = c.split("/")[-1]
-                ResourceId = f"service/{cluster_name}/" + srv["serviceName"]
+                service_name = srv["serviceName"]
+                ResourceId = f"service/{cluster_name}/{service_name}"
                 deploymentConf = srv["deploymentConfiguration"]
+                cluster_stack = cluster_name[0 : cluster_name.find("-Cluster-")]
+                stack = service_name[0 : service_name.find("-Service-")]
+                role = None
+                for r in srv["tags"]:
+                    if r["key"] == "EnvRole":
+                        role = r["value"]
+                        break
                 services_tdd.update(
                     {
                         ResourceId: {
-                            "cluster": cluster_name[0:7],
-                            "stack": srv["serviceName"][0:7],
+                            "cluster": cluster_stack,
+                            "stack": stack,
                             "desired": srv["desiredCount"],
                             "running": srv["runningCount"],
                             "pending": srv["pendingCount"],
                             "launchType": srv.get("launchType"),
-                            "role": (
-                                srv["loadBalancers"][0]["containerName"]
-                                if srv["loadBalancers"]
-                                else None
-                            ),
+                            "role": role,
                             "max%": deploymentConf["maximumPercent"],
                             "min%": deploymentConf["minimumHealthyPercent"],
                         }
