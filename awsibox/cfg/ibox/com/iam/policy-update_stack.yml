@@ -16,6 +16,7 @@ global:
                   - 'iam:PutRolePolicy'
                   - 'iam:GetInstanceProfile'
                   - 'elasticloadbalancing:*'
+                  - 'application-autoscaling:*'
                   - 'ec2:*'
                   - 'ecs:*'
                   - 'ecr:*'
