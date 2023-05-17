@@ -44,6 +44,14 @@ def update(event):
                 # set vars to re-init/start services
                 i_cfg.EnvServiceRestartTime = str(datetime.now())
                 i_cfg.DockerLabelLastUpdate = str(datetime.now())
+            elif appversion == "start":
+                i_cfg.CapacityDesired = ''
+                i_cfg.CapacityMax = ''
+                i_cfg.CapacityMin = ''
+            elif appversion == "stop":
+                i_cfg.CapacityDesired = 0
+                i_cfg.CapacityMax = 0
+                i_cfg.CapacityMin = 0
             else:
                 i_cfg.EnvApp1Version = appversion
 
