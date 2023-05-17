@@ -38,7 +38,6 @@ def update(event):
             i_commands.log()
         elif appversion == "info":
             # just show stack info
-            i_cfg.nowait = False
             result = pformat(i_commands.info())
         else:
             if isinstance(appversion, dict):
