@@ -2,6 +2,7 @@
 import cfg as app_cfg
 import os
 from datetime import datetime
+from pprint import pformat
 from iboxstacksops import cfg as i_cfg, commands as i_commands, msg as i_msg
 from iboxstacksops.aws import myboto3 as i_myboto3
 
@@ -35,6 +36,10 @@ def update(event):
         if appversion == "log":
             # just show stack log
             i_commands.log()
+        elif appversion == "info":
+            # just show stack info
+            i_cfg.nowait = True
+            result = pformat(i_commands.info())
         else:
             if isinstance(appversion, dict):
                 # appversion is a dict, used for stack with multiple appversions
