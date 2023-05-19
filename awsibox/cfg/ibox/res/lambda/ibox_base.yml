@@ -61,7 +61,8 @@ global:
         IBOX_OUTPUT:
           - _:
               Value: Ref(IBOX_RESNAME)
-        # Uncomment to retain previous layerversion
+        # Uncomment to retain previous layerversion possible values (Retain|Delete)
+        # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-updatereplacepolicy.html
         #UpdateReplacePolicy: Retain
         Content:
           S3Key.IBOX_AUTO_PO:
