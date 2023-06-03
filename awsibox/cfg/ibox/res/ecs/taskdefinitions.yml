@@ -3,12 +3,19 @@ global:
     - Base:
         IBOX_TITLE: TaskDefinition
     - Fargate:
-        IBOX_BASE_SKIP: True
+        #IBOX_BASE_SKIP: True
         IBOX_TITLE: TaskDefinitionFargate
         IBOX_ENABLED: False
+        Cpu.IBOX_CODE: IBOX_SKIP
+        Cpu.IBOX_AUTO_PO: IBOX_SKIP
         Cpu: '256'
         ExecutionRoleArn: get_expvalue('RoleECSTaskExecution')
+        Memory.IBOX_CODE: IBOX_SKIP
+        Memory.IBOX_AUTO_PO: IBOX_SKIP
         Memory: '512'
+        NetworkMode.IBOX_CODE: IBOX_SKIP
+        NetworkMode.IBOX_AUTO_PO: IBOX_SKIP
+        NetworkMode.IBOX_PCO: IBOX_SKIP
         NetworkMode: awsvpc
         RequiresCompatibilities: ['FARGATE']
         TaskRoleArn: Ref('RoleTask')
