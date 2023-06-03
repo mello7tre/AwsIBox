@@ -1027,6 +1027,12 @@ def auto_get_props(
             ibox_custom_obj = f"{propname}.IBOX_CUSTOM_OBJ"
             ibox_propname_fixed = f"{propname}@"
 
+            # if IBOX KEY value equals IBOX_SKIP, delete relative IBOX KEY from key
+            for isk in ["ibox_auto_p", "ibox_auto_po", "ibox_pco", "ibox_code"]:
+                isk_name = locals()[isk]
+                if isk_name in key and key[isk_name] == "IBOX_SKIP":
+                    del key[isk_name]
+
             # need to make work @ override even if propname is not in mapped values
             if ibox_propname_fixed in key and propname not in cfg.mappedvalues:
                 key[propname] = key[ibox_propname_fixed]
