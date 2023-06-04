@@ -406,6 +406,7 @@ CFG_TO_FUNC = {
         "dep": ["SecurityGroups"],
     },
     "ECSTaskDefinition": {"module": "ecs", "func": "ECS_TaskDefinition"},
+    "ECSTaskDefinition": {"module": "joker", "func": ("ecs", "TaskDefinition")},
     "EFSAccessPoint": {"module": "joker", "func": ("efs", "AccessPoint")},
     "EFSFileSystem": {"module": "efs", "func": "EFS_FileStorage"},
     "ElastiCacheCacheCluster": {

@@ -3,7 +3,8 @@ global:
     - Base:
         IBOX_TITLE: TaskDefinition
     - Fargate:
-        #IBOX_BASE_SKIP: True
+        IBOX_BASE_SKIP: True
+        IBOX_SOURCE_OBJ: ECSTaskDefinitionBase
         IBOX_TITLE: TaskDefinitionFargate
         IBOX_ENABLED: False
         Cpu.IBOX_CODE: IBOX_SKIP
