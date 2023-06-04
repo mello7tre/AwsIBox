@@ -31,7 +31,7 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
                     RP_to_cfg({f"{k}{j}": w}, prefix, overwrite)
 
 
-def merge_dict(base, work):
+def merge_dict(base, work, keep=False):
     if isinstance(work, (str, list)) or not base:
         return work
     keys = dict(list(base.items()) + list(work.items())).keys()
@@ -40,13 +40,16 @@ def merge_dict(base, work):
             # ** is used to replace existing dict instead of merging it
             base[k.replace("**", "")] = work[k]
         elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
-            base[k] = merge_dict(base[k], work[k])
+            base[k] = merge_dict(base[k], work[k], keep=keep)
         elif k.endswith("++") and isinstance(work.get(k), list):
             # ++ is used to append elements to an existing key
             try:
                 base[k.replace("++", "")] += work[k]
             except Exception:
                 base[k.replace("++", "")] = work[k]
+        elif k in base and keep:
+            # key is in base and want to keep that value
+            pass
         elif k in work:
             base[k] = work[k]
     return base
