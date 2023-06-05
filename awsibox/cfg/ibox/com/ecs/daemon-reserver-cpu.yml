@@ -19,13 +19,6 @@ global:
     - DaemonReserveCpu:
         Value: get_endvalue('DaemonReserveCpu')
   DaemonReserveCpu: 'no'
-  ContainerDefinitions:
-    - ReserveCpu:
-        Command: ['tail', '-f']
-        Cpu: 512
-        Image: 'busybox'
-        LogConfiguration: IBOX_SKIP_FUNC
-        Memory: 32
   EC2SecurityGroup:
     - EcsService:
         IBOX_ENABLED: False
@@ -52,3 +45,11 @@ global:
   ECSTaskDefinition:
     - Base:
         Condition: DaemonReserveCpu
+        ContainerDefinitions:
+          - ReserveCpu:
+              Command: ['tail', '-f']
+              Cpu: 512
+              Image: 'busybox'
+              LogConfiguration: IBOX_SKIP_FUNC
+              Memory: 32
+

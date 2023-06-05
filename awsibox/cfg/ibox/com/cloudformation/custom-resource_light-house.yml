@@ -13,4 +13,4 @@ global:
         ServiceToken: get_expvalue("LambdaCCRLightHouse")
         EnvRole: Ref("EnvRole")
         EnvApp1Version: Ref("EnvApp1Version")
-        RepoName: getattr(cfg, "ContainerDefinitions1ImageSuffix").split(":")[0]
+        RepoName: getattr(cfg, "ECSTaskDefinitionBaseContainerDefinitions1ImageSuffix").split(":")[0]
