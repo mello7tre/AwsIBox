@@ -25,6 +25,8 @@ global:
               get_condition('', 'equals', 'awsvpc', f"{IBOX_RESNAME}NetworkMode", OrExtend=[Condition('ECSTasksLaunchOnFargate')])
           - _NetworkModeStandard:
               get_condition('', 'not_equals', 'awsvpc', f"{IBOX_RESNAME}NetworkMode")
+          - _UseOneContainer:
+              Equals(1, len(getattr(cfg, f"{IBOX_RESNAME}ContainerDefinitions")))
         IBOX_OUTPUT:
           - _Cpu:
               Value: ${Cpu}
@@ -56,13 +58,13 @@ global:
                     get_condition('', 'not_equals', 'none', f'{IBOX_REFNAME}HostPort')
                 - IBOX_REFNAME.UseTaskDefinitionBaseCpu:
                     And(
-                      Condition("ECSTaskDefinitionBaseUseOneContainer"),
+                      Condition(f"{IBOX_RESNAME}UseOneContainer"),
                       Condition("ECSTaskDefinitionBaseCpu"),
                       get_condition("", "equals", "yes", f"{IBOX_REFNAME}UseTaskDefinitionBaseCpu")
                     )
                 - IBOX_REFNAME.UseTaskDefinitionBaseMemory:
                     And(
-                      Condition("ECSTaskDefinitionBaseUseOneContainer"),
+                      Condition(f"{IBOX_RESNAME}UseOneContainer"),
                       Condition("ECSTaskDefinitionBaseMemory"),
                       get_condition("", "equals", "yes", f"{IBOX_REFNAME}UseTaskDefinitionBaseMemory")
                     )
