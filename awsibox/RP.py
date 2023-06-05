@@ -10,7 +10,14 @@ from pprint import pprint, pformat
 from . import cfg
 
 
-def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
+def inject_in_RP_map(key_name, value):
+    for n, v in cfg.Mappings.items():
+        for m, w in v.items():
+            if key_name not in w:
+                w[key_name] = value
+
+
+def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[], check_mapped=False):
     if hasattr(key, "items"):
         for k, v in key.items():
             # remove both * and + that can be present for special IBOX usage
@@ -24,6 +31,9 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
                 setattr(cfg, key_name, v)
                 if key_name not in mappedvalues:
                     cfg.fixedvalues[key_name] = v
+                elif check_mapped:
+                    # key_name is in mapped value and i need to check that cfg.Mappings is complete (Ex. IBOX_SOURCE_OBJ)
+                    inject_in_RP_map(key_name, v)
             # recursively traverse dict
             # keys name are the concatenation of traversed dict keys
             if isinstance(v, dict):
@@ -32,7 +42,11 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
                         # avoid creating cfg entries for IBOX_BASE keys
                         continue
                     RP_to_cfg(
-                        {f"{k}{j}": w}, prefix, overwrite, mappedvalues=mappedvalues
+                        {f"{k}{j}": w},
+                        prefix,
+                        overwrite,
+                        mappedvalues=mappedvalues,
+                        check_mapped=check_mapped,
                     )
 
 

@@ -150,7 +150,9 @@ def SG_SecurityGroupsECS(key):
     SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
     # add Condition to Output created by SG_SecurityGroupsExtra
     try:
-        cfg.Outputs["SecurityGroups"].Condition = "ECSTaskDefinitionBaseNetworkModeAwsVpc"
+        cfg.Outputs[
+            "SecurityGroups"
+        ].Condition = "ECSTaskDefinitionBaseNetworkModeAwsVpc"
     except Exception:
         pass
 
@@ -162,7 +164,9 @@ def SG_SecurityGroupsTSK(key):
     SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
     # add Condition to Output created by SG_SecurityGroupsExtra
     try:
-        cfg.Outputs["SecurityGroups"].Condition = "ECSTaskDefinitionBaseNetworkModeAwsVpc"
+        cfg.Outputs[
+            "SecurityGroups"
+        ].Condition = "ECSTaskDefinitionBaseNetworkModeAwsVpc"
     except Exception:
         pass
 
@@ -275,7 +279,9 @@ def SG_SecurityGroup(key):
             pass
         except ValueError:
             # to_dict failed or SecurityGroupIngress is empty, populate it using SG_SecurityGroupRules
-            r_SG.SecurityGroupIngress = SG_SecurityGroupRules(mapname, v["SecurityGroupIngress"])
+            r_SG.SecurityGroupIngress = SG_SecurityGroupRules(
+                mapname, v["SecurityGroupIngress"]
+            )
 
         try:
             outname = v["OutputName"]
