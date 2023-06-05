@@ -15,6 +15,9 @@ global:
     - ClusterStack:
         Value: get_endvalue('ClusterStack')
   ClusterStack: ecs-a
+  ECSTaskDefinition:
+    - Base:
+        IBOX_ENABLED: True
   LogsLogGroup:
     - Base:
         IBOX_TITLE: LogsLogGroup
