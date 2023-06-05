@@ -1,6 +1,7 @@
 global:
   ECSTaskDefinition:
     - IBOX_BASE:
+        IBOX_ENABLED: False
         # Need to define Parameters, Conditions and Outputs here because they need to be used/evaluated also in ContainerDefinitions
         # and ContainerDefinitions is processed before ECSTaskDefinition keys Cpu, Memory and NetworkMode (alphabetical order).
         IBOX_PARAMETER:

@@ -9,6 +9,7 @@ global:
     - ECSTasksLaunchOnFargate: Equals(True, True)
   ECSTaskDefinition:
     - Base:
+        IBOX_ENABLED: True
         NetworkMode: awsvpc
   EventsRule:
     - ECSRunTask:
