@@ -17,6 +17,7 @@ global:
               Description: Empty for mapped value
           - _NetworkMode:
               AllowedValues: ['', 'awsvpc', 'bridge']
+              Description: Empty for mapped value
         IBOX_CONDITION:
           - _Cpu:
               get_condition('', 'not_equals', 'none', f"{IBOX_RESNAME}Cpu")
