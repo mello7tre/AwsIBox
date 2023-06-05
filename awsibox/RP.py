@@ -455,10 +455,14 @@ def build_RP():
         pprint(LD_INCLUDED)
         print("########## INCLUDED ####### END #######")
 
-        print("########## FIXEDVALUES ######### START #####")
+        print("########## FIXED_VALUES ######### START #####")
         pprint(cfg.fixedvalues)
-        print("########## FIXEDVALUES ######### END #######")
+        print("########## FIXED_VALUES ######### END #######")
 
-        print("########## MAPPEDVALUES ######### START #####")
+        print("########## MAPPED_VALUES ######### START #####")
+        pprint(cfg.mappedvalues)
+        print("########## MAPPED_VALUES ######### END #######")
+
+        print("########## RP_MAP ######### START #####")
         pprint(cfg.RP_map)
-        print("########## MAPPEDVALUES ######### END #######")
+        print("########## RP_MAP ######### END #######")
