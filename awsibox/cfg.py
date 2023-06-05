@@ -23,6 +23,8 @@ PATH_INT = os.path.normpath(PATH_INT)
 PATH_EXT = os.path.join(cwd, "cfg")
 PATH_EXT = os.path.normpath(PATH_EXT)
 
+IBOX_BASE_KEY_NAME = "IBOX_BASE"
+
 IBOX_BRAND_DIR = "ibox"
 STACKS_DIR = "stacks"
 
@@ -405,7 +407,7 @@ CFG_TO_FUNC = {
         "func": ("ecs", "Service"),
         "dep": ["SecurityGroups"],
     },
-    "ECSTaskDefinition": {"module": "ecs", "func": "ECS_TaskDefinition"},
+    "ECSTaskDefinition": {"module": "joker", "func": ("ecs", "TaskDefinition")},
     "EFSAccessPoint": {"module": "joker", "func": ("efs", "AccessPoint")},
     "EFSFileSystem": {"module": "efs", "func": "EFS_FileStorage"},
     "ElastiCacheCacheCluster": {

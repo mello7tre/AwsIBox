@@ -26,9 +26,7 @@ def process_cache_policy(v):
 
 def cache_behavior_process(key):
     # process default behavior
-    process_cache_policy(
-        key["DefaultCacheBehavior"]
-    )
+    process_cache_policy(key["DefaultCacheBehavior"])
     # process other behaviors
     for n, v in key["CacheBehaviors"].items():
         process_cache_policy(v)
@@ -63,7 +61,9 @@ def CF_CloudFront(key):
             distribution_config["CacheBehaviors"].items(),
             key=lambda x_y: clf_compute_order(x_y[1]["PathPattern"]),
         )
-        distribution_config["CacheBehaviors"] = {x[0]: x[1] for x in sortedcachebehaviors}
+        distribution_config["CacheBehaviors"] = {
+            x[0]: x[1] for x in sortedcachebehaviors
+        }
 
         if cfg.debug:
             print("##########CLF_COMPUTE_ORDER#########START#######")

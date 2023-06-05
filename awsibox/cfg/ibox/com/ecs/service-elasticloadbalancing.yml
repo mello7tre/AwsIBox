@@ -91,19 +91,19 @@ global:
                 - LoadBalancerApplicationExternal
                 - IBOX_IFVALUE
                 - Ref("AWS::NoValue")
-              FromPort: get_endvalue("ContainerDefinitions1ContainerPort")
+              FromPort: get_endvalue("ECSTaskDefinitionBaseContainerDefinitions1ContainerPort")
               IpProtocol: tcp
               SourceSecurityGroupId: ImportValue("SecurityGroupLoadBalancerApplicationExternal")
-              ToPort: get_endvalue("ContainerDefinitions1ContainerPort")
+              ToPort: get_endvalue("ECSTaskDefinitionBaseContainerDefinitions1ContainerPort")
           - Internal:
               IBOX_IF:
                 - LoadBalancerApplicationInternal
                 - IBOX_IFVALUE
                 - Ref("AWS::NoValue")
-              FromPort: get_endvalue("ContainerDefinitions1ContainerPort")
+              FromPort: get_endvalue("ECSTaskDefinitionBaseContainerDefinitions1ContainerPort")
               IpProtocol: tcp
               SourceSecurityGroupId: ImportValue("SecurityGroupLoadBalancerApplicationInternal")
-              ToPort: get_endvalue("ContainerDefinitions1ContainerPort")
+              ToPort: get_endvalue("ECSTaskDefinitionBaseContainerDefinitions1ContainerPort")
   EC2SecurityGroupIngress:
     - LoadBalancerApplicationHttpExternal:
         IBOX_ENABLED: False
@@ -159,7 +159,7 @@ global:
                 - IBOX_IFVALUE
                 - Ref("AWS::NoValue")
               ContainerName: Ref('EnvRole')
-              ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
+              ContainerPort: get_endvalue('ECSTaskDefinitionBaseContainerDefinitions1ContainerPort')
               TargetGroupArn: Ref('TargetGroupExternal')
           - Internal:
               IBOX_IF:
@@ -167,6 +167,6 @@ global:
                 - IBOX_IFVALUE
                 - Ref("AWS::NoValue")
               ContainerName: Ref('EnvRole')
-              ContainerPort: get_endvalue('ContainerDefinitions1ContainerPort')
+              ContainerPort: get_endvalue('ECSTaskDefinitionBaseContainerDefinitions1ContainerPort')
               TargetGroupArn: Ref('TargetGroupInternal')
         Role: If("ECSServiceDoNotNeedRole", Ref("AWS::NoValue"), ImportValue("RoleECSService"))

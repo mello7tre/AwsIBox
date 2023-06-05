@@ -10,7 +10,14 @@ from pprint import pprint, pformat
 from . import cfg
 
 
-def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
+def inject_in_RP_map(key_name, value):
+    for n, v in cfg.Mappings.items():
+        for m, w in v.items():
+            if key_name not in w:
+                w[key_name] = value
+
+
+def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[], check_mapped=False):
     if hasattr(key, "items"):
         for k, v in key.items():
             # remove both * and + that can be present for special IBOX usage
@@ -24,14 +31,26 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
                 setattr(cfg, key_name, v)
                 if key_name not in mappedvalues:
                     cfg.fixedvalues[key_name] = v
+                elif check_mapped:
+                    # key_name is in mapped value and i need to check that cfg.Mappings is complete (Ex. IBOX_SOURCE_OBJ)
+                    inject_in_RP_map(key_name, v)
             # recursively traverse dict
             # keys name are the concatenation of traversed dict keys
             if isinstance(v, dict):
                 for j, w in v.items():
-                    RP_to_cfg({f"{k}{j}": w}, prefix, overwrite)
+                    if j == cfg.IBOX_BASE_KEY_NAME:
+                        # avoid creating cfg entries for IBOX_BASE keys
+                        continue
+                    RP_to_cfg(
+                        {f"{k}{j}": w},
+                        prefix,
+                        overwrite,
+                        mappedvalues=mappedvalues,
+                        check_mapped=check_mapped,
+                    )
 
 
-def merge_dict(base, work):
+def merge_dict(base, work, keep=False):
     if isinstance(work, (str, list)) or not base:
         return work
     keys = dict(list(base.items()) + list(work.items())).keys()
@@ -40,13 +59,16 @@ def merge_dict(base, work):
             # ** is used to replace existing dict instead of merging it
             base[k.replace("**", "")] = work[k]
         elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
-            base[k] = merge_dict(base[k], work[k])
+            base[k] = merge_dict(base[k], work[k], keep=keep)
         elif k.endswith("++") and isinstance(work.get(k), list):
             # ++ is used to append elements to an existing key
             try:
                 base[k.replace("++", "")] += work[k]
             except Exception:
                 base[k.replace("++", "")] = work[k]
+        elif k in base and keep:
+            # key is in base and want to keep that value
+            pass
         elif k in work:
             base[k] = work[k]
     return base
@@ -268,7 +290,7 @@ def build_RP():
             return {}
 
     def inject_ibox_base(RP, root=""):
-        base_key = "IBOX_BASE"
+        base_key = cfg.IBOX_BASE_KEY_NAME
         for main_key in list(RP.keys()):
             main_key_full = f"{root}{main_key}"
             main_key_value = RP[main_key]
@@ -296,7 +318,13 @@ def build_RP():
                     # need to do it this way to keep the "link" between existing dict keys and values
                     for n, v in merged.items():
                         RP[main_key][resource_key][n] = v
+                # delete IBOX_BASE in RP structure..
                 del RP[main_key][base_key]
+                # ..and in cfg one
+                try:
+                    del getattr(cfg, f"{root}{main_key}")[base_key]
+                except Exception:
+                    pass
 
             if isinstance(main_key_value, dict):
                 inject_ibox_base(main_key_value, root=main_key_full)
@@ -443,10 +471,14 @@ def build_RP():
         pprint(LD_INCLUDED)
         print("########## INCLUDED ####### END #######")
 
-        print("########## FIXEDVALUES ######### START #####")
+        print("########## FIXED_VALUES ######### START #####")
         pprint(cfg.fixedvalues)
-        print("########## FIXEDVALUES ######### END #######")
+        print("########## FIXED_VALUES ######### END #######")
 
-        print("########## MAPPEDVALUES ######### START #####")
+        print("########## MAPPED_VALUES ######### START #####")
+        pprint(cfg.mappedvalues)
+        print("########## MAPPED_VALUES ######### END #######")
+
+        print("########## RP_MAP ######### START #####")
         pprint(cfg.RP_map)
-        print("########## MAPPEDVALUES ######### END #######")
+        print("########## RP_MAP ######### END #######")

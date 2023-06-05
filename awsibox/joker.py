@@ -38,9 +38,16 @@ def Joker(key, module, cls):
             ibox_source_obj = [ibox_source_obj]
         for source_obj in ibox_source_obj:
             source_obj = parse_ibox_key(source_obj, parse_ibox_key_conf)
-            source_obj_conf = getattr(cfg, source_obj)
-            RP_to_cfg(source_obj_conf, prefix=mapname, mappedvalues=cfg.mappedvalues)
-            v = merge_dict(v, source_obj_conf)
+            source_obj_conf = copy.deepcopy(getattr(cfg, source_obj))
+            RP_to_cfg(
+                source_obj_conf,
+                prefix=mapname,
+                overwrite=False,
+                mappedvalues=cfg.mappedvalues,
+                check_mapped=True,
+            )
+            v = merge_dict(v, source_obj_conf, keep=True)
+
             # Uncomment to use old method: auto_get_props
             # auto_get_props(obj, mapname=source_obj, indexname=n)
             # #reset obj title, if changed by IBOX_TITLE key
