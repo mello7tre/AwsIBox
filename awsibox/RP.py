@@ -28,6 +28,9 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
             # keys name are the concatenation of traversed dict keys
             if isinstance(v, dict):
                 for j, w in v.items():
+                    if j == cfg.IBOX_BASE_KEY_NAME:
+                        # avoid creating cfg entries for IBOX_BASE keys
+                        continue
                     RP_to_cfg({f"{k}{j}": w}, prefix, overwrite)
 
 
@@ -271,7 +274,7 @@ def build_RP():
             return {}
 
     def inject_ibox_base(RP, root=""):
-        base_key = "IBOX_BASE"
+        base_key = cfg.IBOX_BASE_KEY_NAME
         for main_key in list(RP.keys()):
             main_key_full = f"{root}{main_key}"
             main_key_value = RP[main_key]

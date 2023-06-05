@@ -23,6 +23,8 @@ PATH_INT = os.path.normpath(PATH_INT)
 PATH_EXT = os.path.join(cwd, "cfg")
 PATH_EXT = os.path.normpath(PATH_EXT)
 
+IBOX_BASE_KEY_NAME = "IBOX_BASE"
+
 IBOX_BRAND_DIR = "ibox"
 STACKS_DIR = "stacks"
 
