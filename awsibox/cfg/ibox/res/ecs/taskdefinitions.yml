@@ -10,11 +10,6 @@ global:
               IBOX_ENABLED_IF: 'False'
           - _NetworkMode:
               IBOX_ENABLED_IF: 'False'
-        IBOX_CONDITION:
-          - _Cpu: IBOX_SKIP
-          - _Memory: IBOX_SKIP
-          - _NetworkModeAwsVpc: IBOX_SKIP
-          - _NetworkModeStandard: IBOX_SKIP
         IBOX_OUTPUT:
           - _Cpu:
               IBOX_ENABLED_IF: 'False'
