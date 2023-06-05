@@ -57,17 +57,17 @@ global:
                     Equals('yes', 'yes' if isinstance(getattr(cfg, f'{IBOX_REFNAME}Command'), list) else 'no'))
                 - IBOX_REFNAME.HostPort:
                     get_condition('', 'not_equals', 'none', f'{IBOX_REFNAME}HostPort')
-                - IBOX_REFNAME.UseTaskDefinitionBaseCpu:
+                - IBOX_REFNAME.UseTaskDefinitionCpu:
                     And(
                       Condition(f"{IBOX_RESNAME}UseOneContainer"),
-                      Condition("ECSTaskDefinitionBaseCpu"),
-                      get_condition("", "equals", "yes", f"{IBOX_REFNAME}UseTaskDefinitionBaseCpu")
+                      Condition(f"{IBOX_RESNAME}Cpu"),
+                      get_condition("", "equals", "yes", f"{IBOX_REFNAME}UseTaskDefinitionCpu")
                     )
-                - IBOX_REFNAME.UseTaskDefinitionBaseMemory:
+                - IBOX_REFNAME.UseTaskDefinitionMemory:
                     And(
                       Condition(f"{IBOX_RESNAME}UseOneContainer"),
-                      Condition("ECSTaskDefinitionBaseMemory"),
-                      get_condition("", "equals", "yes", f"{IBOX_REFNAME}UseTaskDefinitionBaseMemory")
+                      Condition(f"{IBOX_RESNAME}Memory"),
+                      get_condition("", "equals", "yes", f"{IBOX_REFNAME}UseTaskDefinitionMemory")
                     )
               IBOX_OUTPUT:
                 - EnvApp.IBOX_PROPNAME.Version:
@@ -86,7 +86,7 @@ global:
                 CONDITION: get_condition('', 'not_equals', 0, f'{IBOX_REFNAME}ContainerPort')
               ContainerPort: 0
               Cpu.IBOX_CODE: If(
-                f"{IBOX_REFNAME}UseTaskDefinitionBaseCpu", get_endvalue("ECSTaskDefinitionBaseCpu"), get_endvalue(IBOX_CURNAME))
+                f"{IBOX_REFNAME}UseTaskDefinitionCpu", get_endvalue(f"{IBOX_RESNAME}Cpu"), get_endvalue(IBOX_CURNAME))
               Cpu: 16
               DockerLabels: 
                 LastUpdate: Ref('DockerLabelLastUpdate')
@@ -129,7 +129,7 @@ global:
                   awslogs-region: Ref('AWS::Region')
                   awslogs-stream-prefix: Ref('AWS::StackName')
               Memory.IBOX_CODE: If(
-                f"{IBOX_REFNAME}UseTaskDefinitionBaseMemory", get_endvalue("ECSTaskDefinitionBaseMemory"), get_endvalue(IBOX_CURNAME))
+                f"{IBOX_REFNAME}UseTaskDefinitionMemory", get_endvalue(f"{IBOX_RESNAME}Memory"), get_endvalue(IBOX_CURNAME))
               Memory: 128
               MemoryReservation.IBOX_CODE: If(
                 f'{IBOX_REFNAME}MemoryReservation', get_endvalue(f'{IBOX_REFNAME}MemoryReservation'), Ref('AWS::NoValue'))
@@ -154,7 +154,7 @@ global:
                     Protocol: tcp
               StopTimeout.IBOX_AUTO_PO: {}
               StopTimeout: 30
-              UseTaskDefinitionBase:
+              UseTaskDefinition:
                 Cpu: 'yes'
                 Memory: 'yes'
         # End ContainerDefinitions
