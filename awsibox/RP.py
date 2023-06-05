@@ -299,7 +299,13 @@ def build_RP():
                     # need to do it this way to keep the "link" between existing dict keys and values
                     for n, v in merged.items():
                         RP[main_key][resource_key][n] = v
+                # delete IBOX_BASE in RP structure..
                 del RP[main_key][base_key]
+                # ..and in cfg one
+                try:
+                    del getattr(cfg, f"{root}{main_key}")[base_key]
+                except Exception:
+                    pass
 
             if isinstance(main_key_value, dict):
                 inject_ibox_base(main_key_value, root=main_key_full)

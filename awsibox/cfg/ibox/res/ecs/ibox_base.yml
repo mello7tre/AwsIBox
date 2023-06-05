@@ -26,7 +26,7 @@ global:
           - _NetworkModeStandard:
               get_condition('', 'not_equals', 'awsvpc', f"{IBOX_RESNAME}NetworkMode")
           - _UseOneContainer:
-              Equals(1, len(getattr(cfg, IBOX_RESNAME)["ContainerDefinitions"]))
+              Equals(1, len(getattr(cfg, f"{IBOX_RESNAME}ContainerDefinitions")))
         IBOX_OUTPUT:
           - _Cpu:
               Value: ${Cpu}
