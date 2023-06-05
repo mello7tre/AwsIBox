@@ -31,7 +31,9 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[]):
                     if j == cfg.IBOX_BASE_KEY_NAME:
                         # avoid creating cfg entries for IBOX_BASE keys
                         continue
-                    RP_to_cfg({f"{k}{j}": w}, prefix, overwrite)
+                    RP_to_cfg(
+                        {f"{k}{j}": w}, prefix, overwrite, mappedvalues=mappedvalues
+                    )
 
 
 def merge_dict(base, work, keep=False):
