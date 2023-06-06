@@ -969,10 +969,12 @@ def auto_get_props(
                 lo_resname = lo_conf.get("IBOX_RESNAME", f"{lo_key}{lo_name}")
                 linked_obj["IBOX_RESNAME"] = f"{lo_resname}{lo_for_index}"
 
-                condition = key.get("Condition", getattr(obj, "Condition", None))
-                if condition and not "Condition" in linked_obj:
-                    # automatically add Condition if source obj have it and target not
-                    linked_obj["Condition"] = parse_ibox_key(condition)
+                # automatically add Meta Properties like Condition and UpdateReplacePolicy..
+                for meta_prop in ["Condition", "UpdateReplacePolicy"]:
+                    source_meta_prop = key.get(meta_prop, getattr(obj, meta_prop, None))
+                    if source_meta_prop and not meta_prop in linked_obj:
+                        # ..if source obj have it and target not
+                        linked_obj[meta_prop] = parse_ibox_key(source_meta_prop)
 
                 # assign to louc_cfg lo_key
                 louc_cfg[target_name] = linked_obj
