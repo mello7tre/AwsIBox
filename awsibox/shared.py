@@ -91,6 +91,9 @@ def stack_add_res():
         cfg.template.add_output(v)
     cfg.Outputs.clear()
 
+    cfg.template.set_metadata(get_dictvalue(cfg.Metadata))
+    cfg.Metadata.clear()
+
 
 def add_obj(obj):
     if isinstance(obj, list):

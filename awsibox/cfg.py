@@ -12,6 +12,7 @@ Conditions = {}
 Mappings = {}
 Resources = {}
 Outputs = {}
+Metadata = {}
 
 OBJS = {}
 
