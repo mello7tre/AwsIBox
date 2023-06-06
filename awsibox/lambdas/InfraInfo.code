@@ -34,7 +34,7 @@ def show():
         "EnvRole",
         "StackType",
         "EnvApp1Version",
-        "ContainerDefinitions1Constraints",
+        "ECSTaskDefinitionBaseContainerDefinitions1Constraints",
         "Capacity",
         "StackStatus",
     ]
