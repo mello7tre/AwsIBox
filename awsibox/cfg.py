@@ -99,6 +99,7 @@ EVAL_TROPO_FUNCTIONS_IN_CFG = (
     "Not(",
     "GetAZs(",
     "Tags(",
+    "FindInMap(",
 )
 
 EVAL_PYTHON_FUNCTIONS_IN_CFG = (
