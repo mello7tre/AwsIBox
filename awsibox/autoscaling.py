@@ -14,12 +14,11 @@ from .shared import (
     get_condition,
     add_obj,
     import_user_data,
+    get_dictvalue,
 )
 
 
 def AS_LaunchTemplate():
-    Tags_List = []
-
     # Resources
     R_LaunchTemplate = ec2.LaunchTemplate(
         "LaunchTemplate",
@@ -80,9 +79,16 @@ def AS_LaunchTemplate():
 
     add_obj(R_LaunchTemplate)
 
-    Tags = asg.Tags()
-    Tags.tags = Tags_List
-    return Tags
+    # add Medata Tags to LaunchTemplate TagSpecifications
+    if hasattr(cfg, "MetadataTags"):
+        for n in R_LaunchTemplate.LaunchTemplateData.TagSpecifications:
+            if n.ResourceType in ["instance", "volume"]:
+                n.Tags.tags.extend(
+                    [
+                        {"Key": n, "Value": v}
+                        for n, v in get_dictvalue(cfg.MetadataTags).items()
+                    ],
+                )
 
 
 def AS_Autoscaling(key):
@@ -110,7 +116,7 @@ def AS_Autoscaling(key):
                 )
 
     # Resources
-    LaunchTemplateTags = AS_LaunchTemplate()
+    AS_LaunchTemplate()
 
     R_ASG = asg.AutoScalingGroup(
         "AutoScalingGroupBase",
@@ -125,7 +131,5 @@ def AS_Autoscaling(key):
         R_ASG.TargetGroupARNs = TargetGroups
     else:
         R_ASG.TargetGroupARNs.extend(TargetGroups)
-
-    R_ASG.Tags += LaunchTemplateTags
 
     add_obj([R_ASG])
