@@ -91,7 +91,7 @@ def stack_add_res():
         cfg.template.add_output(v)
     cfg.Outputs.clear()
 
-    cfg.template.set_metadata(get_dictvalue(cfg.Metadata))
+    cfg.template.set_metadata(get_dictvalue(cfg.Metadata, mapname="Metadata"))
     cfg.Metadata.clear()
 
 
@@ -351,7 +351,7 @@ def iboxif(if_wrapper, mapname, value):
     return value
 
 
-def get_dictvalue(key):
+def get_dictvalue(key, mapname=""):
     if isinstance(key, list):
         value = [get_dictvalue(k) for k in key]
     elif isinstance(key, dict) and "IBOX_LIST" in key:
@@ -368,9 +368,17 @@ def get_dictvalue(key):
             else:
                 value.append(prop_obj)
     elif isinstance(key, dict):
-        value = {i: get_dictvalue(k) for i, k in key.items()}
+        value = {
+            i: get_dictvalue(k, mapname=f"{mapname}{i}" if mapname else "")
+            for i, k in key.items()
+        }
     elif isinstance(key, str):
-        value = eval(key) if key.startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else key
+        if key.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+            value = eval(key)
+        elif mapname and mapname in cfg.mappedvalues:
+            value = get_endvalue(mapname)
+        else:
+            value = key
     else:
         value = key
 

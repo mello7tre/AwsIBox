@@ -86,7 +86,9 @@ def AS_LaunchTemplate():
                 n.Tags.tags.extend(
                     [
                         {"Key": n, "Value": v}
-                        for n, v in get_dictvalue(cfg.MetadataTags).items()
+                        for n, v in get_dictvalue(
+                            cfg.MetadataTags, mapname="MetadataTags"
+                        ).items()
                     ],
                 )
 
