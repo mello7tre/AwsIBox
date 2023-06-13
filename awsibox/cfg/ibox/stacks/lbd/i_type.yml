@@ -2,6 +2,5 @@ IBoxLoader:
   - !include
     - res/cloudfront/origin-access-identities.yml
     - res/sns/subscriptions.yml
-    - com/lambda/i_base.yml
 
 global:

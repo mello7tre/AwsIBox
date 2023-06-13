@@ -8,7 +8,6 @@ IBoxLoader: !include
   - res/iam/instance-profiles.yml
   - res/sns/subscriptions.yml
   - res/sqs/queue-policies.yml
-  - com/lambda/i_base.yml
 
 global:
   Parameter:

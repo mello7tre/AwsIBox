@@ -1,7 +1,6 @@
 IBoxLoader: !include
   - res/apigateway/deployments.yml
   - com/cloudfront/for-services.yml
-  - com/lambda/i_base.yml
 
 global:
   Output:
