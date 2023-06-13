@@ -1,7 +1,5 @@
 IBoxLoader: !include
   - com/autoscaling/capacity.yml
-  - res/application-autoscaling/scalingpolicies.yml
-  - res/application-autoscaling/scalabletargets.yml
   - res/cloudwatch/alarms.yml
   - com/ecs/task.yml
   - res/ecs/services.yml
@@ -10,6 +8,7 @@ IBoxLoader: !include
 global:
   ApplicationAutoScalingScalableTarget:
     - ECSService:
+        IBOX_ENABLED: True
         ScheduledActions:
           - Down:
               Enabled: 'no'

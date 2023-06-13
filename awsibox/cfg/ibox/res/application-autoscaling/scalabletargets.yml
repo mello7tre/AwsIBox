@@ -1,6 +1,7 @@
 global:
   ApplicationAutoScalingScalableTarget:
     - ECSService:
+        IBOX_ENABLED: False
         MaxCapacity: get_endvalue('CapacityMax')
         MinCapacity: get_endvalue('CapacityMin')
         ResourceId: get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')

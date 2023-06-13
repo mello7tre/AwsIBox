@@ -1,3 +1,7 @@
+IBoxLoader: !include
+  - res/application-autoscaling/scalingpolicies.yml
+  - res/application-autoscaling/scalabletargets.yml
+
 global:
   ApplicationAutoScalingScalingPolicy:
     - IBOX_BASE:
