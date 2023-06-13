@@ -1,4 +1,0 @@
-IBoxLoader: !include
-  - res/lambda/layer_permissions.yml
-
-global:

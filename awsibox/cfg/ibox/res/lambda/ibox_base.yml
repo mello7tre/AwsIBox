@@ -2,6 +2,7 @@ IBoxLoader: !include
   - res/lambda/permissions.yml
   - res/lambda/functions.yml
   - res/lambda/versions.yml
+  - res/lambda/layer_permissions.yml
 
 global:
   LambdaPermission:
