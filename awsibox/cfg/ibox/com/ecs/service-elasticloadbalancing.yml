@@ -1,6 +1,5 @@
 IBoxLoader: !include
   - com/elasticloadbalancing/i_base.yml
-  - res/elasticloadbalancing/v2-listener-rules.yml
   - com/cloudfront/for-services.yml
   - com/elasticloadbalancing/v2-listener.yml
 
