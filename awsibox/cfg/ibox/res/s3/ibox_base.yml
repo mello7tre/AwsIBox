@@ -1,6 +1,5 @@
 IBoxLoader: !include
   - res/s3/bucket-policies.yml
-  - res/iam/roles.yml
   - com/iam/policy-bucket-replica.yml
 
 global:

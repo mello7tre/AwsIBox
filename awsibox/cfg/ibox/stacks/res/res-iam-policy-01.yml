@@ -1,6 +1,3 @@
-IBoxLoader: !include
-  - res/iam/managed-policies.yml
-
 global:
   StackName: iam-p-01
   IAMManagedPolicy:

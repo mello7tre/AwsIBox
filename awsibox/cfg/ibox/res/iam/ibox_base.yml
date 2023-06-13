@@ -1,3 +1,7 @@
+IBoxLoader: !include
+  - res/iam/managed-policies.yml
+  - res/iam/roles.yml
+
 global:
   IAMManagedPolicy:
     - IBOX_BASE:
