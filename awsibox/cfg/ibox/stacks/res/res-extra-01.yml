@@ -6,7 +6,6 @@ IBoxLoader: !include
   - res/elasticache/subnet-groups.yml
   - res/rds/db-subnet-groups.yml
   - res/apigateway/accounts.yml
-  - res/route53/recordsets.yml
   - res/efs/filesystems.yml
 
 

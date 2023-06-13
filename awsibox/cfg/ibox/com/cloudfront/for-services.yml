@@ -1,6 +1,5 @@
 IBoxLoader: !include
   - com/cloudfront/i_base.yml
-  - res/route53/recordsets.yml
 
 global:
   CloudFrontDistribution:
