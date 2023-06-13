@@ -1,5 +1,0 @@
-IBoxLoader:
-  - !include
-    - res/sns/subscriptions.yml
-
-global:
