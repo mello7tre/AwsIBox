@@ -1,3 +1,7 @@
+IBoxLoader: !include
+  - res/ecs/taskdefinitions.yml
+  - res/ecs/services.yml
+
 global:
   ECSTaskDefinition:
     - IBOX_BASE:

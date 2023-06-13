@@ -1,5 +1,4 @@
 IBoxLoader: !include
-  - res/ecs/taskdefinitions.yml
   - com/iam/policy-parameterstore.yml
   - com/iam/policy-ecs-exec.yml
   - com/ec2/securitygroup.yml

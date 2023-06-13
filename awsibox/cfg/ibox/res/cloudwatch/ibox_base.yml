@@ -1,3 +1,7 @@
+IBoxLoader: !include
+  - res/cloudwatch/alarms.yml
+  - res/cloudwatch/log_groups.yml
+
 global:
   CloudWatchAlarm:
     - IBOX_BASE:

@@ -1,8 +1,6 @@
 IBoxLoader: !include
   - com/autoscaling/capacity.yml
-  - res/cloudwatch/alarms.yml
   - com/ecs/task.yml
-  - res/ecs/services.yml
   - com/ecs/service-elasticloadbalancing.yml
 
 global:

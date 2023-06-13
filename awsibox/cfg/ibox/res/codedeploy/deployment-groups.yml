@@ -1,6 +1,3 @@
-IBoxLoader: !include
-  - com/codedeploy/deployment-group.yml
-
 global:
   CodeDeployDeploymentGroup:
     - Test01:

@@ -3,7 +3,6 @@ IBoxLoader:
     - com/iam/policy-ecs-exec.yml
   - !include
     - com/ecs/task.yml
-    - res/ecs/services.yml
 
 global:
   Parameter:

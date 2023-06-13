@@ -1,6 +1,5 @@
 IBoxLoader: !include
   - com/elasticloadbalancing/loadbalancer.yml
-  - res/cloudwatch/alarms.yml
 
 global:
   StackName: alb
