@@ -1,6 +1,5 @@
 IBoxLoader: !include
   - com/ecs/task.yml
-  - res/lambda/permissions.yml
 
 global:
   Condition:
