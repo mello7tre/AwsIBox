@@ -143,8 +143,6 @@ ApiGatewayDomainNameRegional: &apigatewaydomainnameregional
 
 global:
   Route53RecordSet:
-    - IBOX_BASE:
-        IBOX_ENABLED: False
     - EC2ExternalLoadBalancerExternal:
         <<: [*zone_external, *ec2_loadbalancer_target_external, *loadbalancer, *base_external]
     - EC2ExternalLoadBalancerInternal:

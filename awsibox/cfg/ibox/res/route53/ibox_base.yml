@@ -1,3 +1,6 @@
+IBoxLoader: !include
+  - res/route53/recordsets.yml
+
 global:
   Route53HostedZone:
     - IBOX_BASE:
