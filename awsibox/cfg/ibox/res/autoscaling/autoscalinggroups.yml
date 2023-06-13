@@ -2,7 +2,6 @@ IBoxLoader: !include
   - com/autoscaling/capacity.yml
   #- com/autoscaling/imageid-ec2.yml
   - res/autoscaling/launchtemplates.yml
-  - res/autoscaling/scalingpolicies.yml
 
 global:
   AutoScalingGroup:
