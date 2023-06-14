@@ -1,12 +1,12 @@
 IBoxLoader: !include
-  - com/certificatemanager/certificate-global.yml
-  - com/certificatemanager/certificate-regional.yml
+  - res/apigateway/accounts.yml
   - res/cloudfront/policies.yml
-  - com/iam/roles-cloudformation-stackset.yml
+  - res/efs/filesystems.yml
   - res/elasticache/subnet-groups.yml
   - res/rds/db-subnet-groups.yml
-  - res/apigateway/accounts.yml
-  - res/efs/filesystems.yml
+  - com/certificatemanager/certificate-global.yml
+  - com/certificatemanager/certificate-regional.yml
+  - com/iam/roles-cloudformation-stackset.yml
 
 
 global:

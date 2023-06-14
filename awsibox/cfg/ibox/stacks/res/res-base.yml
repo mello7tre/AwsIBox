@@ -1,6 +1,7 @@
 IBoxLoader: !include
-  - com/elasticloadbalancing/accountid.yml
+  - res/ec2/vpc-endpoints.yml
   - res/route53/hostedzones.yml
+  - com/elasticloadbalancing/accountid.yml
   - com/ec2/securitygroup.yml
   - com/iam/managed-policies.yml
   - com/iam/roles.yml
@@ -10,7 +11,6 @@ IBoxLoader: !include
   - com/sns/cloudwatch-alarm.yml
   - com/servicediscovery/publicdnsnamespace-find.yml
   - com/kms/key-and-alias-parameter-store.yml
-  - res/ec2/vpc-endpoints.yml
   - com/s3/bucket-log.yml
 
 global:

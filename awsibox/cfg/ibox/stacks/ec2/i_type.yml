@@ -1,10 +1,10 @@
 IBoxLoader: !include
   - res/autoscaling/autoscalinggroups.yml
+  - res/iam/instance-profiles.yml
   - com/elasticloadbalancing/loadbalancer.yml
   - com/ec2/securitygroup.yml
   - com/cloudfront/for-services.yml
   - com/iam/policy-parameterstore.yml
-  - res/iam/instance-profiles.yml
 
 global:
   Parameter:

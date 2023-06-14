@@ -1,9 +1,9 @@
 IBoxLoader: !exclude
   - res/application-autoscaling/scalingpolicies.yml
+  - res/cloudwatch/alarms.yml
   - com/autoscaling/capacity.yml
   - com/ecs/service-elasticloadbalancing.yml
   - com/ec2/securitygroup.yml
-  - res/cloudwatch/alarms.yml
 
 global:
   StackName: rsc
