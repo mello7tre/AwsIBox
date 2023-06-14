@@ -16,6 +16,8 @@ Metadata = {}
 
 OBJS = {}
 
+YAML_COMMON_NO_BRAND = []
+
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 
 PATH_INT = os.path.join(APP_DIR, "cfg")

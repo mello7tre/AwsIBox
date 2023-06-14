@@ -423,19 +423,24 @@ def build_RP():
 
     # End inner methods and begin of main code.
 
-    # envrole type files must be read first
+    # envrole type files must be read first to parse IBoxLoader include/exclude
     yaml_role = [
         read_yaml(envrole, cfg.IBOX_BRAND_DIR, CFG_FILE_INT, stacktype, cfg.STACKS_DIR),
         read_yaml(envrole, cfg.IBOX_BRAND_DIR, CFG_FILE_EXT, stacktype, cfg.STACKS_DIR),
         read_yaml(envrole, brand, CFG_FILE_EXT, stacktype, cfg.STACKS_DIR),
     ]
 
-    yaml_cfg = {
-        "common": [
+    if not cfg.YAML_COMMON_NO_BRAND:
+        # speed up multiple stack processing by reading common no brand yaml cfg only once
+        cfg.YAML_COMMON_NO_BRAND += [
             read_yaml("common", cfg.IBOX_BRAND_DIR, CFG_FILE_INT, prefix="com"),
             read_yaml("common", cfg.IBOX_BRAND_DIR, CFG_FILE_EXT, prefix="com"),
-            read_yaml("common", brand, CFG_FILE_EXT, prefix="com"),
-        ],
+        ]
+
+    yaml_cfg = {
+        "common": cfg.YAML_COMMON_NO_BRAND
+        # append common brand specific yaml cfg
+        + [read_yaml("common", brand, CFG_FILE_EXT, prefix="com")],
         "type": [
             read_yaml(
                 "i_type",
