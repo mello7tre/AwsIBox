@@ -11,7 +11,6 @@ from .mod import (
     iam,
     joker,
     elasticloadbalancing,
-    mappings,
     rds,
     s3,
     waf,
