@@ -6,8 +6,8 @@ global:
         get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral1'))
     - InstaceEphemeral2:
         get_condition('', 'equals', '1', FindInMap('InstanceTypes', 'LaunchTemplateDataInstanceType', 'InstaceEphemeral2'))
-  MappingClass:
-    - EC2:
+  Mapping:
+    - IBoxEC2:
   LaunchTemplate:
     - Data:
         BlockDeviceMappings:

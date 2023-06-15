@@ -16,8 +16,8 @@ global:
     - RouteTablePrivate:
         Value: Ref('RouteTablePrivate')
         Export: Export('RouteTablePrivate')
-  MappingClass:
-    - AZones:
+  Mapping:
+    - IBoxAZ:
   EC2EIP:
     - Nat:
         Condition: EC2NatGatewayBase

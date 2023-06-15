@@ -55,8 +55,8 @@ global:
     - StackType:
         Value: cfg.stacktype
   BaseRegion: eu-west-1
-  MappingClass:
-    - EnvRegion:
+  Mapping:
+    - IBoxEnvRegion:
   AllowedIp: [{}]
   CloudWatchAlarmEndpoint: 'mello+aws@ankot.org'
   HostedZoneIdCF: Z2FDTNDATAQYW2

@@ -11,8 +11,8 @@ IBoxLoader: !include
 
 global:
   StackName: r-extra-01
-  MappingClass:
-    - AZones:
+  Mapping:
+    - IBoxAZ:
   EC2SecurityGroup:
     - RDS:
         Export: True

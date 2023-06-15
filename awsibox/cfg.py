@@ -248,6 +248,13 @@ INSTANCE_FAMILY = [
     },
 ]
 
+# currently nearly empty as no more used with newer generations instances
+EPHEMERAL_MAP: {
+    "InstaceEphemeral0": ["m3.medium", "m3.xlarge"],
+    "InstaceEphemeral1": ["m3.xlarge"],
+    "InstaceEphemeral2": [""],
+}
+
 # override previous cfg with an External one
 try:
     with open(os.path.join(cwd, "lib", "cfgExt.py")) as f:
@@ -273,7 +280,6 @@ INSTANCE_LIST = ["default"] + build_instance_list()
 
 # Order is VERY important do not CHANGE it!
 CFG_TO_FUNC = {
-    "MappingClass": {"module": "mappings", "func": "Mappings"},
     "Parameter": {"module": "cloudformation", "func": "CFM_Parameters"},
     "Condition": {"module": "cloudformation", "func": "CFM_Conditions"},
     "Mapping": {"module": "cloudformation", "func": "CFM_Mappings"},
