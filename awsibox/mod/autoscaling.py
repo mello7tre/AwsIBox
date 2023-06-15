@@ -1,17 +1,10 @@
 import troposphere.autoscaling as asg
 import troposphere.ec2 as ec2
-import troposphere.cloudformation as cfm
-import troposphere.policies as pol
-import troposphere.applicationautoscaling as aas
 
 from ..common import *
 from ..shared import (
-    Parameter,
     get_endvalue,
-    get_expvalue,
-    get_subvalue,
     auto_get_props,
-    get_condition,
     add_obj,
     import_user_data,
     get_dictvalue,

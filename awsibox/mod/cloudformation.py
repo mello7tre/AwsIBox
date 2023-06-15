@@ -6,8 +6,7 @@ from ..shared import (
     do_no_override,
     get_endvalue,
     get_expvalue,
-    get_subvalue,
-    auto_get_props,
+    # need it even if not directly used cause eval in CFM_Conditions
     get_condition,
     add_obj,
     auto_build_obj,

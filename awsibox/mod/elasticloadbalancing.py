@@ -1,15 +1,10 @@
 import troposphere.elasticloadbalancing as elb
 import troposphere.elasticloadbalancingv2 as elbv2
-import troposphere.ec2 as ec2
 
 from ..common import *
 from ..shared import (
-    Parameter,
     get_endvalue,
-    get_expvalue,
-    get_subvalue,
     auto_get_props,
-    get_condition,
     add_obj,
 )
 from .ec2 import SecurityGroupIngressInstanceELBPorts

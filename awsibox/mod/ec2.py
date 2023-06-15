@@ -5,7 +5,6 @@ from ..shared import (
     Parameter,
     get_endvalue,
     get_expvalue,
-    get_subvalue,
     auto_get_props,
     get_condition,
     add_obj,
@@ -40,7 +39,6 @@ class SecurityGroupRule(ec2.SecurityGroupRule):
 class SecurityGroupIngressInstanceELBPorts(SecurityGroupIngress):
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
-        name = self.title  # Ex. SecurityGroupIngressListeners1
         self.GroupId = GetAtt("SecurityGroupInstancesRules", "GroupId")
 
 

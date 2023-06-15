@@ -2,10 +2,7 @@ import troposphere.efs as efs
 
 from ..common import *
 from ..shared import (
-    Parameter,
-    get_endvalue,
     get_expvalue,
-    get_subvalue,
     auto_get_props,
     get_condition,
     add_obj,

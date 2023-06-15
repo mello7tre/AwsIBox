@@ -2,14 +2,8 @@ import troposphere.cloudfront as clf
 
 from ..common import *
 from ..shared import (
-    Parameter,
-    get_endvalue,
-    get_expvalue,
-    get_subvalue,
     auto_get_props,
-    get_condition,
     add_obj,
-    change_obj_data,
     clf_compute_order,
 )
 
@@ -34,7 +28,6 @@ def cache_behavior_process(key):
 
 def origin_process(name, key):
     for n, v in key["Origins"].items():
-        resname = f"{name}DistributionConfigOrigins{n}"
 
         if "OriginAccessIdentity" in v.get("S3OriginConfig", []):
             del v["CustomOriginConfig"]
