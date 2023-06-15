@@ -3,7 +3,7 @@ import os
 import copy
 from pprint import pprint, pformat
 
-from . import cfg
+from .. import cfg
 
 
 def get_envregion_mapping():

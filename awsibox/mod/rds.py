@@ -1,7 +1,7 @@
 import troposphere.rds as rds
 
-from .common import *
-from .shared import (
+from ..common import *
+from ..shared import (
     Parameter,
     get_endvalue,
     get_expvalue,

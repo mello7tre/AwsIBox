@@ -1,7 +1,7 @@
 import troposphere.cloudformation as cfm
 
-from .common import *
-from .shared import (
+from ..common import *
+from ..shared import (
     Parameter,
     do_no_override,
     get_endvalue,

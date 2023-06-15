@@ -1,7 +1,7 @@
 from . import cfg
 from .shared import stack_add_res
-from . import (
-    __version__,
+from . import __version__
+from .mod import (
     autoscaling,
     cloudformation,
     cloudfront,

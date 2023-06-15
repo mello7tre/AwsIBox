@@ -4,8 +4,8 @@ import troposphere.cloudformation as cfm
 import troposphere.policies as pol
 import troposphere.applicationautoscaling as aas
 
-from .common import *
-from .shared import (
+from ..common import *
+from ..shared import (
     Parameter,
     get_endvalue,
     get_expvalue,

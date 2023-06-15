@@ -1,8 +1,8 @@
 import troposphere.waf as waf
 import troposphere.wafregional as wafr
 
-from .common import *
-from .shared import (
+from ..common import *
+from ..shared import (
     Parameter,
     get_endvalue,
     get_expvalue,

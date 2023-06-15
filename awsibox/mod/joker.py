@@ -1,6 +1,6 @@
-from .common import *
-from .shared import auto_get_props, add_obj, Parameter, get_condition, parse_ibox_key
-from .RP import RP_to_cfg, merge_dict
+from ..common import *
+from ..shared import auto_get_props, add_obj, Parameter, get_condition, parse_ibox_key
+from ..RP import RP_to_cfg, merge_dict
 
 
 def Joker(key, module, cls):
