@@ -120,14 +120,13 @@ def get_azones_mapping():
     return mappings
 
 
-class Mappings(object):
-    def __init__(self, key):
-        for n, v in getattr(cfg, key).items():
-            if n == "EnvRegion":
-                mapping = get_envregion_mapping()
-            if n == "EC2":
-                mapping = get_ec2_mapping()
-            if n == "AZones":
-                mapping = get_azones_mapping()
+def Mappings(key):
+    for n, v in getattr(cfg, key).items():
+        if n == "EnvRegion":
+            mapping = get_envregion_mapping()
+        if n == "EC2":
+            mapping = get_ec2_mapping()
+        if n == "AZones":
+            mapping = get_azones_mapping()
 
-            cfg.Mappings.update(mapping)
+        cfg.Mappings.update(mapping)
