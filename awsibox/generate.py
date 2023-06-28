@@ -5,7 +5,6 @@ from .mod import (
     cloudformation,
     cloudfront,
     ec2,
-    ecr,
     iam,
     joker,
     elasticloadbalancing,

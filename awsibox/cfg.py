@@ -405,7 +405,7 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("ec2", "VPCPeeringConnection"),
     },
-    "ECRRepository": {"module": "ecr", "func": "ECR_Repositories"},
+    "ECRRepository": {"module": "joker", "func": ("ecr", "Repository")},
     "ECSCapacityProvider": {"module": "joker", "func": ("ecs", "CapacityProvider")},
     "ECSCluster": {"module": "joker", "func": ("ecs", "Cluster")},
     "ECSClusterCapacityProviderAssociations": {
