@@ -261,9 +261,18 @@ def SG_SecurityGroup(key):
         mapname = f"{key}{n}"
         resname = f"SecurityGroup{n}"
 
+        # get IBOX_LINKED_OBJ keys
+        linked_obj_name = v.get("IBOX_LINKED_OBJ_NAME", "")
+        linked_obj_index = v.get("IBOX_LINKED_OBJ_INDEX", "")
+
         # resources
         r_SG = SecurityGroup(resname)
-        auto_get_props(r_SG, mapname=mapname)
+        auto_get_props(
+            r_SG,
+            mapname=mapname,
+            linked_obj_name=linked_obj_name,
+            linked_obj_index=linked_obj_index,
+        )
 
         try:
             ingress = v["SecurityGroupIngress"]
@@ -293,6 +302,9 @@ def SG_SecurityGroup(key):
         o_SG.Value = GetAtt(resname, "GroupId")
         if v.get("Export"):
             o_SG.Export = Export(outname)
+
+        if v.get("Condition"):
+            o_SG.Condition = v.get("Condition")
 
         add_obj(r_SG)
         # add output only if not already present (can be created by IBOXOUTPUT)

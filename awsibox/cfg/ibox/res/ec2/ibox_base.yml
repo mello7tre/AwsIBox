@@ -1,3 +1,7 @@
+IBoxLoader: !include
+  - res/ec2/securitygroups.yml
+  - res/ec2/securitygroupingresses.yml
+
 global:
   EC2VPCEndpoint:
     - IBOX_BASE:

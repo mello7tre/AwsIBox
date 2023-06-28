@@ -941,7 +941,7 @@ def auto_get_props(
             lo_key = parse_ibox_key(linked_obj_data.get("Key", ""))
             lo_type = parse_ibox_key(linked_obj_data.get("Type", ""))
             # this way even if without key "For", for cycle will run at least one time
-            lo_for_cycle = linked_obj_data.get("For", [""])
+            lo_for_cycle = parse_ibox_key(linked_obj_data.get("For", [""]))
 
             louc_cfg = {}
             for lo_for_index in lo_for_cycle:
@@ -1247,7 +1247,7 @@ def parse_ibox_key(value, conf={}):
     for key in IBOX_SPECIAL_KEYS:
         if key in value:
             if key in conf:
-                value = value.replace(key, conf[key])
+                value = value.replace(key, str(conf[key]))
             else:
                 value = value.replace(key, globals().get(key, ""))
     value = value.replace("_", IBOX_RESNAME)

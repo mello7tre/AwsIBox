@@ -1,0 +1,8 @@
+global:
+  EC2SecurityGroupIngress:
+    - EFS:
+        IBOX_ENABLED: False
+        FromPort: 2049
+        GroupId: GetAtt(f"SecurityGroup{IBOX_LINKED_OBJ_NAME}Server", "GroupId")
+        SourceSecurityGroupId: Ref(f"SecurityGroup{IBOX_LINKED_OBJ_NAME}Client")
+        ToPort: 2049

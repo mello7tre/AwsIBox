@@ -1,0 +1,10 @@
+global:
+  EC2SecurityGroup:
+    - EFSServer:
+        IBOX_ENABLED: False
+        IBOX_NO_OUTPUT: True
+        GroupDescription: str(f"Rule to access EFS FileSystem {IBOX_LINKED_OBJ_INDEX}")
+    - EFSClient:
+        IBOX_ENABLED: False
+        Export: True
+        GroupDescription: str(f"Enable access to EFS FileSystem {IBOX_LINKED_OBJ_INDEX}")

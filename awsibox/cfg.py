@@ -117,7 +117,7 @@ EVAL_PYTHON_FUNCTIONS_IN_CFG = (
     "int(",
     "list(",
     "getattr(",
-    "SG_SecurityGroups",
+    "range(",
 )
 
 EVAL_FUNCTIONS_IN_CFG = EVAL_PYTHON_FUNCTIONS_IN_CFG + EVAL_TROPO_FUNCTIONS_IN_CFG
@@ -387,12 +387,12 @@ CFG_TO_FUNC = {
     "EC2SecurityGroup": {
         "module": "ec2",
         "func": "SG_SecurityGroup",
-        "dep": ["ECSTaskDefinition"],
+        "dep": ["ECSTaskDefinition", "EFSFileSystem"],
     },
     "EC2SecurityGroupIngress": {
         "module": "ec2",
         "func": "SG_SecurityGroupIngresses",
-        "dep": ["ElasticLoadBalancingV2Listener"],
+        "dep": ["ElasticLoadBalancingV2Listener", "EFSFileSystem"],
     },
     "EC2Subnet": {"module": "ec2", "func": "EC2_Subnet"},
     "EC2VPC": {"module": "joker", "func": ("ec2", "VPC")},
@@ -419,7 +419,8 @@ CFG_TO_FUNC = {
     },
     "ECSTaskDefinition": {"module": "joker", "func": ("ecs", "TaskDefinition")},
     "EFSAccessPoint": {"module": "joker", "func": ("efs", "AccessPoint")},
-    "EFSFileSystem": {"module": "efs", "func": "EFS_FileStorage"},
+    "EFSFileSystem": {"module": "joker", "func": ("efs", "FileSystem")},
+    "EFSMountTarget": {"module": "joker", "func": ("efs", "MountTarget")},
     "ElastiCacheCacheCluster": {
         "module": "joker",
         "func": ("elasticache", "CacheCluster"),
