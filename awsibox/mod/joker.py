@@ -20,7 +20,7 @@ def Joker(key, module, cls):
             resname = parse_ibox_key(ibox_resname, parse_ibox_key_conf)
 
         if cfg.debug:
-            logging.error(f"Joker processing: {key}{n}")
+            logging.error(f"Joker processing: {resname}")
 
         # get IBOX_LINKED_OBJ keys
         linked_obj_name = v.get("IBOX_LINKED_OBJ_NAME", "")

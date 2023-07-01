@@ -179,7 +179,7 @@ def SG_SecurityGroupRules(groupname, ingresses):
 
         if cfg.LoadBalancerType == "Classic":
             # get config from ElasticLoadBalancingLoadBalancer key
-            for e in cfg.LoadBalancer:
+            for e in cfg.LoadBalancer.split(","):
                 listeners_cfg.update(
                     getattr(cfg, f"ElasticLoadBalancingLoadBalancer{e}")["Listeners"]
                 )
@@ -321,6 +321,11 @@ def SG_SecurityGroupIngresses(key):
             continue
         mapname = f"{key}{n}"
         resname = f"SecurityGroupIngress{n}"
+
+        # get IBOX_LINKED_OBJ keys
+        linked_obj_name = v.get("IBOX_LINKED_OBJ_NAME", "")
+        linked_obj_index = v.get("IBOX_LINKED_OBJ_INDEX", "")
+
         try:
             allowed_ip = v["CidrIp"] == "AllowedIp"
         except Exception:
@@ -336,7 +341,12 @@ def SG_SecurityGroupIngresses(key):
                 continue
 
         r_SGI = SecurityGroupIngress(resname)
-        auto_get_props(r_SGI, mapname)
+        auto_get_props(
+            r_SGI,
+            mapname,
+            linked_obj_name=linked_obj_name,
+            linked_obj_index=linked_obj_index,
+        )
         add_obj(r_SGI)
 
 

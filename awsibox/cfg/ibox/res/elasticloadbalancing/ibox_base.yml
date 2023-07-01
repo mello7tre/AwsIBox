@@ -62,12 +62,6 @@ global:
               SSLCertificateId: get_endvalue('RegionalCertificateArn')
         SecurityGroups:
           - GetAtt('SecurityGroupLoadBalancer', 'GroupId')
-    - External:
-        Scheme: 'internet-facing'
-        Subnets: Split(',', get_expvalue('SubnetsPublic'))
-    - Internal:
-        Scheme: 'internal'
-        Subnets: Split(',', get_expvalue('SubnetsPrivate'))
 
   ElasticLoadBalancingV2Listener:
     - IBOX_BASE:

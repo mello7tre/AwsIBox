@@ -1,0 +1,89 @@
+IBoxLoader: !include
+  - com/elasticloadbalancing/loadbalancer.yml
+
+global:
+  CloudWatchAlarm:
+    - BackendExternal5XX:
+        Condition: AlarmBackend.IBOX_LINKED_OBJ_INDEX.5XXAndLoadBalancerClassic.IBOX_LINKED_OBJ_INDEX
+    - BackendInternal5XX:
+        Condition: AlarmBackend.IBOX_LINKED_OBJ_INDEX.5XXAndLoadBalancerClassic.IBOX_LINKED_OBJ_INDEX
+  ElasticLoadBalancingLoadBalancer:
+    - IBOX_BASE:
+        IBOX_ENABLED_IF: cfg.LoadBalancerType == "Classic"
+        IBOX_LINKED_OBJ:
+          Alarm:
+              Key: CloudWatchAlarm
+              Name: Backend.IBOX_INDEXNAME.5XX
+              Type: Backend.IBOX_INDEXNAME.5XX
+              Conf:
+                IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+                IBOX_LINKED_OBJ_INDEX: IBOX_INDEXNAME
+                Condition: AlarmBackend.IBOX_LINKED_OBJ_INDEX.5XXAndLoadBalancerClassic.IBOX_LINKED_OBJ_INDEX
+          RecordSet:
+              Key: Route53RecordSet
+              Name: EC2.IBOX_INDEXNAME
+              Type: EC2.IBOX_INDEXNAME
+              Conf:
+                IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+                IBOX_LINKED_OBJ_INDEX: IBOX_INDEXNAME
+          SecurityGroupIngress:
+              Key: EC2SecurityGroupIngress
+              Type: ELBListener
+              For: getattr(cfg, f"ElasticLoadBalancingLoadBalancer{IBOX_INDEXNAME}")["Listeners"]
+              Conf:
+                IBOX_TITLE: SecurityGroupIngressListeners.IBOX_LINKED_OBJ_FOR
+                IBOX_LINKED_OBJ_NAME: IBOX_INDEXNAME
+                IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
+        IBOX_TITLE: LoadBalancerClassic.IBOX_INDEXNAME
+        IBOX_PARAMETER:
+          - LoadBalancerClassic:
+              Description: "Comma delimited list of enabled LoadBalancerClassic - empty for mapped value - none to disable"
+              AllowedValues: ["", "none", "External", "Internal", "External,Internal"]
+        IBOX_CONDITION:
+          - AlarmBackend.IBOX_INDEXNAME.5XXAndLoadBalancerClassic.IBOX_INDEXNAME:
+              And(
+                Condition(f"CloudWatchAlarmBackend{IBOX_INDEXNAME}5XX"),
+                Condition(f"LoadBalancerClassic{IBOX_INDEXNAME}")
+              )
+          - LoadBalancerClassic.IBOX_INDEXNAME:
+              Or(
+                And(
+                  Condition("LoadBalancerOverride"),
+                  Or(
+                    Equals(Ref("LoadBalancer"), IBOX_INDEXNAME),
+                    Equals(Ref("LoadBalancer"), "External,Internal"),
+                  )
+                ),
+                And(
+                  Not(Condition("LoadBalancerOverride")),
+                  Or(
+                    Equals(get_endvalue("LoadBalancer"), IBOX_INDEXNAME),
+                    Equals(get_endvalue("LoadBalancer"), "External,Internal"),
+                  )
+                )
+              )
+          - LoadBalancerClassicNone:
+              And(
+                Not(Condition("LoadBalancerClassicExternal")),
+                Not(Condition("LoadBalancerClassicInternal")),
+              )
+          - LoadBalancerClassicExternalOrInternal:
+              Or(
+                Condition("LoadBalancerClassicExternal"),
+                Condition("LoadBalancerClassicInternal"),
+              )
+        IBOX_OUTPUT:
+          - LoadBalancerClassic:
+              Value: get_endvalue('LoadBalancer')
+    - External:
+        Scheme: 'internet-facing'
+        Subnets: Split(',', get_expvalue('SubnetsPublic'))
+    - Internal:
+        Scheme: 'internal'
+        Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+  LoadBalancer: ''
+  Route53RecordSet:
+    - EC2External:
+        Condition: LoadBalancerClassicExternalOrInternal
+    - EC2Internal:
+        Condition: LoadBalancerClassicInternal

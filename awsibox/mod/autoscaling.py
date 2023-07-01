@@ -90,7 +90,7 @@ def AS_Autoscaling(key):
     LoadBalancers = []
     TargetGroups = []
     if cfg.LoadBalancerType == "Classic":
-        for n in cfg.LoadBalancer:
+        for n in cfg.LoadBalancer.split(","):
             LoadBalancers.append(Ref(f"LoadBalancerClassic{n}"))
             setattr(
                 cfg,

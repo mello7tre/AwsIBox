@@ -343,7 +343,7 @@ CFG_TO_FUNC = {
         "func": "CF_CloudFront",
         "dep": [
             "ElasticLoadBalancingV2Listener",
-            "LoadBalancer",
+            "ElasticLoadBalancingLoadBalancer",
             "CloudFrontLambdaFunctionAssociation",
         ],
     },
@@ -371,7 +371,7 @@ CFG_TO_FUNC = {
     "CloudWatchAlarm": {
         "module": "joker",
         "func": ("cloudwatch", "Alarm"),
-        "dep": ["LoadBalancer", "SQSQueue"],
+        "dep": ["ElasticLoadBalancingLoadBalancer", "SQSQueue"],
     },
     "CodeDeployApplication": {"module": "joker", "func": ("codedeploy", "Application")},
     "CodeDeployDeploymentGroup": {
@@ -392,7 +392,7 @@ CFG_TO_FUNC = {
     "EC2SecurityGroupIngress": {
         "module": "ec2",
         "func": "SG_SecurityGroupIngresses",
-        "dep": ["ElasticLoadBalancingV2Listener", "EFSFileSystem"],
+        "dep": ["ElasticLoadBalancingV2Listener", "ElasticLoadBalancingLoadBalancer", "EFSFileSystem"],
     },
     "EC2Subnet": {"module": "ec2", "func": "EC2_Subnet"},
     "EC2VPC": {"module": "joker", "func": ("ec2", "VPC")},
@@ -437,6 +437,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("elasticache", "SubnetGroup"),
     },
+    "ElasticLoadBalancingLoadBalancer": {
+        "module": "joker",
+        "func": ("elasticloadbalancing", "LoadBalancer"),
+    },
     "ElasticLoadBalancingV2LoadBalancer": {
         "module": "joker",
         "func": ("elasticloadbalancingv2", "LoadBalancer"),
@@ -444,7 +448,7 @@ CFG_TO_FUNC = {
     "ElasticLoadBalancingV2Listener": {
         "module": "joker",
         "func": ("elasticloadbalancingv2", "Listener"),
-        "dep": ["LoadBalancer"],
+        "dep": ["ElasticLoadBalancingLoadBalancer"],
     },
     "ElasticLoadBalancingV2ListenerRule": {
         "module": "joker",
@@ -503,10 +507,6 @@ CFG_TO_FUNC = {
         "func": ("awslambda", "Version"),
         "dep": ["Lambda"],
     },
-    "LoadBalancer": {
-        "module": "elasticloadbalancing",
-        "func": "LB_ElasticLoadBalancing",
-    },
     "LogsLogGroup": {
         "module": "joker",
         "func": ("logs", "LogGroup"),
@@ -522,7 +522,7 @@ CFG_TO_FUNC = {
             "ApiGatewayDomainName",
             "DBInstance",
             "EFSFileSystem",
-            "LoadBalancer",
+            "ElasticLoadBalancingLoadBalancer",
             "CloudFrontDistribution",
         ],
     },
@@ -542,7 +542,7 @@ CFG_TO_FUNC = {
     "SecurityGroups": {
         "module": "ec2",
         "func": "SG_SecurityGroups",
-        "dep": ["LoadBalancer"],
+        "dep": ["ElasticLoadBalancingLoadBalancer"],
     },
     "ServiceDiscoveryPublicDnsNamespace": {
         "module": "joker",
