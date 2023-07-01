@@ -181,7 +181,7 @@ def SG_SecurityGroupRules(groupname, ingresses):
             # get config from ElasticLoadBalancingLoadBalancer key
             for e in cfg.LoadBalancer.split(","):
                 listeners_cfg.update(
-                    getattr(cfg, f"ElasticLoadBalancingLoadBalancer{e}")["Listeners"]
+                    getattr(cfg, f"ElasticLoadBalancingLoadBalancerEC2Classic{e}")["Listeners"]
                 )
         if cfg.LoadBalancerType == "Application":
             # get config ElasticLoadBalancingV2Listener key

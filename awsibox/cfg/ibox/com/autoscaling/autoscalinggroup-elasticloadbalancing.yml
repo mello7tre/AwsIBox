@@ -4,35 +4,22 @@ IBoxLoader: !include
 global:
   CloudWatchAlarm:
     - BackendExternal5XX:
-        Condition: AlarmBackend.IBOX_LINKED_OBJ_INDEX.5XXAndLoadBalancerClassic.IBOX_LINKED_OBJ_INDEX
+        IBOX_ENABLED: True
+        Condition: AlarmBackendExternal.5XXAndLoadBalancerClassicExternal
     - BackendInternal5XX:
-        Condition: AlarmBackend.IBOX_LINKED_OBJ_INDEX.5XXAndLoadBalancerClassic.IBOX_LINKED_OBJ_INDEX
+        IBOX_ENABLED: True
+        Condition: AlarmBackendInternal5XXAndLoadBalancerClassicInternal
   ElasticLoadBalancingLoadBalancer:
     - IBOX_BASE:
         IBOX_ENABLED_IF: cfg.LoadBalancerType == "Classic"
         IBOX_LINKED_OBJ:
-          Alarm:
-              Key: CloudWatchAlarm
-              Name: Backend.IBOX_INDEXNAME.5XX
-              Type: Backend.IBOX_INDEXNAME.5XX
-              Conf:
-                IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
-                IBOX_LINKED_OBJ_INDEX: IBOX_INDEXNAME
-                Condition: AlarmBackend.IBOX_LINKED_OBJ_INDEX.5XXAndLoadBalancerClassic.IBOX_LINKED_OBJ_INDEX
-          RecordSet:
-              Key: Route53RecordSet
-              Name: EC2.IBOX_INDEXNAME
-              Type: EC2.IBOX_INDEXNAME
-              Conf:
-                IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
-                IBOX_LINKED_OBJ_INDEX: IBOX_INDEXNAME
           SecurityGroupIngress:
               Key: EC2SecurityGroupIngress
               Type: ELBListener
-              For: getattr(cfg, f"ElasticLoadBalancingLoadBalancer{IBOX_INDEXNAME}")["Listeners"]
+              For: getattr(cfg, IBOX_RESNAME)["Listeners"]
               Conf:
                 IBOX_TITLE: SecurityGroupIngressListeners.IBOX_LINKED_OBJ_FOR
-                IBOX_LINKED_OBJ_NAME: IBOX_INDEXNAME
+                IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
                 IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
         IBOX_TITLE: LoadBalancerClassic.IBOX_INDEXNAME
         IBOX_PARAMETER:
@@ -75,15 +62,17 @@ global:
         IBOX_OUTPUT:
           - LoadBalancerClassic:
               Value: get_endvalue('LoadBalancer')
-    - External:
+    - EC2ClassicExternal:
         Scheme: 'internet-facing'
         Subnets: Split(',', get_expvalue('SubnetsPublic'))
-    - Internal:
+    - EC2ClassicInternal:
         Scheme: 'internal'
         Subnets: Split(',', get_expvalue('SubnetsPrivate'))
   LoadBalancer: ''
   Route53RecordSet:
     - EC2External:
+        IBOX_ENABLED: True
         Condition: LoadBalancerClassicExternalOrInternal
     - EC2Internal:
+        IBOX_ENABLED: True
         Condition: LoadBalancerClassicInternal

@@ -8,7 +8,7 @@ global:
         ToPort: 2049
     - ELBListener:
         IBOX_ENABLED: False
-        FromPort: get_endvalue(f"ElasticLoadBalancingLoadBalancer{IBOX_LINKED_OBJ_NAME}Listeners{IBOX_LINKED_OBJ_INDEX}InstancePort")
+        FromPort: get_endvalue(f"{IBOX_LINKED_OBJ_NAME}Listeners{IBOX_LINKED_OBJ_INDEX}InstancePort")
         GroupId: GetAtt("SecurityGroupInstancesRules", "GroupId")
         SourceSecurityGroupId: Ref("SecurityGroupLoadBalancer")
-        ToPort: get_endvalue(f"ElasticLoadBalancingLoadBalancer{IBOX_LINKED_OBJ_NAME}Listeners{IBOX_LINKED_OBJ_INDEX}InstancePort")
+        ToPort: get_endvalue(f"{IBOX_LINKED_OBJ_NAME}Listeners{IBOX_LINKED_OBJ_INDEX}InstancePort")
