@@ -11,6 +11,8 @@ from troposphere import validators
 from troposphere.autoscaling import Tags as asgTags
 import troposphere.ssm as ssm
 import troposphere.sso as sso
+import troposphere.elasticloadbalancing as elb
+import troposphere.elasticloadbalancingv2 as elbv2
 
 from troposphere import (
     And,
@@ -65,6 +67,16 @@ def my_one_of(class_name, properties, property, conditionals):
                 ", ".join(condition for condition in conditionals if condition),
             )
         )
+
+
+elbv2.one_of = my_one_of
+
+# Fix troposphere/elasticloadbalancing.py LBCookieStickinessPolicy is a List and do not use class LBCookieStickinessPolicy
+elb.LoadBalancer.props["LBCookieStickinessPolicy"] = (
+    [elb.LBCookieStickinessPolicy],
+    False,
+)
+elb.LoadBalancer.props["Listeners"] = ([elb.Listener], False)
 
 
 def boolean(x):

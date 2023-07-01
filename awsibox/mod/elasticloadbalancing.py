@@ -10,17 +10,6 @@ from ..shared import (
 from .ec2 import SecurityGroupIngressInstanceELBPorts
 
 
-# Temporary fix for https://github.com/cloudtools/troposphere/issues/1474
-elbv2.one_of = my_one_of
-
-# Fix troposphere/elasticloadbalancing.py LBCookieStickinessPolicy is a List and do not use class LBCookieStickinessPolicy
-elb.LoadBalancer.props["LBCookieStickinessPolicy"] = (
-    [elb.LBCookieStickinessPolicy],
-    False,
-)
-elb.LoadBalancer.props["Listeners"] = ([elb.Listener], False)
-
-
 def enable_recordset(rtype):
     prefix = f"Route53RecordSet"
     if "External" in cfg.RecordSet:
