@@ -52,7 +52,7 @@ global:
           Condition("LoadBalancerInternal"),
         )
   Output:
-    - LoadBalancerClassic:
+    - LoadBalancer:
         Value: get_endvalue('LoadBalancer')
   ElasticLoadBalancingLoadBalancer:
     - IBOX_BASE:
@@ -76,7 +76,7 @@ global:
           - AlarmBackend5XXAnd.IBOX_TITLE:
               And(
                 Condition(f"CloudWatchAlarm{IBOX_TITLE}Backend5XX"),
-                getattr(cfg, IBOX_RESNAME)["Condition"])
+                Condition(getattr(cfg, IBOX_RESNAME)["Condition"]))
     - EC2ClassicExternal:
         IBOX_TITLE: LoadBalancerClassicExternal
         Condition: LoadBalancerExternal
