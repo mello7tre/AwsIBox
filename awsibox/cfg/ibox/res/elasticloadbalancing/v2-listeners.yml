@@ -62,7 +62,7 @@ global:
               Type: forward
               TargetGroupArn: Ref('ElasticLoadBalancingV2TargetGroupEC2LoadBalancerApplicationExternal')
         LoadBalancerArn: Ref('LoadBalancerApplicationExternal')
-    - EC2TCPExternal:
+    - EC2LoadBalancerNetworkExternal:
         IBOX_ENABLED: False
         DefaultActions:
           - TG:
@@ -71,7 +71,7 @@ global:
         LoadBalancerArn: Ref('LoadBalancerNetworkExternal')
         Protocol: TCP
         Port: 80
-    - EC2TCPInternal:
+    - EC2LoadBalancerNetworkInternal:
         IBOX_ENABLED: False
         DefaultActions:
           - TG:

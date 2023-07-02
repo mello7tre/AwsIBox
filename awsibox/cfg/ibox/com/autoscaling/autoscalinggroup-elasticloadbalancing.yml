@@ -66,7 +66,7 @@ global:
               Condition: AlarmBackend5XXAnd.IBOX_TITLE
           SecurityGroupIngress:
             Key: EC2SecurityGroupIngress
-            Type: ELBListener
+            Type: EC2LoadBalancerClassic
             For: getattr(cfg, IBOX_RESNAME)["Listeners"]
             Conf:
               IBOX_TITLE: SecurityGroupIngressListeners.IBOX_LINKED_OBJ_FOR
@@ -109,6 +109,11 @@ global:
             Key: ElasticLoadBalancingV2Listener
             Type: EC2.IBOX_TITLE.Https
             Name: EC2.IBOX_TITLE.Https
+        IBOX_CONDITION:
+          - AlarmTarget5XXAnd.IBOX_TITLE:
+              And(
+                Condition(f"CloudWatchAlarm{IBOX_TITLE}Target5XX"),
+                Condition(getattr(cfg, IBOX_RESNAME)["Condition"]))
         Condition: LoadBalancerExternal
     - EC2ApplicationInternal:
         IBOX_TITLE: LoadBalancerApplicationInternal
@@ -118,7 +123,28 @@ global:
             Key: ElasticLoadBalancingV2Listener
             Type: EC2.IBOX_TITLE.Http
             Name: EC2.IBOX_TITLE.Http
+        IBOX_CONDITION:
+          - AlarmTarget5XXAnd.IBOX_TITLE:
+              And(
+                Condition(f"CloudWatchAlarm{IBOX_TITLE}Target5XX"),
+                Condition(getattr(cfg, IBOX_RESNAME)["Condition"]))
         Condition: LoadBalancerInternal
+    - EC2NetworkExternal:
+        IBOX_TITLE: LoadBalancerNetworkExternal
+        IBOX_ENABLED_IF: cfg.LoadBalancerType == "Network"
+        IBOX_LINKED_OBJ:
+          ListenerExternal:
+            Key: ElasticLoadBalancingV2Listener
+            Type: EC2.IBOX_TITLE.TCP80
+            Name: EC2.IBOX_TITLE.TCP80
+    - EC2NetworkInternal:
+        IBOX_TITLE: LoadBalancerNetworkInternal
+        IBOX_ENABLED_IF: cfg.LoadBalancerType == "Network"
+        IBOX_LINKED_OBJ:
+          ListenerInternal:
+            Key: ElasticLoadBalancingV2Listener
+            Type: EC2.IBOX_TITLE.TCP80
+            Name: EC2.IBOX_TITLE.TCP80
   LoadBalancer: ''
   Route53RecordSet:
     - EC2External:

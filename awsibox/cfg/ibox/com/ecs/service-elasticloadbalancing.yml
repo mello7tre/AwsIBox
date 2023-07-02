@@ -103,25 +103,6 @@ global:
               IpProtocol: tcp
               SourceSecurityGroupId: ImportValue("SecurityGroupLoadBalancerApplicationInternal")
               ToPort: get_endvalue("ECSTaskDefinitionBaseContainerDefinitions1ContainerPort")
-  EC2SecurityGroupIngress:
-    - LoadBalancerApplicationHttpExternal:
-        IBOX_ENABLED: False
-        CidrIp: '0.0.0.0/0'
-        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
-        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpExternalPort')
-        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpExternalPort')
-    - LoadBalancerApplicationHttpInternal:
-        IBOX_ENABLED: False
-        CidrIp: '0.0.0.0/0'
-        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
-        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpInternalPort')
-        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpInternalPort')
-    - LoadBalancerApplicationHttpsExternal:
-        IBOX_ENABLED: False
-        CidrIp: '0.0.0.0/0'
-        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
-        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
-        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
   ElasticLoadBalancingV2ListenerRule:
     - HttpsExternalRules1:
         IBOX_ENABLED: True

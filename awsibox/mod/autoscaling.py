@@ -102,12 +102,12 @@ def AS_Autoscaling(key):
             # check for enabled only for EC2 ones
             if n.startswith("EC2") and v.get("IBOX_ENABLED", True):
                 TargetGroups.append(
-                    Ref(f"ElasticLoadBalancingV2TargetGroupEC2LoadBalancer{n}")
+                    Ref(f"ElasticLoadBalancingV2TargetGroup{n}")
                 )
                 setattr(
                     cfg,
                     "EC2InstanceUserDataELBV2CheckTargetGroupArn",
-                    Ref(f"ElasticLoadBalancingV2TargetGroupTargetGroupLoadBalancer{n}"),
+                    Ref(f"ElasticLoadBalancingV2TargetGroup{n}"),
                 )
 
     # Resources
