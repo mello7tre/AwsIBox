@@ -38,7 +38,7 @@ global:
             - Default:
                 CustomOriginConfig:
                   HTTPSPort.IBOX_CODE: If(
-                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerECSHttpsExternalPort"))
+                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerECSLoadBalancerApplicationExternalHttpsPort"))
   CloudWatchAlarm:
     - ECSCPUHigh:
         AlarmActions: [Ref('ApplicationAutoScalingScalingPolicyUp')]
