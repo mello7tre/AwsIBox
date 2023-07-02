@@ -1,5 +1,5 @@
 IBoxLoader: !include
-  - res/elasticloadbalancing/listeners.yml
+  - res/elasticloadbalancing/v2-listeners.yml
   - res/elasticloadbalancing/v2-targetgroups.yml
   - res/elasticloadbalancing/v2-listener-rules.yml
   - res/elasticloadbalancing/v2-loadbalancers.yml
