@@ -7,7 +7,6 @@ from .mod import (
     ec2,
     iam,
     joker,
-    elasticloadbalancing,
     rds,
     s3,
     waf,
