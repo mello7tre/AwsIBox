@@ -138,7 +138,7 @@ global:
         AliasTarget:
           <<: *loadbalancer_alias_target
           DNSName: If(
-            f"LoadBalancer{cfg.LoadBalancerType}External",
+            f"LoadBalancerExternal",
             GetAtt(f"LoadBalancer{cfg.LoadBalancerType}External", "DNSName"),
             GetAtt(f"LoadBalancer{cfg.LoadBalancerType}Internal", "DNSName"))
     - EC2Internal:

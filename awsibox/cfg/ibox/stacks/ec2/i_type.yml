@@ -95,9 +95,9 @@ global:
 
 dev: &cfg_dev
   CloudWatchAlarm:
-    BackendExternal5XX:
+    LoadBalancerClassicExternalBackend5XX:
       EvaluationPeriods: 0
-    BackendInternal5XX:
+    LoadBalancerClassicInternalBackend5XX:
       EvaluationPeriods: 0
     TargetEC2External5XX:
       EvaluationPeriods: 0

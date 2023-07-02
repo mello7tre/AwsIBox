@@ -170,13 +170,13 @@ global:
           - LoadBalancer:
               Name: LoadBalancer
               Value: Sub('${LoadBalancerApplicationInternal.LoadBalancerFullName}')
-    - BackendExternal5XX:
+    - LoadBalancerClassicExternalBackend5XX:
         <<: *backend5xx
         Dimensions:
           - LoadBalancer:
               Name: LoadBalancerName
               Value: Ref('LoadBalancerClassicExternal')
-    - BackendInternal5XX:
+    - LoadBalancerClassicInternalBackend5XX:
         <<: *backend5xx
         Dimensions:
           - LoadBalancer:
