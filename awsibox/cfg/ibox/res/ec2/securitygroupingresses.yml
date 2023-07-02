@@ -12,3 +12,9 @@ global:
         GroupId: GetAtt("SecurityGroupInstancesRules", "GroupId")
         SourceSecurityGroupId: Ref("SecurityGroupLoadBalancer")
         ToPort: get_endvalue(f"{IBOX_LINKED_OBJ_NAME}Listeners{IBOX_LINKED_OBJ_INDEX}InstancePort")
+    - EC2LoadBalancerApplication:
+        IBOX_ENABLED: False
+        FromPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
+        GroupId: GetAtt("SecurityGroupInstancesRules", "GroupId")
+        SourceSecurityGroupId: Ref("SecurityGroupLoadBalancer")
+        ToPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")

@@ -158,13 +158,13 @@ global:
           - TargetGroup:
               Name: TargetGroup
               Value: Sub('${TargetGroupInternal.TargetGroupFullName}')
-    - TargetEC2External5XX:
+    - LoadBalancerApplicationExternalTarget5XX:
         <<: *target5xx
         Dimensions:
           - LoadBalancer:
               Name: LoadBalancer
               Value: Sub('${LoadBalancerApplicationExternal.LoadBalancerFullName}')
-    - TargetEC2Internal5XX:
+    - LoadBalancerApplicationInternalTarget5XX:
         <<: *target5xx
         Dimensions:
           - LoadBalancer:

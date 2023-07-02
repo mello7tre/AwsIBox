@@ -59,19 +59,19 @@ global:
         IBOX_ENABLED_IF: cfg.LoadBalancerType == "Classic"
         IBOX_LINKED_OBJ:
           Alarm:
-              Key: CloudWatchAlarm
-              Name: IBOX_TITLE.Backend5XX
-              Type: IBOX_TITLE.Backend5XX
-              Conf:
-                Condition: AlarmBackend5XXAnd.IBOX_TITLE
+            Key: CloudWatchAlarm
+            Name: IBOX_TITLE.Backend5XX
+            Type: IBOX_TITLE.Backend5XX
+            Conf:
+              Condition: AlarmBackend5XXAnd.IBOX_TITLE
           SecurityGroupIngress:
-              Key: EC2SecurityGroupIngress
-              Type: ELBListener
-              For: getattr(cfg, IBOX_RESNAME)["Listeners"]
-              Conf:
-                IBOX_TITLE: SecurityGroupIngressListeners.IBOX_LINKED_OBJ_FOR
-                IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
-                IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
+            Key: EC2SecurityGroupIngress
+            Type: ELBListener
+            For: getattr(cfg, IBOX_RESNAME)["Listeners"]
+            Conf:
+              IBOX_TITLE: SecurityGroupIngressListeners.IBOX_LINKED_OBJ_FOR
+              IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+              IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
         IBOX_CONDITION:
           - AlarmBackend5XXAnd.IBOX_TITLE:
               And(
@@ -87,6 +87,38 @@ global:
         Condition: LoadBalancerInternal
         Scheme: 'internal'
         Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+  ElasticLoadBalancingV2LoadBalancer:
+    - IBOX_BASE:
+        IBOX_LINKED_OBJ:
+          Alarm:
+            Key: CloudWatchAlarm
+            Name: IBOX_TITLE.Target5XX
+            Type: IBOX_TITLE.Target5XX
+            Conf:
+              IBOX_ENABLED_IF: cfg.LoadBalancerType == "Application"
+              Condition: AlarmTarget5XXAnd.IBOX_TITLE
+          TargetGroup:
+            Key: ElasticLoadBalancingV2TargetGroup
+            Name: EC2.IBOX_TITLE
+            Type: EC2.IBOX_TITLE
+    - EC2ApplicationExternal:
+        IBOX_TITLE: LoadBalancerApplicationExternal
+        IBOX_ENABLED_IF: cfg.LoadBalancerType == "Application"
+        IBOX_LINKED_OBJ:
+          ListenerExternal:
+            Key: ElasticLoadBalancingV2Listener
+            Type: EC2.IBOX_TITLE.Https
+            Name: EC2.IBOX_TITLE.Https
+        Condition: LoadBalancerExternal
+    - EC2ApplicationInternal:
+        IBOX_TITLE: LoadBalancerApplicationInternal
+        IBOX_ENABLED_IF: cfg.LoadBalancerType == "Application"
+        IBOX_LINKED_OBJ:
+          ListenerInternal:
+            Key: ElasticLoadBalancingV2Listener
+            Type: EC2.IBOX_TITLE.Http
+            Name: EC2.IBOX_TITLE.Http
+        Condition: LoadBalancerInternal
   LoadBalancer: ''
   Route53RecordSet:
     - EC2External:

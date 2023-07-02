@@ -28,10 +28,18 @@ global:
   ElasticLoadBalancingV2TargetGroup:
     - EC2LoadBalancerApplicationExternal:
         IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Key: EC2SecurityGroupIngress
+          Name: LoadBalancerApplicationHttpsExternal
+          Type: EC2LoadBalancerApplication
         <<: *base
         Port: 80
     - EC2LoadBalancerApplicationInternal:
         IBOX_ENABLED: False
+        IBOX_LINKED_OBJ:
+          Key: EC2SecurityGroupIngress
+          Name: LoadBalancerApplicationHttpsInternal
+          Type: EC2LoadBalancerApplication
         <<: *base
         Port: 80
     - EC2LoadBalancerNetworkExternal:

@@ -65,7 +65,7 @@ global:
             - Default:
                 CustomOriginConfig:
                   HTTPSPort.IBOX_CODE: If(
-                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerEC2HttpsExternalPort"))
+                    f"{IBOX_CURNAME}Override", Ref(IBOX_CURNAME), get_endvalue("ElasticLoadBalancingV2ListenerEC2LoadBalancerApplicationExternalHttpsPort"))
   EC2SecurityGroup:
     - InstancesRules:
         IBOX_NO_OUTPUT: True
@@ -99,9 +99,9 @@ dev: &cfg_dev
       EvaluationPeriods: 0
     LoadBalancerClassicInternalBackend5XX:
       EvaluationPeriods: 0
-    TargetEC2External5XX:
+    LoadBalancerApplicationExternalTarget5XX:
       EvaluationPeriods: 0
-    TargetEC2Internal5XX:
+    LoadBalancerApplicationInternalTarget5XX:
       EvaluationPeriods: 0
 
 stg: *cfg_dev 
