@@ -1,7 +1,7 @@
 IBoxLoader: 
   - !exclude
       - com/cloudfront/for-services.yml
-      - com/elasticloadbalancing/loadbalancer.yml
+      - com/autoscaling/autoscalinggroup-elasticloadbalancing.yml
   - !include
       #- com/autoscaling/imageid-ecs.yml
       - com/ecs/capacityprovider.yml

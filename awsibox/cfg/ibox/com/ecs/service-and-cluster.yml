@@ -1,7 +1,7 @@
 IBoxLoader:
   - !exclude
       - com/ecs/daemon-reserver-cpu.yml
-      - com/elasticloadbalancing/loadbalancer.yml
+      - com/autoscaling/autoscalinggroup-elasticloadbalancing.yml
   - !include
       - stacks/ec2/i_type.yml
       - stacks/ec2/ecs-cluster.yml

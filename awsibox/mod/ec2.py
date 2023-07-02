@@ -179,7 +179,7 @@ def SG_SecurityGroupRules(groupname, ingresses):
 
         if cfg.LoadBalancerType == "Classic":
             # get config from ElasticLoadBalancingLoadBalancer key
-            for e in cfg.LoadBalancer.split(","):
+            for e in cfg.LoadBalancer.replace(",", " ").split():
                 listeners_cfg.update(
                     getattr(cfg, f"ElasticLoadBalancingLoadBalancerEC2Classic{e}")["Listeners"]
                 )
