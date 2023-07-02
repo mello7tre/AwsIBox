@@ -115,7 +115,10 @@ global:
         IBOX_LINKED_OBJ:
           Name: LoadBalancerApplicationHttpExternal
           Key: EC2SecurityGroupIngress
-          Type: LoadBalancerApplicationHttpExternal
+          Type: ECSLoadBalancerApplication
+          Conf:
+            IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
+            IBOX_LINKED_OBJ_INDEX: External
         <<: *httpexternal
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
     - ECSHttpInternal:
@@ -123,7 +126,10 @@ global:
         IBOX_LINKED_OBJ:
           Name: LoadBalancerApplicationHttpInternal
           Key: EC2SecurityGroupIngress
-          Type: LoadBalancerApplicationHttpInternal
+          Type: ECSLoadBalancerApplication
+          Conf:
+            IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
+            IBOX_LINKED_OBJ_INDEX: Internal
         <<: *httpinternal
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
     - ECSHttpsExternal:
@@ -132,6 +138,9 @@ global:
         IBOX_LINKED_OBJ:
           Name: LoadBalancerApplicationHttpsExternal
           Key: EC2SecurityGroupIngress
-          Type: LoadBalancerApplicationHttpsExternal
+          Type: ECSLoadBalancerApplication
+          Conf:
+            IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
+            IBOX_LINKED_OBJ_INDEX: External
         <<: *httpsexternal
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')

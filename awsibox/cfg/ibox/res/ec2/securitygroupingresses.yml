@@ -20,25 +20,13 @@ global:
         ToPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
     - EC2LoadBalancerNetwork:
         IBOX_ENABLED: False
-        FromPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
         CidrIp: "0.0.0.0/0"
+        FromPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
         SourceSecurityGroupId: Ref("SecurityGroupLoadBalancer")
         ToPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
-    - LoadBalancerApplicationHttpExternal:
+    - ECSLoadBalancerApplication:
         IBOX_ENABLED: False
         CidrIp: '0.0.0.0/0'
-        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
-        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpExternalPort')
-        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpExternalPort')
-    - LoadBalancerApplicationHttpInternal:
-        IBOX_ENABLED: False
-        CidrIp: '0.0.0.0/0'
-        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
-        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpInternalPort')
-        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpInternalPort')
-    - LoadBalancerApplicationHttpsExternal:
-        IBOX_ENABLED: False
-        CidrIp: '0.0.0.0/0'
-        GroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal', 'LoadBalancerApplicationStack')
-        FromPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
-        ToPort: get_endvalue('ElasticLoadBalancingV2ListenerECSHttpsExternalPort')
+        FromPort: get_endvalue(f'{IBOX_LINKED_OBJ_NAME}Port')
+        GroupId: get_expvalue(f'SecurityGroupLoadBalancerApplication{IBOX_LINKED_OBJ_INDEX}', 'LoadBalancerApplicationStack')
+        ToPort: get_endvalue(f'{IBOX_LINKED_OBJ_NAME}Port')
