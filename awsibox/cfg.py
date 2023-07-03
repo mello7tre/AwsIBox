@@ -575,16 +575,6 @@ CFG_TO_FUNC = {
     "SNSSubscription": {"module": "joker", "func": ("sns", "SubscriptionResource")},
     "SNSTopic": {"module": "joker", "func": ("sns", "Topic")},
     "SSMParameter": {"module": "joker", "func": ("ssm", "Parameter")},
-    "WafByteMatchSet": {
-        "module": "waf",
-        "func": ["WAF_GlobalByteMatchSets", "WAF_RegionalByteMatchSets"],
-    },
-    "WafIPSet": {"module": "waf", "func": ["WAF_GlobalIPSets", "WAF_RegionalIPSets"]},
-    "WafRule": {"module": "waf", "func": ["WAF_GlobalRules", "WAF_RegionalRules"]},
-    "WafWebAcl": {
-        "module": "waf",
-        "func": ["WAF_GlobalWebAcls", "WAF_RegionalWebAcls"],
-    },
     "WAFv2IPSet": {
         "module": "joker",
         "func": ("wafv2", "IPSet"),
