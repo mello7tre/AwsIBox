@@ -77,3 +77,8 @@ global:
         LoginProfile:
           Password: GetAtt(f"SSMParameterPassword{IBOX_INDEXNAME}", "Value")
           PasswordResetRequired: True
+  IAMUserToGroupAddition:
+    - IBOX_BASE:
+        GroupName: IBOX_INDEXNAME
+        Users.IBOX_CUSTOM_OBJ:
+          Value: get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")

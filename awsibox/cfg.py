@@ -392,7 +392,11 @@ CFG_TO_FUNC = {
     "EC2SecurityGroupIngress": {
         "module": "ec2",
         "func": "SG_SecurityGroupIngresses",
-        "dep": ["ElasticLoadBalancingV2Listener", "ElasticLoadBalancingLoadBalancer", "EFSFileSystem"],
+        "dep": [
+            "ElasticLoadBalancingV2Listener",
+            "ElasticLoadBalancingLoadBalancer",
+            "EFSFileSystem",
+        ],
     },
     "EC2Subnet": {"module": "ec2", "func": "EC2_Subnet"},
     "EC2VPC": {"module": "joker", "func": ("ec2", "VPC")},
@@ -479,7 +483,10 @@ CFG_TO_FUNC = {
         "dep": ["Lambda", "S3Bucket"],
     },
     "IAMUser": {"module": "iam", "func": "IAM_Users"},
-    "IAMUserToGroupAddition": {"module": "iam", "func": "IAM_UserToGroupAdditions"},
+    "IAMUserToGroupAddition": {
+        "module": "joker",
+        "func": ("iam", "UserToGroupAddition"),
+    },
     "KMSAlias": {"module": "joker", "func": ("kms", "Alias")},
     "KMSKey": {"module": "joker", "func": ("kms", "Key")},
     "Lambda": {"module": "joker", "func": ("awslambda", "Function")},

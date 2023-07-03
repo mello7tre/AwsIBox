@@ -53,30 +53,3 @@ def IAM_Users(key):
         auto_get_props(r_User, indexname=n, remapname=v["UserName"])
 
         add_obj([r_User, r_Role])
-
-
-def IAM_UserToGroupAdditions(key):
-    for n, v in getattr(cfg, key).items():
-        resname = f"{key}{n}"  # Ex. IAMUserToGroupAdditionBase
-
-        Users = []
-        for m, w in v["User"].items():
-            condname = f"{resname}User{m}"
-            # conditions
-            add_obj(get_condition(condname, "not_equals", "none"))
-
-            Users.append(
-                If(
-                    condname,
-                    # for user defined in the same yaml file
-                    # Ref(f'IAMUser{m}') if m in cfg.IAMUser
-                    # else get_endvalue(condname),
-                    get_endvalue(condname),
-                    Ref("AWS::NoValue"),
-                )
-            )
-
-        # resources
-        r_GroupAdd = iam.UserToGroupAddition(resname, GroupName=n, Users=Users)
-
-        add_obj([r_GroupAdd])
