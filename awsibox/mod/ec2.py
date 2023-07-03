@@ -36,12 +36,6 @@ class SecurityGroupRule(ec2.SecurityGroupRule):
     IpProtocol = "tcp"
 
 
-class SecurityGroupIngressInstanceELBPorts(SecurityGroupIngress):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.GroupId = GetAtt("SecurityGroupInstancesRules", "GroupId")
-
-
 class EC2Subnet(ec2.Subnet):
     def __init__(self, title, zone, **kwargs):
         super().__init__(title, **kwargs)
