@@ -22,7 +22,7 @@ global:
         IBOX_ENABLED: False
         CidrIp: "0.0.0.0/0"
         FromPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
-        SourceSecurityGroupId: Ref("SecurityGroupLoadBalancer")
+        GroupId: GetAtt("SecurityGroupInstancesRules", "GroupId")
         ToPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
     - ECSLoadBalancerApplication:
         IBOX_ENABLED: False
