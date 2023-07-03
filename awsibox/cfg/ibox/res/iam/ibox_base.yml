@@ -3,6 +3,12 @@ IBoxLoader: !include
   - res/iam/roles.yml
 
 global:
+  IAMGroup:
+    - IBOX_BASE:
+        Create: 'yes'
+        GroupName: IBOX_INDEXNAME
+        ManagedPolicyArns.IBOX_CUSTOM_OBJ:
+          Value: ImportValue(f"IAMPolicy{IBOX_RESNAME}") if not IBOX_RESNAME.startswith(("arn", "Ref(")) else get_dictvalue(IBOX_RESNAME)
   IAMManagedPolicy:
     - IBOX_BASE:
         IBOX_RESNAME: IAMPolicy.IBOX_INDEXNAME

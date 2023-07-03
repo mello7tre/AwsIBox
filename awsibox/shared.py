@@ -912,7 +912,13 @@ def auto_get_props(
                     v = v.get("Value", v)
                     obj_title = f"{n}Value"
                 rootdict.update(base_rootdict)
-                obj = IBOX_Custom_Obj(obj_title)
+                obj = IBOX_Custom_Obj(
+                    obj_title.translate(
+                        "".maketrans(
+                            {":": None, "/": None, "(": None, ")": None, '"': None}
+                        )
+                    )
+                )
 
                 # save IBOX_RESNAME and IBOX_MAPNAME
                 IBOX_RESNAME_SAVE = IBOX_RESNAME

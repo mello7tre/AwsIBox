@@ -465,7 +465,7 @@ CFG_TO_FUNC = {
         "func": ("events", "Rule"),
         "dep": ["SecurityGroups"],
     },
-    "IAMGroup": {"module": "iam", "func": "IAM_Groups"},
+    "IAMGroup": {"module": "joker", "func": ("iam", "Group")},
     "IAMInstanceProfile": {"module": "joker", "func": ("iam", "InstanceProfile")},
     "IAMManagedPolicy": {"module": "joker", "func": ("iam", "ManagedPolicy")},
     "IAMPolicy": {

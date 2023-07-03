@@ -2,37 +2,30 @@ global:
   StackName: iam-g-01
   IAMGroup:
     - Base:
-        Enabled: 'yes'
         ManagedPolicyArns:
           - IAMUserManageOwn
           - S3ListBuckets
           - LogGroupsDescribe
     - Power:
-        Enabled: 'yes'
         ManagedPolicyArns:
           - IAMUserManageOwn
           - PowerUserAccessNoSSM
           - SSMParameterStoreBase
     - Developer:
-        Enabled: 'yes'
         ManagedPolicyArns:
           - Developer
     - BackEndDeveloper:
-        Enabled: 'yes'
         ManagedPolicyArns:
           - Developer
           - BackEndDeveloper
     - FrontEndDeveloper:
-        Enabled: 'yes'
         ManagedPolicyArns:
           - Developer
           - FrontEndDeveloper
     - CloudWatchRead:
-        Enabled: 'yes'
         ManagedPolicyArns:
           - LogRead
           - MetricRead
     - CloudWatchReadJoker01:
-        Enabled: 'yes'
         ManagedPolicyArns:
           - LogReadJoker01

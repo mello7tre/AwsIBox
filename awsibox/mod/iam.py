@@ -80,32 +80,3 @@ def IAM_UserToGroupAdditions(key):
         r_GroupAdd = iam.UserToGroupAddition(resname, GroupName=n, Users=Users)
 
         add_obj([r_GroupAdd])
-
-
-def IAM_Groups(key):
-    for n, v in getattr(cfg, key).items():
-        if not v.get("IBOX_ENABLED", True):
-            continue
-        resname = f"{key}{n}"  # Ex. IAMGroupBase
-
-        # conditions
-        add_obj(get_condition(resname, "equals", "yes", f"{resname}Enabled"))
-
-        ManagedPolicyArns = []
-        for m in v["ManagedPolicyArns"]:
-            if m.startswith("arn"):
-                ManagedPolicyArns.append(m)
-            elif m.startswith("Ref("):
-                ManagedPolicyArns.append(eval(m))
-            else:
-                ManagedPolicyArns.append(ImportValue(f"IAMPolicy{m}"))
-
-        # resources
-        r_Group = iam.Group(
-            resname,
-            GroupName=n,
-            Condition=resname,
-            ManagedPolicyArns=ManagedPolicyArns,
-        )
-
-        add_obj([r_Group])
