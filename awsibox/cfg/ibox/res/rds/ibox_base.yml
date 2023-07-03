@@ -141,8 +141,10 @@ global:
         AllocatedStorage: 50
         AllowMajorVersionUpgrade: true
         DBInstanceClass: db.t3.micro
+        DBName.IBOX_CODE: If(f"{IBOX_REFNAME}DBInstanceSkipProperties", Ref("AWS::NoValue"), get_endvalue(IBOX_CURNAME))
         DBName: dbname
         DBParameterGroupName: Ref('DBParameterGroup1')
+        DBSnapshotIdentifier.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref("AWS::NoValue"))
         DBSnapshotIdentifier: none
         DeletionProtection: false
         EnablePerformanceInsights:
@@ -150,7 +152,9 @@ global:
         Iops.IBOX_CODE:
           If(f'{IBOX_MAPNAME}Iops', get_endvalue(f'{IBOX_MAPNAME}Iops'), Ref('AWS::NoValue'))
         Iops: 0
+        MasterUsername.IBOX_CODE: If(f"{IBOX_REFNAME}DBInstanceSkipProperties", Ref("AWS::NoValue"), get_endvalue(IBOX_CURNAME))
         MasterUsername: masterusername
+        MasterUserPassword.IBOX_CODE: If(f"{IBOX_REFNAME}DBInstanceSkipProperties", Ref("AWS::NoValue"), get_endvalue(IBOX_CURNAME))
         MasterUserPassword: masteruserpassword
         MaxAllocatedStorage: 0
         MaxAllocatedStorage.IBOX_CODE:
@@ -161,6 +165,7 @@ global:
         PerformanceInsights: 0
         PerformanceInsightsRetentionPeriod:
           If(f'{IBOX_MAPNAME}PerformanceInsights', get_endvalue(f'{IBOX_MAPNAME}PerformanceInsights'), Ref('AWS::NoValue'))
+        SourceDBInstanceIdentifier.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref("AWS::NoValue"))
         SourceDBInstanceIdentifier: none
         StorageThroughput.IBOX_CODE:
           If(f'{IBOX_MAPNAME}StorageThroughput', get_endvalue(f'{IBOX_MAPNAME}StorageThroughput'), Ref('AWS::NoValue'))

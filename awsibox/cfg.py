@@ -519,7 +519,7 @@ CFG_TO_FUNC = {
         "func": ("logs", "LogGroup"),
         "dep": ["Lambda"],
     },
-    "RDSDBInstance": {"module": "rds", "func": "RDS_DB"},
+    "RDSDBInstance": {"module": "joker", "func": ("rds", "DBInstance")},
     "RDSDBParameterGroup": {
         "module": "joker",
         "func": ("rds", "DBParameterGroup"),
