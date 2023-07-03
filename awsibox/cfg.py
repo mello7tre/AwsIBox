@@ -482,7 +482,7 @@ CFG_TO_FUNC = {
         "func": ("iam", "Role"),
         "dep": ["Lambda", "S3Bucket"],
     },
-    "IAMUser": {"module": "iam", "func": "IAM_Users"},
+    "IAMUser": {"module": "joker", "func": ("iam", "User")},
     "IAMUserToGroupAddition": {
         "module": "joker",
         "func": ("iam", "UserToGroupAddition"),

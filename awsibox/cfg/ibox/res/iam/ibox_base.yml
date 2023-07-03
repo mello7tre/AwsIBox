@@ -67,18 +67,21 @@ global:
           - PasswordBase.IBOX_INDEXNAME:
               Description: "Base Password, must be changed at first login"
               NoEcho: True
-        IBOX_CONDITION:
-          - _:
-              get_condition("", "equals", "yes", f"{IBOX_RESNAME}Enabled")
-          - _RoleAccount:
-              get_condition("", "not_equals", "none", f"{IBOX_RESNAME}RoleAccount")
-        Condition: IBOX_RESNAME
-        UserName: str(IBOX_REMAPNAME)
+        Create: 'yes'
+        Groups.IBOX_CUSTOM_OBJ:
+          IBOX_CONDITION:
+            - IBOX_REFNAME.Group.IBOX_RESNAME:
+                get_condition("", "equals", "yes", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          Value: If(f"{IBOX_REFNAME}Group{IBOX_RESNAME}", IBOX_RESNAME, Ref("AWS::NoValue"))
         LoginProfile:
           Password: GetAtt(f"SSMParameterPassword{IBOX_INDEXNAME}", "Value")
           PasswordResetRequired: True
+        UserName: str(IBOX_REMAPNAME)
   IAMUserToGroupAddition:
     - IBOX_BASE:
         GroupName: IBOX_INDEXNAME
         Users.IBOX_CUSTOM_OBJ:
-          Value: get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          IBOX_CONDITION:
+            - IBOX_MAPNAME.IBOX_RESNAME:
+                get_condition("", "not_equals", "none", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          Value: If(f"{IBOX_MAPNAME}{IBOX_RESNAME}",  get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}"), Ref("AWS::NoValue"))
