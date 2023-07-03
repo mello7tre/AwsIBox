@@ -115,7 +115,7 @@ global:
         IBOX_LINKED_OBJ:
           Name: LoadBalancerApplicationHttpExternal
           Key: EC2SecurityGroupIngress
-          Type: ECSLoadBalancerApplication
+          Type: ECSLoadBalancerApplicationLoadBalancerRule
           Conf:
             IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
             IBOX_LINKED_OBJ_INDEX: External
@@ -126,7 +126,7 @@ global:
         IBOX_LINKED_OBJ:
           Name: LoadBalancerApplicationHttpInternal
           Key: EC2SecurityGroupIngress
-          Type: ECSLoadBalancerApplication
+          Type: ECSLoadBalancerApplicationLoadBalancerRule
           Conf:
             IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
             IBOX_LINKED_OBJ_INDEX: Internal
@@ -138,7 +138,7 @@ global:
         IBOX_LINKED_OBJ:
           Name: LoadBalancerApplicationHttpsExternal
           Key: EC2SecurityGroupIngress
-          Type: ECSLoadBalancerApplication
+          Type: ECSLoadBalancerApplicationLoadBalancerRule
           Conf:
             IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
             IBOX_LINKED_OBJ_INDEX: External

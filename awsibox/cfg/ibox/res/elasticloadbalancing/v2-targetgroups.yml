@@ -31,7 +31,7 @@ global:
         IBOX_LINKED_OBJ:
           Key: EC2SecurityGroupIngress
           Name: LoadBalancerApplicationExternal
-          Type: EC2LoadBalancerApplication
+          Type: EC2LoadBalancerApplicationInstancesRule
         <<: *base
         Port: 80
     - EC2LoadBalancerApplicationInternal:
@@ -39,7 +39,7 @@ global:
         IBOX_LINKED_OBJ:
           Key: EC2SecurityGroupIngress
           Name: LoadBalancerApplicationInternal
-          Type: EC2LoadBalancerApplication
+          Type: EC2LoadBalancerApplicationInstancesRule
         <<: *base
         Port: 80
     - EC2LoadBalancerNetworkExternal:
@@ -47,7 +47,7 @@ global:
         IBOX_LINKED_OBJ:
           Key: EC2SecurityGroupIngress
           Name: LoadBalancerNetworkExternal
-          Type: EC2LoadBalancerNetwork
+          Type: EC2LoadBalancerNetworkInstancesRule
         Port: 80
         Protocol: TCP
         VpcId: get_expvalue('VpcId')
@@ -56,7 +56,7 @@ global:
         IBOX_LINKED_OBJ:
           Key: EC2SecurityGroupIngress
           Name: LoadBalancerNetworkInternal
-          Type: EC2LoadBalancerNetwork
+          Type: EC2LoadBalancerNetworkInstancesRule
         Port: 80
         Protocol: TCP
         VpcId: get_expvalue('VpcId')
