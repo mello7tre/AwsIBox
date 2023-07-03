@@ -8,29 +8,6 @@ from ..shared import (
 )
 
 
-class RDSDBParameterGroup(rds.DBParameterGroup):
-    def __init__(self, title, dbinstance, **kwargs):
-        super().__init__(title, **kwargs)
-        self.Description = Sub("MYSQL %s - ${AWS::StackName}" % self.title)
-        self.Family = Sub(
-            "${Engine}${EngineVersion}",
-            **{
-                "Engine": get_endvalue(f"{dbinstance}Engine"),
-                "EngineVersion": Join(
-                    ".",
-                    [
-                        Select(
-                            0, Split(".", get_endvalue(f"{dbinstance}EngineVersion"))
-                        ),
-                        Select(
-                            1, Split(".", get_endvalue(f"{dbinstance}EngineVersion"))
-                        ),
-                    ],
-                ),
-            },
-        )
-
-
 def RDS_DB(key):
     for n, v in getattr(cfg, key).items():
         mapname = f"{key}{n}"
@@ -59,12 +36,6 @@ def RDS_DB(key):
         for m in ["SourceDBInstanceIdentifier", "DBSnapshotIdentifier"]:
             setattr(r_DB, m, If(f"{mapname}{m}", getattr(r_DB, m), Ref("AWS::NoValue")))
 
-        # trick fixed name to avoid reboot for now
-        # best way should be to use a name like DBParameterGroup{Engine}
-        #r_PG = RDSDBParameterGroup("DBParameterGroup1", mapname)
-        #r_PG.Parameters = cfg.DBParameterGroup1
-
         add_obj([
-            r_DB, 
-            #r_PG
+            r_DB,
         ])
