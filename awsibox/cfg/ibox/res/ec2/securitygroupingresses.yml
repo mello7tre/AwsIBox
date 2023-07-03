@@ -20,7 +20,7 @@ global:
         ToPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
     - EC2LoadBalancerNetwork:
         IBOX_ENABLED: False
-        CidrIp: "0.0.0.0/0"
+        CidrIp: ImportValue("VPCCidr")
         FromPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
         GroupId: GetAtt("SecurityGroupInstancesRules", "GroupId")
         ToPort: get_endvalue(f"ElasticLoadBalancingV2TargetGroup{IBOX_LINKED_OBJ_NAME}Port")
