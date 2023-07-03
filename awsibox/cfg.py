@@ -520,6 +520,11 @@ CFG_TO_FUNC = {
         "dep": ["Lambda"],
     },
     "RDSDBInstance": {"module": "rds", "func": "RDS_DB"},
+    "RDSDBParameterGroup": {
+        "module": "joker",
+        "func": ("rds", "DBParameterGroup"),
+        "dep": ["RDSDBInstance"],
+    },
     "RDSDBSubnetGroup": {"module": "joker", "func": ("rds", "DBSubnetGroup")},
     "Route53HostedZone": {"module": "joker", "func": ("route53", "HostedZone")},
     "Route53RecordSet": {

@@ -61,7 +61,10 @@ def RDS_DB(key):
 
         # trick fixed name to avoid reboot for now
         # best way should be to use a name like DBParameterGroup{Engine}
-        r_PG = RDSDBParameterGroup("DBParameterGroup1", mapname)
-        r_PG.Parameters = cfg.DBParameterGroup1
+        #r_PG = RDSDBParameterGroup("DBParameterGroup1", mapname)
+        #r_PG.Parameters = cfg.DBParameterGroup1
 
-        add_obj([r_DB, r_PG])
+        add_obj([
+            r_DB, 
+            #r_PG
+        ])
