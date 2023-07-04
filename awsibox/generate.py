@@ -6,7 +6,6 @@ from .mod import (
     cloudfront,
     ec2,
     joker,
-    s3,
 )
 
 

@@ -16,8 +16,17 @@ global:
           - PolicyStatementAccountsDeletePrincipal:
               Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
           - PolicyStatementReplicaResourcePrefix:
-              Value: get_subvalue("arn:aws:s3:::%s/${1M}*" % IBOX_REMAPNAME, f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+              Value: get_subvalue("arn:aws:s3:::%s/${1M}*" % getattr(cfg, f"BucketName{IBOX_INDEXNAME}"), f"{IBOX_MAPNAME}{IBOX_RESNAME}")
         IBOX_LINKED_OBJ:
+          BucketPolicy:
+            Key: S3BucketPolicy
+            Name: IBOX_INDEXNAME
+            Type: str(IBOX_INDEXNAME if hasattr(cfg, f"S3BucketPolicy{IBOX_INDEXNAME}") else "Base")
+            Conf:
+              Bucket: eval("Ref(IBOX_TITLE)")
+              IBOX_TITLE: BucketPolicy.IBOX_INDEXNAME
+              IBOX_LINKED_OBJ_NAME: getattr(cfg, f"BucketName{IBOX_INDEXNAME}")
+              IBOX_LINKED_OBJ_INDEX: IBOX_RESNAME
           IAMRole:
             Key: IAMRole
             Type: BucketReplica
@@ -29,7 +38,7 @@ global:
             Type: BucketReplica
             Conf:
               IBOX_RESNAME: IAMPolicyReplica.IBOX_TITLE
-              IBOX_LINKED_OBJ_NAME: IBOX_REMAPNAME
+              IBOX_LINKED_OBJ_NAME: getattr(cfg, f"BucketName{IBOX_INDEXNAME}")
               IBOX_LINKED_OBJ_INDEX: IBOX_RESNAME
         IBOX_CONDITION:
           - _:
@@ -50,7 +59,7 @@ global:
               get_condition("", "not_equals", "Disabled", f"{IBOX_RESNAME}VersioningConfigurationStatus")
         IBOX_OUTPUT:
           - _:
-              Value: If(IBOX_RESNAME, Ref(IBOX_TITLE), Sub(IBOX_REMAPNAME))
+              Value: If(IBOX_RESNAME, Ref(IBOX_TITLE), Sub(getattr(cfg, f"BucketName{IBOX_INDEXNAME}")))
         OutputValueRegion.IBOX_PCO:
           IBOX_CONDITION:
             - _OutputValueRegion:
@@ -61,12 +70,12 @@ global:
                 Export: Export(IBOX_TITLE)
                 Value: >-
                   If(f"{IBOX_RESNAME}OutputValueRegion",
-                     Sub("${Region}-%s" % IBOX_REMAPNAME.replace("${AWS::Region}-", "", 1),
+                     Sub("${Region}-%s" % getattr(cfg, f"BucketName{IBOX_INDEXNAME}").replace("${AWS::Region}-", "", 1),
                          **{"Region": get_endvalue(f"{IBOX_RESNAME}OutputValueRegion")}),
-                     If(IBOX_RESNAME, Ref(IBOX_TITLE), Sub(IBOX_REMAPNAME))
+                     If(IBOX_RESNAME, Ref(IBOX_TITLE), Sub(getattr(cfg, f"BucketName{IBOX_INDEXNAME}")))
                   )
         Condition: IBOX_RESNAME
-        BucketName: Sub(IBOX_REMAPNAME)
+        BucketName: Sub(getattr(cfg, f"BucketName{IBOX_INDEXNAME}"))
         Create: "no"
         CorsConfiguration:
           Enabled: "no"
@@ -180,3 +189,79 @@ global:
           Status.IBOX_AUTO_PO:
             AllowedValues: ["", "Enabled", "Suspended", "Disabled"]
           Status: Disabled
+
+  S3BucketPolicy:
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        PolicyDocument:
+          Statement:
+            - IBOX_LIST:
+            - Base:
+                Action:
+                  - "s3:GetBucketLocation"
+                Effect: Allow
+                Resource: Sub("arn:aws:s3:::%s" % IBOX_LINKED_OBJ_NAME)
+                Principal:
+                  AWS: Sub("arn:aws:iam::${AWS::AccountId}:root")
+                Sid: Base
+            - AllowReplica:
+                IBOX_IF:
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementReplicaPrincipal
+                  - IBOX_IFVALUE
+                  - Ref("AWS::NoValue")
+                Action:
+                  - "s3:ReplicateObject"
+                  - "s3:ReplicateDelete"
+                  - "s3:ObjectOwnerOverrideToBucketOwner"
+                Effect: Allow
+                Resource: getattr(cfg, f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementReplicaResourcePrefix")
+                Principal:
+                  AWS:
+                    - get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementReplicaPrincipal")
+                Sid: AllowReplica
+            - AllowAccountsRead:
+                IBOX_IF:
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementRead
+                  - IBOX_IFVALUE
+                  - Ref("AWS::NoValue")
+                Action:
+                  - 's3:ListBucket'
+                  - 's3:GetBucketLocation'
+                  - 's3:ListBucketMultipartUploads'
+                  - 's3:ListBucketVersions'
+                  - 's3:GetObject*'
+                  - 's3:ListMultipartUploadParts'
+                Effect: Allow
+                Resource:
+                  - Sub("arn:aws:s3:::%s" % IBOX_LINKED_OBJ_NAME)
+                  - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
+                Principal:
+                  AWS: getattr(cfg, f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementAccountsReadPrincipal")
+                Sid: AllowAccountsRead
+            - AllowAccountsWrite:
+                IBOX_IF:
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementWrite
+                  - IBOX_IFVALUE
+                  - Ref("AWS::NoValue")
+                Action:
+                  - "s3:Put*"
+                Effect: Allow
+                Resource:
+                  - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
+                Principal:
+                  AWS: getattr(cfg, f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementAccountsWritePrincipal")
+                Sid: AllowAccountsWrite
+            - AllowAccountsDelete:
+                IBOX_IF:
+                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementDelete
+                  - IBOX_IFVALUE
+                  - Ref("AWS::NoValue")
+                Action:
+                  - "s3:DeleteObject*"
+                Effect: Allow
+                Resource:
+                  - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
+                Principal:
+                  AWS: getattr(cfg, f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementAccountsDeletePrincipal")
+                Sid: AllowAccountsDelete
+          Version: "2012-10-17"

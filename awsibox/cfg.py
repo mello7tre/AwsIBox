@@ -550,7 +550,12 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("route53resolver", "ResolverRuleAssociation"),
     },
-    "S3Bucket": {"module": "s3", "func": "S3_Buckets"},
+    "S3Bucket": {"module": "joker", "func": ("s3", "Bucket")},
+    "S3BucketPolicy": {
+        "module": "joker",
+        "func": ("s3", "BucketPolicy"),
+        "dep": ["S3Bucket"],
+    },
     "SecurityGroups": {
         "module": "ec2",
         "func": "SG_SecurityGroups",
