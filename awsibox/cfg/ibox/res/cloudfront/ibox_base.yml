@@ -66,7 +66,7 @@ global:
                   IBOX_OUTPUT:
                     - IBOX_CURNAME:
                         Value: >-
-                          Id= ${OriginAccessControlId} ,[ get_endvalue(f"{IBOX_MAPNAME}OriginAccessControlId") ,]
+                          ${OriginAccessControlId} [ get_endvalue(f"{IBOX_MAPNAME}OriginAccessControlId") ]
                 OriginAccessControlId.IBOX_CODE_KEY: >-
                   If(
                     f"{IBOX_CURNAME}Always",
