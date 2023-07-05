@@ -55,7 +55,7 @@ global:
                     - IBOX_REFNAME.CustomOriginConfigHTTPSPort:
                         Description: 'empty for mapped value'
                   OriginProtocolPolicy: https-only
-                OriginAccessControlId.IBOX_AUTO_PO:
+                OriginAccessControlId.IBOX_AUTO_P:
                   AllowedValues: ["", "Always", "Conditional", "Never"]
                 OriginAccessControlId.IBOX_PCO:
                   IBOX_CONDITION:
@@ -63,6 +63,10 @@ global:
                         get_condition("", "equals", "Always", IBOX_CURNAME)
                     - IBOX_CURNAME.Conditional:
                         get_condition("", "equals", "Conditional", IBOX_CURNAME)
+                  IBOX_OUTPUT:
+                    - IBOX_CURNAME:
+                        Value: >-
+                          Id= ${OriginAccessControlId} ,[ get_endvalue(f"{IBOX_MAPNAME}OriginAccessControlId") ,]
                 OriginAccessControlId.IBOX_CODE_KEY: >-
                   If(
                     f"{IBOX_CURNAME}Always",
@@ -72,10 +76,6 @@ global:
                       get_endvalue("CloudFrontOriginOriginAccessControlS3Conditional"),
                       Ref("AWS::NoValue")))
                 OriginPath: ''
-                S3OriginConfig:
-                  IBOX_PARAMETER:
-                    - IBOX_REFNAME.S3OriginConfigOriginAccessIdentity:
-                        Description: 'empty for mapped value'
           PriceClass: PriceClass_100
           ViewerCertificate:
             AcmCertificateArn: If(f'{IBOX_RESNAME}AcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))

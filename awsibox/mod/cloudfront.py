@@ -28,11 +28,8 @@ def cache_behavior_process(key):
 
 def origin_process(name, key):
     for n, v in key["Origins"].items():
-
-        if "OriginAccessIdentity" in v.get("S3OriginConfig", []):
+        if "S3OriginConfig" in v:
             del v["CustomOriginConfig"]
-        else:
-            del v["S3OriginConfig"]
 
 
 def CF_CloudFront(key):

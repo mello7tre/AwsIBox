@@ -39,5 +39,4 @@ global:
                 DomainName: Sub(f'{cfg.BucketNamePortalStatic}.s3.amazonaws.com')
                 Id: portal-static-error-pages
                 OriginCustomHeaders: []
-                S3OriginConfig:
-                  OriginAccessIdentity: ''
+                S3OriginConfig: {}
