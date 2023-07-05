@@ -355,6 +355,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("cloudfront", "LambdaFunctionAssociation"),
     },
+    "CloudFrontOriginOriginAccessControl": {
+        "module": "joker",
+        "func": ("cloudfront", "OriginAccessControl"),
+    },
     "CloudFrontOriginAccessIdentity": {
         "module": "joker",
         "func": ("cloudfront", "CloudFrontOriginAccessIdentity"),

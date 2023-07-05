@@ -4,3 +4,6 @@ IBoxLoader: !include
 global:
   CloudFrontDistribution:
     - Base: {}
+  CloudFrontOriginOriginAccessControlS3:
+    Always: ''
+    Conditional: ''

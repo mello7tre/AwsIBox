@@ -18,9 +18,15 @@ global:
           - PolicyStatementReplicaResourcePrefix:
               Value: get_subvalue("arn:aws:s3:::%s/${1M}*" % getattr(cfg, f"BucketName{IBOX_INDEXNAME}"), f"{IBOX_MAPNAME}{IBOX_RESNAME}")
           - PolicyStatementCloudFrontOriginAccessControlConditionDistributionID:
+              IBOX_PARAMETER:
+                - IBOX_MAPNAME.IBOX_RESNAME:
+                    Description: Empty for mapped value - none to disable
               IBOX_CONDITION:
                 - IBOX_MAPNAME.IBOX_RESNAME:
                     get_condition("", "not_equals", "none", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+              IBOX_OUTPUT:
+                - IBOX_MAPNAME.IBOX_RESNAME:
+                    Value: get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")
               Value: >-
                 If(
                   f"{IBOX_MAPNAME}{IBOX_RESNAME}",
@@ -288,11 +294,13 @@ global:
                   - Ref("AWS::NoValue")
                 Action:
                   - "s3:GetObject"
-                Effect: Allow
-                Resource:
-                  - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
                 Condition:
                   StringLike:
                     "AWS:SourceArn": getattr(cfg, f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementCloudFrontOriginAccessControlConditionDistributionID")
+                Effect: Allow
+                Principal:
+                  Service: cloudfront.amazonaws.com
+                Resource:
+                  - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
                 Sid: AllowCloudFrontOriginAccessControl
           Version: "2012-10-17"

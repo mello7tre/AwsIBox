@@ -1,0 +1,14 @@
+global:
+  CloudFrontOriginOriginAccessControl:
+    - S3Always:
+        OriginAccessControlConfig:
+          Description: "Always sign request to S3"
+          SigningBehavior: always
+    - S3Conditional:
+        OriginAccessControlConfig:
+          Description: "Sign request to S3 only if request do not have header Authorization"
+          SigningBehavior: no-override
+    - S3Never:
+        OriginAccessControlConfig:
+          Description: "Never sign request to S3"
+          SigningBehavior: never
