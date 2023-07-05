@@ -54,6 +54,11 @@ global:
         Value: Ref('EnvStackVersion')
     - StackType:
         Value: cfg.stacktype
+  AWSAccount:
+    - Own: Ref("AWS::AccountId")
+    - Dev: '000000000000'
+    - Stg: '000000000000'
+    - Prd: '000000000000'
   BaseRegion: eu-west-1
   Mapping:
     - IBoxEnvRegion:
