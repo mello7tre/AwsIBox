@@ -17,8 +17,18 @@ global:
               Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
           - PolicyStatementReplicaResourcePrefix:
               Value: get_subvalue("arn:aws:s3:::%s/${1M}*" % getattr(cfg, f"BucketName{IBOX_INDEXNAME}"), f"{IBOX_MAPNAME}{IBOX_RESNAME}")
-          - PolicyStatementCloudFrontOriginAccessControlCondition:
-              Value: 'Sub("arn:aws:cloudfront::${Account}:${CloudFrontOriginAccessControlCondition}", **{"CloudFrontOriginAccessControlCondition": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}"), "Account": get_endvalue(f"AWSAccount{IBOX_RESNAME}")})'
+          - PolicyStatementCloudFrontOriginAccessControlConditionDistributionID:
+              IBOX_CONDITION:
+                - IBOX_MAPNAME.IBOX_RESNAME:
+                    get_condition("", "not_equals", "none", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+              Value: >-
+                If(
+                  f"{IBOX_MAPNAME}{IBOX_RESNAME}",
+                  Sub("arn:aws:cloudfront::${Account}:distribution/${DistributionID}",
+                      **{
+                        "DistributionID": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}"),
+                        "Account": get_endvalue(f"AWSAccount{IBOX_RESNAME}")}),
+                  Ref("AWS::NoValue"))
         IBOX_LINKED_OBJ:
           BucketPolicy:
             Key: S3BucketPolicy
@@ -56,7 +66,7 @@ global:
           - _PolicyStatementDelete: >-
              Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementAccountsDeletePrincipal{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementAccountsDeletePrincipal")])
           - _PolicyStatementCloudFrontOriginAccessControl: >-
-             Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementCloudFrontOriginAccessControlCondition{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementCloudFrontOriginAccessControlCondition")])
+             Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementCloudFrontOriginAccessControlConditionDistributionID{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementCloudFrontOriginAccessControlConditionDistributionID")])
           - _Replica:
               And(Condition(IBOX_RESNAME), get_condition("", "equals", "yes", f"{IBOX_RESNAME}ReplicationConfigurationEnabled"))
           - _Versioning:
@@ -120,12 +130,12 @@ global:
           dev: IBOX_IFCONDVALUE
           stg: IBOX_IFCONDVALUE
           prd: IBOX_IFCONDVALUE
-        PolicyStatementCloudFrontOriginAccessControlCondition.IBOX_CUSTOM_OBJ:
-        PolicyStatementCloudFrontOriginAccessControlCondition:
-          Own: 'distribution/*'
-          Dev: IBOX_IFCONDVALUE
-          Stg: IBOX_IFCONDVALUE
-          Prd: IBOX_IFCONDVALUE
+        PolicyStatementCloudFrontOriginAccessControlConditionDistributionID.IBOX_CUSTOM_OBJ:
+        PolicyStatementCloudFrontOriginAccessControlConditionDistributionID:
+          Own: none
+          Dev: none
+          Stg: none
+          Prd: none
         PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
           - base:
               Conf:
@@ -286,6 +296,6 @@ global:
                   - Sub("arn:aws:s3:::%s/*" % IBOX_LINKED_OBJ_NAME)
                 Condition:
                   StringLike:
-                    "AWS:SourceArn": getattr(cfg, f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementCloudFrontOriginAccessControlCondition")
+                    "AWS:SourceArn": getattr(cfg, f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementCloudFrontOriginAccessControlConditionDistributionID")
                 Sid: AllowCloudFrontOriginAccessControl
           Version: "2012-10-17"
