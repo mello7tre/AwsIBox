@@ -15,7 +15,6 @@ global:
               Bucket: eval("Ref(IBOX_TITLE)")
               IBOX_TITLE: BucketPolicy.IBOX_INDEXNAME
               IBOX_LINKED_OBJ_NAME: getattr(cfg, f"BucketName{IBOX_INDEXNAME}")
-              IBOX_LINKED_OBJ_INDEX: IBOX_RESNAME
           IAMRole:
             Key: IAMRole
             Type: BucketReplica
@@ -32,8 +31,6 @@ global:
         IBOX_CONDITION:
           - _Cors:
               get_condition("", "equals", "yes", f"{IBOX_RESNAME}CorsConfigurationEnabled")
-          - _PolicyStatementCloudFrontOriginAccessControl: >-
-             Or(*[Condition(f"{IBOX_RESNAME}PolicyStatementCloudFrontOriginAccessControlConditionDistributionID{n}") for n in getattr(cfg, f"{IBOX_RESNAME}PolicyStatementCloudFrontOriginAccessControlConditionDistributionID")] + [Equals("True", "False")])
           - _Replica:
               And(Condition(IBOX_RESNAME), get_condition("", "equals", "yes", f"{IBOX_RESNAME}ReplicationConfigurationEnabled"))
           - _Versioning:
@@ -74,26 +71,6 @@ global:
             - IBOX_BASE:
                 Status.IBOX_AUTO_PO: {}
                 Status: Disabled
-        PolicyStatementCloudFrontOriginAccessControlConditionDistributionID.IBOX_CUSTOM_OBJ:
-          IBOX_PARAMETER:
-            - IBOX_MAPNAME.IBOX_RESNAME:
-                Description: Empty for mapped value - none to disable
-          IBOX_CONDITION:
-            - IBOX_MAPNAME.IBOX_RESNAME:
-                get_condition("", "not_equals", "none", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
-          IBOX_OUTPUT:
-            - IBOX_MAPNAME.IBOX_RESNAME:
-                Value: get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")
-          Value: >-
-            If(
-              f"{IBOX_MAPNAME}{IBOX_RESNAME}",
-              Sub("arn:aws:cloudfront::${Account}:distribution/${DistributionID}",
-                  **{
-                    "DistributionID": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}"),
-                    "Account": get_endvalue(f"AWSAccount{IBOX_RESNAME}")}),
-              Ref("AWS::NoValue"))
-        PolicyStatementCloudFrontOriginAccessControlConditionDistributionID:
-          Own: none
         ReplicationConfiguration:
           IBOX_IF:
             - _Replica
@@ -160,6 +137,11 @@ global:
              Or(
                *[Condition(f"{IBOX_RESNAME}AllowAccountsDeletePrincipalAWS{n}")
                for n in getattr(cfg, f"{IBOX_RESNAME}AllowAccountsDeletePrincipalAWS")])
+          - _AllowCloudFrontOriginAccessControl: >-
+             Or(
+               *[Condition(f"{IBOX_RESNAME}AllowCloudFrontOriginAccessControlConditionDistributionID{n}")
+               for n in getattr(cfg, f"{IBOX_RESNAME}AllowCloudFrontOriginAccessControlConditionDistributionID")] +
+               [Equals("True", "False")])
         AllowAccountsReplicaPrincipalAWS: none
         AllowAccountsReplicaResourcePrefix.IBOX_CUSTOM_OBJ:
           Value: >-
@@ -205,6 +187,26 @@ global:
           Dev: 'no'
           Stg: 'no'
           Prd: 'no'
+        AllowCloudFrontOriginAccessControlConditionDistributionID.IBOX_CUSTOM_OBJ:
+          IBOX_PARAMETER:
+            - IBOX_MAPNAME.IBOX_RESNAME:
+                Description: Empty for mapped value - none to disable
+          IBOX_CONDITION:
+            - IBOX_MAPNAME.IBOX_RESNAME:
+                get_condition("", "not_equals", "none", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          IBOX_OUTPUT:
+            - IBOX_MAPNAME.IBOX_RESNAME:
+                Value: get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          Value: >-
+            If(
+              f"{IBOX_MAPNAME}{IBOX_RESNAME}",
+              Sub("arn:aws:cloudfront::${Account}:distribution/${DistributionID}",
+                  **{
+                    "DistributionID": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}"),
+                    "Account": get_endvalue(f"AWSAccount{IBOX_RESNAME}")}),
+              Ref("AWS::NoValue"))
+        AllowCloudFrontOriginAccessControlConditionDistributionID:
+          Own: none
         PolicyDocument:
           Statement:
             - IBOX_LIST:
@@ -278,14 +280,14 @@ global:
                 Sid: AllowAccountsDelete
             - AllowCloudFrontOriginAccessControl:
                 IBOX_IF:
-                  - IBOX_LINKED_OBJ_INDEX.PolicyStatementCloudFrontOriginAccessControl
+                  - IBOX_RESNAME.AllowCloudFrontOriginAccessControl
                   - IBOX_IFVALUE
                   - Ref("AWS::NoValue")
                 Action:
                   - "s3:GetObject"
                 Condition:
                   StringLike:
-                    "AWS:SourceArn": getattr(cfg, f"{IBOX_LINKED_OBJ_INDEX}PolicyStatementCloudFrontOriginAccessControlConditionDistributionID")
+                    "AWS:SourceArn": getattr(cfg, f"{IBOX_RESNAME}AllowCloudFrontOriginAccessControlConditionDistributionID")
                 Effect: Allow
                 Principal:
                   Service: cloudfront.amazonaws.com
