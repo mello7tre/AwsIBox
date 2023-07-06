@@ -1,6 +1,3 @@
-IBoxLoader: !include
-  - res/cloudfront/origin-access-identities.yml
-
 global:
   CloudFrontDistribution:
     - IBOX_BASE:

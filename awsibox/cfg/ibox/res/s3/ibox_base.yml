@@ -7,8 +7,6 @@ global:
     - IBOX_BASE:
         IBOX_TITLE: Bucket.IBOX_INDEXNAME
         IBOX_CUSTOM_OBJ:
-          - PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
-              Value: 'Sub("arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}", **{"CloudFrontOriginAccessIdentity": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")})'
           - PolicyStatementAccountsReadPrincipal:
               Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
           - PolicyStatementAccountsWritePrincipal:
@@ -109,13 +107,6 @@ global:
                 AllowedMethods: ["GET"]
                 AllowedOrigins: ["*"]
                 MaxAge: 3000
-        CloudFrontOriginAccessIdentity.IBOX_PCO_NO:
-          IBOX_CONDITION:
-            - IBOX_CURNAME:
-                And(
-                  Condition(IBOX_RESNAME),
-                  get_condition("", "not_equals", "none", IBOX_CURNAME)
-                )
         LifecycleConfiguration:
           Rules:
             - IBOX_BASE:
@@ -139,28 +130,6 @@ global:
         PolicyStatementCloudFrontOriginAccessControlConditionDistributionID.IBOX_CUSTOM_OBJ:
         PolicyStatementCloudFrontOriginAccessControlConditionDistributionID:
           Own: none
-        PolicyStatementCloudFrontOriginAccessIdentityPrincipal:
-          - base:
-              Conf:
-                IBOX_LINKED_OBJ:
-                  Key: CloudFrontOriginAccessIdentity
-                  Type: Base
-                  Name: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
-                  Conf:
-                    Condition: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
-                    IBOX_RESNAME: CloudFrontOriginAccessIdentity.IBOX_INDEXNAME
-                    IBOX_LINKED_OBJ_NAME: IBOX_INDEXNAME
-                IBOX_CONDITION:
-                  - CloudFrontOriginAccessIdentity.IBOX_INDEXNAME:
-                      And(
-                        Condition(f"S3Bucket{IBOX_INDEXNAME}"),
-                        get_condition("", "not_equals", "none", f"{IBOX_CURNAME}baseEnabled")
-                      )
-              Enabled: 'yes'
-              Value: Ref(f"CloudFrontOriginAccessIdentity{IBOX_INDEXNAME}")
-          - dev: IBOX_IFCONDVALUE
-          - stg: IBOX_IFCONDVALUE
-          - prd: IBOX_IFCONDVALUE
         PolicyStatementReplicaPrincipal: none
         PolicyStatementReplicaResourcePrefix.IBOX_CUSTOM_OBJ:
         PolicyStatementReplicaResourcePrefix:
