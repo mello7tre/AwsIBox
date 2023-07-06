@@ -160,13 +160,12 @@ global:
              Or(
                *[Condition(f"{IBOX_RESNAME}AllowAccountsDeletePrincipalAWS{n}")
                for n in getattr(cfg, f"{IBOX_RESNAME}AllowAccountsDeletePrincipalAWS")])
-        AllowAccountsReplica:
-          PrincipalAWS: none
-          ResourcePrefix:
-            .IBOX_CUSTOM_OBJ:
-              Value: >-
-                get_subvalue("arn:aws:s3:::%s/${1M}*" % getattr(cfg, f"BucketName{IBOX_INDEXNAME}"), f"{IBOX_MAPNAME}{IBOX_RESNAME}")
-            1: ""
+        AllowAccountsReplicaPrincipalAWS: none
+        AllowAccountsReplicaResourcePrefix.IBOX_CUSTOM_OBJ:
+          Value: >-
+            get_subvalue("arn:aws:s3:::%s/${1M}*" % getattr(cfg, f"BucketName{IBOX_INDEXNAME}"), f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+        AllowAccountsReplicaResourcePrefix:
+          1: ""
         AllowAccountsReadPrincipalAWS.IBOX_CUSTOM_OBJ:
           IBOX_CONDITION:
             - IBOX_MAPNAME.IBOX_RESNAME:
