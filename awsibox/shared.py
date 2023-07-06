@@ -908,6 +908,8 @@ def auto_get_props(
                 rootdict = {"Value": v}
                 obj_title = n if is_dict else v
                 if isinstance(v, dict):
+                    # Conf property can be used to process every keys in a different way,
+                    # Ex overriding Value key or adding IBOX_PARAMETER and so on...
                     rootdict.update(v.get("Conf", {}))
                     v = v.get("Value", v)
                     obj_title = f"{n}Value"
