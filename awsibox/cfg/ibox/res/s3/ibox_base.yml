@@ -15,24 +15,6 @@ global:
               Value: get_subvalue("arn:aws:iam::${1M}:root", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
           - PolicyStatementReplicaResourcePrefix:
               Value: get_subvalue("arn:aws:s3:::%s/${1M}*" % getattr(cfg, f"BucketName{IBOX_INDEXNAME}"), f"{IBOX_MAPNAME}{IBOX_RESNAME}")
-          - PolicyStatementCloudFrontOriginAccessControlConditionDistributionID:
-              IBOX_PARAMETER:
-                - IBOX_MAPNAME.IBOX_RESNAME:
-                    Description: Empty for mapped value - none to disable
-              IBOX_CONDITION:
-                - IBOX_MAPNAME.IBOX_RESNAME:
-                    get_condition("", "not_equals", "none", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
-              IBOX_OUTPUT:
-                - IBOX_MAPNAME.IBOX_RESNAME:
-                    Value: get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")
-              Value: >-
-                If(
-                  f"{IBOX_MAPNAME}{IBOX_RESNAME}",
-                  Sub("arn:aws:cloudfront::${Account}:distribution/${DistributionID}",
-                      **{
-                        "DistributionID": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}"),
-                        "Account": get_endvalue(f"AWSAccount{IBOX_RESNAME}")}),
-                  Ref("AWS::NoValue"))
         IBOX_LINKED_OBJ:
           BucketPolicy:
             Key: S3BucketPolicy
@@ -128,6 +110,23 @@ global:
           stg: IBOX_IFCONDVALUE
           prd: IBOX_IFCONDVALUE
         PolicyStatementCloudFrontOriginAccessControlConditionDistributionID.IBOX_CUSTOM_OBJ:
+          IBOX_PARAMETER:
+            - IBOX_MAPNAME.IBOX_RESNAME:
+                Description: Empty for mapped value - none to disable
+          IBOX_CONDITION:
+            - IBOX_MAPNAME.IBOX_RESNAME:
+                get_condition("", "not_equals", "none", f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          IBOX_OUTPUT:
+            - IBOX_MAPNAME.IBOX_RESNAME:
+                Value: get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+          Value: >-
+            If(
+              f"{IBOX_MAPNAME}{IBOX_RESNAME}",
+              Sub("arn:aws:cloudfront::${Account}:distribution/${DistributionID}",
+                  **{
+                    "DistributionID": get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}"),
+                    "Account": get_endvalue(f"AWSAccount{IBOX_RESNAME}")}),
+              Ref("AWS::NoValue"))
         PolicyStatementCloudFrontOriginAccessControlConditionDistributionID:
           Own: none
         PolicyStatementReplicaPrincipal: none

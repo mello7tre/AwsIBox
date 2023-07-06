@@ -5,9 +5,22 @@ import os
 import copy
 import json
 import logging
+from yaml.resolver import Resolver
 from pprint import pprint, pformat
 
 from . import cfg
+
+# Un comment to stop PyYAML from automatically converting certain keys to boolean values
+# remove resolver entries for On/Off/Yes/No
+# for ch in "OoYyNn":
+#    if len(Resolver.yaml_implicit_resolvers[ch]) == 1:
+#        del Resolver.yaml_implicit_resolvers[ch]
+#    else:
+#        Resolver.yaml_implicit_resolvers[ch] = [
+#            x
+#            for x in Resolver.yaml_implicit_resolvers[ch]
+#            if x[0] != "tag:yaml.org,2002:bool"
+#        ]
 
 
 def inject_in_RP_map(key_name, value):
