@@ -478,25 +478,25 @@ def build_RP():
 
     if cfg.debug:
         print("########## RP ######### START #####")
-        pprint(cfg.RP_tree)
+        pprint(cfg.RP_tree, sort_dicts=False)
         print("########## RP ######### END #######")
 
         print("########## EXCLUDED ####### START #####")
-        pprint(LD_EXCLUDED)
+        pprint(LD_EXCLUDED, sort_dicts=False)
         print("########## EXCLUDED ####### END #######")
 
         print("########## INCLUDED ####### START #####")
-        pprint(LD_INCLUDED)
+        pprint(LD_INCLUDED, sort_dicts=False)
         print("########## INCLUDED ####### END #######")
 
         print("########## FIXED_VALUES ######### START #####")
-        pprint(cfg.fixedvalues)
+        pprint(cfg.fixedvalues, sort_dicts=False)
         print("########## FIXED_VALUES ######### END #######")
 
         print("########## MAPPED_VALUES ######### START #####")
-        pprint(cfg.mappedvalues)
+        pprint(cfg.mappedvalues, sort_dicts=False)
         print("########## MAPPED_VALUES ######### END #######")
 
         print("########## RP_MAP ######### START #####")
-        pprint(cfg.RP_map)
+        pprint(cfg.RP_map, sort_dicts=False)
         print("########## RP_MAP ######### END #######")
