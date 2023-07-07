@@ -318,19 +318,26 @@ def build_RP():
                     ):
                         continue
                     # inject in cfg key/value
-                    RP_to_cfg(
-                        base_key_value,
-                        prefix=f"{main_key_full}{resource_key}",
-                        overwrite=False,
-                    )
+                    #RP_to_cfg(
+                    #    base_key_value,
+                    #    prefix=f"{main_key_full}{resource_key}",
+                    #    overwrite=False,
+                    #)
 
                     # inject in existing structure
                     merged = merge_dict(
                         copy.deepcopy(base_key_value), resource_key_value
                     )
+                    if resource_key == "Logs" and main_key == "S3BucketPolicy":
+                        pass
+                        #pprint(merged, sort_dicts=False) 
                     # need to do it this way to keep the "link" between existing dict keys and values
-                    for n, v in merged.items():
-                        RP[main_key][resource_key][n] = v
+                    RP[main_key][resource_key] = merged
+                    #for n, v in merged.items():
+                    #    RP[main_key][resource_key][n] = v
+                    if resource_key == "Logs" and main_key == "S3BucketPolicy":
+                        pass
+                        #pprint(cfg.fixedvalues, sort_dicts=False) 
                 # delete IBOX_BASE in RP structure..
                 del RP[main_key][base_key]
                 # ..and in cfg one
@@ -424,10 +431,10 @@ def build_RP():
 
         # Read RP_tree and put a flat key/value configuration in cfg.
         cfg.fixedvalues = {}
-        RP_to_cfg(RP_tree)
 
         # Inject IBOX_BASE configurations
         inject_ibox_base(RP_tree)
+        RP_to_cfg(RP_tree)
 
         # Create the mapping for env/region.
         RP_map = get_RP_map()
