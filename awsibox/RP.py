@@ -317,34 +317,12 @@ def build_RP():
                         or "IBOX_BASE_SKIP" in resource_key_value
                     ):
                         continue
-                    # inject in cfg key/value
-                    #RP_to_cfg(
-                    #    base_key_value,
-                    #    prefix=f"{main_key_full}{resource_key}",
-                    #    overwrite=False,
-                    #)
-
                     # inject in existing structure
-                    merged = merge_dict(
+                    RP[main_key][resource_key] = merge_dict(
                         copy.deepcopy(base_key_value), resource_key_value
                     )
-                    if resource_key == "Logs" and main_key == "S3BucketPolicy":
-                        pass
-                        #pprint(merged, sort_dicts=False) 
-                    # need to do it this way to keep the "link" between existing dict keys and values
-                    RP[main_key][resource_key] = merged
-                    #for n, v in merged.items():
-                    #    RP[main_key][resource_key][n] = v
-                    if resource_key == "Logs" and main_key == "S3BucketPolicy":
-                        pass
-                        #pprint(cfg.fixedvalues, sort_dicts=False) 
-                # delete IBOX_BASE in RP structure..
+                # delete IBOX_BASE in RP structure
                 del RP[main_key][base_key]
-                # ..and in cfg one
-                try:
-                    del getattr(cfg, f"{root}{main_key}")[base_key]
-                except Exception:
-                    pass
 
             if isinstance(main_key_value, dict):
                 inject_ibox_base(main_key_value, root=main_key_full)
@@ -429,11 +407,11 @@ def build_RP():
         # RP_tree represent the resources structure and it's configuration.
         RP_tree = get_RP_tree()
 
+        # Inject IBOX_BASE configurations in RP_tree structure
+        inject_ibox_base(RP_tree)
+
         # Read RP_tree and put a flat key/value configuration in cfg.
         cfg.fixedvalues = {}
-
-        # Inject IBOX_BASE configurations
-        inject_ibox_base(RP_tree)
         RP_to_cfg(RP_tree)
 
         # Create the mapping for env/region.
