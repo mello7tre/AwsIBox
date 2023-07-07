@@ -18,20 +18,6 @@ def process_cache_policy(v):
                 pass
 
 
-def cache_behavior_process(key):
-    # process default behavior
-    process_cache_policy(key["DefaultCacheBehavior"])
-    # process other behaviors
-    for n, v in key["CacheBehaviors"].items():
-        process_cache_policy(v)
-
-
-def origin_process(name, key):
-    for n, v in key["Origins"].items():
-        if "S3OriginConfig" in v:
-            del v["CustomOriginConfig"]
-
-
 def CF_CloudFront(key):
     for n, v in getattr(cfg, key).items():
         if not v.get("IBOX_ENABLED", True):
@@ -41,9 +27,15 @@ def CF_CloudFront(key):
         R_CloudFrontDistribution = clf.Distribution(resname)
         distribution_config = v["DistributionConfig"]
 
-        # process cache_behavior and origin
-        cache_behavior_process(distribution_config)
-        origin_process(resname, distribution_config)
+        # process cache behaviors
+        process_cache_policy(distribution_config["DefaultCacheBehavior"])
+        for m, w in distribution_config["CacheBehaviors"].items():
+            process_cache_policy(w)
+
+        # process origins
+        for m, w in distribution_config["Origins"].items():
+            if "S3OriginConfig" in w:
+                del w["CustomOriginConfig"]
 
         # Automatically compute Behaviour Order based on PathPattern
         cfg.dbg_clf_compute_order = {}
