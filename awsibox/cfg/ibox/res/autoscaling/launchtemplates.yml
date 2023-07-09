@@ -58,7 +58,9 @@ global:
           Arn: GetAtt('InstanceProfile', 'Arn')
         ImageId.IBOX_CODE: If(
           'LaunchTemplateDataImageIdLatest', Ref('LaunchTemplateDataImageIdLatest'), get_endvalue('LaunchTemplateDataImageId'))
-        ImageId.IBOX_AUTO_PO: {}
+        ImageId.IBOX_AUTO_PO:
+          Value: >-
+            ${ImageId} = get_endvalue(f"{IBOX_MAPNAME}ImageId")
         ImageId: latest
         ImageIdLatest.IBOX_AUTO_PO:
           Description: 'Latest Amazon Linux2 ami available from SSM'
