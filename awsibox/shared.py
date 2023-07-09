@@ -962,7 +962,6 @@ def auto_get_props(
                 lo_conf["IBOX_ENABLED"] = True
                 # for all lo_conf entries, if their value is a string parse it using parse_ibox_key
                 for loc_entry_key, loc_entry_value in lo_conf.items():
-                    lo_conf[loc_entry_key] = parse_ibox_key(loc_entry_value)
                     lo_conf[loc_entry_key] = parse_ibox_key(
                         loc_entry_value, conf={"IBOX_LINKED_OBJ_FOR": lo_for_index}
                     )
@@ -1258,7 +1257,7 @@ def parse_ibox_key(value, conf={}):
     if not isinstance(value, str):
         return value
     if value.startswith(cfg.EVAL_PYTHON_FUNCTIONS_IN_CFG):
-        return eval(value)
+        return eval(value, globals(), conf)
     for key in IBOX_SPECIAL_KEYS:
         if key in value:
             if key in conf:
