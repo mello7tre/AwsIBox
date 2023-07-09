@@ -72,26 +72,28 @@ def stack_add_res():
         # End
         cfg.template.add_parameter(v)
 
-    cfg.Parameters.clear()
 
     for n, v in cfg.Conditions.items():
         cfg.template.add_condition(n, v)
-    cfg.Conditions.clear()
 
     for n, v in cfg.Mappings.items():
         cfg.template.add_mapping(n, v)
-    cfg.Mappings.clear()
 
     for n, v in cfg.Resources.items():
         cfg.template.add_resource(v)
-    cfg.Resources.clear()
 
     for n, v in cfg.Outputs.items():
         add_objoutput(v)
         cfg.template.add_output(v)
-    cfg.Outputs.clear()
 
     cfg.template.set_metadata(get_dictvalue(cfg.Metadata, mapname="Metadata"))
+
+    # empty
+    cfg.Parameters.clear()
+    cfg.Conditions.clear()
+    cfg.Mappings.clear()
+    cfg.Resources.clear()
+    cfg.Outputs.clear()
     cfg.Metadata.clear()
 
 
