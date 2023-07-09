@@ -402,7 +402,12 @@ CFG_TO_FUNC = {
             "EFSFileSystem",
         ],
     },
-    "EC2Subnet": {"module": "ec2", "func": "EC2_Subnet"},
+    "EC2Subnet": {"module": "joker", "func": ("ec2", "Subnet"), "dep": ["EC2VPC"]},
+    "EC2SubnetRouteTableAssociation": {
+        "module": "joker",
+        "func": ("ec2", "SubnetRouteTableAssociation"),
+        "dep": ["EC2VPC"],
+    },
     "EC2VPC": {"module": "joker", "func": ("ec2", "VPC")},
     "EC2VPCEndpoint": {"module": "joker", "func": ("ec2", "VPCEndpoint")},
     "EC2VPCGatewayAttachment": {

@@ -1,0 +1,23 @@
+global:
+  EC2Subnet:
+    - Private:
+        IBOX_TITLE: SubnetPrivate.IBOX_LINKED_OBJ_NAME
+        IBOX_PARAMETER:
+          - SubnetCidrBlockPrivate.IBOX_LINKED_OBJ_NAME:
+              Description: str(f"Ip Class Range for Private Subnet in Zone {IBOX_LINKED_OBJ_NAME}")
+              Default: cfg.VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PRIVATE[int(IBOX_LINKED_OBJ_INDEX)]
+        IBOX_CONDITION:
+          - Zone.IBOX_LINKED_OBJ_NAME: >-
+              Equals(FindInMap("AvabilityZones", Ref("AWS::Region"), f"Zone{IBOX_LINKED_OBJ_INDEX}"), "True")
+        CidrBlock: Ref(f"SubnetCidrBlockPrivate{IBOX_LINKED_OBJ_NAME}")
+        MapPublicIpOnLaunch: false
+        Tags: Tags(Name=Sub("${VPCName}-Private%s" % IBOX_LINKED_OBJ_NAME))
+    - Public:
+        IBOX_TITLE: SubnetPublic.IBOX_LINKED_OBJ_NAME
+        IBOX_PARAMETER:
+          - SubnetCidrBlockPublic.IBOX_LINKED_OBJ_NAME:
+              Description: str(f"Ip Class Range for Public Subnet in zone {IBOX_LINKED_OBJ_NAME}")
+              Default: cfg.VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PUBLIC[int(IBOX_LINKED_OBJ_INDEX)]
+        CidrBlock: Ref(f"SubnetCidrBlockPublic{IBOX_LINKED_OBJ_NAME}")
+        MapPublicIpOnLaunch: true
+        Tags: Tags(Name=Sub("${VPCName}-Public%s" % IBOX_LINKED_OBJ_NAME))

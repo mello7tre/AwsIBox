@@ -1,3 +1,7 @@
+IBoxLoader: !include
+  - res/ec2/subnets.yml
+  - res/ec2/subnet-routetable-associations.yml
+
 global:
   StackName: vpc
   Parameter:
@@ -50,7 +54,6 @@ global:
         DestinationCidrBlock: "0.0.0.0/0"
         NatGatewayId: Ref("NatGateway")
         RouteTableId: Ref("RouteTablePrivate")
-  EC2Subnet: {}
   EC2RouteTable:
     - Private:
         IBOX_TITLE: RouteTable.IBOX_INDEXNAME
@@ -63,6 +66,50 @@ global:
   EC2VPC:
     - Base:
         IBOX_TITLE: VPC
+        IBOX_LINKED_OBJ:
+          SubnetPrivate:
+            Key: EC2Subnet
+            Name: EC2SubnetPrivate
+            Type: Private
+            For: range(cfg.AZones["MAX"])
+            Conf:
+              IBOX_LINKED_OBJ_NAME: cfg.AZoneNames[IBOX_LINKED_OBJ_FOR]
+              IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
+          SubnetPublic:
+            Key: EC2Subnet
+            Name: EC2SubnetPublic
+            Type: Public
+            For: range(cfg.AZones["MAX"])
+            Conf:
+              IBOX_LINKED_OBJ_NAME: cfg.AZoneNames[IBOX_LINKED_OBJ_FOR]
+              IBOX_LINKED_OBJ_INDEX: IBOX_LINKED_OBJ_FOR
+          SubnetRouteTableAssociationPrivate:
+            Key: EC2SubnetRouteTableAssociation
+            Name: EC2SubnetRouteTableAssociationPrivate
+            Type: Private
+            For: range(cfg.AZones["MAX"])
+            Conf:
+              IBOX_LINKED_OBJ_NAME: cfg.AZoneNames[IBOX_LINKED_OBJ_FOR]
+          SubnetRouteTableAssociationPublic:
+            Key: EC2SubnetRouteTableAssociation
+            Name: EC2SubnetRouteTableAssociationPublic
+            Type: Public
+            For: range(cfg.AZones["MAX"])
+            Conf:
+              IBOX_LINKED_OBJ_NAME: cfg.AZoneNames[IBOX_LINKED_OBJ_FOR]
+        IBOX_OUTPUT:
+          - SubnetsPrivate:
+              Export: Export("SubnetsPrivate")
+              Value: >-
+                Join(",",
+                  [If(f"Zone{cfg.AZoneNames[z]}", Ref(f"SubnetPrivate{cfg.AZoneNames[z]}"), Ref("AWS::NoValue"))
+                  for z in range(cfg.AZones["MAX"])])
+          - SubnetsPublic:
+              Export: Export("SubnetsPublic")
+              Value: >-
+                Join(",",
+                  [If(f"Zone{cfg.AZoneNames[z]}", Ref(f"SubnetPublic{cfg.AZoneNames[z]}"), Ref("AWS::NoValue"))
+                  for z in range(cfg.AZones["MAX"])])
         CidrBlock: Ref('VPCCidrBlock')
         EnableDnsSupport: true
         EnableDnsHostnames: true

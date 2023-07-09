@@ -1,0 +1,10 @@
+global:
+  EC2SubnetRouteTableAssociation:
+    - Private:
+        IBOX_TITLE: SubnetRouteTableAssociationPrivate.IBOX_LINKED_OBJ_NAME
+        RouteTableId: Ref("RouteTablePrivate")
+        SubnetId: Ref(f"SubnetPrivate{IBOX_LINKED_OBJ_NAME}")
+    - Public:
+        IBOX_TITLE: SubnetRouteTableAssociationPublic.IBOX_LINKED_OBJ_NAME
+        RouteTableId: Ref("RouteTablePublic")
+        SubnetId: Ref(f"SubnetPublic{IBOX_LINKED_OBJ_NAME}")

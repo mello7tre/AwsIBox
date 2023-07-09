@@ -8,3 +8,13 @@ global:
         Create: 'no'
         RouteTableIds: [get_expvalue("RouteTablePrivate")]
         VpcId: get_expvalue("VpcId")
+  EC2Subnet:
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        Condition: str(f"Zone{IBOX_LINKED_OBJ_NAME}")
+        AvailabilityZone: Sub("${AWS::Region}%s" % IBOX_LINKED_OBJ_NAME.lower())
+        VpcId: Ref("VPC")
+  EC2SubnetRouteTableAssociation:
+    - IBOX_BASE:
+        IBOX_ENABLED: False
+        Condition: str(f"Zone{IBOX_LINKED_OBJ_NAME}")
