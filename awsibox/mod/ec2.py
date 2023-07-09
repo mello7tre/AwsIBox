@@ -11,31 +11,6 @@ from ..shared import (
 )
 
 
-class SecurityGroup(ec2.SecurityGroup):
-    # troposphere ec2 is quite old and SecurityGroupIngress is only a list
-    # without the obj type, this break auto_get_props, fix it overriding
-    props = {
-        "GroupName": (str, False),
-        "GroupDescription": (str, True),
-        "SecurityGroupEgress": (list, False),
-        "SecurityGroupIngress": ([ec2.SecurityGroupRule], False),
-        "VpcId": (str, False),
-        "Tags": ((Tags, list), False),
-    }
-
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        self.VpcId = get_expvalue("VpcId")
-
-
-class SecurityGroupIngress(ec2.SecurityGroupIngress):
-    IpProtocol = "tcp"
-
-
-class SecurityGroupRule(ec2.SecurityGroupRule):
-    IpProtocol = "tcp"
-
-
 def SG_SecurityGroupsExtra(Out_String, Out_Map):
     # Parameters
     P_SecurityGroups = Parameter(
@@ -183,7 +158,7 @@ def SG_SecurityGroupRules(groupname, ingresses):
         allowed_ip_or_public = sg_rootdict.get("AllowedIpOrPublic")
         if allowed_ip:
             for m, w in cfg.AllowedIp.items():
-                r_SGRule = SecurityGroupRule(resname)
+                r_SGRule = ec2.SecurityGroupRule(resname, IpProtocol="tcp")
                 auto_get_props(
                     r_SGRule, **kwargs, res_obj_type="AWS::EC2::SecurityGroup"
                 )
@@ -195,7 +170,7 @@ def SG_SecurityGroupRules(groupname, ingresses):
                 )
 
         if not allowed_ip or allowed_ip_or_public:
-            r_SGRule = SecurityGroupRule(resname)
+            r_SGRule = ec2.SecurityGroupRule(resname, IpProtocol="tcp")
             auto_get_props(r_SGRule, **kwargs, res_obj_type="AWS::EC2::SecurityGroup")
 
             if allowed_ip and allowed_ip_or_public:
@@ -225,7 +200,7 @@ def SG_SecurityGroup(key):
         linked_obj_index = v.get("IBOX_LINKED_OBJ_INDEX", "")
 
         # resources
-        r_SG = SecurityGroup(resname)
+        r_SG = ec2.SecurityGroup(resname, VpcId=get_expvalue("VpcId"))
         auto_get_props(
             r_SG,
             mapname=mapname,
@@ -292,14 +267,14 @@ def SG_SecurityGroupIngresses(key):
         else:
             if allowed_ip:
                 for m, w in cfg.AllowedIp.items():
-                    r_SGI = SecurityGroupIngress(f"{resname}{m}")
+                    r_SGI = ec2.SecurityGroupIngress(f"{resname}{m}", IpProtocol="tcp")
                     auto_get_props(r_SGI, mapname)
                     auto_get_props(r_SGI, f"AllowedIp{m}")
                     r_SGI.Condition = f"AllowedIp{m}"
                     add_obj(r_SGI)
                 continue
 
-        r_SGI = SecurityGroupIngress(resname)
+        r_SGI = ec2.SecurityGroupIngress(resname, IpProtocol="tcp")
         auto_get_props(
             r_SGI,
             mapname,

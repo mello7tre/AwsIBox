@@ -12,6 +12,7 @@ from troposphere.autoscaling import Tags as asgTags
 import troposphere.ssm as ssm
 import troposphere.sso as sso
 import troposphere.rds as rds
+import troposphere.ec2 as ec2
 import troposphere.elasticloadbalancing as elb
 import troposphere.elasticloadbalancingv2 as elbv2
 
@@ -51,6 +52,10 @@ from .cfg import (
     SECURITY_GROUPS_DEFAULT,
 )
 
+
+### BEGIN TROPOSPHERE OVERRIDE ###
+
+
 # Temporary fix for https://github.com/cloudtools/troposphere/issues/2146
 sso.PermissionSet.props["InlinePolicy"] = (str, False)
 
@@ -80,6 +85,7 @@ elb.LoadBalancer.props["LBCookieStickinessPolicy"] = (
 elb.LoadBalancer.props["Listeners"] = ([elb.Listener], False)
 
 
+# Fix to avoid setting OS variable TROPO_REAL_BOOL
 def boolean(x):
     if x in [True, 1, "1", "true", "True"]:
         return True
@@ -88,7 +94,6 @@ def boolean(x):
     raise ValueError
 
 
-# Fix to avoid setting OS variable TROPO_REAL_BOOL
 validators.boolean = boolean
 
 
@@ -100,29 +105,29 @@ def validate_dbinstance(self):
                 "Resource Engine is required in type %s" % self.resource_type
             )
 
-#    if "SourceDBInstanceIdentifier" in self.properties:
-#
-#        invalid_replica_properties = (
-#            "DBName",
-#            "MasterUsername",
-#            "MasterUserPassword",
-#            "PreferredBackupWindow",
-#            "MultiAZ",
-#            "DBSnapshotIdentifier",
-#        )
-#
-#        invalid_properties = [
-#            s for s in self.properties.keys() if s in invalid_replica_properties
-#        ]
-#
-#        if invalid_properties:
-#            raise ValueError(
-#                (
-#                    "{0} properties can't be provided when "
-#                    "SourceDBInstanceIdentifier is present "
-#                    "AWS::RDS::DBInstance."
-#                ).format(", ".join(sorted(invalid_properties)))
-#            )
+    #    if "SourceDBInstanceIdentifier" in self.properties:
+    #
+    #        invalid_replica_properties = (
+    #            "DBName",
+    #            "MasterUsername",
+    #            "MasterUserPassword",
+    #            "PreferredBackupWindow",
+    #            "MultiAZ",
+    #            "DBSnapshotIdentifier",
+    #        )
+    #
+    #        invalid_properties = [
+    #            s for s in self.properties.keys() if s in invalid_replica_properties
+    #        ]
+    #
+    #        if invalid_properties:
+    #            raise ValueError(
+    #                (
+    #                    "{0} properties can't be provided when "
+    #                    "SourceDBInstanceIdentifier is present "
+    #                    "AWS::RDS::DBInstance."
+    #                ).format(", ".join(sorted(invalid_properties)))
+    #            )
 
     if (
         (
@@ -189,4 +194,16 @@ def validate_dbinstance(self):
                 "AllocatedStorage must be no less than " "1/50th the provisioned Iops"
             )
 
+
 rds.DBInstance.validate = validate_dbinstance
+
+# troposphere ec2 is quite old and SecurityGroupIngress is only a list
+# without the obj type, this break auto_get_props, fix it overriding
+ec2.SecurityGroup.props = {
+    "GroupName": (str, False),
+    "GroupDescription": (str, True),
+    "SecurityGroupEgress": (list, False),
+    "SecurityGroupIngress": ([ec2.SecurityGroupRule], False),
+    "VpcId": (str, False),
+    "Tags": ((Tags, list), False),
+}
