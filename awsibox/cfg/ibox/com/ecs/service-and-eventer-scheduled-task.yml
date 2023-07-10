@@ -17,6 +17,13 @@ global:
                   - 'iam:PassRole'
                 Effect: Allow
                 Resource: GetAtt('RoleTask', 'Arn')
+  ECSService:
+    - Base:
+        IBOX_OUTPUT:
+          - EventsRuleECSRunTaskClusterName:
+              Value: ${Cluster}
+          - EventsRuleECSRunTaskSubnetsPrivate:
+              Value: ImportValue("SubnetsPrivate")
   ECSTaskDefinition:
     - Fargate:
         IBOX_ENABLED: True

@@ -13,8 +13,6 @@ global:
     - DaemonReserveCpu:
         get_condition('', 'equals', 'yes', 'DaemonReserveCpu')
   Output:
-    - ClusterStack:
-        Value: Ref("AWS::StackName")
     - DaemonReserveCpu:
         Value: get_endvalue('DaemonReserveCpu')
   DaemonReserveCpu: 'no'
@@ -34,6 +32,8 @@ global:
   ECSService:
     - Base:
         IBOX_ENABLED: False
+        ClusterStackName.IBOX_AUTO_PO:
+          Value: Ref("AWS::StackName")
     - Daemon:
         IBOX_ENABLED: True
         Condition: DaemonReserveCpu

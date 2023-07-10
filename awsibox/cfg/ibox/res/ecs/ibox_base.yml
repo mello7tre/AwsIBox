@@ -114,9 +114,6 @@ global:
                 - EnvBrand:
                     Name: EnvBrand
                     Value: cfg.BrandDomain
-                - EnvClusterStackName:
-                    Name: EnvClusterStackName
-                    Value: get_endvalue('ClusterStack')
               Essential: true
               HostPort: none
               Image: Join('', [
@@ -176,7 +173,8 @@ global:
   ECSService:
     - IBOX_BASE:
         IBOX_ENABLED: False
-        Cluster: get_expvalue('Cluster', 'ClusterStack')
+        ClusterStackName.IBOX_AUTO_PO: {}
+        Cluster: get_expvalue('Cluster', f'{IBOX_RESNAME}ClusterStackName')
         EnableExecuteCommand.IBOX_CODE: If(
             f'{IBOX_RESNAME}EnableExecuteCommandOverride',
             Ref(f'{IBOX_RESNAME}EnableExecuteCommand'),

@@ -27,7 +27,7 @@ global:
             Dimensions:
               - Cluster:
                   Name: ClusterName
-                  Value: get_expvalue('Cluster', 'ClusterStack')
+                  Value: Select(1, Split("/", Ref("Service")))
               - Service:
                   Name: ServiceName
                   Value: GetAtt('Service', 'Name')

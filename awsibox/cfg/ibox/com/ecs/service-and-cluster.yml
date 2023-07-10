@@ -12,8 +12,6 @@ global:
   Output:
     - StackType:
         Value: ec2 ecs
-    - ClusterStack:
-        Value: Ref("AWS::StackName")
   ApplicationAutoScalingScalableTarget:
     - ECSService:
         ResourceId: Sub('service/${Cluster}/${Service.Name}')
@@ -94,3 +92,5 @@ global:
     - Base:
         DependsOn: ECSClusterCapacityProviderAssociationsBase
         Cluster: Ref('Cluster')
+        ClusterStackName.IBOX_AUTO_PO:
+          Value: Ref("AWS::StackName")

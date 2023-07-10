@@ -4,7 +4,7 @@ global:
         IBOX_ENABLED: False
         MaxCapacity: get_endvalue('CapacityMax')
         MinCapacity: get_endvalue('CapacityMin')
-        ResourceId: get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
+        ResourceId: Select(5, Split(":", Ref("Service")))
         RoleARN: get_expvalue('RoleEC2ContainerServiceAutoscale', '')
         ScalableDimension: 'ecs:service:DesiredCount'
         ServiceNamespace: ecs

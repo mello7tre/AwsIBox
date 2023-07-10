@@ -6,14 +6,11 @@ IBoxLoader: !include
 
 global:
   Parameter:
-    - ClusterStack:
-        Description: 'Cluster Stack Name used to launch service on - empty for default based on env/role'
     - DockerLabelLastUpdate:
         Description: 'Use to force redeploy - can use: $(date +%F_%T)'
-  Output:
-    - ClusterStack:
-        Value: get_endvalue('ClusterStack')
-  ClusterStack: ecs-a
+  ECSService:
+    - Base:
+        ClusterStackName: ecs-a
   ECSTaskDefinition:
     - Base:
         IBOX_ENABLED: True
