@@ -20,9 +20,9 @@ global:
   ECSService:
     - Base:
         IBOX_OUTPUT:
-          - EventsRuleECSRunTaskClusterName:
+          - ClusterNameTasksLaunchOn:
               Value: ${Cluster}
-          - EventsRuleECSRunTaskSubnetsPrivate:
+          - ECSRunTaskSubnetsPrivate:
               Value: ImportValue("SubnetsPrivate")
   ECSTaskDefinition:
     - Fargate:
