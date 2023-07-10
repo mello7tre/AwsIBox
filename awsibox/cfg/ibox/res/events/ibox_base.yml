@@ -24,7 +24,10 @@ global:
         IBOX_ENABLED: False
         Targets:
           - ECSCluster0:
-              Arn: 'get_subvalue("arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${1E}", "Cluster", stack="ClusterStack")'
+              ArnClusterStack.IBOX_AUTO_PO: {}
+              Arn: >-
+                get_subvalue(
+                  "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${1E}", "Cluster", stack=f"{IBOX_MAPNAME}ArnClusterStack")
               EcsParameters:
                 LaunchType: get_endvalue("ServiceBaseLaunchType")
                 NetworkConfiguration:
