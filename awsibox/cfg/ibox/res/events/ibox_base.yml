@@ -22,12 +22,12 @@ global:
     - TargetECSCluster:
         IBOX_BASE_SKIP: True
         IBOX_ENABLED: False
+        ClusterStackName.IBOX_AUTO_PO: {}
         Targets:
           - ECSCluster0:
-              ArnClusterStack.IBOX_AUTO_PO: {}
               Arn: >-
                 get_subvalue(
-                  "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${1E}", "Cluster", stack=f"{IBOX_MAPNAME}ArnClusterStack")
+                  "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${1E}", "Cluster", stack=f"{IBOX_RESNAME}ClusterStackName")
               EcsParameters:
                 LaunchType: get_endvalue("ServiceBaseLaunchType")
                 NetworkConfiguration:
