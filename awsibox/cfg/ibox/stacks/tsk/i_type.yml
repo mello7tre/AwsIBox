@@ -12,6 +12,17 @@ global:
   EventsRule:
     - ECSRunTask:
         IBOX_SOURCE_OBJ: EventsRuleTargetLambda
+        IBOX_PARAMETER:
+          - _ClusterStackName:
+              Descrition: "Empty for mapped value"
+        IBOX_OUTPUT:
+          - _ClusterName:
+              Value: get_expvalue('Cluster', f'{IBOX_RESNAME}ClusterStackName')
+          - _ClusterStackName:
+              Value: get_endvalue(f"{IBOX_RESNAME}ClusterStackName")
+          - _SubnetsPrivate:
+              Value: ImportValue("SubnetsPrivate")
+        ClusterStackName: ecs-a
         Description: 'Periodically invoke LambdaECSRunTask'
         LaunchType.IBOX_PCO:
           IBOX_PARAMETER:
@@ -32,12 +43,12 @@ global:
               Id: 'TargetFunction-01'
               Input: Join('"', [
                   '{',
-                  'Cluster":', get_expvalue('Cluster', 'ClusterStack'), ',',
-                  'ECSInstancesStackName":', get_endvalue('ClusterStack'), ',',
+                  'Cluster":', get_expvalue('Cluster', f'{IBOX_RESNAME}ClusterStackName'), ',',
+                  'ECSInstancesStackName":', get_endvalue(f'{IBOX_RESNAME}ClusterStackName'), ',',
                   'LaunchType":', get_endvalue('EventsRuleECSRunTaskLaunchType'), ',',
                   If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'NetworkModeAwsVpc":"awsvpc",', Ref('AWS::NoValue')),
                   'TaskDefinition":', Ref('TaskDefinition'), ',',
-                  'Subnets":', get_expvalue('SubnetsPrivate'), ',',
+                  'Subnets":', ImportValue('SubnetsPrivate'), ',',
                   'SecurityGroups":', Join(' ', cfg.SecurityGroupsImport),
                   '}',
                 ])
