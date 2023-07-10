@@ -336,6 +336,7 @@ CFG_TO_FUNC = {
     "CloudFormationCustomResource": {
         "module": "joker",
         "func": ("cloudformation", "CustomResource"),
+        "dep": ["ECSService"],
     },
     "CloudFrontCachePolicy": {"module": "joker", "func": ("cloudfront", "CachePolicy")},
     "CloudFrontDistribution": {
@@ -428,7 +429,7 @@ CFG_TO_FUNC = {
     "ECSService": {
         "module": "joker",
         "func": ("ecs", "Service"),
-        "dep": ["SecurityGroups"],
+        "dep": ["SecurityGroups", "ECSTaskDefinition"],
     },
     "ECSTaskDefinition": {"module": "joker", "func": ("ecs", "TaskDefinition")},
     "EFSAccessPoint": {"module": "joker", "func": ("efs", "AccessPoint")},

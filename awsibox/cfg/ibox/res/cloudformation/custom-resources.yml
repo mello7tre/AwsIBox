@@ -1,0 +1,10 @@
+global:
+  CloudFormationCustomResource:
+    - FargateSpot:
+        IBOX_ENABLED: False
+        Condition: FargateSpot
+        DependsOn: ECSServiceSpot
+        ServiceToken: get_expvalue("LambdaCCRFargateSpot")
+        ServiceBaseArn: Ref(IBOX_LINKED_OBJ_NAME)
+        ServiceSpotArn: Ref("ECSServiceSpot")
+        ScalingPolicy: Ref("ApplicationAutoScalingScalingPolicyCpu")

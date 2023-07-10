@@ -1,3 +1,6 @@
+IBoxLoader: !include
+  - res/cloudformation/custom-resources.yml
+
 global:
   Parameter:
     - FargateSpot:
@@ -18,26 +21,27 @@ global:
     - ECSService:
         ResourceId:
           If('FargateSpot',
-            get_subvalue('service/${1E}/${ECSServiceSpot.Name}', 'Cluster', 'ClusterStack'),
-            get_subvalue('service/${1E}/${Service.Name}', 'Cluster', 'ClusterStack')
+            Select(5, Split(":", Ref("ECSServiceSpot"))),
+            Select(5, Split(":", Ref("Service"))),
           )
-  CloudFormationCustomResource:
-    - FargateSpot:
-        Condition: FargateSpot
-        DependsOn: ECSServiceSpot
-        ServiceToken: get_expvalue("LambdaCCRFargateSpot")
-        ServiceArn: Ref("ECSServiceSpot")
-        ServiceBase: GetAtt("Service", "Name")
-        ServiceSpot: GetAtt("ECSServiceSpot", "Name")
-        Cluster: get_expvalue("Cluster", "ClusterStack")
-        ScalingPolicy: Ref("ApplicationAutoScalingScalingPolicyCpu")
   ECSService:
-    - Spot:
-        IBOX_ENABLED: True
-        Condition: FargateSpot
-        DependsOn: Service
-        Tags:
-          - ServiceBase:
-              Key: IBOXFARGATESPOTServiceBase
-              Value: GetAtt('Service', 'Name')
+    - Base:
+        IBOX_LINKED_OBJ:
+          CloudFormationCustomResource:
+            Key: CloudFormationCustomResource
+            Name: FargateSpot
+            Type: FargateSpot
+            Conf:
+              IBOX_LINKED_OBJ_NAME: IBOX_TITLE
+          ServiceSpot:
+            Key: ECSService
+            Name: Spot
+            Type: Spot
+            Conf:
+              Condition: FargateSpot
+              DependsOn: IBOX_TITLE
+              Tags:
+                - ServiceBase:
+                    Key: IBOXFARGATESPOTServiceBase
+                    Value: GetAtt(IBOX_TITLE, 'Name')
   FargateSpot: 'no'
