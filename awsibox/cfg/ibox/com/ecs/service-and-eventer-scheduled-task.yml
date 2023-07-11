@@ -20,7 +20,7 @@ global:
   ECSService:
     - Base:
         IBOX_OUTPUT:
-          - ClusterNameTasksLaunchOn:
+          - ECSRunTaskClusterName:
               Value: ${Cluster}
           - ECSRunTaskSubnetsPrivate:
               Value: ImportValue("SubnetsPrivate")
