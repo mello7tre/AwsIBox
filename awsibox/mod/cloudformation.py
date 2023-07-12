@@ -114,7 +114,6 @@ def CFM_CustomResourceReplicator(key):
         "CCRReplicateRegions",
         Description="Regions where to replicate - none to disable - empty for default based on env/role",
         Type="CommaDelimitedList",
-        Default='',
     )
 
     add_obj(P_ReplicateRegions)

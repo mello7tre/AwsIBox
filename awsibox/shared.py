@@ -27,6 +27,12 @@ class IBOX_Custom_Obj(AWSProperty):
 
 def stack_add_res():
     for n, v in cfg.Parameters.items():
+        # set default values
+        if not hasattr(v, "Type"):
+            v.Type = "String"
+        if not hasattr(v, "Default") and not n in cfg.PARAMETERS_SKIP_DEFAULT:
+            v.Default = ""
+
         # Automatically create override conditions for parameters
         if n in list(cfg.fixedvalues) + cfg.mappedvalues:
             if n.endswith("InstanceType"):
@@ -780,13 +786,11 @@ def auto_get_props(
         def _try_PCO_in_obj(key):
             def _parameter(k):
                 for n, v in k.items():
-                    p_conf = {"Default": "", "Type": "String"}
-                    p_conf.update(v)
                     if not eval(v.get("IBOX_ENABLED_IF", "True")):
                         continue
                     n = parse_ibox_key(n)
                     parameter = Parameter(n)
-                    _populate(parameter, rootdict=p_conf)
+                    _populate(parameter, rootdict=v)
                     add_obj(parameter)
 
             def _condition(k):

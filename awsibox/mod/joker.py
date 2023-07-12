@@ -64,8 +64,6 @@ def Joker(key, module, cls):
                     f"{resname}Create",
                     Description=f"Create {resname}",
                     AllowedValues=["", "yes", "no"],
-                    Type="String",
-                    Default="",
                 )
             )
             if "Create.IBOX_AUTO_PO" not in v:

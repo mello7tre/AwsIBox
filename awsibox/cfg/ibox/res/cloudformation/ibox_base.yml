@@ -13,8 +13,6 @@ global:
               str("EnvAppVersion" if IBOX_INDEXNAME.startswith("EnvApp") and IBOX_INDEXNAME.endswith("Version") else None)
             Conf:
               IBOX_LINKED_OBJ_NAME: IBOX_INDEXNAME
-        Default: ""
-        Type: String
   Output:
     - IBOX_BASE:
         IBOX_RESNAME: IBOX_INDEXNAME
