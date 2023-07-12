@@ -62,6 +62,8 @@ def my_parameter_init(self, title, **kwargs):
         self.Type = "String"
     if "Default" not in kwargs:
         self.Default = ""
+
+
 Parameter.__init__ = my_parameter_init
 
 # Temporary fix for https://github.com/cloudtools/troposphere/issues/2146

@@ -82,7 +82,6 @@ def mapping_AZ():
     return mappings
 
 
-
 def CFM_Conditions(key):
     do_no_override(True)
     for n, v in getattr(cfg, key).items():
@@ -104,7 +103,6 @@ def CFM_Mappings(key):
             c_Mapping = {n: v}
 
         cfg.Mappings.update(c_Mapping)
-
 
 
 def CFM_CustomResourceReplicator(key):

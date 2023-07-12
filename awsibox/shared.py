@@ -46,7 +46,6 @@ def stack_add_res():
         # End
         cfg.template.add_parameter(v)
 
-
     for n, v in cfg.Conditions.items():
         cfg.template.add_condition(n, v)
 
@@ -958,7 +957,9 @@ def auto_get_props(
                     )
                 if not linked_obj:
                     if cfg.debug:
-                        logging.error(f"Linked Obj Target {linked_obj_key_name} not found")
+                        logging.error(
+                            f"Linked Obj Target {linked_obj_key_name} not found"
+                        )
                     continue
 
                 # update it with config from IBOX_LINKED_OBJ Conf
@@ -1169,7 +1170,6 @@ def auto_get_props(
 
     _populate(obj, key, mapname, rootdict)
     return obj
-
 
 
 def change_obj_data(obj, find, value):
