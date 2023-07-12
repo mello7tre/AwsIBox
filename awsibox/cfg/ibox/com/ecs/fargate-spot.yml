@@ -1,6 +1,3 @@
-IBoxLoader: !include
-  - res/cloudformation/custom-resources.yml
-
 global:
   Parameter:
     - FargateSpot:

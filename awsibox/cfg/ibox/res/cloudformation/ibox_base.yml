@@ -1,0 +1,4 @@
+IBoxLoader: !include
+  - res/cloudformation/custom-resources.yml
+
+global:
