@@ -30,7 +30,7 @@ def stack_add_res():
         # set default values
         if not hasattr(v, "Type"):
             v.Type = "String"
-        if not hasattr(v, "Default") and not n in cfg.PARAMETERS_SKIP_DEFAULT:
+        if not hasattr(v, "Default") and n not in cfg.PARAMETERS_SKIP_DEFAULT:
             v.Default = ""
 
         # Automatically create override conditions for parameters
