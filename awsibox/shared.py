@@ -27,12 +27,6 @@ class IBOX_Custom_Obj(AWSProperty):
 
 def stack_add_res():
     for n, v in cfg.Parameters.items():
-        # set default values
-        if not hasattr(v, "Type"):
-            v.Type = "String"
-        if not hasattr(v, "Default") and n not in cfg.PARAMETERS_SKIP_DEFAULT:
-            v.Default = ""
-
         # Automatically create override conditions for parameters
         if n in list(cfg.fixedvalues) + cfg.mappedvalues:
             if n.endswith("InstanceType"):

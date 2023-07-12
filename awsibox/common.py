@@ -55,6 +55,14 @@ from .cfg import (
 
 ### BEGIN TROPOSPHERE OVERRIDE ###
 
+# set Parameter default values
+def my_parameter_init(self, title, **kwargs):
+    super(Parameter, self).__init__(title, **kwargs)
+    if "Type" not in kwargs:
+        self.Type = "String"
+    if "Default" not in kwargs:
+        self.Default = ""
+Parameter.__init__ = my_parameter_init
 
 # Temporary fix for https://github.com/cloudtools/troposphere/issues/2146
 sso.PermissionSet.props["InlinePolicy"] = (str, False)
