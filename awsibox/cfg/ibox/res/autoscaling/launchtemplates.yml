@@ -99,8 +99,6 @@ global:
           - eth0:
               AssociatePublicIpAddress: false
               DeviceIndex: 0
-              Groups:
-                - GetAtt('SecurityGroupInstancesRules', 'GroupId')
         TagSpecifications:
           - instance:
               ResourceType: instance

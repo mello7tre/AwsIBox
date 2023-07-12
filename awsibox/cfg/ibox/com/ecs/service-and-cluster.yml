@@ -7,7 +7,6 @@ IBoxLoader:
       - stacks/ec2/ecs-cluster.yml
 
 global:
-  IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA: True
   IBOX_ROLE_EX: ecs-cluster
   Output:
     - StackType:
@@ -84,7 +83,8 @@ global:
     - Data:
         NetworkInterfaces:
           - eth0:
-              Groups++:
+              Groups:
+                - GetAtt('SecurityGroupInstancesRules', 'GroupId')
                 - ImportValue('SecurityGroupBaseInstance')
   LoadBalancerType: Application
   RecordSet: ['External', 'Internal']

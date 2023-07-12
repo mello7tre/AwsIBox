@@ -70,6 +70,11 @@ global:
     - InstancesRules:
         IBOX_NO_OUTPUT: True
         GroupDescription: Enable Access from LoadBalancer to Instances and between Instances
+  LaunchTemplate:
+    - Data:
+        NetworkInterfaces:
+          - eth0:
+              Groups: list([GetAtt('SecurityGroupInstancesRules', 'GroupId')]) + cfg.SecurityGroupsImport
   LoadBalancerType: Classic
   IAMPolicy:
     - CloudFormation:

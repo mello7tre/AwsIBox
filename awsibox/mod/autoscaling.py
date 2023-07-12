@@ -25,12 +25,6 @@ def AS_LaunchTemplate():
         res_obj_type="AWS::EC2::LaunchTemplate",
     )
 
-    if getattr(cfg, "IBOX_LAUNCH_TEMPLATE_NO_SG_EXTRA", False):
-        SecurityGroups = []
-    else:
-        SecurityGroups = cfg.SecurityGroupsImport
-    LaunchTemplateData.NetworkInterfaces[0].Groups.extend(SecurityGroups)
-
     R_LaunchTemplate.LaunchTemplateData = LaunchTemplateData
 
     ud_envrole = getattr(cfg, "IBOX_ROLE_EX", getattr(cfg, "envrole"))
