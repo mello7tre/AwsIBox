@@ -10,7 +10,7 @@ global:
             Key: SSMParameter
             Name: IBOX_INDEXNAME
             Type: >-
-              str("EnvAppVersion" if IBOX_INDEXNAME.startswith("EnvApp") and IBOX_INDEXNAME.endswith("Version") else None)
+              str("EnvAppVersion" if IBOX_INDEXNAME.startswith("EnvApp") and IBOX_INDEXNAME.endswith("Version") else "")
             Conf:
               IBOX_LINKED_OBJ_NAME: IBOX_INDEXNAME
   Output:
