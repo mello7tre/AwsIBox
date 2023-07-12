@@ -979,6 +979,9 @@ def auto_get_props(
                 # assign to louc_cfg lo_key
                 louc_cfg[target_name] = linked_obj
 
+            if not louc_cfg:
+                return
+
             if cfg.debug:
                 pprint(louc_cfg)
             # update cfg and fixedvalues, need to do it this way to avoid overwriting the lo_key and removing all objects
