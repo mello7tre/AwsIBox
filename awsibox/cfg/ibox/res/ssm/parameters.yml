@@ -1,0 +1,7 @@
+global:
+  SSMParameter:
+    - EnvAppVersion:
+        IBOX_ENABLED: False
+        Type: String
+        Name: Sub("/EnvAppVersions/${EnvRole}/${AWS::StackName}/%s" % IBOX_LINKED_OBJ_NAME)
+        Value: Ref(IBOX_LINKED_OBJ_NAME)

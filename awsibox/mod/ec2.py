@@ -2,7 +2,6 @@ import troposphere.ec2 as ec2
 
 from ..common import *
 from ..shared import (
-    Parameter,
     get_endvalue,
     get_expvalue,
     auto_get_props,
@@ -18,6 +17,7 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
         Description=f"SecurityGroups List Extra - {SECURITY_GROUPS_DEFAULT} for default based on env/role",
         AllowedPattern=r"^(\w*,\w*){%s}$" % (MAX_SECURITY_GROUPS - 1),
         Default=SECURITY_GROUPS_DEFAULT,
+        Type="String",
     )
 
     add_obj([P_SecurityGroups])

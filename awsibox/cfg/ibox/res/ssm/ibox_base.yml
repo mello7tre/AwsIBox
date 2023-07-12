@@ -1,0 +1,4 @@
+IBoxLoader: !include
+  - res/ssm/parameters.yml
+
+global:

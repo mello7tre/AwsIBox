@@ -25,32 +25,6 @@ class IBOX_Custom_Obj(AWSProperty):
     }
 
 
-class Parameter(Parameter):
-    def __init__(self, title, **kwargs):
-        super().__init__(title, **kwargs)
-        if "Type" not in kwargs:
-            self.Type = "String"
-        if "Default" not in kwargs:
-            self.Default = ""
-
-        # Create SSM Parameter for EnvAppXVersion Params to have history of application versions
-        if title.startswith("EnvApp") and title.endswith("Version"):
-            add_obj(
-                [
-                    # get_condition(title, "not_equals", "", nomap=True),
-                    ssm.Parameter(
-                        f"SSMParameter{title}",
-                        Type="String",
-                        # Condition=title,
-                        Name=Sub(
-                            "/EnvAppVersions/${EnvRole}/${AWS::StackName}/%s" % title
-                        ),
-                        Value=Ref(title),
-                    ),
-                ]
-            )
-
-
 def stack_add_res():
     for n, v in cfg.Parameters.items():
         # Automatically create override conditions for parameters
@@ -806,11 +780,13 @@ def auto_get_props(
         def _try_PCO_in_obj(key):
             def _parameter(k):
                 for n, v in k.items():
+                    p_conf = {"Default": "", "Type": "String"}
+                    p_conf.update(v)
                     if not eval(v.get("IBOX_ENABLED_IF", "True")):
                         continue
                     n = parse_ibox_key(n)
                     parameter = Parameter(n)
-                    _populate(parameter, rootdict=v)
+                    _populate(parameter, rootdict=p_conf)
                     add_obj(parameter)
 
             def _condition(k):
@@ -982,6 +958,10 @@ def auto_get_props(
                             getattr(cfg, f"{lo_key}{lo_type}", None),
                         )
                     )
+                if not linked_obj:
+                    if cfg.debug:
+                        logging.error(f"Linked Obj Target {linked_obj_key_name} not found")
+                    continue
 
                 # update it with config from IBOX_LINKED_OBJ Conf
                 linked_obj.update(lo_conf)
@@ -1190,17 +1170,6 @@ def auto_get_props(
     return obj
 
 
-def auto_build_obj(obj, key, name=None):
-    props = vars(obj)["propnames"]
-    classname = obj.__class__
-    for resname, resvalue in key.items():
-        final_obj = classname(resname)
-        if not name:
-            name = final_obj.__class__.__name__
-        auto_get_props(final_obj, f"{name}{resname}")
-
-        add_obj(final_obj)
-
 
 def change_obj_data(obj, find, value):
     if isinstance(obj, list):
@@ -1264,7 +1233,8 @@ def parse_ibox_key(value, conf={}):
                 value = value.replace(key, str(conf[key]))
             else:
                 value = value.replace(key, globals().get(key, ""))
-    value = value.replace("_", IBOX_RESNAME)
+    if "IBOX_RESNAME" in globals():
+        value = value.replace("_", IBOX_RESNAME)
     value = value.replace(".", "")
 
     return value

@@ -1,5 +1,5 @@
 from ..common import *
-from ..shared import auto_get_props, add_obj, Parameter, get_condition, parse_ibox_key
+from ..shared import auto_get_props, add_obj, get_condition, parse_ibox_key
 from ..RP import RP_to_cfg, merge_dict
 
 
@@ -26,8 +26,12 @@ def Joker(key, module, cls):
         linked_obj_name = v.get("IBOX_LINKED_OBJ_NAME", "")
         linked_obj_index = v.get("IBOX_LINKED_OBJ_INDEX", "")
 
-        mod = __import__(f"troposphere.{module}")
-        my_module = getattr(mod, module)
+        if module:
+            mod = __import__(f"troposphere.{module}")
+            my_module = getattr(mod, module)
+        else:
+            # for classes in troposphere __init__
+            my_module = __import__("troposphere")
         my_class = getattr(my_module, cls)
 
         obj = my_class(resname)
@@ -60,6 +64,8 @@ def Joker(key, module, cls):
                     f"{resname}Create",
                     Description=f"Create {resname}",
                     AllowedValues=["", "yes", "no"],
+                    Type="String",
+                    Default="",
                 )
             )
             if "Create.IBOX_AUTO_PO" not in v:

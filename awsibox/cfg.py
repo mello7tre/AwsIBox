@@ -280,7 +280,7 @@ INSTANCE_LIST = ["default"] + build_instance_list()
 
 # Order is VERY important do not CHANGE it!
 CFG_TO_FUNC = {
-    "Parameter": {"module": "cloudformation", "func": "CFM_Parameters"},
+    "Parameter": {"module": "joker", "func": (None, "Parameter")},
     "Condition": {"module": "cloudformation", "func": "CFM_Conditions"},
     "Mapping": {"module": "cloudformation", "func": "CFM_Mappings"},
     "ApiGatewayAccount": {"module": "joker", "func": ("apigateway", "Account")},
@@ -609,5 +609,5 @@ CFG_TO_FUNC = {
         "func": "CFM_CustomResourceReplicator",
     },
     # Output need to be last line
-    "Output": {"module": "cloudformation", "func": "CFM_Outputs"},
+    "Output": {"module": "joker", "func": (None, "Output")},
 }

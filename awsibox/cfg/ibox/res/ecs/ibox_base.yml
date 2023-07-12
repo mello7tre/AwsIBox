@@ -46,6 +46,13 @@ global:
               IBOX_PARAMETER:
                 - EnvApp.IBOX_PROPNAME.Version:
                     IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_REFNAME}ImageSuffix")
+                    IBOX_LINKED_OBJ:
+                      SSMParameter:
+                        Key: SSMParameter
+                        Name: EnvApp.IBOX_PROPNAME.Version
+                        Type: EnvAppVersion
+                        Conf:
+                          IBOX_LINKED_OBJ_NAME: EnvApp.IBOX_PROPNAME.Version
                     Description: str(f'EnvApp{IBOX_PROPNAME}Version')
                     Default: "1"
                     AllowedPattern: '^[a-zA-Z0-9-_.]+$'

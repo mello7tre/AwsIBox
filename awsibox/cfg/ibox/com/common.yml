@@ -23,6 +23,7 @@ IBoxLoader:
     - res/autoscaling/ibox_base.yml
     - res/apigateway/ibox_base.yml
     - res/cloudformation/ibox_base.yml
+    - res/ssm/ibox_base.yml
 
 global:
   Parameter:

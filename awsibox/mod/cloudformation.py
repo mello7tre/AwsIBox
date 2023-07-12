@@ -2,7 +2,6 @@ import troposphere.cloudformation as cfm
 
 from ..common import *
 from ..shared import (
-    Parameter,
     do_no_override,
     get_endvalue,
     get_expvalue,
@@ -84,9 +83,6 @@ def mapping_AZ():
     return mappings
 
 
-def CFM_Parameters(key):
-    auto_build_obj(Parameter(""), getattr(cfg, key))
-
 
 def CFM_Conditions(key):
     do_no_override(True)
@@ -111,9 +107,6 @@ def CFM_Mappings(key):
         cfg.Mappings.update(c_Mapping)
 
 
-def CFM_Outputs(key):
-    auto_build_obj(Output(""), getattr(cfg, key))
-
 
 def CFM_CustomResourceReplicator(key):
     resname = "CloudFormationCustomResourceStackReplicator"
@@ -122,6 +115,7 @@ def CFM_CustomResourceReplicator(key):
         "CCRReplicateRegions",
         Description="Regions where to replicate - none to disable - empty for default based on env/role",
         Type="CommaDelimitedList",
+        Default='',
     )
 
     add_obj(P_ReplicateRegions)
