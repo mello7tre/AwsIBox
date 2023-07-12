@@ -30,8 +30,8 @@ global:
         HeartbeatTimeout.IBOX_AUTO_PO: {}
         HeartbeatTimeout: 3600
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
-        NotificationTargetARN: get_expvalue('SNSTopicECSDrainInstance')
-        RoleARN: get_expvalue('RoleASGLifecycleHookECSDrainInstance')
+        NotificationTargetARN: ImportValue('SNSTopicECSDrainInstance')
+        RoleARN: ImportValue('RoleASGLifecycleHookECSDrainInstance')
   AutoScalingGroup:
     - Base:
         Tags:
@@ -69,12 +69,12 @@ global:
     - ContainerInstanceExternal:
         FromPort: 32768
         GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
-        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationExternal')
+        SourceSecurityGroupId: ImportValue('SecurityGroupLoadBalancerApplicationExternal')
         ToPort: 60999
     - ContainerInstanceInternal:
         FromPort: 32768
         GroupId: GetAtt('SecurityGroupInstancesRules', 'GroupId')
-        SourceSecurityGroupId: get_expvalue('SecurityGroupLoadBalancerApplicationInternal')
+        SourceSecurityGroupId: ImportValue('SecurityGroupLoadBalancerApplicationInternal')
         ToPort: 60999
   ECSCluster:
     - Base:
@@ -126,7 +126,7 @@ global:
   IAMRole:
     - Instance:
         ManagedPolicyArns++:
-          - get_expvalue('IAMPolicyEcs')
+          - ImportValue('IAMPolicyEcs')
 
 dev: &cfg_dev
   AutoScalingLifecycleHook:

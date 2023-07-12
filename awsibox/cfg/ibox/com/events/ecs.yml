@@ -39,7 +39,7 @@ global:
         Timeout: 30
         Environment:
           Variables:
-            - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+            - SNSTopic: ImportValue('SNSTopicCloudWatchAlarm')
   IAMPolicy:
     - LambdaECSEventTaskStateChange:
         Roles:
@@ -49,7 +49,7 @@ global:
             - 1:
                 Action: 'sns:Publish'
                 Effect: Allow
-                Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+                Resource: ImportValue('SNSTopicCloudWatchAlarm')
     - ParameterStore:
         Roles++:
           - Ref('RoleLambdaECSEventTaskStateChange')

@@ -26,5 +26,5 @@ global:
   IAMRole:
     - Task:
         ManagedPolicyArns:
-          - get_expvalue('IAMPolicyCloudWatchPutMetric')
+          - ImportValue('IAMPolicyCloudWatchPutMetric')
         Principal: ecs-tasks.amazonaws.com

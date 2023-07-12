@@ -43,7 +43,7 @@ global:
         Timeout: 30
         Environment:
           Variables:
-            - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+            - SNSTopic: ImportValue('SNSTopicCloudWatchAlarm')
     - CloudWatchAlarmStateChange:
         IBOX_ENABLED: False
         Architectures: ['arm64']
@@ -68,7 +68,7 @@ global:
             - 2:
                 Action: 'sns:Publish'
                 Effect: Allow
-                Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+                Resource: ImportValue('SNSTopicCloudWatchAlarm')
     - LambdaCloudWatchAlarmStateChange:
         IBOX_ENABLED: False
         Roles:

@@ -94,8 +94,8 @@ global:
   IAMRole:
     - Instance:
         ManagedPolicyArns:
-          - get_expvalue('IAMPolicyBaseInstance')
-          - get_expvalue('IAMPolicySSM')
+          - ImportValue('IAMPolicyBaseInstance')
+          - ImportValue('IAMPolicySSM')
         Principal: ec2.amazonaws.com
 
 dev: &cfg_dev

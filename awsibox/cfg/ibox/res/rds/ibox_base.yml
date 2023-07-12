@@ -8,11 +8,11 @@ Mysql: &mysql
 MysqlInternal:
   <<: *mysql
   PubliclyAccessible: false
-  DBSubnetGroupName: get_expvalue('DBSubnetGroupPrivate')
+  DBSubnetGroupName: ImportValue('DBSubnetGroupPrivate')
 MysqlExternal:
   <<: *mysql
   PubliclyAccessible: true
-  DBSubnetGroupName: get_expvalue('DBSubnetGroupPublic')
+  DBSubnetGroupName: ImportValue('DBSubnetGroupPublic')
 
 global:
   RDSDBInstance:
@@ -160,7 +160,7 @@ global:
         MaxAllocatedStorage.IBOX_CODE:
           If(f'{IBOX_MAPNAME}StorageAutoScaling', get_endvalue(f'{IBOX_MAPNAME}MaxAllocatedStorage'), Ref('AWS::NoValue'))
         MonitoringInterval: 0
-        MonitoringRoleArn: If(f'{IBOX_MAPNAME}MonitoringInterval', get_expvalue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
+        MonitoringRoleArn: If(f'{IBOX_MAPNAME}MonitoringInterval', ImportValue('RoleRDSEnhancedMonitoring'), Ref('AWS::NoValue'))
         MultiAZ: false
         PerformanceInsights: 0
         PerformanceInsightsRetentionPeriod:

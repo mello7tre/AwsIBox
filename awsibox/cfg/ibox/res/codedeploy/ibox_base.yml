@@ -28,4 +28,4 @@ global:
                   Sub(getattr(cfg, f'{IBOX_CURNAME}Suffix')),
                 ])
         DeploymentGroupName: get_subvalue("${AWS::StackName}.${EnvRole}-${1M}", f"{IBOX_RESNAME}ApplicationName")
-        ServiceRoleArn: get_expvalue("RoleCodeDeploy", "")
+        ServiceRoleArn: ImportValue("RoleCodeDeploy")

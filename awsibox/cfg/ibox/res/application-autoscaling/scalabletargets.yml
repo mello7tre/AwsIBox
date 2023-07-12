@@ -5,7 +5,7 @@ global:
         MaxCapacity: get_endvalue('CapacityMax')
         MinCapacity: get_endvalue('CapacityMin')
         ResourceId: Select(5, Split(":", Ref("Service")))
-        RoleARN: get_expvalue('RoleEC2ContainerServiceAutoscale', '')
+        RoleARN: ImportValue('RoleEC2ContainerServiceAutoscale')
         ScalableDimension: 'ecs:service:DesiredCount'
         ServiceNamespace: ecs
         ScheduledActions:

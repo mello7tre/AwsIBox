@@ -56,7 +56,7 @@ global:
     - LambdaECSRunTaskTrigger:
         PolicyName: Sub('LambdaECSRunTaskTrigger_${AWS::StackName}')
         Roles:
-          - get_expvalue('RoleLambdaECSRunTask')
+          - ImportValue('RoleLambdaECSRunTask')
         PolicyDocument:
           Statement:
             - 1:
@@ -72,4 +72,4 @@ global:
                 Effect: Allow
                 Resource: 
                   - GetAtt('RoleTask', 'Arn')
-                  - get_expvalue('RoleECSTaskExecution')
+                  - ImportValue('RoleECSTaskExecution')

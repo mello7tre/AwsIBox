@@ -6,7 +6,7 @@ global:
             - Decrypt:
                 Action: 'kms:Decrypt'
                 Effect: Allow
-                Resource: get_expvalue('KeyParameterStore')
+                Resource: ImportValue('KeyParameterStore')
             - Describe:
                 Action: 'ssm:DescribeParameters'
                 Effect: Allow

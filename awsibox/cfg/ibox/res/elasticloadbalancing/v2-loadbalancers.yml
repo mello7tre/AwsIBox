@@ -59,16 +59,16 @@ ALB: &alb
         Export: Export(Sub('%sFullName-${AWS::StackName}' % IBOX_TITLE))
   Condition: IBOX_TITLE
   SecurityGroups:
-    - get_expvalue(f'SecurityGroup{IBOX_TITLE}')
+    - ImportValue(f'SecurityGroup{IBOX_TITLE}')
     - GetAtt(f'SecurityGroup{IBOX_TITLE}', 'GroupId')
 
 External: &external
   Scheme: 'internet-facing'
-  Subnets: Split(',', get_expvalue('SubnetsPublic'))
+  Subnets: Split(',', ImportValue('SubnetsPublic'))
 
 Internal: &internal
   Scheme: 'internal'
-  Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+  Subnets: Split(',', ImportValue('SubnetsPrivate'))
 
 global:
   ElasticLoadBalancingV2LoadBalancer:

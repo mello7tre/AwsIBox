@@ -162,7 +162,7 @@ global:
         # End ContainerDefinitions
         Cpu.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
         Cpu: none
-        ExecutionRoleArn: If('ECSTasksLaunchOnFargate', get_expvalue('RoleECSTaskExecution'), Ref('AWS::NoValue'))
+        ExecutionRoleArn: If('ECSTasksLaunchOnFargate', ImportValue('RoleECSTaskExecution'), Ref('AWS::NoValue'))
         Memory.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
         Memory: none
         NetworkMode.IBOX_CODE: If("ECSTasksLaunchOnFargate", "awsvpc", get_endvalue(IBOX_CURNAME))
@@ -196,6 +196,6 @@ global:
             - Ref('AWS::NoValue')
           AwsvpcConfiguration:
             SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + cfg.SecurityGroupsImport
-            Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+            Subnets: Split(',', ImportValue('SubnetsPrivate'))
         PlatformVersion: If('ECSTasksLaunchOnFargate', 'LATEST', Ref('AWS::NoValue'))
         TaskDefinition: Ref('TaskDefinition')

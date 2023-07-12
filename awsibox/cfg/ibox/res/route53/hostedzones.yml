@@ -40,5 +40,5 @@ global:
         Name: Sub(cfg.HostedZoneNamePrivate)
         VPCs:
           - Vpc1:
-              VPCId: get_expvalue('VpcId')
+              VPCId: ImportValue('VpcId')
               VPCRegion: Ref('AWS::Region')

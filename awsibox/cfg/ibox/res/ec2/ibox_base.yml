@@ -6,8 +6,8 @@ global:
   EC2VPCEndpoint:
     - IBOX_BASE:
         Create: 'no'
-        RouteTableIds: [get_expvalue("RouteTablePrivate")]
-        VpcId: get_expvalue("VpcId")
+        RouteTableIds: [ImportValue("RouteTablePrivate")]
+        VpcId: ImportValue("VpcId")
   EC2Subnet:
     - IBOX_BASE:
         IBOX_ENABLED: False

@@ -81,9 +81,9 @@ global:
         Description: 'ServiceDiscovery'
         Environment:
           Variables:
-            - NameSpaceID: get_expvalue('ServiceDiscoveryPublicDnsNamespaceId')
+            - NameSpaceID: ImportValue('ServiceDiscoveryPublicDnsNamespaceId')
             - PublicDnsNamespaceName: Sub(f'find.{cfg.HostedZoneNameEnv}')
-            - HostedZoneId: get_expvalue('HostedZoneIdEnv')
+            - HostedZoneId: ImportValue('HostedZoneIdEnv')
         MemorySize: 256
         Runtime: python3.9
         Timeout: 30
@@ -96,7 +96,7 @@ global:
         Environment:
           Variables:
             - HostedZoneName: get_endvalue('HostedZoneNamePrivate')
-            - HostedZoneId: get_expvalue('HostedZoneIdPrivate')
+            - HostedZoneId: ImportValue('HostedZoneIdPrivate')
             - Topic: Ref('SNSTopicASGNotificationR53')
         MemorySize: 256
         Runtime: python3.9

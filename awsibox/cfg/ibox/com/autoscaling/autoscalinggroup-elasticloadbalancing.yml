@@ -81,12 +81,12 @@ global:
         IBOX_TITLE: LoadBalancerClassicExternal
         Condition: LoadBalancerExternal
         Scheme: 'internet-facing'
-        Subnets: Split(',', get_expvalue('SubnetsPublic'))
+        Subnets: Split(',', ImportValue('SubnetsPublic'))
     - EC2ClassicInternal:
         IBOX_TITLE: LoadBalancerClassicInternal
         Condition: LoadBalancerInternal
         Scheme: 'internal'
-        Subnets: Split(',', get_expvalue('SubnetsPrivate'))
+        Subnets: Split(',', ImportValue('SubnetsPrivate'))
   ElasticLoadBalancingV2LoadBalancer:
     - IBOX_BASE:
         IBOX_LINKED_OBJ:

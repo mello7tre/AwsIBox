@@ -29,7 +29,7 @@ global:
                 Effect: Allow
                 Resource:
                   - Sub('arn:aws:iam::${AWS::AccountId}:role/lth-t-*')
-                  - get_expvalue('RoleECSTaskExecution')
+                  - ImportValue('RoleECSTaskExecution')
             - 3:
                 Action:
                   - 'events:ListTargetsByRule'

@@ -21,7 +21,7 @@ global:
         Timeout: 300
         Environment:
           Variables:
-            - SNSTopic: get_expvalue('SNSTopicCloudWatchAlarm')
+            - SNSTopic: ImportValue('SNSTopicCloudWatchAlarm')
   IAMPolicy:
     - LambdaSpotAdvisor:
         Roles:
@@ -31,7 +31,7 @@ global:
             - 1:
                 Action: 'sns:Publish'
                 Effect: Allow
-                Resource: get_expvalue('SNSTopicCloudWatchAlarm')
+                Resource: ImportValue('SNSTopicCloudWatchAlarm')
             - 2:
                 Action: 'pricing:GetProducts'
                 Effect: Allow

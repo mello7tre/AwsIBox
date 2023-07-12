@@ -35,6 +35,6 @@ global:
                 - Ref("AWS::NoValue")
               AwsvpcConfiguration:
                 SecurityGroups: cfg.SecurityGroupsImport
-                Subnets: Split(",", get_expvalue("SubnetsPrivate"))
+                Subnets: Split(",", ImportValue("SubnetsPrivate"))
             TaskDefinitionArn: Ref("TaskDefinition")
-          RoleArn: get_expvalue("RoleECSEvents")
+          RoleArn: ImportValue("RoleECSEvents")

@@ -3,7 +3,7 @@ global:
     - LambdaECSRunTaskTrigger:
         PolicyName: Sub('LambdaECSRunTaskTrigger_${AWS::StackName}')
         Roles:
-          - get_expvalue('RoleLambdaECSRunTask')
+          - ImportValue('RoleLambdaECSRunTask')
         PolicyDocument:
           Statement:
             - RunTask:

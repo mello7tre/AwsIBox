@@ -24,7 +24,7 @@ global:
             - KMSKey:
                 Action: 'kms:Decrypt'
                 Effect: Allow
-                Resource: get_expvalue('KeyParameterStore')
+                Resource: ImportValue('KeyParameterStore')
   Lambda:
     - StacksOps:
         Architectures:
@@ -40,5 +40,5 @@ global:
         Runtime: python3.9
         Environment:
           Variables:
-            - CloudFormationNotificationArn: get_expvalue('SNSTopicCloudFormationNotification')
+            - CloudFormationNotificationArn: ImportValue('SNSTopicCloudFormationNotification')
         Timeout: 60

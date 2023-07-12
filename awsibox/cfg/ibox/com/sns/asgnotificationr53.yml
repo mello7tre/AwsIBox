@@ -25,6 +25,6 @@ global:
   SNSSubscription:
     - ASGNotificationR53SQSASGNotificationR53:
         IBOX_SOURCE_OBJ: SNSSubscriptionSQS
-        TopicArn: get_expvalue('SNSTopicASGNotificationR53')
+        TopicArn: ImportValue('SNSTopicASGNotificationR53')
         Endpoint: GetAtt('SQSQueueASGNotificationR53', 'Arn')
         Protocol: sqs

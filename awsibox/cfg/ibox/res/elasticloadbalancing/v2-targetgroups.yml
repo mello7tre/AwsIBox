@@ -22,7 +22,7 @@ Base: &base
         Key: 'stickiness.enabled'
         Value: If(f'{IBOX_MAPNAME}TargetGroupAttributesCookieDurationValue', 'true', 'false')
   Protocol: HTTP
-  VpcId: get_expvalue('VpcId')
+  VpcId: ImportValue('VpcId')
 
 global:
   ElasticLoadBalancingV2TargetGroup:
@@ -50,7 +50,7 @@ global:
           Type: EC2LoadBalancerNetworkInstancesRule
         Port: 80
         Protocol: TCP
-        VpcId: get_expvalue('VpcId')
+        VpcId: ImportValue('VpcId')
     - EC2LoadBalancerNetworkInternal:
         IBOX_ENABLED: False
         IBOX_LINKED_OBJ:
@@ -59,7 +59,7 @@ global:
           Type: EC2LoadBalancerNetworkInstancesRule
         Port: 80
         Protocol: TCP
-        VpcId: get_expvalue('VpcId')
+        VpcId: ImportValue('VpcId')
     - ECSLoadBalancerApplicationDefaultExternal:
         IBOX_ENABLED: False
         IBOX_TITLE: TargetGroupServiceUnavailableExternal
@@ -69,7 +69,7 @@ global:
         Condition: LoadBalancerApplicationExternal
         Targets:
           - ServiceUnavailable:
-              Id: get_expvalue(f'LambdaServiceUnavailableArn')
+              Id: ImportValue(f'LambdaServiceUnavailableArn')
         TargetType: lambda
     - ECSLoadBalancerApplicationDefaultInternal:
         IBOX_ENABLED: False
@@ -80,7 +80,7 @@ global:
         Condition: LoadBalancerApplicationInternal
         Targets:
           - ServiceUnavailable:
-              Id: get_expvalue(f'LambdaServiceUnavailableArn')
+              Id: ImportValue(f'LambdaServiceUnavailableArn')
         TargetType: lambda
     - ECSLoadBalancerApplicationExternal:
         IBOX_ENABLED: False

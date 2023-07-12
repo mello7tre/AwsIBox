@@ -2,4 +2,4 @@ global:
   ApiGatewayAccount:
     - Base:
         IBOX_TITLE: ApiGatewayAccount
-        CloudWatchRoleArn: get_expvalue("RoleApiGatewayCloudWatch")
+        CloudWatchRoleArn: ImportValue("RoleApiGatewayCloudWatch")

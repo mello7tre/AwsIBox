@@ -9,7 +9,7 @@ SSMParameterStoreBase02: &ssm_parameter_store_base_02
     - 'kms:Decrypt'
     - 'kms:Encrypt'
   Effect: Allow
-  Resource: get_expvalue('KeyParameterStore')
+  Resource: ImportValue('KeyParameterStore')
 
 LogRead01: &log_read_01
   Action:

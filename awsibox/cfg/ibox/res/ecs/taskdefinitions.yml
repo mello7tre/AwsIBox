@@ -23,7 +23,7 @@ global:
         IBOX_ENABLED: False
         Cpu.IBOX_CODE: get_endvalue(IBOX_CURNAME)
         Cpu: '256'
-        ExecutionRoleArn: get_expvalue('RoleECSTaskExecution')
+        ExecutionRoleArn: ImportValue('RoleECSTaskExecution')
         Memory.IBOX_CODE: get_endvalue(IBOX_CURNAME)
         Memory: '512'
         NetworkMode.IBOX_CODE: get_endvalue(IBOX_CURNAME)

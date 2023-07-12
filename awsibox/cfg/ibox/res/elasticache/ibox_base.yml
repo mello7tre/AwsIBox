@@ -72,10 +72,10 @@ Base: &base
 Cluster: &cluster
   Condition: CacheCluster
   ## Internal
-  CacheSubnetGroupName: get_expvalue(f'CacheSubnetGroupPrivate')
+  CacheSubnetGroupName: ImportValue(f'CacheSubnetGroupPrivate')
   VpcSecurityGroupIds: [Ref('SecurityGroupCCH')]
   ## External
-  #CacheSubnetGroupName: get_expvalue(f'CacheSubnetGroupPublic')
+  #CacheSubnetGroupName: ImportValue(f'CacheSubnetGroupPublic')
   #CacheSecurityGroupNames: [Ref('SecurityGroupCCH')]
   AZMode: single-az
   AutoMinorVersionUpgrade: true
