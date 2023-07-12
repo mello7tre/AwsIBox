@@ -8,7 +8,6 @@ from ..shared import (
     # need it even if not directly used cause eval in CFM_Conditions
     get_condition,
     add_obj,
-    auto_build_obj,
 )
 
 
