@@ -942,6 +942,10 @@ def auto_get_props(
                     )
 
                 linked_obj_key_name = f"{lo_key}{lo_type}{lo_for_index}"
+                if not hasattr(cfg, linked_obj_key_name):
+                    # usefull when using for-cycle to have multiple targets all using the same source obj
+                    linked_obj_key_name = f"{lo_key}{lo_type}"
+
                 target_name = f"{lo_name}{lo_for_index}"
 
                 # get existing object
@@ -950,19 +954,7 @@ def auto_get_props(
                     linked_obj = getattr(cfg, linked_obj_key_name)
                 else:
                     # copy it, first search for the full name including for index
-                    linked_obj = copy.deepcopy(
-                        getattr(
-                            cfg,
-                            linked_obj_key_name,
-                            getattr(cfg, f"{lo_key}{lo_type}", None),
-                        )
-                    )
-                if not linked_obj:
-                    if cfg.debug:
-                        logging.error(
-                            f"Linked Obj Target {linked_obj_key_name} not found"
-                        )
-                    continue
+                    linked_obj = copy.deepcopy(getattr(cfg, linked_obj_key_name))
 
                 # update it with config from IBOX_LINKED_OBJ Conf
                 linked_obj.update(lo_conf)
@@ -979,9 +971,6 @@ def auto_get_props(
 
                 # assign to louc_cfg lo_key
                 louc_cfg[target_name] = linked_obj
-
-            if not louc_cfg:
-                return
 
             if cfg.debug:
                 pprint(louc_cfg)
