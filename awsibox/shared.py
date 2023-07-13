@@ -921,8 +921,8 @@ def auto_get_props(
         def _linked_obj(linked_obj_data):
             # need to parse them here to have the right values
             lo_name = parse_ibox_key(linked_obj_data.get("Name", IBOX_RESNAME))
-            lo_key = parse_ibox_key(linked_obj_data.get("Key", ""))
-            lo_type = parse_ibox_key(linked_obj_data.get("Type", ""))
+            lo_key = parse_ibox_key(linked_obj_data["Key"])
+            lo_type = parse_ibox_key(linked_obj_data["Type"])
             if not lo_type:
                 return
             # this way even if without key "For", for cycle will run at least one time
