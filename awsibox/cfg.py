@@ -281,7 +281,7 @@ INSTANCE_LIST = ["default"] + build_instance_list()
 # Order is VERY important do not CHANGE it!
 CFG_TO_FUNC = {
     "Parameter": {"module": "joker", "func": (None, "Parameter")},
-    "Condition": {"module": "cloudformation", "func": "CFM_Conditions"},
+    "Condition": {"module": "joker", "func": (None, "Condition")},
     "Mapping": {"module": "cloudformation", "func": "CFM_Mappings"},
     "ApiGatewayAccount": {"module": "joker", "func": ("apigateway", "Account")},
     "ApiGatewayApiKey": {"module": "joker", "func": ("apigateway", "ApiKey")},

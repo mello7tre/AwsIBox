@@ -1,10 +1,24 @@
 from ..common import *
-from ..shared import auto_get_props, add_obj, get_condition, parse_ibox_key
+from ..shared import (
+    auto_get_props,
+    add_obj,
+    do_no_override,
+    get_condition,
+    get_endvalue,
+    parse_ibox_key,
+)
 from ..RP import RP_to_cfg, merge_dict
 
 
 def Joker(key, module, cls):
     for n, v in getattr(cfg, key).items():
+        if key == "Condition":
+            # Condition are just dict, directly add them
+            do_no_override(True)
+            add_obj({n: eval(v)})
+            do_no_override(False)
+            continue
+
         if not v.get("IBOX_ENABLED", True):
             continue
         if not eval(v.get("IBOX_ENABLED_IF", "True")):

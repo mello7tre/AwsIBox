@@ -2,11 +2,8 @@ import troposphere.cloudformation as cfm
 
 from ..common import *
 from ..shared import (
-    do_no_override,
     get_endvalue,
     get_expvalue,
-    # need it even if not directly used cause eval in CFM_Conditions
-    get_condition,
     add_obj,
 )
 
@@ -80,15 +77,6 @@ def mapping_AZ():
         mappings["AvabilityZones"][r] = zones
 
     return mappings
-
-
-def CFM_Conditions(key):
-    do_no_override(True)
-    for n, v in getattr(cfg, key).items():
-        c_Condition = {n: eval(v)}
-
-        add_obj(c_Condition)
-    do_no_override(False)
 
 
 def CFM_Mappings(key):
