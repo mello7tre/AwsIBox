@@ -41,6 +41,8 @@ def set_cfg_stackparams(resource_properties):
         "ServiceToken",
         "EnvStackVersion",
         "CCRReplicateRegions",
+        "IBOX_ENABLED",
+        "IBOX_PARAMETER",
     ]
     for p, v in resource_properties.items():
         if p not in exclude_list:

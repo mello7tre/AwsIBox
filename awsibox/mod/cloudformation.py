@@ -3,8 +3,8 @@ import troposphere.cloudformation as cfm
 from ..common import *
 from ..shared import (
     get_endvalue,
-    get_expvalue,
     add_obj,
+    auto_get_props
 )
 
 
@@ -94,24 +94,8 @@ def CFM_Mappings(key):
 
 
 def CFM_CustomResourceReplicator(key):
-    resname = "CloudFormationCustomResourceStackReplicator"
-    # Parameters
-    P_ReplicateRegions = Parameter(
-        "CCRReplicateRegions",
-        Description="Regions where to replicate - none to disable - empty for default based on env/role",
-        Type="CommaDelimitedList",
-    )
-
-    add_obj(P_ReplicateRegions)
-
-    # Resources
-    R_Replicator = cfm.CustomResource(resname)
-
-    if "LambdaCCRStackReplicator" in cfg.Resources:
-        R_Replicator.DependsOn = "IAMPolicyLambdaCCRStackReplicator"
-        R_Replicator.ServiceToken = GetAtt("LambdaCCRStackReplicator", "Arn")
-    else:
-        R_Replicator.ServiceToken = get_expvalue("LambdaCCRStackReplicator")
+    R_Replicator = cfm.CustomResource("CloudFormationCustomResourceStackReplicator")
+    auto_get_props(R_Replicator)
 
     for p, v in cfg.Parameters.items():
         if not p.startswith("Env"):

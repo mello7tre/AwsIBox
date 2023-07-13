@@ -16,3 +16,16 @@ global:
         EnvRole: Ref("EnvRole")
         EnvApp1Version: Ref("EnvApp1Version")
         RepoName: getattr(cfg, "ECSTaskDefinitionBaseContainerDefinitions1ImageSuffix").split(":")[0]
+    - StackReplicator:
+        IBOX_ENABLED: False
+        IBOX_PARAMETER:
+          - CCRReplicateRegions:
+              Description: "Regions where to replicate - none to disable - empty for default based on env/role"
+              Type: "CommaDelimitedList"
+        DependsOn: >-
+          str(
+            "IAMPolicyLambdaCCRStackReplicator" if "LambdaCCRStackReplicator" in cfg.Resources
+            else "IBOX_SKIP")
+        ServiceToken: >-
+            GetAtt("LambdaCCRStackReplicator", "Arn") if "LambdaCCRStackReplicator" in cfg.Resources
+            else ImportValue("LambdaCCRStackReplicator")
