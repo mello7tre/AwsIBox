@@ -9,10 +9,8 @@ global:
         IBOX_PARAMETER:
           - _EvaluationPeriods:
               Description: 'Number of periods for alarm evaluation - 0 to disable - empty for mapped value'
-              Type: Number
           - _Threshold:
               Description: 'Threshold for alarm triggering - empty for mapped value'
-              Type: Number
         IBOX_CONDITION:
           - _:
               get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}EvaluationPeriods')
