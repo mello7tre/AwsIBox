@@ -1,9 +1,13 @@
 # vim: ft=python
 import boto3
 import os
+import logging
 
-env = os.environ['Env']
-envRole = os.environ['EnvRole']
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+env = os.environ["Env"]
+envRole = os.environ["EnvRole"]
 
 
 def set(config):
@@ -14,28 +18,36 @@ def set(config):
 
 
 def set_ssm():
-    client = boto3.client('ssm')
-    response = client.describe_parameters(ParameterFilters=[
-        {
-            'Key': 'Name',
-            'Values': [f'/{envRole}/'],
-            'Option': 'Contains',
-        }])
-
     pList = []
-    for n in response['Parameters']:
-        pList.append(n['Name'])
+    client = boto3.client("ssm")
+    paginator = client.get_paginator("describe_parameters")
+    response_iterator = paginator.paginate(
+        ParameterFilters=[
+            {
+                "Key": "Name",
+                "Values": [f"/{envRole}/"],
+                "Option": "Contains",
+            }
+        ],
+    )
 
-    response = client.get_parameters(
-        Names=pList,
-        WithDecryption=True)
+    for r in response_iterator:
+        for p in r["Parameters"]:
+            pList.append(p["Name"])
 
-    for p in response['Parameters']:
-        name = p['Name'].split('/')[2]
-        name = name.replace('-', '_').upper()
-        value = p['Value']
+    while pList:
+        pList_sub = pList[0:10]
+        response = client.get_parameters(Names=pList_sub, WithDecryption=True)
+        for p in response["Parameters"]:
+            name = p["Name"].split("/")[2]
+            name = name.replace("-", "_").upper()
+            value = p["Value"]
 
-        try:
-            globals()[name] = value
-        except Exception:
-            pass
+            try:
+                globals()[name] = value
+            except Exception as e:
+                logger.error(f"Error adding parameter {name} to cfg: {e}")
+                pass
+            else:
+                logger.info(f"Success adding parameter {name} to cfg.")
+        del pList[0:10]
