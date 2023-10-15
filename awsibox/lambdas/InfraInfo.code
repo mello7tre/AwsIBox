@@ -97,14 +97,16 @@ def list_rules():
                     if "minute" in unit:
                         schedule_string = f"*/{rate} * * * *"
                     elif "hour" in unit:
-                        schedule_string = f"* */{rate} * * *"
-                    elif "day" in unit: 
-                        schedule_string = f"* * */{rate} * *"
+                        schedule_string = f"00 */{rate} * * *"
+                    elif "day" in unit:
+                        schedule_string = f"00 00 */{rate} * *"
 
                 rules_tdd.update(
                     {
                         rule["Arn"]: {
-                            "LastRun": croniter(schedule_string, now).get_prev(datetime),
+                            "LastRun": croniter(schedule_string, now).get_prev(
+                                datetime
+                            ),
                             "Name": rule["Name"],
                             "ScheduleExpression": schedule,
                         }
