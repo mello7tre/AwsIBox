@@ -67,6 +67,7 @@ global:
                   - 'ecs:ListClusters'
                   - 'ecs:ListServices'
                   - 'ecs:DescribeServices'
+                  - 'events:ListRules'
                   - 'application-autoscaling:DescribeScalableTargets'
                 Effect: Allow
                 Resource: '*'
