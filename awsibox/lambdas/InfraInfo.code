@@ -13,6 +13,7 @@ myboto3 = i_myboto3()
 myboto3.init_clients(["cloudformation", "ecs", "application-autoscaling"])
 
 CLIENT_ECS = myboto3.client("ecs")
+CLIENT_EVENTS = myboto3.client("events")
 CLIENT_APP_AUTOSCALING = myboto3.client("application-autoscaling")
 
 
@@ -46,10 +47,52 @@ def show():
     return table
 
 
+def events_list_rules():
+    headers["Content-Type"] = "text/plain"
+    fields = [
+        "Name",
+        "ScheduleExpression",
+    ]
+    rules_tdd = list_rules()
+    return show_table(rules_tdd, fields)
+
+
+def list_rules():
+    rules_tdd = {}
+    paginator_service = CLIENT_EVENTS.get_paginator("list_rules")
+    response_iterator_service = paginator_service.paginate()
+    for r in response_iterator_service:
+        for rule in r["Rules"]:
+            if rule["State"] == "ENABLED" and rule.get("ScheduleExpression"):
+                rules_tdd.update(
+                    {
+                        rule["Arn"]: {
+                            "Name": rule["Name"],
+                            "ScheduleExpression": rule["ScheduleExpression"],
+                        }
+                    }
+                )
+
+    return rules_tdd
+
+
 def ecs_list_services():
     headers["Content-Type"] = "text/plain"
+    fields = [
+        "stack",
+        "role",
+        "desired",
+        "running",
+        "pending",
+        "Min",
+        "Max",
+        "launchType",
+        "max%",
+        "min%",
+        "cluster",
+    ]
     services_tdd = list_services()
-    return show_table(services_tdd)
+    return show_table(services_tdd, fields)
 
 
 def process_scalable_targets(resource_id_list, tdd):
@@ -136,25 +179,14 @@ def list_services():
     return services_tdd
 
 
-def show_table(tdd):
+def show_table(tdd, fields):
     table = PrettyTable()
-    fields = [
-        "stack",
-        "role",
-        "desired",
-        "running",
-        "pending",
-        "Min",
-        "Max",
-        "launchType",
-        "max%",
-        "min%",
-        "cluster",
-    ]
     table.field_names = fields
     table.padding_width = 1
     table.align["serviceName"] = "l"
     table.align["role"] = "l"
+    table.align["Name"] = "l"
+    table.align["ScheduleExpression"] = "l"
     for row, data in tdd.items():
         table.add_row(["None" if i not in data else data[i] for i in fields])
 
@@ -171,9 +203,15 @@ def lambda_handler(event, context):
         outbody = ecs_list_services()
     elif path == "/infra-info/stacks":
         outbody = show()
+    elif path == "/infra-info/events":
+        outbody = events_list_rules()
     else:
         outbody = ""
 
     outb64 = base64.b64encode(outbody.encode()).decode("ascii")
 
     return send_response(200, outb64, headers)
+
+
+# To test
+# lambda_handler({"path": "/infra-info/events"}, None)
