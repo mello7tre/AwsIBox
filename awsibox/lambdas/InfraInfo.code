@@ -6,7 +6,7 @@ from iboxstacksops import cfg as i_cfg, commands as i_commands
 from iboxstacksops.aws import myboto3 as i_myboto3
 import sys
 from pip._internal import main
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -101,12 +101,15 @@ def list_rules():
                     elif "day" in unit:
                         schedule_string = f"00 00 */{rate} * *"
 
+                try:
+                    lastrun = croniter(schedule_string, now).get_prev(datetime)
+                except Exception:
+                    lastrun = datetime(2000, 1, 1, 0, 0, tzinfo=timezone.utc)
+
                 rules_tdd.update(
                     {
                         rule["Arn"]: {
-                            "LastRun": croniter(schedule_string, now).get_prev(
-                                datetime
-                            ),
+                            "LastRun": lastrun,
                             "Name": rule["Name"],
                             "ScheduleExpression": schedule,
                         }
