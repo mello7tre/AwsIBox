@@ -48,7 +48,8 @@ global:
                 'db.r3.large', 'db.r3.xlarge', 'db.r3.2xlarge', 'db.r3.4xlarge', 'db.r3.8xlarge',
                 'db.r5.large', 'db.r5.xlarge', 'db.r5.2xlarge', 'db.r5.4xlarge', 'db.r5.12xlarge',
                 'db.t2.micro', 'db.t2.small', 'db.t2.medium', 'db.t2.large',
-                'db.t3.micro', 'db.t3.small', 'db.t3.medium', 'db.t3.large']
+                'db.t3.micro', 'db.t3.small', 'db.t3.medium', 'db.t3.large',
+                'db.t4g.micro', 'db.t4g.small', 'db.t4g.medium', 'db.t4g.large']
           - IBOX_MAPNAME.DBName:
               Description: 'Empty for mapped value'
           - IBOX_MAPNAME.DBSnapshotIdentifier:
