@@ -166,13 +166,17 @@ def lambda_handler(event, context):
 
     # lifecycle
     if end_lf:
-        CLIENT_AUTOSCALING.complete_lifecycle_action(
-            LifecycleHookName=lifecyclehook_name,
-            AutoScalingGroupName=asg_name,
-            LifecycleActionResult="CONTINUE",
-            InstanceId=instance_id,
-        )
-        logger.info("Completed lifecycle")
+        try:
+            CLIENT_AUTOSCALING.complete_lifecycle_action(
+                LifecycleHookName=lifecyclehook_name,
+                AutoScalingGroupName=asg_name,
+                LifecycleActionResult="CONTINUE",
+                InstanceId=instance_id,
+            )
+        except Exception as e:
+            logger.error(f"Error completing lifecycle: {e}")
+        else:
+            logger.info("Completed lifecycle")
     elif datetime.now(timezone.utc) < msg_time + timedelta(
         seconds=get_heartbeat_timeout(asg_name, lifecyclehook_name)
     ):
