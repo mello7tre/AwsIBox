@@ -48,4 +48,5 @@ global:
                 Condition: {"StringEquals": {"aws:SourceAccount": Ref("AWS::AccountId")}}
         ManagedPolicyArns:
           - 'arn:aws:iam::aws:policy/service-role/AWSLambdaRole'
+          - 'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceEventsRole'
         Principal: scheduler.amazonaws.com
