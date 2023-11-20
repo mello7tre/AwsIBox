@@ -33,10 +33,29 @@ global:
               Field.IBOX_CODE: If(
                 f'{IBOX_RESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
                 get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Field'))
+              Field: 'attribute:ecs.availability-zone'
+          - 1:
+              IBOX_IF:
+                - IBOX_CURNAME.TypeNone
+                - Ref('AWS::NoValue')
+                - IBOX_IFVALUE
+              IBOX_OUTPUT:
+                - _PlacementStrategies1:
+                    Value: Type= ${Type} ,Field= ${Field}
+              Type.IBOX_AUTO_P:
+                AllowedValues: ['', 'none', 'binpack', 'random', 'spread']
+              Type: spread
+              Field.IBOX_PCO:
+                IBOX_CONDITION:
+                  - _PlacementStrategies1TypeRandom:
+                      get_condition('', 'equals', 'random', f'{IBOX_RESNAME}PlacementStrategies1Type')
+                  - _PlacementStrategies1TypeNone:
+                      get_condition('', 'equals', 'none', f'{IBOX_RESNAME}PlacementStrategies1Type')
+              Field.IBOX_AUTO_P: {}
+              Field.IBOX_CODE: If(
+                f'{IBOX_RESNAME}PlacementStrategies1TypeRandom', Ref('AWS::NoValue'),
+                get_endvalue(f'{IBOX_RESNAME}PlacementStrategies1Field'))
               Field: instanceId
-      #    If('ECSTasksLaunchOnFargate', Ref('AWS::NoValue'),
-      #                          [ecs.PlacementStrategy(Type='spread', Field='instanceId')])
-      #                          #ecs.PlacementStrategy(Type='spread', Field='attribute:ecs.availability-zone')
         SchedulingStrategy: REPLICA
     - Daemon:
         SchedulingStrategy: DAEMON
