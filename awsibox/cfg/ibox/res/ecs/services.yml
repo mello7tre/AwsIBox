@@ -20,19 +20,19 @@ global:
               - IBOX_IFVALUE
           - 0:
               IBOX_OUTPUT:
-                - _PlacementStrategies0:
+                - IBOX_CURMAP:
                     Value: Type= ${Type} ,Field= ${Field}
               Type.IBOX_AUTO_P:
                 AllowedValues: ['', 'binpack', 'random', 'spread']
               Type: spread
               Field.IBOX_PCO:
                 IBOX_CONDITION:
-                  - _PlacementStrategies0TypeRandom:
-                      get_condition('', 'equals', 'random', f'{IBOX_RESNAME}PlacementStrategies0Type')
+                  - IBOX_CURMAP.TypeRandom:
+                      get_condition('', 'equals', 'random', f'{IBOX_CURMAP}Type')
               Field.IBOX_AUTO_P: {}
               Field.IBOX_CODE: If(
-                f'{IBOX_RESNAME}PlacementStrategies0TypeRandom', Ref('AWS::NoValue'),
-                get_endvalue(f'{IBOX_RESNAME}PlacementStrategies0Field'))
+                f'{IBOX_CURMAP}TypeRandom', Ref('AWS::NoValue'),
+                get_endvalue(IBOX_CURNAME))
               Field: 'attribute:ecs.availability-zone'
           - 1:
               IBOX_IF:
