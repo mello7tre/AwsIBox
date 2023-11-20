@@ -993,7 +993,11 @@ def auto_get_props(
         if key.get("IBOX_BASE_REF"):
             IBOX_REFNAME = mapname
 
-        # Parameters, Conditions, Outpus in yaml cfg
+        # set mapname before processing Parameters, Conditions, Outputs
+        if mapname:
+            IBOX_CURMAP = mapname
+
+        # Parameters, Conditions, Outputs in yaml cfg
         _try_PCO_in_obj(key)
 
         # For linked resources as r53recordset, update their keys conf.
@@ -1039,7 +1043,6 @@ def auto_get_props(
 
             if not isinstance(obj, (Output, Parameter, Condition)):
                 IBOX_CURNAME = f"{mapname}{propname}"
-                IBOX_CURMAP = mapname
 
             # IBOX_PCO and IBOX_AUTO_PO for Custom Key ONLY
             if (

@@ -36,25 +36,25 @@ global:
               Field: 'attribute:ecs.availability-zone'
           - 1:
               IBOX_IF:
-                - IBOX_CURNAME.TypeNone
+                - IBOX_CURMAP.TypeNone
                 - Ref('AWS::NoValue')
                 - IBOX_IFVALUE
               IBOX_OUTPUT:
-                - _PlacementStrategies1:
+                - IBOX_CURMAP:
                     Value: Type= ${Type} ,Field= ${Field}
               Type.IBOX_AUTO_P:
                 AllowedValues: ['', 'none', 'binpack', 'random', 'spread']
               Type: spread
               Field.IBOX_PCO:
                 IBOX_CONDITION:
-                  - _PlacementStrategies1TypeRandom:
-                      get_condition('', 'equals', 'random', f'{IBOX_RESNAME}PlacementStrategies1Type')
-                  - _PlacementStrategies1TypeNone:
-                      get_condition('', 'equals', 'none', f'{IBOX_RESNAME}PlacementStrategies1Type')
+                  - IBOX_CURMAP.TypeRandom:
+                      get_condition('', 'equals', 'random', f'{IBOX_CURMAP}Type')
+                  - IBOX_CURMAP.TypeNone:
+                      get_condition('', 'equals', 'none', f'{IBOX_CURMAP}Type')
               Field.IBOX_AUTO_P: {}
               Field.IBOX_CODE: If(
-                f'{IBOX_RESNAME}PlacementStrategies1TypeRandom', Ref('AWS::NoValue'),
-                get_endvalue(f'{IBOX_RESNAME}PlacementStrategies1Field'))
+                f'{IBOX_CURMAP}TypeRandom', Ref('AWS::NoValue'),
+                get_endvalue(IBOX_CURNAME))
               Field: instanceId
         SchedulingStrategy: REPLICA
     - Daemon:
