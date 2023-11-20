@@ -11,6 +11,7 @@ IBOX_SPECIAL_KEYS = (
     "IBOX_INDEXNAME",
     "IBOX_PROPNAME",
     "IBOX_CURNAME",
+    "IBOX_CURMAP",
     "IBOX_REFNAME",
     "IBOX_TITLE",
     "IBOX_LINKED_OBJ_NAME",
@@ -763,7 +764,7 @@ def auto_get_props(
             return get_dictvalue(key[obj_propname])
 
     def _populate(obj, key=None, mapname=None, rootdict=None):
-        global IBOX_RESNAME, IBOX_CURNAME, IBOX_REFNAME, IBOX_TITLE
+        global IBOX_RESNAME, IBOX_CURNAME, IBOX_CURMAP, IBOX_REFNAME, IBOX_TITLE
 
         if not mapname:
             mapname = obj.title
@@ -1038,6 +1039,7 @@ def auto_get_props(
 
             if not isinstance(obj, (Output, Parameter, Condition)):
                 IBOX_CURNAME = f"{mapname}{propname}"
+                IBOX_CURMAP = mapname
 
             # IBOX_PCO and IBOX_AUTO_PO for Custom Key ONLY
             if (
@@ -1152,6 +1154,7 @@ def auto_get_props(
         # need to redefine it here because it's has been changed by nested supprop
         if not isinstance(obj, (Output, Parameter, Condition)):
             IBOX_CURNAME = mapname
+            IBOX_CURMAP = mapname
 
         # title override
         try:
