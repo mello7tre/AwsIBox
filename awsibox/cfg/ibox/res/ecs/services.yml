@@ -33,7 +33,7 @@ global:
               Field.IBOX_CODE: If(
                 f'{IBOX_CURMAP}TypeRandom', Ref('AWS::NoValue'),
                 get_endvalue(IBOX_CURNAME))
-              Field: 'attribute:ecs.availability-zone'
+              Field: instanceId
           - 1:
               IBOX_IF:
                 - IBOX_CURMAP.TypeNone
@@ -44,7 +44,7 @@ global:
                     Value: Type= ${Type} ,Field= ${Field}
               Type.IBOX_AUTO_P:
                 AllowedValues: ['', 'none', 'binpack', 'random', 'spread']
-              Type: spread
+              Type: 'none'
               Field.IBOX_PCO:
                 IBOX_CONDITION:
                   - IBOX_CURMAP.TypeRandom:
@@ -55,7 +55,7 @@ global:
               Field.IBOX_CODE: If(
                 f'{IBOX_CURMAP}TypeRandom', Ref('AWS::NoValue'),
                 get_endvalue(IBOX_CURNAME))
-              Field: instanceId
+              Field: 'attribute:ecs.availability-zone'
         SchedulingStrategy: REPLICA
     - Daemon:
         SchedulingStrategy: DAEMON
