@@ -24,6 +24,9 @@ global:
               Value: ${Cluster}
           - ECSRunTaskSubnetsPrivate:
               Value: ImportValue("SubnetsPrivate")
+          - ECSRunTaskSecurityGroups:
+              Condition: ECSTaskDefinitionBaseNetworkModeStandard
+              Value: cfg.Outputs['SecurityGroups'].Value
   ECSTaskDefinition:
     - Fargate:
         IBOX_ENABLED: True
