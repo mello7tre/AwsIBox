@@ -26,7 +26,11 @@ global:
               Value: ImportValue("SubnetsPrivate")
           - ECSRunTaskSecurityGroups:
               Condition: ECSTaskDefinitionBaseNetworkModeStandard
-              Value: cfg.Outputs['SecurityGroups'].Value
+              # ugly trick to remove SecurityGroupEcsService from SecurityGroups
+              Value: >-
+                Sub(
+                  ",".join(cfg.Outputs['SecurityGroups'].Value.data["Fn::Sub"][0].split(",")[1:]),
+                  dict(list(cfg.Outputs['SecurityGroups'].Value.data["Fn::Sub"][1].items())[1:]))
   ECSTaskDefinition:
     - Fargate:
         IBOX_ENABLED: True
