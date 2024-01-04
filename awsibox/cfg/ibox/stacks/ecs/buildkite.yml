@@ -26,6 +26,7 @@ global:
           - AWSDEFAULTREGION:
               Name: AWS_DEFAULT_REGION
               Value: Ref('AWS::Region')
+          ImageSuffix: ""
           Memory: 128
           MountPoints:
           - DockerSock:
