@@ -594,6 +594,7 @@ CFG_TO_FUNC = {
     },
     "SNSSubscription": {"module": "joker", "func": ("sns", "SubscriptionResource")},
     "SNSTopic": {"module": "joker", "func": ("sns", "Topic")},
+    "SNSTopicPolicy": {"module": "joker", "func": ("sns", "TopicPolicy")},
     "SSMParameter": {"module": "joker", "func": ("ssm", "Parameter")},
     "WAFv2IPSet": {
         "module": "joker",

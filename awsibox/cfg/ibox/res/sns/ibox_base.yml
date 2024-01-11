@@ -14,3 +14,8 @@ global:
               IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
               Value: Ref(IBOX_RESNAME)
               Export: Export(IBOX_RESNAME)
+  SNSTopicPolicy:
+    - IBOX_BASE:
+        PolicyDocument:
+          Statement:
+            - IBOX_LIST: {}

@@ -7,3 +7,35 @@ global:
   SNSTopic:
     - CloudWatchAlarm:
         Export: True
+  SNSTopicPolicy:
+    - CloudWatchAlarm:
+        PolicyDocument:
+          Statement:
+            - Default:
+                Action:
+                  - 'sns:GetTopicAttributes'
+                  - 'sns:SetTopicAttributes'
+                  - 'sns:AddPermission'
+                  - 'sns:RemovePermission'
+                  - 'sns:DeleteTopic'
+                  - 'sns:Subscribe'
+                  - 'sns:ListSubscriptionsByTopic'
+                  - 'sns:Publish'
+                  - 'sns:Receive'
+                Effect: Allow
+                Principal:
+                  AWS: '*'
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    'AWS:SourceOwner': Ref("AWS::AccountId")
+                Sid: Default
+            - Events:
+                Action: 'sns:Publish'
+                Effect: Allow
+                Resource: '*'
+                Principal:
+                  Service: events.amazonaws.com
+                Sid: Events
+        Topics:
+          - Ref("SNSTopicCloudWatchAlarm")
