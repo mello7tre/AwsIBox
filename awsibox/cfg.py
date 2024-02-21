@@ -83,7 +83,10 @@ VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PUBLIC = [
 TROPO_CLASS_TO_CFM = {
     "AWS::WAFv2::WebACL": {
         "WebACLRule": "Rule",
-    }
+    },
+    "AWS::ECR::ReplicationConfiguration": {
+        "ReplicationConfigurationProperty": "ReplicationConfiguration"
+    },
 }
 
 EVAL_TROPO_FUNCTIONS_IN_CFG = (

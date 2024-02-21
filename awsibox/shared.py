@@ -621,18 +621,24 @@ def auto_get_props(
         prop_class = props.get(obj_propname, [None])[0]
         # print(f"TYPE: {res_obj_type}, CLASS: {obj_class}, PROP: {obj_propname}")
 
-        # detect attributes as CreationPolicy not included in obj properties
         if obj_propname in ["CreationPolicy", "UpdatePolicy"]:
+            # detect attributes as CreationPolicy not included in obj properties
             prop_class = getattr(policies, obj_propname)
         elif callable(prop_class) and prop_class.__name__ not in [
             "validate_variables_name",
             "policytypes",
         ]:
-            # prop_class is a method fallback and try to use CloudFormationResourceSpecification
-            if res_obj_type in cfg.TROPO_CLASS_TO_CFM:
-                obj_class = cfg.TROPO_CLASS_TO_CFM[res_obj_type].get(
-                    obj_class, obj_class
-                )
+            # find out if troposphere class names differ from cloudformation ones
+            tropo_class_map = cfg.TROPO_CLASS_TO_CFM.get(res_obj_type, {})
+
+            if obj_class in tropo_class_map:
+                # obj_class is tropo class and i need to found out cfm class
+                obj_class = tropo_class_map[obj_class]
+                tropo_to_cfm = True
+            else:
+                tropo_to_cfm = False
+
+            # use CloudFormationResourceSpecification to find out class names
             try:
                 res_obj_propname = cfg.cfm_res_spec["PropertyTypes"][
                     f"{res_obj_type}.{obj_class}"
@@ -654,6 +660,13 @@ def auto_get_props(
                     prop_class_type = res_obj_propname.get("PrimitiveType")
 
                 # print(f"PROP_CLASS_TYPE: {prop_class_type}")
+
+                if not tropo_to_cfm and obj_class in tropo_class_map.values():
+                    # obj_class is cfm class and i need to directly get tropo class
+                    prop_class_type = next(
+                        (k for k, v in tropo_class_map.items() if v == obj_class), None
+                    )
+
                 try:
                     prop_class = getattr(sys.modules[obj_mod_name], prop_class_type)
                 except Exception:
