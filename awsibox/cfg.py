@@ -419,12 +419,12 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("ec2", "VPCPeeringConnection"),
     },
+    "ECRRegistryPolicy": {"module": "joker", "func": ("ecr", "RegistryPolicy")},
     "ECRReplicationConfiguration": {
         "module": "joker",
         "func": ("ecr", "ReplicationConfiguration"),
     },
     "ECRRepository": {"module": "joker", "func": ("ecr", "Repository")},
-    "ECRRepositoryPolicy": {"module": "joker", "func": ("ecr", "RepositoryPolicy")},
     "ECSCapacityProvider": {"module": "joker", "func": ("ecs", "CapacityProvider")},
     "ECSCluster": {"module": "joker", "func": ("ecs", "Cluster")},
     "ECSClusterCapacityProviderAssociations": {
