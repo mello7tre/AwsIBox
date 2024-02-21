@@ -1,4 +1,11 @@
 global:
+  ECRRegistryPolicy:
+    - IBOX_BASE:
+        PolicyText:
+          Statement:
+            - IBOX_LIST: {}
+          Version: "2012-10-17"
+
   ECRRepository:
     - IBOX_BASE:
         IBOX_TITLE: Repository.IBOX_INDEXNAME
