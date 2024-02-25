@@ -39,7 +39,7 @@ global:
           IBOX_OUTPUT:
             - _:
                 Value: get_endvalue(IBOX_RESNAME)
-          Value: get_endvalue(IBOX_RESNAME)
+          Value: Join("",["arn:aws:lambda:", Ref("AWS::Region"), ":", Ref("AWS::AccountId"), ":layer:", IBOX_RESNAME, get_endvalue(IBOX_RESNAME)])
         LogGroupCreate: "yes"
         Handler: "index.lambda_handler"
         MemorySize.IBOX_AUTO_PO: {}
