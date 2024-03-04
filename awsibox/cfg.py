@@ -322,7 +322,7 @@ CFG_TO_FUNC = {
     "AutoScalingGroup": {
         "module": "autoscaling",
         "func": "AS_Autoscaling",
-        "dep": ["SecurityGroups"],
+        "dep": ["SecurityGroups", "ECSCapacityProvider"],
     },
     "AutoScalingScalingPolicy": {
         "module": "joker",

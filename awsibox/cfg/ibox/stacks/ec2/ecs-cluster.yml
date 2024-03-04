@@ -34,6 +34,10 @@ global:
         RoleARN: ImportValue('RoleASGLifecycleHookECSDrainInstance')
   AutoScalingGroup:
     - Base:
+        IBOX_CONDITION:
+          _NewInstancesProtectedFromScaleIn:
+            get_condition('', 'equals', 'ENABLED', f'ECSCapacityProviderBaseAutoScalingGroupProviderManagedTerminationProtection')
+        NewInstancesProtectedFromScaleIn: If(IBOX_CURNAME, True, False)
         Tags:
           - ECSCluster:
               Key: ECSCluster
