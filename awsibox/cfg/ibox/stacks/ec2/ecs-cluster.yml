@@ -26,7 +26,7 @@ global:
     - ECSDrainInstance:
         IBOX_TITLE: ASGLifecycleHookECSDrainInstance
         AutoScalingGroupName: Ref('AutoScalingGroup')
-        DefaultResult: 'ABANDON'
+        DefaultResult: CONTINUE
         HeartbeatTimeout.IBOX_AUTO_PO: {}
         HeartbeatTimeout: 3600
         LifecycleTransition: 'autoscaling:EC2_INSTANCE_TERMINATING'
