@@ -37,17 +37,6 @@ global:
         IBOX_CONDITION:
           _NewInstancesProtectedFromScaleIn:
             get_condition('', 'equals', 'ENABLED', f'ECSCapacityProviderBaseAutoScalingGroupProviderManagedTerminationProtection')
-          _NewInstancesProtectedFromScaleInAndMaxInstanceLifeTime:
-            And(
-              Condition(f'{IBOX_RESNAME}NewInstancesProtectedFromScaleIn'),
-              Condition(f'{IBOX_RESNAME}MaxInstanceLifetime'))
-        InstanceMaintenancePolicy:
-          IBOX_IF:
-            - _NewInstancesProtectedFromScaleInAndMaxInstanceLifeTime
-            - IBOX_IFVALUE
-            - Ref('AWS::NoValue')
-          MaxHealthyPercentage: 200
-          MinHealthyPercentage: 100
         NewInstancesProtectedFromScaleIn: If(IBOX_CURNAME, True, False)
         Tags:
           - ECSCluster:
