@@ -294,10 +294,10 @@ def build_instance_list():
             if family.get("RDS"):
                 family_instances_list_rds.append(f"db.{name}.{s}")
 
-    return family_instances_list, family_instances_list_rds
+    return ["default"] + family_instances_list, [""] + family_instances_list_rds
+
 
 INSTANCE_LIST, INSTANCE_LIST_RDS = build_instance_list()
-INSTANCE_LIST = ["default"] + INSTANCE_LIST
 
 # Order is VERY important do not CHANGE it!
 CFG_TO_FUNC = {
