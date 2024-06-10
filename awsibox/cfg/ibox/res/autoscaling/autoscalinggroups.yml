@@ -39,7 +39,8 @@ global:
               Key: EnvStackName
               Value: Ref('AWS::StackName')
               PropagateAtLaunch: true
-        TerminationPolicies: ['OldestInstance']
+        TerminationPolicies:
+          - OldestInstance
         UpdatePolicy:
           AutoScalingReplacingUpdate:
             IBOX_IF:
