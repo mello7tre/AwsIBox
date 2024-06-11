@@ -117,9 +117,11 @@ def add_objoutput(res):
                     propname = iboxprops[f"{mapname}{n}"][1]
                     n = getattr(obj, propname)
                     # if obj property value is a list, add every element to join_list
+                    n_list = []
                     if isinstance(n, list):
                         for i in n:
-                            join_list.append(i)
+                            n_list.append(i)
+                        n = Join(",", n_list)
                 elif n.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
                     n = eval(n, globals(), {"IBOX_MAPNAME": mapname})
                 join_list.append(n)
