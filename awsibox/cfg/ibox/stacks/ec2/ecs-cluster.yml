@@ -91,7 +91,7 @@ global:
               get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}ClusterAutoReduceTag')
         IBOX_OUTPUT:
           - _ClusterAutoReduceTag:
-              Value: Ref(f'{IBOX_RESNAME}ClusterAutoReduceTag')
+              Value: get_endvalue(f'{IBOX_RESNAME}ClusterAutoReduceTag')
         AgentCfg:
           EcsEnableSpotInstanceDraining: true
           EcsImagePullBehavior: once
