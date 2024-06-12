@@ -17,4 +17,4 @@ global:
         IBOX_ENABLED: True
         Action: 'lambda:InvokeFunction'
         FunctionName: GetAtt('LambdaAutoscalingTerminationPolicySpot', 'Arn')
-        Principal: Sub("arn:aws:iam::${AWS::AccountId}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+        Principal: Sub("arn:aws:iam::${AWS::AccountId}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling")
