@@ -1,10 +1,10 @@
 global:
   Output:
-    - LambdaAutoscalingTerminationPolicySpotArn:
-        Value: GetAtt('LambdaAutoscalingTerminationPolicySpot', 'Arn')
-        Export: Export('LambdaAutoscalingTerminationPolicySpotArn')
+    - LambdaASGTerminationPolicySpotArn:
+        Value: GetAtt('LambdaASGTerminationPolicySpot', 'Arn')
+        Export: Export('LambdaASGTerminationPolicySpotArn')
   Lambda:
-    - AutoscalingTerminationPolicySpot:
+    - ASGTerminationPolicySpot:
         Architectures:
           - arm64
         Code:
@@ -13,8 +13,8 @@ global:
         Runtime: python3.11
         Timeout: 2
   LambdaPermission:
-    - AutoscalingTerminationPolicySpot:
+    - ASGTerminationPolicySpot:
         IBOX_ENABLED: True
         Action: 'lambda:InvokeFunction'
-        FunctionName: GetAtt('LambdaAutoscalingTerminationPolicySpot', 'Arn')
+        FunctionName: GetAtt('LambdaASGTerminationPolicySpot', 'Arn')
         Principal: Sub("arn:aws:iam::${AWS::AccountId}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling")
