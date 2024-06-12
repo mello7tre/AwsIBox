@@ -8,16 +8,19 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     spot_instances = []
     terminate_instances = []
-    instances = event.get("Instances", [])
+    ondemand_instances = []
 
-    for i in instances:
+    for i in event.get("Instances", []):
+        instance_id = i["InstanceId"]
         if i["InstanceMarketOption"] == "spot":
-            spot_instances.append(i["InstanceId"])
+            spot_instances.append(instance_id)
+        else:
+            ondemand_instances.append(instance_id)
 
     if spot_instances:
         terminate_instances = spot_instances
     else:
-        terminate_instances = instances
+        terminate_instances = ondemand_instances
 
     logger.info(f"Instances suggested to be terminated: {terminate_instances}")
 
