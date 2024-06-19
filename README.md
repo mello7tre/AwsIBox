@@ -11,7 +11,7 @@ AwsIBox = **AWS** **I**nfrastructure in a **Box**
 
 #### Note:
 To easily manage the Cloudformation stacks use:
-https://github.com/mello7tre/AwsIBoxStackOps
+[AwsIBoxStackOps](https://github.com/mello7tre/AwsIBoxStackOps)
 
 ## License
 
