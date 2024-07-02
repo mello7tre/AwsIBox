@@ -123,9 +123,10 @@ global:
           Default: '/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id'
           AllowedValues:
             - '/aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id'
-            - '/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
+            - '/aws/service/ecs/optimized-ami/amazon-linux-2023/arm64/recommended/image_id'
             - '/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
             - '/aws/service/ecs/optimized-ami/amazon-linux-2/arm64/recommended/image_id'
+            - '/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
             - '/aws/service/bottlerocket/aws-ecs-1/x86_64/latest/image_id'
             - '/aws/service/bottlerocket/aws-ecs-1/arm64/latest/image_id'
   Listeners: []
