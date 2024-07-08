@@ -277,7 +277,11 @@ def SG_SecurityGroupIngresses(key):
                         # There is already a Condition, dinamically create a new one
                         r_SGI.Condition = f"{sgi_condition}And{r_SGI.Condition}"
                         add_obj(
-                            {r_SGI.Condition: (And(f"AllowedIp{m}", sgi_condition))}
+                            {
+                                r_SGI.Condition: And(
+                                    Condition(f"AllowedIp{m}"), Condition(sgi_condition)
+                                )
+                            }
                         )
                     add_obj(r_SGI)
                 continue
