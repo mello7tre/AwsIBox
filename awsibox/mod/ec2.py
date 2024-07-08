@@ -269,7 +269,16 @@ def SG_SecurityGroupIngresses(key):
                     r_SGI = ec2.SecurityGroupIngress(f"{resname}{m}", IpProtocol="tcp")
                     auto_get_props(r_SGI, mapname)
                     auto_get_props(r_SGI, f"AllowedIp{m}")
+                    # current Condition if exist
+                    sgi_condition = getattr(r_SGI, "Condition", None)
+                    # set the base one
                     r_SGI.Condition = f"AllowedIp{m}"
+                    if sgi_condition:
+                        # There is already a Condition, dinamically create a new one
+                        r_SGI.Condition = f"{sgi_condition}And{r_SGI.Condition}"
+                        add_obj(
+                            {r_SGI.Condition: (And(f"AllowedIp{m}", sgi_condition))}
+                        )
                     add_obj(r_SGI)
                 continue
 
