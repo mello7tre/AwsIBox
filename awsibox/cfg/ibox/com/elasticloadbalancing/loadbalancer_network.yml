@@ -50,18 +50,32 @@ global:
         )
   EC2SecurityGroup:
     - LoadBalancerNetwork:
-        Export: True
+        Export: "${AWS::StackName}"
         Condition: LoadBalancerNetworkExternalOrInternal
         GroupDescription: 'Enable access to NetworkLoadBalancer'
         SecurityGroupIngress: {}
   ElasticLoadBalancingV2LoadBalancer:
     - NetworkExternal:
         IBOX_ENABLED: True
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
+          - _DNS:
+              Value: GetAtt(IBOX_RESNAME, 'DNSName')
+              Export: Export(Sub('%sDNS-${AWS::StackName}' % IBOX_RESNAME))
         Condition: LoadBalancerNetworkExternal
         SecurityGroups:
           - GetAtt('SecurityGroupLoadBalancerNetwork', 'GroupId')
     - NetworkInternal:
         IBOX_ENABLED: True
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
+          - _DNS:
+              Value: GetAtt(IBOX_RESNAME, 'DNSName')
+              Export: Export(Sub('%sDNS-${AWS::StackName}' % IBOX_RESNAME))
         Condition: LoadBalancerNetworkInternal
         SecurityGroups:
           - GetAtt('SecurityGroupLoadBalancerNetwork', 'GroupId')

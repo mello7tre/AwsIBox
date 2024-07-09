@@ -33,13 +33,6 @@ Application: &app
   Type: application
 
 NET: &net
-  IBOX_OUTPUT:
-    - _:
-        Value: Ref(IBOX_RESNAME)
-        Export: Export(Sub('%s-${AWS::StackName}' % IBOX_RESNAME))
-    - _DNS:
-        Value: GetAtt(IBOX_RESNAME, 'DNSName')
-        Export: Export(Sub('%sDNS-${AWS::StackName}' % IBOX_RESNAME))
   LoadBalancerAttributes:
     - LogEnabled: *attr_log_enabled
     - LogBucket: *attr_log_bucket

@@ -233,8 +233,11 @@ def SG_SecurityGroup(key):
         # outputs
         o_SG = Output(outname)
         o_SG.Value = GetAtt(resname, "GroupId")
-        if v.get("Export"):
-            o_SG.Export = Export(outname)
+        expname = v.get("Export")
+        if expname:
+            o_SG.Export = Export(
+                outname if expname is True else Sub(f"{outname}-{expname}")
+            )
 
         if v.get("Condition"):
             o_SG.Condition = v.get("Condition")
