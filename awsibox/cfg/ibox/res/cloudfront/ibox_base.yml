@@ -104,7 +104,7 @@ global:
         FunctionCode: Join("", import_lambda(IBOX_INDEXNAME))
         FunctionConfig:
           Comment: str(IBOX_INDEXNAME)
-          Runtime: cloudfront-js-1.0
+          Runtime: cloudfront-js-2.0
         Name: str(IBOX_INDEXNAME)
 
   CloudFrontLambdaFunctionAssociation:
