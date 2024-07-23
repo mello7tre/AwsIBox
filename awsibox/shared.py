@@ -743,6 +743,10 @@ def auto_get_props(
                 globals()[f"IBOX_REFNAME@{mapname}"] = globals()["IBOX_REFNAME"]
 
             for o, v in key[obj_propname].items():
+                # skip processing disabled sub-objects
+                if isinstance(v, dict) and not v.get("IBOX_ENABLED", True):
+                    continue
+
                 # for a list of properties set IBOX_PROPNAME to the name of property
                 IBOX_PROPNAME = o
 
