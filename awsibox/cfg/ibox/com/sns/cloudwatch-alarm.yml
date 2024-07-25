@@ -37,5 +37,12 @@ global:
                 Principal:
                   Service: events.amazonaws.com
                 Sid: Events
+            - S3:
+                Action: 'sns:Publish'
+                Effect: Allow
+                Resource: '*'
+                Principal:
+                  Service: s3.amazonaws.com
+                Sid: S3
         Topics:
           - Ref("SNSTopicCloudWatchAlarm")
