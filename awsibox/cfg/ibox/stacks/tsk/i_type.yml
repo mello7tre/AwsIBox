@@ -31,7 +31,7 @@ global:
                 AllowedValues: ['', 'EC2', 'FARGATE']
           IBOX_CONDITION:
             - ECSTasksLaunchOnFargate:
-                get_condition('', 'equals', 'FARGATE', 'EventsRuleECSRunTaskLaunchType')
+                get_condition('', 'equals', 'FARGATE', f'{IBOX_RESNAME}LaunchType')
           IBOX_OUTPUT:
             - _LaunchType:
                 Value: get_endvalue(IBOX_CURNAME)
@@ -45,7 +45,7 @@ global:
                   '{',
                   'Cluster":', get_expvalue('Cluster', 'ECSRunTaskClusterStackName'), ',',
                   'ECSInstancesStackName":', get_endvalue('ECSRunTaskClusterStackName'), ',',
-                  'LaunchType":', get_endvalue('EventsRuleECSRunTaskLaunchType'), ',',
+                  'LaunchType":', get_endvalue(f'{IBOX_RESNAME}LaunchType'), ',',
                   If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'NetworkModeAwsVpc":"awsvpc",', Ref('AWS::NoValue')),
                   'TaskDefinition":', Ref('TaskDefinition'), ',',
                   'Subnets":', ImportValue('SubnetsPrivate'), ',',
