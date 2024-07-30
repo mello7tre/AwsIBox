@@ -24,7 +24,7 @@ global:
     - ECSRunTask:
         IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'Periodically invoke LambdaECSRunTask'
-        LaunchType.IBOX_PCO:
+        LaunchType.IBOX_PCO: &ecs_run_task_launch_type
           IBOX_PARAMETER:
             - _LaunchType:
                 Description: Empty for mapped value
@@ -38,7 +38,7 @@ global:
         LaunchType: FARGATE
         State: 'ENABLED'
         Targets:
-          - Lambda0:
+          - Lambda0: &ecs_run_task_target
               Arn: ImportValue('LambdaECSRunTaskArn')
               Id: 'TargetFunction-01'
               Input: Join('"', [
@@ -73,3 +73,14 @@ global:
                 Resource: 
                   - GetAtt('RoleTask', 'Arn')
                   - ImportValue('RoleECSTaskExecution')
+  SchedulerSchedule:
+    - ECSRunTask:
+        IBOX_ENABLED: False
+        Description: 'Periodically invoke LambdaECSRunTask'
+        FlexibleTimeWindow:
+          Mode: "OFF"
+        LaunchType.IBOX_PCO: *ecs_run_task_launch_type
+        LaunchType: FARGATE
+        ScheduleExpressionTimezone: Europe/Rome
+        State: 'ENABLED'
+        Target: *ecs_run_task_target
