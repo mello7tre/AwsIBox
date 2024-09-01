@@ -1,0 +1,15 @@
+global:
+  AutoScalingGroup:
+    - Base:
+        TerminationPolicies.IBOX_PCO:
+          IBOX_OUTPUT:
+            - _.TerminationPolicies:
+                Value: ${TerminationPolicies}
+        TerminationPolicies.IBOX_CUSTOM_OBJ:
+          IBOX_PARAMETER:
+            - IBOX_MAPNAME.IBOX_RESNAME:
+                Description: str(f"{IBOX_MAPNAME}{IBOX_RESNAME} - 'Default', 'AllocationStrategy', 'OldestLaunchTemplate', 'OldestLaunchConfiguration', 'ClosestToNextInstanceHour', 'NewestInstance', 'OldestInstance' or a Lambda Arn")
+          Value: get_endvalue(f"{IBOX_MAPNAME}{IBOX_RESNAME}")
+        TerminationPolicies:
+          - 0: OldestInstance
+          - 1: Default
