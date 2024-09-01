@@ -7,6 +7,7 @@ IBoxLoader:
       - com/ecs/capacityprovider.yml
       - com/ecs/daemon-reserver-cpu.yml
       - com/ec2/bottlerocket.yml
+      - com/autoscaling/termination-policies.yml
 
 global:
   StackName: ecs
