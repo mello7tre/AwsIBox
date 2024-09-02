@@ -41,7 +41,16 @@ def process_containers(cluster, containers, res):
     )
 
     for n in response["containerInstances"]:
-        if n["registeredAt"] < res["i_date"]:
+        # Stop istance with less running tasks
+        if n["runningTasksCount"] < res["i_tasks"]:
+            res["i_tasks"] = n["runningTasksCount"]
+            res["i_id"] = n["ec2InstanceId"]
+            res["i_date"] = n["registeredAt"]
+        # for equals tasks stop the oldest one
+        elif (
+            n["runningTasksCount"] == res["i_tasks"]
+            and n["registeredAt"] < res["i_date"]
+        ):
             res["i_date"] = n["registeredAt"]
             res["i_id"] = n["ec2InstanceId"]
         for r in n["registeredResources"]:
@@ -156,6 +165,7 @@ def process_cluster(c):
         "count": count,
         "i_date": datetime.now(timezone.utc),
         "i_id": None,
+        "i_tasks": 2000000,
         "cpu_free": 0,
         "ram_free": 0,
         "net_free": 0,
