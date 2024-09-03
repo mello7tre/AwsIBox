@@ -1,7 +1,7 @@
 # vim: ft=python
 import logging
 import boto3
-from operator import itemgetter, attrgetter
+from operator import itemgetter
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -16,12 +16,12 @@ def find_cluster(asg):
     instance_tags = CLIENT_AUTOSCALING.describe_tags(
         Filters=[
             {"Name": "auto-scaling-group", "Values": [asg]},
-            {"Name": "key", "Values": [ECSCluster]},
+            {"Name": "key", "Values": ["ECSCluster"]},
         ]
     )
     try:
         return instance_tags["Tags"][0]["Value"]
-    except:
+    except Exception:
         return
 
 
