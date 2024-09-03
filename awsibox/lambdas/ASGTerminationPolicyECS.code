@@ -1,0 +1,82 @@
+# vim: ft=python
+import logging
+import boto3
+from operator import itemgetter, attrgetter
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+CLIENT_ECS = boto3.client("ecs")
+CLIENT_AUTOSCALING = boto3.client("autoscaling")
+
+REMANING_TIME_LOW = 600
+
+
+def find_cluster(asg):
+    instance_tags = CLIENT_AUTOSCALING.describe_tags(
+        Filters=[
+            {"Name": "auto-scaling-group", "Values": [asg]},
+            {"Name": "key", "Values": [ECSCluster]},
+        ]
+    )
+    try:
+        return instance_tags["Tags"][0]["Value"]
+    except:
+        return
+
+
+def get_instance_to_terminate(cluster, containers):
+    terminate_instances = []
+
+    response = CLIENT_ECS.describe_container_instances(
+        cluster=cluster, containerInstances=containers
+    )
+    # Stop istance with less running tasks, for equals tasks stop the oldest one
+    try:
+        i_sorted = sorted(
+            response.get("containerInstances", []),
+            key=itemgetter("runningTasksCount", "registeredAt"),
+        )
+    except Exception:
+        pass
+    else:
+        for n in i_sorted:
+            terminate_instances.append(n["ec2InstanceId"])
+
+    return terminate_instances
+
+
+def need_return(context, value=True):
+    remaning = context.get_remaining_time_in_millis()
+    if not value or remaning < REMANING_TIME_LOW:
+        logger.warning(
+            f"Need to return - Remaning Time: {remaning} [{REMANING_TIME_LOW}]"
+        )
+        return
+
+
+def lambda_handler(event, context):
+    asg = event["AutoScalingGroupName"]
+    instances = {"InstanceIDs": [n["InstanceId"] for n in event.get("Instances", [])]}
+
+    # Do not alter INSTANCE_REFRESH and MAX_INSTANCE_LIFETIME
+    if event["Cause"] in ["INSTANCE_REFRESH", "MAX_INSTANCE_LIFETIME"]:
+        return instances
+
+    cluster = find_cluster(asg)
+    if need_return(context, cluster):
+        return instances
+
+    container_instances = CLIENT_ECS.list_container_instances(cluster=cluster).get(
+        "containerInstanceArns", []
+    )
+    if need_return(context, container_instances):
+        return instances
+
+    terminate_instances = get_instance_to_terminate(cluster, container_instances)
+    if need_return(context, terminate_instances):
+        return instances
+
+    logger.info(f"Instances suggested to be terminated: {terminate_instances}")
+
+    return {"InstanceIDs": terminate_instances}
