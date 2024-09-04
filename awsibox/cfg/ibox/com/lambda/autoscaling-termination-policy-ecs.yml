@@ -8,6 +8,7 @@ global:
         Roles:
           - Ref('RoleLambdaASGTerminationPolicyECS')
         PolicyDocument:
+          Statement:
             - 1:
                 Action:
                   - 'ecs:DescribeContainerInstances'
