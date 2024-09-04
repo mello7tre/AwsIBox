@@ -21,7 +21,8 @@ def find_cluster(asg):
     )
     try:
         return instance_tags["Tags"][0]["Value"]
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error Tag ECSCluster not found in ASG {asg}: {e}")
         return
 
 
@@ -46,11 +47,11 @@ def get_instance_to_terminate(cluster, containers):
     return terminate_instances
 
 
-def need_return(context, value=True):
+def need_return(context, step, value=True):
     remaning = context.get_remaining_time_in_millis()
     if not value or remaning < REMANING_TIME_LOW:
         logger.warning(
-            f"Need to return - Remaning Time: {remaning} [{REMANING_TIME_LOW}]"
+            f"Need to return in {step} - RT: {remaning} [{REMANING_TIME_LOW}]"
         )
         return
 
@@ -64,17 +65,17 @@ def lambda_handler(event, context):
         return instances
 
     cluster = find_cluster(asg)
-    if need_return(context, cluster):
+    if need_return(context, "cluster", cluster):
         return instances
 
     container_instances = CLIENT_ECS.list_container_instances(cluster=cluster).get(
         "containerInstanceArns", []
     )
-    if need_return(context, container_instances):
+    if need_return(context, "container_instances", container_instances):
         return instances
 
     terminate_instances = get_instance_to_terminate(cluster, container_instances)
-    if need_return(context, terminate_instances):
+    if need_return(context, "terminate_instances", terminate_instances):
         return instances
 
     logger.info(f"Instances suggested to be terminated: {terminate_instances}")
