@@ -3,6 +3,17 @@ global:
     - LambdaASGTerminationPolicyECSArn:
         Value: GetAtt('LambdaASGTerminationPolicyECS', 'Arn')
         Export: Export('LambdaASGTerminationPolicyECSArn')
+  IAMPolicy:
+    - LambdaASGTerminationPolicyECS:
+        Roles:
+          - Ref('RoleLambdaASGTerminationPolicyECS')
+        PolicyDocument:
+            - 1:
+                Action:
+                  - 'ecs:DescribeContainerInstances'
+                  - 'ecs:ListContainerInstances'
+                Effect: Allow
+                Resource: '*'      
   Lambda:
     - ASGTerminationPolicyECS:
         Architectures:
