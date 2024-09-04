@@ -37,8 +37,8 @@ def get_instance_to_terminate(cluster, containers):
             response.get("containerInstances", []),
             key=itemgetter("runningTasksCount", "registeredAt"),
         )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.errror(f"Error sorting instances: {e}")
     else:
         for n in i_sorted:
             terminate_instances.append(n["ec2InstanceId"])
