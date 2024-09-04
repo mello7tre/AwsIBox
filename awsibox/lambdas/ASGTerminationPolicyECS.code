@@ -53,7 +53,7 @@ def need_return(context, step, value=True):
         logger.warning(
             f"Need to return in {step} - RT: {remaning} [{REMANING_TIME_LOW}]"
         )
-        return
+        return True
 
 
 def lambda_handler(event, context):
