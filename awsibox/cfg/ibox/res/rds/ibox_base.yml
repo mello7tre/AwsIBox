@@ -41,7 +41,6 @@ global:
               Description: 'Max Storage Size in GB (Enable Storage Autoscaling)- empty for mapped value - 0 to disable'
           - IBOX_MAPNAME.DBInstanceClass:
               Description: 'Instance Type - empty for mapped value'
-              AllowedValues: cfg.INSTANCE_LIST_RDS
           - IBOX_MAPNAME.DBName:
               Description: 'Empty for mapped value'
           - IBOX_MAPNAME.DBSnapshotIdentifier:

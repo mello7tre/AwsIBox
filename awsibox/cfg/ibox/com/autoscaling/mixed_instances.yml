@@ -1,14 +1,10 @@
 global:
   Parameter:
     - AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides1InstanceType:
-        Description: 'InstanceType - default for mapped value'
-        ConstraintDescription: 'must be a valid EC2 instance type or "none"'
-        AllowedValues: cfg.INSTANCE_LIST + ['none']
+        Description: 'InstanceType - "default" for mapped value, "none" to disable'
         Default: 'default'
     - AutoScalingGroupBaseMixedInstancesPolicyLaunchTemplateOverrides2InstanceType:
-        Description: 'InstanceType - default for mapped value'
-        ConstraintDescription: 'must be a valid EC2 instance type or "none"'
-        AllowedValues: cfg.INSTANCE_LIST + ['none']
+        Description: 'InstanceType - "default" for mapped value, "none" to disable'
         Default: 'default'
   Condition:
     - AutoScalingGroupBaseMixedInstancesPolicy:

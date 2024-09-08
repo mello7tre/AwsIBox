@@ -85,9 +85,7 @@ global:
               CONDITION: get_condition('', 'not_equals', '0', 'LaunchTemplateDataInstanceMarketOptionsSpotOptionsMaxPrice')
             MaxPrice: '0'
         InstanceType.IBOX_AUTO_PO:
-          Description: 'InstanceType - default for default based on env/role'
-          ConstraintDescription: 'must be a valid EC2 instance type.'
-          AllowedValues: cfg.INSTANCE_LIST
+          Description: 'InstanceType - "default" for default based on env/role'
           Default: 'default'
         InstanceType: t3.micro
         KeyName.IBOX_AUTO_PO:
