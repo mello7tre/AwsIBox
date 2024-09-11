@@ -17,6 +17,13 @@ global:
         HealthCheckGracePeriod: 600
         HealthCheckType.IBOX_AUTO_PO: {}
         HealthCheckType: EC2
+        InstanceMaintenancePolicy:
+          MaxHealthyPercentage.IBOX_AUTO_PO:
+            Description: Empty for mapped value - "-1" to disable, range 100-200 (Max - Min <= 100)
+          MaxHealthyPercentage: -1
+          MinHealthyPercentage.IBOX_AUTO_PO:
+            Description: Empty for mapped value - "-1" to disable, range 0-100 (Max - Min <= 100)
+          MinHealthyPercentage: -1
         LaunchTemplate:
           LaunchTemplateId: Ref('LaunchTemplate')
           Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
