@@ -58,6 +58,17 @@ global:
           Value: get_endvalue(IBOX_CURNAME)
         LaunchType.IBOX_CODE: If('ECSTasksLaunchOnFargate', get_endvalue(IBOX_CURNAME), Ref('AWS::NoValue'))
         LaunchType: EC2
+  ECSTaskDefinition:
+    - IBOX_BASE:
+        ContainerDefinitions:
+          - IBOX_BASE:
+              RestartPolicy:
+                Enabled.IBOX_AUTO_PO: {}
+                Enabled: False
+                IgnoredExitCodes: []
+                RestartAttemptPeriod.IBOX_AUTO_PO:
+                  Description: A period of time (in seconds) that the container must run for before a restart can be attempted. [60-1800]
+                RestartAttemptPeriod: 300
 
 dev: &cfg_dev
   CloudWatchAlarm:
