@@ -33,6 +33,9 @@ global:
         Enabled: 'no'
         AutoScalingGroupProvider:
           AutoScalingGroupArn: Ref('AutoScalingGroup')
+          ManagedDraining.IBOX_AUTO_PO:
+            AllowedValues: ['', 'ENABLED', 'DISABLED']
+          ManagedDraining: ENABLED
           ManagedTerminationProtection: DISABLED
           ManagedScaling:
             MaximumScalingStepSize: 10000
