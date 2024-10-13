@@ -5,6 +5,7 @@ import argparse
 from math import floor
 from pprint import pformat
 from datetime import datetime, timezone
+from operator import itemgetter
 
 logging.basicConfig()
 logging.getLogger("botocore").setLevel("CRITICAL")
@@ -39,20 +40,16 @@ def process_containers(cluster, containers, res):
     response = CLIENT_ECS.describe_container_instances(
         cluster=cluster, containerInstances=containers
     )
+    AZones = {}
+    containerInstances = []
 
     for n in response["containerInstances"]:
-        # Stop istance with less running tasks
-        if n["runningTasksCount"] < res["i_tasks"]:
-            res["i_tasks"] = n["runningTasksCount"]
-            res["i_id"] = n["ec2InstanceId"]
-            res["i_date"] = n["registeredAt"]
-        # for equals tasks stop the oldest one
-        elif (
-            n["runningTasksCount"] == res["i_tasks"]
-            and n["registeredAt"] < res["i_date"]
-        ):
-            res["i_date"] = n["registeredAt"]
-            res["i_id"] = n["ec2InstanceId"]
+        az = ""
+        for a in n["attributes"]:
+            if a["name"] == "ecs.availability-zone":
+                az = a["value"]
+                AZones[az] = AZones.get(az, 0) + 1
+                continue
         for r in n["registeredResources"]:
             if r["name"] == "CPU":
                 res["cpu_base"] = r["integerValue"]
@@ -64,6 +61,34 @@ def process_containers(cluster, containers, res):
                 res["cpu_free"] += r["integerValue"]
             if r["name"] == "MEMORY":
                 res["ram_free"] += r["integerValue"]
+
+        containerInstances.append(
+            {
+                "runningTasksCount": n["runningTasksCount"],
+                "registeredAt": n["registeredAt"],
+                "ec2InstanceId": n["ec2InstanceId"],
+                "AZone": az,
+            }
+        )
+
+    # add the total number of instance in the same zone
+    for n in containerInstances:
+        n["nAZone"] = AZones.get(n["AZone"], 0)
+
+    # and sort first by runningTasksCount and registeredAt asc then nAZone desc
+    # this way the candidate to terminate is the instance in the zone with
+    # the greater number of instance running (primary condition)  with the less number of tasks and older (secondary ones)
+    i_sorted = sorted(
+        containerInstances, key=itemgetter("runningTasksCount", "registeredAt")
+    )
+    i_sorted = sorted(i_sorted, key=itemgetter("nAZone"), reverse=True)
+
+    canditate = i_sorted[0]
+    res["i_tasks"] = canditate["runningTasksCount"]
+    res["i_id"] = canditate["ec2InstanceId"]
+    res["i_date"] = canditate["registeredAt"]
+    res["i_AZ"] = canditate["AZone"]
+    res["n_instances_in_AZ"] = canditate["nAZone"]
 
     res["net_free"] = net - res["net_used"]
 
