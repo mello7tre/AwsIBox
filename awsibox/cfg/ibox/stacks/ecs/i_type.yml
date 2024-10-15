@@ -65,7 +65,8 @@ global:
               RestartPolicy:
                 Enabled.IBOX_AUTO_PO: {}
                 Enabled: False
-                IgnoredExitCodes: []
+                # Do not restart on OOM, this way it can be captured by events
+                IgnoredExitCodes: [137]
                 RestartAttemptPeriod.IBOX_AUTO_PO:
                   Description: A period of time (in seconds) that the container must run for before a restart can be attempted. [60-1800]
                 RestartAttemptPeriod: 300
