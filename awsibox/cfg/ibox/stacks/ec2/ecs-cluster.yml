@@ -25,6 +25,7 @@ global:
         Export: Export(Sub('Cluster-${AWS::StackName}'))
   AutoScalingLifecycleHook:
     - ECSDrainInstance:
+        IBOX_ENABLED: false
         IBOX_TITLE: ASGLifecycleHookECSDrainInstance
         AutoScalingGroupName: Ref('AutoScalingGroup')
         DefaultResult: CONTINUE
@@ -138,9 +139,7 @@ global:
           - ImportValue('IAMPolicyEcs')
 
 dev: &cfg_dev
-  AutoScalingLifecycleHook:
-    ECSDrainInstance:
-      HeartbeatTimeout: 900
+  #AutoScalingLifecycleHookECSDrainInstanceHeartbeatTimeout: 900
   LaunchTemplateData:
     ImageId: latest
 
