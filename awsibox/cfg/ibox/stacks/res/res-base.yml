@@ -6,7 +6,7 @@ IBoxLoader: !include
   - com/iam/managed-policies.yml
   - com/iam/roles.yml
   - com/ec2/securitygroups-base.yml
-  - com/lambda/ecs-draininstance.yml
+#  - com/lambda/ecs-draininstance.yml
   - com/lambda/ecs-runtask.yml
   - com/sns/cloudwatch-alarm.yml
   - com/servicediscovery/publicdnsnamespace-find.yml
