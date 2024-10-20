@@ -25,6 +25,7 @@ global:
         Export: Export(Sub('Cluster-${AWS::StackName}'))
   AutoScalingLifecycleHook:
     - ECSDrainInstance:
+        # Disabled, Use AWS ManagedDraining.
         IBOX_ENABLED: false
         IBOX_TITLE: ASGLifecycleHookECSDrainInstance
         AutoScalingGroupName: Ref('AutoScalingGroup')
