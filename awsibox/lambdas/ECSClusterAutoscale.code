@@ -29,6 +29,9 @@ def get_args():
         default=[],
         nargs="+",
     )
+    parser.add_argument(
+        "--prefix", "-p", help="Find Cluster by prefix", action="store_true"
+    )
     parser.add_argument("--reduce", "-r", help="Reduce Cluster", action="store_true")
 
     args = parser.parse_args()
@@ -239,11 +242,18 @@ def process_cluster(c):
 
 
 def do_work():
-    if lambda_run or not args.clusters:
+    if args.clusters and not args.prefix:
+        clusters = args.clusters
+    else:
         # warning max 100 clusters are returned
         clusters = CLIENT_ECS.list_clusters()["clusterArns"]
-    else:
-        clusters = args.clusters
+
+    if args.clusters and args.prefix:
+        # if cluster and prefix options search only in the one matching
+        clusters = [
+            n for n in clusters if n.split("/")[1].startswith(tuple(args.clusters))
+        ]
+
     clusters = CLIENT_ECS.describe_clusters(
         clusters=clusters, include=["TAGS", "STATISTICS"]
     )["clusters"]
