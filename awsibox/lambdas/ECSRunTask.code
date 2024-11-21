@@ -66,17 +66,25 @@ def lambda_handler(event, context):
             }
         }
 
+    # The idea was to for EC2 LaunchType, launch task on newer instance, this was the one
+    # with less probability to be terminated by a scaling down action. But now first are
+    # terminated instances with the less number of running task, so this is no more true.
+    # Better to use the same start task method (run task) of the FARGATE case, to avoid
+    # failing launch task for resource (ram cpu) unavailability.
     if event["LaunchType"] == "EC2":
-        # manage_attribute(cluster, 'delete')
-        my_container_instance, my_instance = get_container_instance(cluster)
-
-        logger.info(
-            f"EC2 Instance: {my_instance}, ECS Instance: {my_container_instance}"
-        )
-
-        # manage_attribute(cluster, 'put', my_container_instance)
-        kwargs["containerInstances"] = [my_container_instance]
-        response = CLIENT_ECS.start_task(**kwargs)
+        kwargs["count"] = 1
+        kwargs["launchType"] = "EC2"
+        response = CLIENT_ECS.run_task(**kwargs)
+    #        # manage_attribute(cluster, 'delete')
+    #        my_container_instance, my_instance = get_container_instance(cluster)
+    #
+    #        logger.info(
+    #            f"EC2 Instance: {my_instance}, ECS Instance: {my_container_instance}"
+    #        )
+    #
+    #        # manage_attribute(cluster, 'put', my_container_instance)
+    #        kwargs["containerInstances"] = [my_container_instance]
+    #        response = CLIENT_ECS.start_task(**kwargs)
     else:
         kwargs["count"] = 1
         kwargs["launchType"] = "FARGATE"
