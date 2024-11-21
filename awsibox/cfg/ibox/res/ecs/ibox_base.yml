@@ -137,6 +137,8 @@ global:
                   awslogs-group: Ref('LogsLogGroup')
                   awslogs-region: Ref('AWS::Region')
                   awslogs-stream-prefix: Ref('AWS::StackName')
+                  mode: non-blocking
+                  max-buffer-size: 10m
               Memory.IBOX_CODE: If(
                 f"{IBOX_REFNAME}UseTaskDefinitionMemory", get_endvalue(f"{IBOX_RESNAME}Memory"), get_endvalue(IBOX_CURNAME))
               Memory: 128
