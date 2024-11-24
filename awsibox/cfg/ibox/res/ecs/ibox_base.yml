@@ -81,6 +81,7 @@ global:
                       Condition(f"{IBOX_RESNAME}Memory"),
                       get_condition("", "equals", "yes", f"{IBOX_REFNAME}UseTaskDefinitionMemory")
                     )
+
               IBOX_OUTPUT:
                 - EnvApp.IBOX_PROPNAME.Version:
                     IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_REFNAME}ImageSuffix")
@@ -133,12 +134,14 @@ global:
                 InitProcessEnabled: false
               LogConfiguration:
                 LogDriver: awslogs
+                OptionMaxBufferSize.IBOX_AUTO_PO: {}
+                OptionMaxBufferSize: 10m
                 Options:
                   awslogs-group: Ref('LogsLogGroup')
                   awslogs-region: Ref('AWS::Region')
                   awslogs-stream-prefix: Ref('AWS::StackName')
                   mode: non-blocking
-                  max-buffer-size: 10m
+                  max-buffer-size: get_endvalue(f'{IBOX_REFNAME}LogConfigurationOptionMaxBufferSize')
               Memory.IBOX_CODE: If(
                 f"{IBOX_REFNAME}UseTaskDefinitionMemory", get_endvalue(f"{IBOX_RESNAME}Memory"), get_endvalue(IBOX_CURNAME))
               Memory: 128
