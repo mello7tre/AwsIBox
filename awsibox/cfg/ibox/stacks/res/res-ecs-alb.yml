@@ -90,6 +90,10 @@ global:
               CidrIp: '0.0.0.0/0'
               FromPort: 80
               ToPort: 80
+          - Https:
+              CidrIp: '0.0.0.0/0'
+              FromPort: 443
+              ToPort: 443
 
 dev: &cfg_dev
   CloudWatchAlarm:
