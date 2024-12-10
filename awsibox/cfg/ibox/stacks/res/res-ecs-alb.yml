@@ -49,6 +49,8 @@ global:
         IBOX_ENABLED: True
     - ECSHttpsDefaultExternal:
         IBOX_ENABLED: True
+    - ECSHttpsDefaultInternal:
+        IBOX_ENABLED: True
   ElasticLoadBalancingV2LoadBalancer:
     - ECSApplicationExternal:
         IBOX_ENABLED: True
