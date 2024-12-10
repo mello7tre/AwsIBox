@@ -107,6 +107,9 @@ global:
     - HttpsExternalRules1:
         IBOX_ENABLED: True
         Condition: LoadBalancerApplicationExternal
+    - HttpsInternalRules1:
+        IBOX_ENABLED: True
+        Condition: LoadBalancerApplicationInternal
     - HttpInternalRules1:
         IBOX_ENABLED: True
         Condition: LoadBalancerApplicationInternal
