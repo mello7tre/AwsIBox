@@ -162,7 +162,7 @@ global:
                 - 0:
                     ContainerPort: get_endvalue(f'{IBOX_REFNAME}ContainerPort')
                     HostPort: If(
-                      'ECSTaskDefinitionBaseNetworkModeAwsVpc',
+                      f'{IBOX_RESNAME}NetworkModeAwsVpc',
                       get_endvalue(f'{IBOX_REFNAME}ContainerPort'),
                       If(f'{IBOX_REFNAME}HostPort', get_endvalue(f'{IBOX_REFNAME}HostPort'), 0))
                     Protocol: tcp
