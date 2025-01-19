@@ -334,6 +334,10 @@ def iboxif(if_wrapper, mapname, value):
 
 
 def get_dictvalue(key, mapname=""):
+    global IBOX_INDEXNAME
+    # save value
+    ibox_indexname = IBOX_INDEXNAME
+
     if isinstance(key, list):
         value = [get_dictvalue(k) for k in key]
     elif isinstance(key, dict) and "IBOX_LIST" in key:
@@ -347,6 +351,8 @@ def get_dictvalue(key, mapname=""):
             if_wrapper = k.pop("IBOX_IF", [])
             prop_obj = {j: get_dictvalue(w) for j, w in k.items()}
             if isinstance(key_iboxlist, dict):
+                # temporay replace IBOX_INDEXNAME with the key name of each element
+                IBOX_INDEXNAME = i
                 # update every element in the list with the content of dict IBOX_LIST
                 prop_obj.update(get_dictvalue(key_iboxlist))
             if if_wrapper:
@@ -367,6 +373,9 @@ def get_dictvalue(key, mapname=""):
             value = key
     else:
         value = key
+
+    # restore value
+    IBOX_INDEXNAME = ibox_indexname
 
     return value
 
