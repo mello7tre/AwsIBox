@@ -339,12 +339,16 @@ def get_dictvalue(key, mapname=""):
     elif isinstance(key, dict) and "IBOX_LIST" in key:
         # Usefull for KMS policy and other generic dict properties
         value = []
+        key_iboxlist = key["IBOX_LIST"]
         for i, k in copy.deepcopy(key).items():
             if i == "IBOX_LIST":
                 continue
             # parse IBOX_IF
             if_wrapper = k.pop("IBOX_IF", [])
             prop_obj = {j: get_dictvalue(w) for j, w in k.items()}
+            if isinstance(key_iboxlist, dict):
+                # update every element in the list with the content of dict IBOX_LIST
+                prop_obj.update(get_dictvalue(key_iboxlist))
             if if_wrapper:
                 value.append(iboxif(if_wrapper, "", prop_obj))
             else:
