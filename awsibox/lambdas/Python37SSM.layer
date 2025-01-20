@@ -6,18 +6,18 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-env = os.environ["Env"]
-envRole = os.environ["EnvRole"]
+env = os.environ.get("Env")
+envRole = os.environ.get("EnvRole")
 
 
-def set(config):
+def set(config={}, env=env, envRole=envRole):
     for n, v in config.items():
         globals()[n] = v[env]
 
-    set_ssm()
+    set_ssm(envRole)
 
 
-def set_ssm():
+def set_ssm(envRole):
     pList = []
     client = boto3.client("ssm")
     paginator = client.get_paginator("describe_parameters")
