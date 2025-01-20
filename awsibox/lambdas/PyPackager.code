@@ -17,7 +17,7 @@ WORK_DIR = "/tmp"
 DIST_PY = f"{WORK_DIR}/dist/python"
 PY_VERSION = "%s%s" % (sys.version_info[0], sys.version_info[1])
 S3_CLIENT = boto3.client("s3")
-BUCKET = os.environ.get("BUCKET", "eu-west-1-it-casa-app-repository")
+BUCKET = os.environ.get("BUCKET")
 PKG_TO_REMOVE = [
     "urllib3",
     "boto3",
