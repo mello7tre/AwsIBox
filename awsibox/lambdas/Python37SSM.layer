@@ -41,13 +41,7 @@ def set_ssm(envRole):
         for p in response["Parameters"]:
             name = p["Name"].split("/")[2]
             name = name.replace("-", "_").upper()
-            value = p["Value"]
 
-            try:
-                globals()[name] = value
-            except Exception as e:
-                logger.error(f"Error adding parameter {name} to cfg: {e}")
-                pass
-            else:
-                logger.info(f"Success adding parameter {name} to cfg.")
+            globals()[name] = p["Value"]
+            logger.info(f"Success adding parameter {name} to cfg.")
         del pList[0:10]
