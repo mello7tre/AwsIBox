@@ -17,13 +17,31 @@ global:
         HealthCheckGracePeriod: 600
         HealthCheckType.IBOX_AUTO_PO: {}
         HealthCheckType: EC2
+        InstanceMaintenancePolicyEnabled: 'no'
+        InstanceMaintenancePolicy.IBOX_PCO:
+          IBOX_PARAMETER:
+            - IBOX_CURNAME.Enabled:
+                Description: Empty for mapped value
+                AllowedValues: ['', 'yes', 'no']
+          IBOX_CONDITION:
+            - IBOX_CURNAME.Enabled:
+                 get_condition('', 'equals', 'yes', f'{IBOX_CURNAME}Enabled')
+          IBOX_OUTPUT:
+            - IBOX_CURNAME.Enabled:
+                Value: get_endvalue(f'{IBOX_CURNAME}Enabled')
         InstanceMaintenancePolicy:
+          IBOX_IF:
+            - IBOX_CURNAME.Enabled
+            - IBOX_IFVALUE
+            - Ref('AWS::NoValue')
           MaxHealthyPercentage.IBOX_AUTO_PO:
-            Description: Empty for mapped value - "-1" to disable, range 100-200 (Max - Min <= 100)
-          MaxHealthyPercentage: -1
+            Condition: IBOX_CURMAP.Enabled
+            Description: Empty for mapped value, range 100-200 (Max - Min <= 100)
+          MaxHealthyPercentage: 200
           MinHealthyPercentage.IBOX_AUTO_PO:
-            Description: Empty for mapped value - "-1" to disable, range 0-100 (Max - Min <= 100)
-          MinHealthyPercentage: -1
+            Condition: IBOX_CURMAP.Enabled
+            Description: Empty for mapped value, range 0-100 (Max - Min <= 100)
+          MinHealthyPercentage: 100
         LaunchTemplate:
           LaunchTemplateId: Ref('LaunchTemplate')
           Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
