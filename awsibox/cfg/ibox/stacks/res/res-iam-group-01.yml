@@ -1,16 +1,102 @@
+IAMUserManageOwn: &iam_user_manage_own
+  Description: 'Manage Own IAM resources'
+  PolicyDocument:
+    Statement:
+      - 1:
+          Action:
+            - 'iam:*LoginProfile'
+            - 'iam:*AccessKey*'
+            - 'iam:*AccessKey*'
+            - 'iam:*SSHPublicKey*'
+            - 'iam:GenerateCredentialReport'
+            - 'iam:GenerateServiceLastAccessedDetails'
+            - 'iam:ChangePassword'
+          Effect: Allow
+          Resource: 'arn:aws:iam::*:user/${aws:username}'
+      - 2:
+          Action:
+            - 'iam:ListUsers'
+            - 'iam:ListRoles'
+          Effect: Allow
+          Resource: '*'
+
+S3ListBuckets: &s3_list_buckets
+  Description: 'List Buckets'
+  PolicyDocument:
+    Statement:
+      - 1:
+          Action:
+            - 's3:GetBucketLocation'
+            - 's3:ListAllMyBuckets'
+          Effect: Allow
+          Resource: 'arn:aws:s3:::*'
+
+PowerUserAccessNoSSM: &power_user_access_no_ssm
+  Description: 'Provides full access apart management of Users and groups, Direct Access to SSM Parameters.'
+  PolicyDocument:
+    Statement:
+      - IAMAllowed:
+          Action:
+            - 'iam:CreateServiceLinkedRole'
+            - 'iam:DeleteServiceLinkedRole'
+            - 'iam:Get*'
+            - 'iam:List*'
+            - 'iam:SimulateCustomPolicy'
+            - 'iam:SimulatePrincipalPolicy'
+            - 'iam:PassRole'
+            - 'organizations:DescribeOrganization'
+          Effect: Allow
+          Resource: '*'
+      - MISCDenied:
+          NotAction:
+            - 'iam:*'
+            - 'organizations:*'
+            - 'ssm:*'
+          Effect: Allow
+          Resource: '*'
+      - SSMAllowed:
+          Action:
+            - 'ssm:GetParameter*'
+          Effect: Allow
+          Resource:
+            - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
+            - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
+
+SSMParameterStoreBase: &ssm_parameter_store_base
+  PolicyDocument:
+    Statement:
+      - KMSListAliases:
+          Action:
+            - 'kms:ListAliases'
+            - 'ssm:DescribeParameters'
+          Effect: Allow
+          Resource: '*'
+      - KMSDecrypt:
+          Action:
+            - 'kms:Decrypt'
+            - 'kms:Encrypt'
+          Effect: Allow
+          Resource: ImportValue('KeyParameterStore')
+
+
 global:
   StackName: iam-g-01
   IAMGroup:
+    - IBOX_BASE:
+        Policies:
+          - IBOX_BASE:
+              PolicyName: str(IBOX_PROPNAME)
     - Base:
         ManagedPolicyArns:
-          - IAMUserManageOwn
-          - S3ListBuckets
           - LogGroupsDescribe
+        Policies:
+          - IAMUserManageOwn: *iam_user_manage_own
+          - S3ListBuckets: *s3_list_buckets
     - Power:
-        ManagedPolicyArns:
-          - IAMUserManageOwn
-          - PowerUserAccessNoSSM
-          - SSMParameterStoreBase
+        Policies:
+          - IAMUserManageOwn: *iam_user_manage_own
+          - PowerUserAccessNoSSM: *power_user_access_no_ssm
+          - SSMParameterStoreBase: *ssm_parameter_store_base
     - Developer:
         ManagedPolicyArns:
           - Developer
