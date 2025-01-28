@@ -127,21 +127,25 @@ global:
           - IBOX_BASE:
               PolicyName: str(IBOX_PROPNAME)
     - Base:
+        IBOX_ENABLED: False
         Policies:
           - IAMUserManageOwn: *iam_user_manage_own
           - S3ListBuckets: *s3_list_buckets
     - Power:
+        IBOX_ENABLED: False
         Policies:
           - IAMUserManageOwn: *iam_user_manage_own
           - PowerUserAccessNoSSM: *power_user_access_no_ssm
           - SSMParameterStoreBase: *ssm_parameter_store_base
     - Developer:
+        IBOX_ENABLED: False
         Policies:
           - SSMParameterStoreBase: *ssm_parameter_store_base
           - CloudwatchMetricsRead: *cloudwatch_metrics_read
           - EcrRead: *ecr_read
           - LogsRead: *logs_read
     - CloudWatchRead:
+        IBOX_ENABLED: False
         Policies:
           - CloudwatchMetricsRead: *cloudwatch_metrics_read
           - LogsRead: *logs_read
