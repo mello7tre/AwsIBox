@@ -3,7 +3,7 @@ IBoxLoader: !include
   - res/route53/hostedzones.yml
   - com/elasticloadbalancing/accountid.yml
   - com/ec2/securitygroup.yml
-  - com/iam/managed-policies.yml
+  - res/iam/managed-policies.yml
   - com/iam/roles.yml
   - com/ec2/securitygroups-base.yml
 #  - com/lambda/ecs-draininstance.yml

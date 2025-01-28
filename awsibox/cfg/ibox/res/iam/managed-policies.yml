@@ -1,135 +1,133 @@
-SSMParameterStoreBase01: &ssm_parameter_store_base_01
-  Action:
-    - 'kms:ListAliases'
-    - 'ssm:DescribeParameters'
-  Effect: Allow
-  Resource: '*'
-SSMParameterStoreBase02: &ssm_parameter_store_base_02
-  Action:
-    - 'kms:Decrypt'
-    - 'kms:Encrypt'
-  Effect: Allow
-  Resource: ImportValue('KeyParameterStore')
-
-LogRead01: &log_read_01
-  Action:
-    - 'logs:Describe*'
-    - 'logs:Get*'
-    - 'logs:List*'
-    - 'logs:StartQuery'
-    - 'logs:StopQuery'
-    - 'logs:TestMetricFilter'
-    - 'logs:FilterLogEvents'
-  Effect: Allow
-  Resource: '*'
-
-ECRRead01: &ecr_read_01
-  Action:
-    - 'ecr:GetAuthorizationToken'
-    - 'ecr:DescribeRepositories'
-    - 'ecr:ListImages'
-  Effect: Allow
-  Resource: '*'
-
-MetricRead01: &metric_read_01
-  Action:
-    - 'cloudwatch:ListMetrics'
-    - 'cloudwatch:ListDashboards'
-    - 'cloudwatch:GetMetricData'
-    - 'cloudwatch:GetMetricStatistics'
-    - 'cloudwatch:GetDashboard'
-  Effect: Allow
-  Resource: '*'
-
-RDSRead01: &rds_read_01
-  Action:
-    - 'rds:Describe*'
-    - 'rds:ListTagsForResource'
-    - 'rds:DownloadDBLogFilePortion'
-    - 'ec2:DescribeAccountAttributes'
-    - 'ec2:DescribeAvailabilityZones'
-    - 'ec2:DescribeInternetGateways'
-    - 'ec2:DescribeSecurityGroups'
-    - 'ec2:DescribeSubnets'
-    - 'ec2:DescribeVpcAttribute'
-    - 'ec2:DescribeVpcs'
-    - 'cloudwatch:GetMetricStatistics'
-    - 'logs:DescribeLogStreams'
-    - 'logs:GetLogEvents'
-  Effect: Allow
-  Resource: '*'
-
-EC2Base01: &ec2_base_01
-  Action:
-    - 'ec2:DescribeSecurityGroups'
-    - 'ec2:DescribeSubnets'
-    - 'ec2:DescribeVpcs'
-  Effect: Allow
-  Resource: '*'
-
-
 global:
   IAMManagedPolicy:
-    - SSMParameterStoreBase:
-        IBOX_ENABLED: False
-        Description: 'Describe all SSM Parameters and read KMS Key'
+    - BaseInstance:
+        Description: 'Policy common to all instances'
         PolicyDocument:
           Statement:
-            - SSMParameterStoreBase01: *ssm_parameter_store_base_01
-            - SSMParameterStoreBase02: *ssm_parameter_store_base_02
-    - LogRead:
-        IBOX_ENABLED: False
-        Description: 'Read CloudWatch Logs'
+            - 1:
+                Action:
+                  - 's3:GetBucketLocation'
+                  - 's3:ListAllMyBuckets'
+                Effect: Allow
+                Resource: 'arn:aws:s3:::*'
+            - 2:
+                Action:
+                  - 's3:Get*'
+                  - 's3:List*'
+                Effect: Allow
+                Resource:
+                  - Sub('arn:aws:s3:::%s' % cfg.BucketNameAppRepository)
+                  - Sub('arn:aws:s3:::%s/*' % cfg.BucketNameAppRepository)
+                  - Sub('arn:aws:s3:::%s' % cfg.BucketNameAppData)
+                  - Sub('arn:aws:s3:::%s/*' % cfg.BucketNameAppData)
+                  - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}')
+                  - Sub('arn:aws:s3:::aws-codedeploy-${AWS::Region}/*')
+            - 3:
+                Action:
+                  - 'elasticloadbalancing:DescribeInstanceHealth'
+                  - 'elasticloadbalancing:DescribeTargetHealth'
+                  - 'ec2:DescribeInstances'
+                Effect: Allow
+                Resource: '*'
+    - CloudWatchPutMetric:
+        Description: 'Policy for ecs-task to put CW metric data'
         PolicyDocument:
           Statement:
-            - LogRead01: *log_read_01
-    - MetricRead:
-        IBOX_ENABLED: False
-        Description: 'Read CloudWatch Metrics and DashBoard'
+            - 1:
+                Action:
+                  - 'cloudwatch:PutMetricData'
+                Effect: Allow
+                Resource: '*'
+    - Ecs:
+        Description: 'EcsCluster'
         PolicyDocument:
           Statement:
-            - MetricRead01: *metric_read_01
-    - ECRRead:
-        IBOX_ENABLED: False
-        Description: 'Read Grant to All Ecr Repos'
+            - 1:
+                Action:
+                  - 'ecs:CreateCluster'
+                  - 'ecs:DeregisterContainerInstance'
+                  - 'ecs:DiscoverPollEndpoint'
+                  - 'ecs:Poll'
+                  - 'ecs:RegisterContainerInstance'
+                  - 'ecs:StartTelemetrySession'
+                  - 'ecs:Submit*'
+                  - 'ecs:UpdateContainerInstancesState'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:BatchGetImage'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:GetAuthorizationToken'
+                Effect: Allow
+                Resource: '*'
+    - SSM:
+        Description: "Policy to let Instances Manage SSM"
         PolicyDocument:
           Statement:
-            - ECRRead01: *ecr_read_01
-    - RDSRead:
-        IBOX_ENABLED: False
-        Description: 'AWS Managed AmazonRDSReadOnlyAccess + DownloadDBLogFilePortion'
-        PolicyDocument:
-          Statement:
-            - RDSRead01: *rds_read_01
-    - EC2Base:
-        IBOX_ENABLED: False
-        Description: 'EC2 Base policy'
-        PolicyDocument:
-          Statement:
-            - EC2Base01: *ec2_base_01
-    - Developer:
-        IBOX_ENABLED: False
-        Description: "Developer"
-        PolicyDocument:
-          Statement:
-            - SSMParameterStoreBase01: *ssm_parameter_store_base_01
-            - SSMParameterStoreBase02: *ssm_parameter_store_base_02
-            - LogRead01: *log_read_01
-            - ECRRead01: *ecr_read_01
-            - MetricRead01: *metric_read_01
-    - BackEndTechLead01:
-        IBOX_ENABLED: False
-        Description: "BackEndTechLead01"
-        PolicyDocument:
-          Statement:
-            - RDSRead01: *rds_read_01
-    - BackEndDeveloper:
-        IBOX_ENABLED: False
-        Description: "BackEndDeveloper"
-        PolicyDocument:
-          Statement: {}
-    - FrontEndDeveloper:
-        IBOX_ENABLED: False
-        Description: "FrontEndDeveloper"
-        PolicyDocument:
-          Statement: {}
+            - 1:
+                Action:
+                  - 'ssm:DescribeAssociation'
+                  - 'ssm:GetDeployablePatchSnapshotForInstance'
+                  - 'ssm:GetDocument'
+                  - 'ssm:GetManifest'
+                  - 'ssm:GetParameters'
+                  - 'ssm:ListAssociations'
+                  - 'ssm:ListInstanceAssociations'
+                  - 'ssm:PutInventory'
+                  - 'ssm:PutComplianceItems'
+                  - 'ssm:PutConfigurePackageResult'
+                  - 'ssm:UpdateAssociationStatus'
+                  - 'ssm:UpdateInstanceAssociationStatus'
+                  - 'ssm:UpdateInstanceInformation'
+                Effect: Allow
+                Resource: '*'
+            - 2:
+                Action:
+                  - 'ssmmessages:CreateControlChannel'
+                  - 'ssmmessages:CreateDataChannel'
+                  - 'ssmmessages:OpenControlChannel'
+                  - 'ssmmessages:OpenDataChannel'
+                Effect: Allow
+                Resource: '*'
+            - 3:
+                Action:
+                  - 'ec2messages:AcknowledgeMessage'
+                  - 'ec2messages:DeleteMessage'
+                  - 'ec2messages:FailMessage'
+                  - 'ec2messages:GetEndpoint'
+                  - 'ec2messages:GetMessages'
+                  - 'ec2messages:SendReply'
+                Effect: Allow
+                Resource: '*'
+            - 4:
+                Action: 'cloudwatch:PutMetricData'
+                Effect: Allow
+                Resource: '*'
+            - 5:
+                Action: 'ec2:DescribeInstanceStatus'
+                Effect: Allow
+                Resource: '*'
+            - 6:
+                Action:
+                  - 'ds:CreateComputer'
+                  - 'ds:DescribeDirectories'
+                Effect: Allow
+                Resource: '*'
+            - 7:
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:PutLogEvents'
+                Effect: Allow
+                Resource: '*'
+            - 8:
+                Action:
+                  - 's3:GetObject'
+                Effect: Allow
+                Resource:
+                  - Sub('arn:aws:s3:::aws-ssm-${AWS::Region}/*')
+                  - Sub('arn:aws:s3:::amazon-ssm-${AWS::Region}/*')
+                  - Sub('arn:aws:s3:::amazon-ssm-packages-${AWS::Region}/*')
+                  - Sub('arn:aws:s3:::${AWS::Region}-birdwatcher-prod/*')

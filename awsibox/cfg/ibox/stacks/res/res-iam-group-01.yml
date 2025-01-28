@@ -62,6 +62,46 @@ PowerUserAccessNoSSM: &power_user_access_no_ssm
             - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
             - 'arn:aws:ssm:*:*:parameter/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id'
 
+
+LogsRead: &logs_read
+  PolicyDocument:
+    Statement:
+      - 1:
+          Action:
+            - 'logs:Describe*'
+            - 'logs:Get*'
+            - 'logs:List*'
+            - 'logs:StartQuery'
+            - 'logs:StopQuery'
+            - 'logs:TestMetricFilter'
+            - 'logs:FilterLogEvents'
+          Effect: Allow
+          Resource: '*'
+
+EcrRead: &ecr_read
+  PolicyDocument:
+    Statement:
+      - 1:
+          Action:
+            - 'ecr:GetAuthorizationToken'
+            - 'ecr:DescribeRepositories'
+            - 'ecr:ListImages'
+          Effect: Allow
+          Resource: '*'
+
+CloudwatchMetricsRead: &cloudwatch_metrics_read
+  PolicyDocument:
+    Statement:
+      - 1:
+          Action:
+            - 'cloudwatch:ListMetrics'
+            - 'cloudwatch:ListDashboards'
+            - 'cloudwatch:GetMetricData'
+            - 'cloudwatch:GetMetricStatistics'
+            - 'cloudwatch:GetDashboard'
+          Effect: Allow
+          Resource: '*'
+
 SSMParameterStoreBase: &ssm_parameter_store_base
   PolicyDocument:
     Statement:
@@ -87,8 +127,6 @@ global:
           - IBOX_BASE:
               PolicyName: str(IBOX_PROPNAME)
     - Base:
-        ManagedPolicyArns:
-          - LogGroupsDescribe
         Policies:
           - IAMUserManageOwn: *iam_user_manage_own
           - S3ListBuckets: *s3_list_buckets
@@ -98,20 +136,12 @@ global:
           - PowerUserAccessNoSSM: *power_user_access_no_ssm
           - SSMParameterStoreBase: *ssm_parameter_store_base
     - Developer:
-        ManagedPolicyArns:
-          - Developer
-    - BackEndDeveloper:
-        ManagedPolicyArns:
-          - Developer
-          - BackEndDeveloper
-    - FrontEndDeveloper:
-        ManagedPolicyArns:
-          - Developer
-          - FrontEndDeveloper
+        Policies:
+          - SSMParameterStoreBase: *ssm_parameter_store_base
+          - CloudwatchMetricsRead: *cloudwatch_metrics_read
+          - EcrRead: *ecr_read
+          - LogsRead: *logs_read
     - CloudWatchRead:
-        ManagedPolicyArns:
-          - LogRead
-          - MetricRead
-    - CloudWatchReadJoker01:
-        ManagedPolicyArns:
-          - LogReadJoker01
+        Policies:
+          - CloudwatchMetricsRead: *cloudwatch_metrics_read
+          - LogsRead: *logs_read
