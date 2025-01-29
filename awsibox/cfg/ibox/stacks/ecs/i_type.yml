@@ -2,6 +2,7 @@ IBoxLoader: !include
   - com/autoscaling/capacity.yml
   - com/ecs/task.yml
   - com/ecs/service-elasticloadbalancing.yml
+  - res/cloudfront/vpc_origin.yml
 
 global:
   ApplicationAutoScalingScalableTarget:

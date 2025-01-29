@@ -1,0 +1,19 @@
+global:
+  CloudFrontVpcOrigin:
+    - ECSHttpsDefaultInternal:
+        IBOX_ENABLED: False
+        IBOX_OUTPUT:
+          - _:
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)
+        VpcOriginEndpointConfig:
+          Arn: GetAtt("ElasticLoadBalancingV2LoadBalancerECSApplicationInternal", "Arn")
+          Name: ECSHttpsDefaultInternal
+          OriginProtocolPolicy: https-only
+    - ECSLoadBalancerApplicationInternalHttps:
+        IBOX_ENABLED: False
+        VpcOriginEndpointConfig:
+          Arn: ImportValue("ElasticLoadBalancingV2LoadBalancerECSApplicationInternal")
+          Name: get_subvalue("ECSLoadBalancerApplicationInternalHttps-${1M}-${2M}", ["EnvRole", f'{IBOX_LINKED_OBJ_NAME}Port'])
+          OriginProtocolPolicy: https-only
+          HTTPSPort: get_endvalue(f'{IBOX_LINKED_OBJ_NAME}Port')

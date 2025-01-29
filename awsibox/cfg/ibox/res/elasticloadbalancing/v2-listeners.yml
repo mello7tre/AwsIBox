@@ -116,6 +116,11 @@ global:
     - ECSHttpsDefaultInternal:
         IBOX_ENABLED: False
         IBOX_TITLE: ListenerHttpsDefaultInternal
+        IBOX_LINKED_OBJ:
+          Key: CloudFrontVpcOrigin
+          Type: ECSHttpsDefaultInternal
+          Conf:
+            IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
         <<: [*alb, *https_internal]
         IBOX_OUTPUT:
           - _:
@@ -161,11 +166,17 @@ global:
         IBOX_ENABLED: False
         IBOX_RESNAME: ListenerHttpsInternal
         IBOX_LINKED_OBJ:
-          Name: LoadBalancerApplicationHttpsInternal
-          Key: EC2SecurityGroupIngress
-          Type: ECSLoadBalancerApplicationLoadBalancerRule
-          Conf:
-            IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
-            IBOX_LINKED_OBJ_INDEX: Internal
+          EC2SecurityGroupIngress:
+            Name: LoadBalancerApplicationHttpsInternal
+            Key: EC2SecurityGroupIngress
+            Type: ECSLoadBalancerApplicationLoadBalancerRule
+            Conf:
+              IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
+              IBOX_LINKED_OBJ_INDEX: Internal
+          CloudFrontVpcOrigin:
+            Key: CloudFrontVpcOrigin
+            Type: ECSLoadBalancerApplicationInternalHttps
+            Conf:
+              IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
         <<: *https_external
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')

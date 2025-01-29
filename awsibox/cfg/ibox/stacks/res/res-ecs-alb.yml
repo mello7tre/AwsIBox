@@ -1,5 +1,6 @@
 IBoxLoader: !include
   - com/elasticloadbalancing/loadbalancer.yml
+  - res/cloudfront/vpc_origin.yml
 
 global:
   StackName: alb

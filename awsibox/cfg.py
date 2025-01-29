@@ -240,6 +240,11 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("cloudfront", "ResponseHeadersPolicy"),
     },
+    "CloudFrontVpcOrigin": {
+        "module": "joker",
+        "func": ("cloudfront", "VpcOrigin"),
+        "dep": ["ElasticLoadBalancingV2Listener"],
+    },
     "CloudWatchAlarm": {
         "module": "joker",
         "func": ("cloudwatch", "Alarm"),
