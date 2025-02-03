@@ -7,7 +7,7 @@ global:
               Value: Ref(IBOX_RESNAME)
               Export: Export(IBOX_RESNAME)
         VpcOriginEndpointConfig:
-          Arn: GetAtt("LoadBalancerApplicationInternal", "Arn")
+          Arn: Ref("LoadBalancerApplicationInternal")
           Name: ECSHttpsDefaultInternal
           OriginProtocolPolicy: https-only
     - ECSLoadBalancerApplicationInternalHttps:

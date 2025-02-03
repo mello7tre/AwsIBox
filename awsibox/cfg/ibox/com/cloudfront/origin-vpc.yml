@@ -1,0 +1,8 @@
+global:
+  CloudFrontDistribution:
+    - IBOX_BASE:
+        DistributionConfig:
+          Origins:
+            - Default:
+                VpcOriginConfig:
+                  VpcOriginId: eval(if "ListenerHttpsInternal" in cfg.Resources ImporValue("CloudFrontVpcOriginElasticLoadBalancingV2ListenerECSHttpsDefaultInternal") else Ref("CloudFrontVpcOriginECSLoadBalancerApplicationInternalHttps"))
