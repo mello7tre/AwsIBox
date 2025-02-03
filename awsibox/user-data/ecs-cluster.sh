@@ -60,4 +60,15 @@ ECS_EXCLUDE_UNTRACKED_IMAGE=_IBOX_CODE_get_endvalue('ECSClusterBaseAgentCfgEcsEx
 EOF
 }
 
+IS_SYSTEM_RUNNING(){
+  echo "Waiting for systemctl to complete boot before finding out the system status."
+  if !(systemctl is-system-running --wait);then
+    echo "System is degraded shutting down!"
+    shutdown -h now
+  else
+    echo "System started up successfully."
+  fi
+}
+
 SERVICE_ROLE
+IS_SYSTEM_RUNNING &
