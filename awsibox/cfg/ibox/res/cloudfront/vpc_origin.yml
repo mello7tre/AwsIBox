@@ -12,6 +12,11 @@ global:
           OriginProtocolPolicy: https-only
     - ECSLoadBalancerApplicationInternalHttps:
         IBOX_ENABLED: False
+        IBOX_OUTPUT:
+          - _:
+              IBOX_ENABLED_IF: len(getattr(cfg, "CloudFrontDistribution", {})) == 0
+              Value: Ref(IBOX_RESNAME)
+              Export: Export(IBOX_RESNAME)
         VpcOriginEndpointConfig:
           Arn: ImportValue("ElasticLoadBalancingV2LoadBalancerECSApplicationInternal")
           Name: get_subvalue("ECSLoadBalancerApplicationInternalHttps-${1M}-${2M}", ["EnvRole", f'{IBOX_LINKED_OBJ_NAME}Port'])

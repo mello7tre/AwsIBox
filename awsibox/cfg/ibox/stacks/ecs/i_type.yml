@@ -87,6 +87,6 @@ dev: &cfg_dev
 stg: *cfg_dev
 
 
-IBoxLoaderAfter: !include [
-  #com/ecs/fargate-spot.yml,
-]
+IBoxLoaderAfter: !include
+  - com/cloudfront/origin-vpc.yml
+  #- com/ecs/fargate-spot.yml
