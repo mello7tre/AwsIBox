@@ -5,7 +5,7 @@ global:
         IBOX_OUTPUT:
           - _:
               Value: Ref(IBOX_RESNAME)
-              Export: Export(IBOX_RESNAME)
+              Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
         VpcOriginEndpointConfig:
           Arn: Ref("LoadBalancerApplicationInternal")
           Name: Sub(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-443")
@@ -16,7 +16,7 @@ global:
           - _:
               IBOX_ENABLED_IF: len(getattr(cfg, "CloudFrontDistribution", {})) == 0
               Value: Ref(IBOX_RESNAME)
-              Export: Export(IBOX_RESNAME)
+              Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
         VpcOriginEndpointConfig:
           Arn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
           Name: get_subvalue(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-${1M}", f'{IBOX_LINKED_OBJ_NAME}Port')
