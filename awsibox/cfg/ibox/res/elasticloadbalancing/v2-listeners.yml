@@ -178,5 +178,5 @@ global:
             Type: ECSLoadBalancerApplicationInternalHttps
             Conf:
               IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
-        <<: *https_external
+        <<: *https_internal
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
