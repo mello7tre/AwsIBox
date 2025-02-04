@@ -120,7 +120,7 @@ global:
           Key: CloudFrontVpcOrigin
           Type: ECSHttpsDefaultInternal
           Conf:
-            IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
+            IBOX_LINKED_OBJ_INDEX: IBOX_TITLE
         <<: [*alb, *https_internal]
         IBOX_OUTPUT:
           - _:
@@ -178,5 +178,6 @@ global:
             Type: ECSLoadBalancerApplicationInternalHttps
             Conf:
               IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
+              IBOX_LINKED_OBJ_INDEX: IBOX_RESNAME
         <<: *https_internal
         LoadBalancerArn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')

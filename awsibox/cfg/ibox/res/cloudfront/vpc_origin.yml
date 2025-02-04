@@ -8,7 +8,7 @@ global:
               Export: Export(IBOX_RESNAME)
         VpcOriginEndpointConfig:
           Arn: Ref("LoadBalancerApplicationInternal")
-          Name: ECSHttpsDefaultInternal
+          Name: Sub(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-443")
           OriginProtocolPolicy: https-only
     - ECSLoadBalancerApplicationInternalHttps:
         IBOX_ENABLED: False
@@ -19,6 +19,6 @@ global:
               Export: Export(IBOX_RESNAME)
         VpcOriginEndpointConfig:
           Arn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
-          Name: get_subvalue("ECSLoadBalancerApplicationInternalHttps-${1M}-${2M}", ["EnvRole", f'{IBOX_LINKED_OBJ_NAME}Port'])
+          Name: get_subvalue(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-${1M}", f'{IBOX_LINKED_OBJ_NAME}Port')
           OriginProtocolPolicy: https-only
           HTTPSPort: get_endvalue(f'{IBOX_LINKED_OBJ_NAME}Port')
