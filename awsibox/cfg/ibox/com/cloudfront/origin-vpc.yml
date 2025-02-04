@@ -6,5 +6,5 @@ global:
             - Default:
                 VpcOriginConfig:
                   VpcOriginId: >-
-                    ImportValue("CloudFrontVpcOriginElasticLoadBalancingV2ListenerECSHttpsDefaultInternal")
-                      if "ListenerHttpsInternal" in cfg.Resources else Ref("CloudFrontVpcOriginListenerHttpsInternal")
+                    Ref("CloudFrontVpcOriginListenerHttpsInternal") if "ListenerHttpsInternal" in cfg.Resources
+                      else ImportValue("CloudFrontVpcOriginElasticLoadBalancingV2ListenerECSHttpsDefaultInternal")
