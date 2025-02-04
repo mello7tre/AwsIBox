@@ -87,7 +87,6 @@ global:
                 - GetAtt('SecurityGroupInstancesRules', 'GroupId')
                 - ImportValue('SecurityGroupBaseInstance')
   LoadBalancerType: Application
-  RecordSet: ['External', 'Internal']
   ECSService:
     - Base:
         DependsOn: ECSClusterCapacityProviderAssociationsBase

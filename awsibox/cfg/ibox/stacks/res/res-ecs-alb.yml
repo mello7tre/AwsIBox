@@ -59,7 +59,6 @@ global:
         IBOX_ENABLED: True
   LoadBalancer: ['External', 'Internal']
   LoadBalancerType: Application
-  RecordSet: []
   EC2SecurityGroup**:
     - LoadBalancerApplicationExternal:
         IBOX_OUTPUT:

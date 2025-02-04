@@ -132,8 +132,6 @@ global:
             - '/aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id'
             - '/aws/service/bottlerocket/aws-ecs-1/x86_64/latest/image_id'
             - '/aws/service/bottlerocket/aws-ecs-1/arm64/latest/image_id'
-  Listeners: []
-  RecordSet: []
   IAMRole:
     - Instance:
         ManagedPolicyArns++:
