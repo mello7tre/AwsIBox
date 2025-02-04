@@ -18,7 +18,7 @@ global:
               Value: Ref(IBOX_RESNAME)
               Export: Export(IBOX_RESNAME)
         VpcOriginEndpointConfig:
-          Arn: ImportValue("ElasticLoadBalancingV2LoadBalancerECSApplicationInternal")
+          Arn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
           Name: get_subvalue("ECSLoadBalancerApplicationInternalHttps-${1M}-${2M}", ["EnvRole", f'{IBOX_LINKED_OBJ_NAME}Port'])
           OriginProtocolPolicy: https-only
           HTTPSPort: get_endvalue(f'{IBOX_LINKED_OBJ_NAME}Port')
