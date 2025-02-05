@@ -34,6 +34,8 @@ def CF_CloudFront(key):
 
         # process origins
         for m, w in distribution_config["Origins"].items():
+            if "VpcOriginId" not in w["VpcOriginConfig"]:
+                del w["VpcOriginConfig"]
             if any(n in w for n in ["S3OriginConfig", "VpcOriginConfig"]):
                 del w["CustomOriginConfig"]
 

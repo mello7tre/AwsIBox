@@ -73,6 +73,12 @@ global:
                       get_endvalue("CloudFrontOriginOriginAccessControlS3Conditional"),
                       Ref("AWS::NoValue")))
                 OriginPath: ''
+                VpcOriginConfig:
+                  VpcOriginId.IBOX_AUTO_PO: {}
+                  VpcOriginId.IBOX_CODE_KEY: >-
+                    If(f"{IBOX_REFNAME}VpcOriginConfigVpcOriginIdOverride",
+                       ImportValue(Ref(f"{IBOX_REFNAME}VpcOriginConfigVpcOriginId")),
+                       get_endvalue(f"{IBOX_REFNAME}VpcOriginConfigVpcOriginId", add_override=False))
           PriceClass: PriceClass_100
           ViewerCertificate:
             AcmCertificateArn: If(f'{IBOX_RESNAME}AcmCertificate', get_endvalue('GlobalCertificateArn'), Ref('AWS::NoValue'))
