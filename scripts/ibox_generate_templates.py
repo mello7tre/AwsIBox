@@ -86,12 +86,32 @@ def concurrent_exec(roles, kwargs):
         for future in future_to_role:
             future.cancel()
 
+def generate_cfg_to_func():
+    cfg.CFG_TO_FUNC_NEW = {}
+    d = {}
+    for n in cfg.cfm_res_spec["ResourceTypes"]:
+        if n.startswith("AWS::"):
+            res_arr = n.split("::")
+            res_name = n.replace("AWS","").replace(":","")
+            res_mod = res_arr[1].lower()
+            if res_mod == "lambda":
+                res_mod = "awslambda"
+            res_func = res_arr[2]
+            d[res_name] = {
+                "module": "joker",
+                "func": (res_mod, res_func),
+            }
+    #from pprint import pprint
+    #pprint(d)
+
 
 # read CloudFormationResourceSpecification to get CloudFormation Resources Properties
 with open(
     os.path.join(cfg.APP_DIR, "aws", "CloudFormationResourceSpecification.json"), "r"
 ) as cfm_res_spec_json:
     cfg.cfm_res_spec = json.load(cfm_res_spec_json)
+
+generate_cfg_to_func()
 
 if args.action == "view":
     discover_map = discover.discover([args.Brand], [args.EnvRole], [])
