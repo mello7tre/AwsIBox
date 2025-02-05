@@ -345,6 +345,10 @@ CFG_TO_FUNC = {
         "module": "joker",
         "func": ("elasticloadbalancingv2", "ListenerRule"),
     },
+    "ElasticLoadBalancingV2ListenerCertificate": {
+        "module": "joker",
+        "func": ("elasticloadbalancingv2", "ListenerCertificate"),
+    },
     "ElasticLoadBalancingV2TargetGroup": {
         "module": "joker",
         "func": ("elasticloadbalancingv2", "TargetGroup"),
