@@ -86,26 +86,46 @@ def concurrent_exec(roles, kwargs):
         for future in future_to_role:
             future.cancel()
 
+
+# use CloudFormationResourceSpecification.json to generate cfg.CFG_TO_FUNC
 def generate_cfg_to_func():
-    cfg.CFG_TO_FUNC_NEW = {}
     d = {}
+    for n in ["Parameter", "Condition", "Mapping"]:
+        d[n] = cfg.CFG_TO_FUNC_OVERRIDE[n]
     for n in cfg.cfm_res_spec["ResourceTypes"]:
         if n.startswith("AWS::"):
             res_arr = n.split("::")
-            res_name = n.replace("AWS","").replace(":","")
+            res_name = n.replace("AWS", "").replace(":", "")
             res_mod = res_arr[1].lower()
-            if res_mod == "lambda":
-                res_mod = "awslambda"
             res_func = res_arr[2]
+            # names overrides
+            if res_mod in cfg.CFG_TO_FUNC_RENAME:
+                res_mod = cfg.CFG_TO_FUNC_RENAME[res_mod]
+            if res_name in cfg.CFG_TO_FUNC_RENAME:
+                res_name = cfg.CFG_TO_FUNC_RENAME[res_name]
+            if res_func in cfg.CFG_TO_FUNC_RENAME:
+                res_func = cfg.CFG_TO_FUNC_RENAME[res_func]
+            #
             d[res_name] = {
                 "module": "joker",
                 "func": (res_mod, res_func),
             }
-    #from pprint import pprint
-    #pprint(d)
+            # conf overrides
+            if res_name in cfg.CFG_TO_FUNC_OVERRIDE:
+                d[res_name].update(cfg.CFG_TO_FUNC_OVERRIDE[res_name])
+    for n in [
+        "CloudFrontVpcOrigin",
+        "CloudFrontLambdaFunctionAssociation",
+        "SecurityGroups",
+        "CCRReplicateRegions",
+        "Output",
+    ]:
+        d[n] = cfg.CFG_TO_FUNC_OVERRIDE[n]
+    cfg.CFG_TO_FUNC = d
 
 
 # read CloudFormationResourceSpecification to get CloudFormation Resources Properties
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-resource-specification.html
 with open(
     os.path.join(cfg.APP_DIR, "aws", "CloudFormationResourceSpecification.json"), "r"
 ) as cfm_res_spec_json:

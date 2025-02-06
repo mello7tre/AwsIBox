@@ -658,7 +658,6 @@ def auto_get_props(
                 tropo_to_cfm = False
 
             # use CloudFormationResourceSpecification to find out class names
-            # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-resource-specification.html
             try:
                 res_obj_propname = cfg.cfm_res_spec["PropertyTypes"][
                     f"{res_obj_type}.{obj_class}"
