@@ -1,0 +1,148 @@
+# vim: ft=python                                                                         
+# DOWNLOAD/USE UP TO DATE BOTO3 - REMOVE WHEN https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html >= 1.26.6
+import sys
+import ast
+from pip._internal import main
+
+SERVICE_REGION_MAP = {
+    "cloudfront": "us-east-1",
+}
+
+
+main(                                                                                    
+    [                                                                                    
+        "install",                                                                       
+        "-I",                                                                            
+        "-q",                                                                            
+        "boto3",                                                                         
+        "--target",                                                                      
+        "/tmp/",                                                                         
+        "--no-cache-dir",                                                                
+        "--disable-pip-version-check",                                                   
+    ]                                                                                    
+)                                                                                        
+sys.path.insert(0, "/tmp/")                                                              
+#
+
+import boto3
+import logging
+from crhelper import CfnResource
+
+# Initialise the helper
+helper = CfnResource(
+    json_logging=False,
+    log_level="DEBUG",
+    boto_level="CRITICAL",
+    polling_interval=1,
+    sleep_on_delete=10,
+)
+
+try:
+    # Init code goes here
+    is_success = True
+except Exception as e:
+    helper.init_failure(e)
+
+
+
+def do_action():
+    data = {}
+    client_method = client.getattr(method)
+    reponse = client_method(**props)
+    for n, v in atts.items():
+        res = {}
+        for m in v.split("."):
+            if m in reponse:
+                res = reponse[m]
+            elif m in res:
+                res = res[m]
+        data[n] = res
+
+    return data
+
+
+def update_props_with_ids():
+    response = tag_client.get_resources(
+            TagFilters = [{
+                "Key": tag_key
+            }]
+    )
+    if response["ResourceTagMappingList"]:
+        for n in response["ResourceTagMappingList"][0]["Tags"]:
+            if tag_key in n:
+                tag_key_value = ast.literal_eval(n["Value"])
+                for k in update_keys:
+                    if k in tag_key_value:
+                        props[k] = tag_key_value[k]
+
+
+@helper.create
+def create(event, context):
+    data = do_action()
+    tag_client.tag_resources(
+        ResourceARNList = [data["Arn"]],
+        Tags= {
+            tag_key: str(data),
+        },
+    )
+    helper.Data.update(data)
+
+    return data["Arn"]
+
+@helper.update
+def update(event, context):
+    for n in create_keys:
+        # delete keys used only for create
+        if n in props:
+            del props[n]
+    update_props_with_ids()
+    data = do_action()
+    helper.Data.update(data)
+    
+    return data["Arn"]
+
+@helper.delete
+def delete(event, context):
+
+
+def lambda_handler(event, context):
+    global stack_name
+    global client
+    global tag_client
+    global atts
+    global method
+    global props
+    global update_keys
+    global create_keys
+    global tag_key
+
+    stack_name = event["StackId"].split("/")[1]
+    action = event["RequestType"]
+    res = event["ResourceProperties"]
+    service = res["Service"]
+    update_keys = res["UpdateKeys"]
+    create_keys = res["CreateKeys"]
+    res_lid = res["LogicalResourceId"]
+    tag_key = f"IBoxCCRAWSResources:{res_lid}"
+
+    if service in SERVICE_REGION_MAP:
+        boto3_regional = boto3.session.Session(region_name="us-east-1")
+        client = boto3_regional.client(service)
+        tag_client = boto3_regional.client("resourcegroupstaggingapi")
+    else
+        client = boto3.client(service)
+        tag_client = boto3.client("resourcegroupstaggingapi")
+
+    atts = res["Atts"]
+    methods = res["Methods"]
+
+    if action == "Create":
+        method = methods[0]
+    elif action == "Delete":
+        method = methods[1]
+    else:
+        method = methods[2]
+        
+    props = res["Props"]
+
+    helper(event, context)

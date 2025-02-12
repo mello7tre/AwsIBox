@@ -22,3 +22,57 @@ global:
           Name: get_subvalue(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-${1M}", f'{IBOX_LINKED_OBJ_NAME}Port')
           OriginProtocolPolicy: https-only
           HTTPSPort: get_endvalue(f'{IBOX_LINKED_OBJ_NAME}Port')
+
+  CloudFormationCustomResource:
+    - CloudFrontVpcOriginECSHttpsDefaultInternal:
+        IBOX_ENABLED: False
+        IBOX_OUTPUT:
+          - _:
+              Value: GetAtt(IBOX_RESNAME, "Arn")
+              Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
+        ServiceToken: ImportValue("LambdaCCRCloudFrontVpcOrigin")
+        Service: cloudfront
+        Methods: 
+          - create_vpc_origin
+          - delete_vpc_origin
+          - update_vpc_origin
+        Att:
+          Arn: VpcOrigin.Arn
+          Id: VpcOrigin.Id
+          IfMatch: ETag
+        UpdateKeys:
+          Id: Id
+          IfMatch: ETag
+        CreateKeys: []
+        Props:
+          VpcOriginEndpointConfig:
+            Arn: Ref("LoadBalancerApplicationInternal")
+            Name: Sub(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-443")
+            OriginProtocolPolicy: https-only
+   - CloudFrontVpcOriginECSLoadBalancerApplicationInternalHttps:
+        IBOX_ENABLED: False
+        IBOX_OUTPUT:
+          - _:
+              IBOX_ENABLED_IF: len(getattr(cfg, "CloudFrontDistribution", {})) == 0
+              Value: GetAtt(IBOX_RESNAME, "Arn")
+              Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
+        ServiceToken: ImportValue("LambdaCCRCloudFrontVpcOrigin")
+        Service: cloudfront
+        Methods:
+          - create_vpc_origin
+          - delete_vpc_origin
+          - update_vpc_origin
+        Atts:
+          Arn: VpcOrigin.Arn
+          Id: VpcOrigin.Id
+          IfMatch: ETag
+        UpdateKeys:
+          Id: Id
+          IfMatch: ETag
+        CreateKeys: []
+        Props:
+          VpcOriginEndpointConfig:
+            Arn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
+            Name: get_subvalue(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-${1M}", f'{IBOX_LINKED_OBJ_NAME}Port')
+            OriginProtocolPolicy: https-only
+            HTTPSPort: get_endvalue(f'{IBOX_LINKED_OBJ_NAME}Port')
