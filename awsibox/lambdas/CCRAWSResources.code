@@ -1,27 +1,25 @@
-# vim: ft=python                                                                         
+# vim: ft=python
 # DOWNLOAD/USE UP TO DATE BOTO3 - REMOVE WHEN https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html >= 1.26.6
 import sys
 import ast
 from pip._internal import main
 
-SERVICE_REGION_MAP = {
-    "cloudfront": "us-east-1",
-}
+SERVICES_GLOBAL = ["cloudfront"]
 
 
-main(                                                                                    
-    [                                                                                    
-        "install",                                                                       
-        "-I",                                                                            
-        "-q",                                                                            
-        "boto3",                                                                         
-        "--target",                                                                      
-        "/tmp/",                                                                         
-        "--no-cache-dir",                                                                
-        "--disable-pip-version-check",                                                   
-    ]                                                                                    
-)                                                                                        
-sys.path.insert(0, "/tmp/")                                                              
+main(
+    [
+        "install",
+        "-I",
+        "-q",
+        "boto3",
+        "--target",
+        "/tmp/",
+        "--no-cache-dir",
+        "--disable-pip-version-check",
+    ]
+)
+sys.path.insert(0, "/tmp/")
 #
 
 import boto3
@@ -44,7 +42,6 @@ except Exception as e:
     helper.init_failure(e)
 
 
-
 def do_action():
     data = {}
     client_method = client.getattr(method)
@@ -62,11 +59,8 @@ def do_action():
 
 
 def update_props_with_ids():
-    response = tag_client.get_resources(
-            TagFilters = [{
-                "Key": tag_key
-            }]
-    )
+    tag_key = f"IBoxCCRAWSResourceArn:{res_pid}"
+    response = tag_client.get_resources(TagFilters=[{"Key": tag_key}])
     if response["ResourceTagMappingList"]:
         for n in response["ResourceTagMappingList"][0]["Tags"]:
             if tag_key in n:
@@ -79,15 +73,17 @@ def update_props_with_ids():
 @helper.create
 def create(event, context):
     data = do_action()
+    arn = data["Arn"]
     tag_client.tag_resources(
-        ResourceARNList = [data["Arn"]],
-        Tags= {
-            tag_key: str(data),
+        ResourceARNList=[arn],
+        Tags={
+            f"IBoxCCRAWSResourceArn:{arn}": str(data),
         },
     )
     helper.Data.update(data)
 
-    return data["Arn"]
+    return arn
+
 
 @helper.update
 def update(event, context):
@@ -98,15 +94,21 @@ def update(event, context):
     update_props_with_ids()
     data = do_action()
     helper.Data.update(data)
-    
-    return data["Arn"]
+
+    return res_pid
+
 
 @helper.delete
 def delete(event, context):
+    for n in props:
+        del props[n]
+    update_props_with_ids()
+    data = do_action()
+
+    return res_pid
 
 
 def lambda_handler(event, context):
-    global stack_name
     global client
     global tag_client
     global atts
@@ -114,35 +116,39 @@ def lambda_handler(event, context):
     global props
     global update_keys
     global create_keys
-    global tag_key
+    global res_pid
 
     stack_name = event["StackId"].split("/")[1]
     action = event["RequestType"]
     res = event["ResourceProperties"]
+    res_before = event.get("OldResourceProperties", {})
+
     service = res["Service"]
     update_keys = res["UpdateKeys"]
     create_keys = res["CreateKeys"]
-    res_lid = res["LogicalResourceId"]
-    tag_key = f"IBoxCCRAWSResources:{res_lid}"
-
-    if service in SERVICE_REGION_MAP:
-        boto3_regional = boto3.session.Session(region_name="us-east-1")
-        client = boto3_regional.client(service)
-        tag_client = boto3_regional.client("resourcegroupstaggingapi")
-    else
-        client = boto3.client(service)
-        tag_client = boto3.client("resourcegroupstaggingapi")
-
+    replace_keys = res["ReplaceKeys"]
+    res_pid = res.get("PhysicalResourceId")
     atts = res["Atts"]
     methods = res["Methods"]
 
-    if action == "Create":
-        method = methods[0]
-    elif action == "Delete":
-        method = methods[1]
+    if service in SERVICES_GLOBAL:
+        boto3_regional = boto3.session.Session(region_name="us-east-1")
+        client = boto3_regional.client(service)
+        tag_client = boto3_regional.client("resourcegroupstaggingapi")
     else:
-        method = methods[2]
-        
+        client = boto3.client(service)
+        tag_client = boto3.client("resourcegroupstaggingapi")
+
+    method = methods.get(action)
+
+    if action == "Update":
+        for n in replace_keys:
+            if res.get(n) != res_before.get(n):
+                # update must become a create
+                event["RequestType"] = "Create"
+                method = methods["Create"]
+                break
+
     props = res["Props"]
 
     helper(event, context)

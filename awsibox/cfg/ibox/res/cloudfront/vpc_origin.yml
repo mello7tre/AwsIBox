@@ -30,12 +30,12 @@ global:
           - _:
               Value: GetAtt(IBOX_RESNAME, "Arn")
               Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
-        ServiceToken: ImportValue("LambdaCCRCloudFrontVpcOrigin")
+        ServiceToken: ImportValue("LambdaCCRAWSResources")
         Service: cloudfront
         Methods: 
-          - create_vpc_origin
-          - delete_vpc_origin
-          - update_vpc_origin
+          Create: create_vpc_origin
+          Delete: delete_vpc_origin
+          Update: update_vpc_origin
         Att:
           Arn: VpcOrigin.Arn
           Id: VpcOrigin.Id
@@ -44,6 +44,8 @@ global:
           Id: Id
           IfMatch: ETag
         CreateKeys: []
+        ReplaceKeys:
+          - Name
         Props:
           VpcOriginEndpointConfig:
             Arn: Ref("LoadBalancerApplicationInternal")
@@ -56,12 +58,12 @@ global:
               IBOX_ENABLED_IF: len(getattr(cfg, "CloudFrontDistribution", {})) == 0
               Value: GetAtt(IBOX_RESNAME, "Arn")
               Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
-        ServiceToken: ImportValue("LambdaCCRCloudFrontVpcOrigin")
+        ServiceToken: ImportValue("LambdaCCRAWSResources")
         Service: cloudfront
         Methods:
-          - create_vpc_origin
-          - delete_vpc_origin
-          - update_vpc_origin
+          Create: create_vpc_origin
+          Delete: delete_vpc_origin
+          Update: update_vpc_origin
         Atts:
           Arn: VpcOrigin.Arn
           Id: VpcOrigin.Id
@@ -70,6 +72,8 @@ global:
           Id: Id
           IfMatch: ETag
         CreateKeys: []
+        ReplaceKeys:
+          - Name
         Props:
           VpcOriginEndpointConfig:
             Arn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
