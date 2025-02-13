@@ -51,7 +51,7 @@ global:
             Arn: Ref("LoadBalancerApplicationInternal")
             Name: Sub(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-443")
             OriginProtocolPolicy: https-only
-   - CloudFrontVpcOriginECSLoadBalancerApplicationInternalHttps:
+    - CloudFrontVpcOriginECSLoadBalancerApplicationInternalHttps:
         IBOX_ENABLED: False
         IBOX_OUTPUT:
           - _:

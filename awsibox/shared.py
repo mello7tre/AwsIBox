@@ -1126,8 +1126,12 @@ def auto_get_props(
                         key[ibox_custom_obj], key_value, mapname, propname
                     )
                 elif isinstance(key_value, dict):
-                    # key value is a dict, get populated object
-                    value = _get_obj(obj, key, propname, mapname)
+                    if res_obj_type == "AWS::CloudFormation::CustomResource":
+                        # for CloudFormationCustomResource parse dict
+                        value = get_dictvalue(key)
+                    else:
+                        # key value is a dict, get populated object
+                        value = _get_obj(obj, key, propname, mapname)
                     if value is None:
                         continue
                 elif isinstance(key_value, str) and key_value.startswith(

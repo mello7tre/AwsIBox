@@ -178,7 +178,7 @@ CFG_TO_FUNC_OVERRIDE = {
         "dep": ["SecurityGroups", "ECSCapacityProvider"],
     },
     "CloudFormationCustomResource": {
-        "dep": ["ECSService"],
+        "dep": ["ECSService", "ElasticLoadBalancingV2Listener"],
     },
     "CloudFrontDistribution": {
         "module": "cloudfront",
