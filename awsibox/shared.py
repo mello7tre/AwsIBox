@@ -1116,6 +1116,13 @@ def auto_get_props(
                 # Process IBOX_AUTO_PO and IBOX_PCO keys
                 _process_ibox_auto_pco_key(propname)
 
+                # Avoid Propagating IBOX_KEY to CloudFormationCustomResource
+                if (
+                    res_obj_type == "AWS::CloudFormation::CustomResource"
+                    and propname.startswith("IBOX_")
+                ):
+                    continue
+
                 # IBOX_CODE_KEY - like IBOX_CODE but only if propname is in key too
                 if ibox_code_key in key:
                     value = eval(key[ibox_code_key])
@@ -1128,7 +1135,7 @@ def auto_get_props(
                 elif isinstance(key_value, dict):
                     if res_obj_type == "AWS::CloudFormation::CustomResource":
                         # for CloudFormationCustomResource parse dict
-                        value = get_dictvalue(key)
+                        value = get_dictvalue(key_value)
                     else:
                         # key value is a dict, get populated object
                         value = _get_obj(obj, key, propname, mapname)
