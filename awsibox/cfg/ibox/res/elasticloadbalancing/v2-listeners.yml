@@ -117,9 +117,10 @@ global:
         IBOX_ENABLED: False
         IBOX_TITLE: ListenerHttpsDefaultInternal
         IBOX_LINKED_OBJ:
-          Key: CloudFrontVpcOrigin
-          Type: ECSHttpsDefaultInternal
+          Key: CloudFormationCustomResource
+          Type: CloudFrontVpcOriginECSHttpsDefaultInternal
           Conf:
+            IBOX_RESNAME: CloudFrontVpcOrigin.IBOX_RESNAME
             IBOX_LINKED_OBJ_INDEX: IBOX_TITLE
         <<: [*alb, *https_internal]
         IBOX_OUTPUT:
@@ -174,9 +175,10 @@ global:
               IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
               IBOX_LINKED_OBJ_INDEX: Internal
           CloudFrontVpcOrigin:
-            Key: CloudFrontVpcOrigin
-            Type: ECSLoadBalancerApplicationInternalHttps
+            Key: CloudFormationCustomResource
+            Type: CloudFrontVpcOriginECSLoadBalancerApplicationInternalHttps
             Conf:
+              IBOX_RESNAME: CloudFrontVpcOrigin.IBOX_RESNAME
               IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
               IBOX_LINKED_OBJ_INDEX: IBOX_RESNAME
         <<: *https_internal

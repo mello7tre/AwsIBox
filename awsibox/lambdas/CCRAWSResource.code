@@ -26,6 +26,9 @@ import boto3
 import logging
 from crhelper import CfnResource
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 # Initialise the helper
 helper = CfnResource(
     json_logging=False,
@@ -82,6 +85,7 @@ def create(event, context):
     )
     helper.Data.update(data)
 
+    logger.info(f"End -- Lid: {res_lid} Pid: {arn} Method: {method}")
     return arn
 
 
@@ -95,6 +99,7 @@ def update(event, context):
     data = do_action()
     helper.Data.update(data)
 
+    logger.info(f"End -- Lid: {res_lid} Pid: {res_pid} Method: {method}")
     return res_pid
 
 
@@ -105,6 +110,7 @@ def delete(event, context):
     update_props_with_ids()
     data = do_action()
 
+    logger.info(f"End -- Lid: {res_lid} Pid: {res_pid} Method: {method}")
     return res_pid
 
 
@@ -117,6 +123,7 @@ def lambda_handler(event, context):
     global update_keys
     global create_keys
     global res_pid
+    global res_lid
 
     stack_name = event["StackId"].split("/")[1]
     action = event["RequestType"]
@@ -127,9 +134,10 @@ def lambda_handler(event, context):
     update_keys = res["UpdateKeys"]
     create_keys = res["CreateKeys"]
     replace_keys = res["ReplaceKeys"]
-    res_pid = res.get("PhysicalResourceId")
     atts = res["Atts"]
     methods = res["Methods"]
+    res_lid = res["LogicalResourceId"]
+    res_pid = res.get("PhysicalResourceId")
 
     if service in SERVICES_GLOBAL:
         boto3_regional = boto3.session.Session(region_name="us-east-1")
@@ -151,4 +159,5 @@ def lambda_handler(event, context):
 
     props = res["Props"]
 
+    logger.info(f"Begin -- Lid: {res_lid} Service: {service} Method: {method}")
     helper(event, context)

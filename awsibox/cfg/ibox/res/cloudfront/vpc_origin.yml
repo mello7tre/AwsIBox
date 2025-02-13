@@ -30,7 +30,7 @@ global:
           - _:
               Value: GetAtt(IBOX_RESNAME, "Arn")
               Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
-        ServiceToken: ImportValue("LambdaCCRAWSResources")
+        ServiceToken: ImportValue("LambdaCCRAWSResource")
         Service: cloudfront
         Methods: 
           Create: create_vpc_origin
@@ -58,7 +58,7 @@ global:
               IBOX_ENABLED_IF: len(getattr(cfg, "CloudFrontDistribution", {})) == 0
               Value: GetAtt(IBOX_RESNAME, "Arn")
               Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
-        ServiceToken: ImportValue("LambdaCCRAWSResources")
+        ServiceToken: ImportValue("LambdaCCRAWSResource")
         Service: cloudfront
         Methods:
           Create: create_vpc_origin
