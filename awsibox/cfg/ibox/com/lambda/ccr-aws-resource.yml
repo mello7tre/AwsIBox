@@ -22,10 +22,10 @@ global:
           Statement:
             - 1:
                 Action:
-                  - 'resourcegroupstaggingapi:tag_resources'
-                  - 'resourcegroupstaggingapi:get_resources'
-                  - 'cloudfront:create_vpc_origin'
-                  - 'cloudfront:delete_vpc_origin'
-                  - 'cloudfront:update_vpc_origin'
+                  - 'resourcegroupstaggingapi:TagResources'
+                  - 'resourcegroupstaggingapi:GetResources'
+                  - 'cloudfront:CreateVpcOrigin'
+                  - 'cloudfront:DeleteVpcOrigin'
+                  - 'cloudfront:UpdateVpcOrigin'
                 Effect: Allow
                 Resource: '*'
