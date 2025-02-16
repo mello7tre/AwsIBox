@@ -50,13 +50,17 @@ def do_action():
     client_method = client.getattr(method)
     reponse = client_method(**props)
     for n, v in atts.items():
-        res = {}
-        for m in v.split("."):
-            if m in reponse:
-                res = reponse[m]
-            elif m in res:
-                res = res[m]
-        data[n] = res
+        data[n] = reduce(dict.get, v.split("."), reponse)
+
+    # tag resource using arn/pid as tag name
+    arn = data["Arn"]
+    tag = TAG_PREFIX + arn.split(":")[-1]
+    tag_client.tag_resources(
+        ResourceARNList=[arn],
+        Tags={
+            tag: str(data),
+        },
+    )
 
     return data
 
@@ -76,14 +80,6 @@ def update_props_with_ids():
 @helper.create
 def create(event, context):
     data = do_action()
-    arn = data["Arn"]
-    tag = TAG_PREFIX + arn.split(":")[-1]
-    tag_client.tag_resources(
-        ResourceARNList=[arn],
-        Tags={
-            tag: str(data),
-        },
-    )
     helper.Data.update(data)
 
     logger.info(f"End -- Lid: {res_lid} Pid: {arn} Method: {method}")
@@ -152,7 +148,10 @@ def lambda_handler(event, context):
 
     if action == "Update":
         for n in replace_keys:
-            if res.get(n) != res_before.get(n):
+            # compare provious and current value using reduce
+            if reduce(dict.get, n.split("."), res["Props"]) != reduce(
+                dict.get, n.split("."), res_before["Props"]
+            ):
                 # update must become a create
                 event["RequestType"] = "Create"
                 method = methods["Create"]

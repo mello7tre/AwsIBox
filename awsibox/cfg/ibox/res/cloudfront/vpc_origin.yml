@@ -36,7 +36,7 @@ global:
           Create: create_vpc_origin
           Delete: delete_vpc_origin
           Update: update_vpc_origin
-        Att:
+        Atts:
           Arn: VpcOrigin.Arn
           Id: VpcOrigin.Id
           IfMatch: ETag
@@ -73,7 +73,7 @@ global:
           IfMatch: ETag
         CreateKeys: []
         ReplaceKeys:
-          - Name
+          - VpcOriginEndpointConfig.Name
         Props:
           VpcOriginEndpointConfig:
             Arn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
