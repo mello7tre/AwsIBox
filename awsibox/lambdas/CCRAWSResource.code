@@ -113,7 +113,8 @@ def delete(event, context):
     for n in list(props.keys()):
         del props[n]
     update_props_with_ids()
-    do_action()
+    if props:
+        do_action()
 
     logger.info(f"End -- Lid: {res_lid} Pid: {res_pid} Method: {method}")
     return res_pid
