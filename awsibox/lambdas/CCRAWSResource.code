@@ -2,6 +2,7 @@
 # DOWNLOAD/USE UP TO DATE BOTO3 - REMOVE WHEN https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html >= 1.26.6
 import sys
 import ast
+from functools import reduce
 from pip._internal import main
 
 SERVICES_GLOBAL = ["cloudfront"]
@@ -62,7 +63,7 @@ def do_action():
         },
     )
 
-    return data
+    return data, arn
 
 
 def update_props_with_ids():
@@ -79,7 +80,7 @@ def update_props_with_ids():
 
 @helper.create
 def create(event, context):
-    data = do_action()
+    data, arn = do_action()
     helper.Data.update(data)
 
     logger.info(f"End -- Lid: {res_lid} Pid: {arn} Method: {method}")
@@ -93,7 +94,7 @@ def update(event, context):
         if n in props:
             del props[n]
     update_props_with_ids()
-    data = do_action()
+    data, _ = do_action()
     helper.Data.update(data)
 
     logger.info(f"End -- Lid: {res_lid} Pid: {res_pid} Method: {method}")
@@ -105,7 +106,7 @@ def delete(event, context):
     for n in props:
         del props[n]
     update_props_with_ids()
-    data = do_action()
+    do_action()
 
     logger.info(f"End -- Lid: {res_lid} Pid: {res_pid} Method: {method}")
     return res_pid
@@ -122,10 +123,14 @@ def lambda_handler(event, context):
     global res_pid
     global res_lid
 
-    stack_name = event["StackId"].split("/")[1]
+    # stack_name = event["StackId"].split("/")[1]
     action = event["RequestType"]
     res = event["ResourceProperties"]
     res_before = event.get("OldResourceProperties", {})
+    req_id = event["RequestId"]
+    resp_url = event["ResponseURL"]
+
+    logger.info(f"RequestId: {req_id} - ResponseURL: {resp_url}")
 
     service = res["Service"]
     update_keys = res["UpdateKeys"]
