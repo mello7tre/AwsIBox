@@ -24,6 +24,8 @@ main(
 sys.path.insert(0, "/tmp/")
 #
 
+# warning order is important, as crhelper import boto3 it must be imported after main
+# otherway lambda will still use inline boto3 and not updated one
 import boto3
 import logging
 from crhelper import CfnResource
