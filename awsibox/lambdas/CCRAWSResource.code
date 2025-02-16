@@ -5,7 +5,7 @@ import ast
 from pip._internal import main
 
 SERVICES_GLOBAL = ["cloudfront"]
-
+TAG_PREFIX = "IBoxCcrAws:"
 
 main(
     [
@@ -62,7 +62,7 @@ def do_action():
 
 
 def update_props_with_ids():
-    tag_key = f"IBoxCCRAWSResourceArn:{res_pid}"
+    tag_key = f"{TAG_PREFIX}{res_pid}"
     response = tag_client.get_resources(TagFilters=[{"Key": tag_key}])
     if response["ResourceTagMappingList"]:
         for n in response["ResourceTagMappingList"][0]["Tags"]:
@@ -77,10 +77,11 @@ def update_props_with_ids():
 def create(event, context):
     data = do_action()
     arn = data["Arn"]
+    tag = TAG_PREFIX + arn.split(":")[-1]
     tag_client.tag_resources(
         ResourceARNList=[arn],
         Tags={
-            f"IBoxCCRAWSResourceArn:{arn}": str(data),
+            tag: str(data),
         },
     )
     helper.Data.update(data)
