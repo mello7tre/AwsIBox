@@ -13,7 +13,7 @@ global:
         Layers:
           - LambdaLayerVersionPython39CRHelper
         Runtime: python3.11
-        Timeout: 60
+        Timeout: 600
   IAMPolicy:
     - LambdaCCRAWSResource:
         Roles:
