@@ -127,11 +127,11 @@ def lambda_handler(event, context):
     # stack_name = event["StackId"].split("/")[1]
     action = event["RequestType"]
     res_lid = event["LogicalResourceId"]
-    res_pid = event.get("PhysicalResourceId")
     res = event["ResourceProperties"]
-    res_before = event.get("OldResourceProperties", {})
     req_id = event["RequestId"]
     resp_url = event["ResponseURL"]
+    res_pid = event.get("PhysicalResourceId")
+    res_before = event.get("OldResourceProperties", {})
 
     logger.info(f"RequestId: {req_id} - ResponseURL: {resp_url}")
 
