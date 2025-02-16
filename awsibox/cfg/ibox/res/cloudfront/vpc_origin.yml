@@ -52,7 +52,7 @@ global:
             Name: Sub(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-443")
             OriginProtocolPolicy: https-only
             HTTPPort: 80
-            HTTPSPort: get_endvalue(f'{IBOX_LINKED_OBJ_NAME}Port')
+            HTTPSPort: 443
     - CloudFrontVpcOriginECSLoadBalancerApplicationInternalHttps:
         IBOX_ENABLED: False
         IBOX_OUTPUT:
