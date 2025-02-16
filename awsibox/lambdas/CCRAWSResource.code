@@ -48,7 +48,7 @@ except Exception as e:
 
 def do_action():
     data = {}
-    client_method = client.getattr(method)
+    client_method = getattr(client, method)
     reponse = client_method(**props)
     for n, v in atts.items():
         data[n] = reduce(dict.get, v.split("."), reponse)

@@ -22,8 +22,8 @@ global:
           Statement:
             - 1:
                 Action:
-                  - 'resourcegroupstaggingapi:TagResources'
-                  - 'resourcegroupstaggingapi:GetResources'
+                  - 'tag:TagResources'
+                  - 'tag:GetResources'
                   - 'cloudfront:CreateVpcOrigin'
                   - 'cloudfront:DeleteVpcOrigin'
                   - 'cloudfront:UpdateVpcOrigin'
