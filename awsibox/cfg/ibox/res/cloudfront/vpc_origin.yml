@@ -51,8 +51,8 @@ global:
             Arn: Ref("LoadBalancerApplicationInternal")
             Name: Sub(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-443")
             OriginProtocolPolicy: https-only
-            HTTPPort: 80
-            HTTPSPort: 443
+            HTTPPort: "80"
+            HTTPSPort: "443"
     - CloudFrontVpcOriginECSLoadBalancerApplicationInternalHttps:
         IBOX_ENABLED: False
         IBOX_OUTPUT:
@@ -81,5 +81,5 @@ global:
             Arn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')
             Name: get_subvalue(f"{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}-${EnvRole}-${1M}", f'{IBOX_LINKED_OBJ_NAME}Port')
             OriginProtocolPolicy: https-only
-            HTTPPort: 80
+            HTTPPort: "80"
             HTTPSPort: get_endvalue(f'{IBOX_LINKED_OBJ_NAME}Port')
