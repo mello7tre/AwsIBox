@@ -126,6 +126,8 @@ def lambda_handler(event, context):
 
     # stack_name = event["StackId"].split("/")[1]
     action = event["RequestType"]
+    res_lid = event["LogicalResourceId"]
+    res_pid = event.get("PhysicalResourceId")
     res = event["ResourceProperties"]
     res_before = event.get("OldResourceProperties", {})
     req_id = event["RequestId"]
@@ -139,8 +141,6 @@ def lambda_handler(event, context):
     replace_keys = res["ReplaceKeys"]
     atts = res["Atts"]
     methods = res["Methods"]
-    res_lid = res["LogicalResourceId"]
-    res_pid = res.get("PhysicalResourceId")
 
     if service in SERVICES_GLOBAL:
         boto3_regional = boto3.session.Session(region_name="us-east-1")
