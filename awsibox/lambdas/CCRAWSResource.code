@@ -2,7 +2,9 @@
 # DOWNLOAD/USE UP TO DATE BOTO3 - REMOVE WHEN https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html >= 1.26.6
 import sys
 import ast
+import logging
 from functools import reduce
+from crhelper import CfnResource
 from pip._internal import main
 
 SERVICES_GLOBAL = ["cloudfront"]
@@ -24,8 +26,6 @@ sys.path.insert(0, "/tmp/")
 #
 
 import boto3
-import logging
-from crhelper import CfnResource
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
