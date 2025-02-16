@@ -1,5 +1,6 @@
 # vim: ft=python
-# DOWNLOAD/USE UP TO DATE BOTO3 - REMOVE WHEN https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html >= 1.26.6
+# DOWNLOAD/USE UP TO DATE BOTO3 REMOVE IF
+# https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html >= 1.26.6
 import sys
 import ast
 import logging
