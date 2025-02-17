@@ -77,9 +77,9 @@ def merge_dict(base, work, keep=False):
             # ++ is used to append elements to an existing key
             k_clean = k.replace("++", "")
             if k in base:
-                base[k_clean] = base.get(k) + work.get(k_clean, [])
+                base[k_clean] = base[k] + work.get(k_clean, [])
             else:
-                base[k_clean] = base.get(k_clean, []) + work.get(k)
+                base[k_clean] = base.get(k_clean, []) + work[k]
         elif k in base and keep:
             # key is in base and want to keep that value
             pass
