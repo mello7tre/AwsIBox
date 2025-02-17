@@ -22,10 +22,12 @@ global:
           Statement:
             - 1:
                 Action:
-                  - 'tag:TagResources'
-                  - 'tag:GetResources'
                   - 'cloudfront:CreateVpcOrigin'
                   - 'cloudfront:DeleteVpcOrigin'
                   - 'cloudfront:UpdateVpcOrigin'
                 Effect: Allow
                 Resource: '*'
+  IAMRole:
+    - LambdaCCRAWSResource:
+        ManagedPolicyArns++:
+          - 'arn:aws:iam::aws:policy/ResourceGroupsTaggingAPITagUntagSupportedResources'

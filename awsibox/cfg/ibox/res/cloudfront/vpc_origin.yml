@@ -45,7 +45,7 @@ global:
           IfMatch: ETag
         CreateKeys: []
         ReplaceKeys:
-          - Name
+          - VpcOriginEndpointConfig.Name
         Props:
           VpcOriginEndpointConfig:
             Arn: Ref("LoadBalancerApplicationInternal")
