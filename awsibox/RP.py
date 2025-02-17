@@ -73,12 +73,13 @@ def merge_dict(base, work, keep=False):
             base[k.replace("**", "")] = work[k]
         elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
             base[k] = merge_dict(base[k], work[k], keep=keep)
-        elif k.endswith("++") and isinstance(work.get(k), list):
+        elif k.endswith("++"):
             # ++ is used to append elements to an existing key
-            try:
-                base[k.replace("++", "")] += work[k]
-            except Exception:
-                base[k.replace("++", "")] = work[k]
+            k_clean = k.replace("++", "")
+            if k in base:
+                base[k_clean] = base.get(k) + work.get(k_clean, [])
+            else:
+                base[k_clean] = base.get(k_clean, []) + work.get(k)
         elif k in base and keep:
             # key is in base and want to keep that value
             pass
