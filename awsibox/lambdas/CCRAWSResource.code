@@ -2,7 +2,7 @@
 # DOWNLOAD/USE UP TO DATE BOTO3 REMOVE IF
 # https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html >= 1.26.6
 import sys
-import ast
+from ast import literal_eval
 from functools import reduce
 from pip._internal import main
 
@@ -80,7 +80,7 @@ def update_props_with_ids():
     if response["ResourceTagMappingList"]:
         for n in response["ResourceTagMappingList"][0]["Tags"]:
             if tag_key in n:
-                tag_key_value = ast.literal_eval(n["Value"])
+                tag_key_value = literal_eval(n["Value"])
                 for k in update_keys:
                     if k in tag_key_value:
                         props[k] = tag_key_value[k]
@@ -119,6 +119,21 @@ def delete(event, context):
 
     logger.info(f"End -- Lid: {res_lid} Pid: {res_pid} Method: {method}")
     return res_pid
+
+
+def parse_dict_for_int(data):
+    if isinstance(data, list):
+        value = [parse_dict_for_int(k) for k in data]
+    elif isinstance(data, dict):
+        value = {i: parse_dict_for_int(k) for i, k in data.items()}
+    elif isinstance(data, str) and data.isdecimal():
+        value = int(data)
+    elif data in ["True", "False"]:
+        value = literal_eval(data)
+    else:
+        value = data
+
+    return value
 
 
 def lambda_handler(event, context):
@@ -171,7 +186,7 @@ def lambda_handler(event, context):
                 method = methods["Create"]
                 break
 
-    props = res["Props"]
+    props = parse_dict_for_int(res["Props"])
 
     logger.info(f"Begin -- Lid: {res_lid} Service: {service} Method: {method}")
     helper(event, context)
