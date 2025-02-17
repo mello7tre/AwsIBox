@@ -73,7 +73,7 @@ def do_action():
             tag: tag_value,
         },
     )
-    if "FailedResourcesMap" in response:
+    if response.get("FailedResourcesMap"):
         logger.error(response)
 
     return data, arn
