@@ -39,6 +39,10 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[], check_mapped=Fals
                 exist = True
             except Exception:
                 exist = False
+            if isinstance(v, list) and hasattr(cfg, f"{key_name}++"):
+                # needed to merge list for sourced IBOX_SOURCE_OBJ resource
+                # in the key need to use ++++ to propagate it
+                v += getattr(cfg, f"{key_name}++")
             if not exist or overwrite:
                 setattr(cfg, key_name, v)
                 if key_name not in mappedvalues:
