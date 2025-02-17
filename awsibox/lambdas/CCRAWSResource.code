@@ -66,12 +66,11 @@ def do_action():
     # tag resource using arn/pid as tag name
     arn = data["Arn"]
     tag = TAG_PREFIX + arn.split(":")[-1]
-    tag_value = {n: data[n] for n in update_keys}
+    tag_value = " ".join([n + "==" + data[n] for n in update_keys])
     response = tag_client.tag_resources(
         ResourceARNList=[arn],
         Tags={
-            # tag do not allow " or '
-            tag: str(tag_value).replace("'", ".."),
+            tag: tag_value,
         },
     )
     if "FailedResourcesMap" in response:
@@ -86,7 +85,9 @@ def update_props_with_ids():
     if response["ResourceTagMappingList"]:
         for n in response["ResourceTagMappingList"][0]["Tags"]:
             if tag_key in n:
-                tag_key_value = literal_eval(n["Value"].replace("..", "'"))
+                tag_key_value = {
+                    t.split("==")[0]: t.split("==")[1] for t in n["Value"].split()
+                }
                 for k in update_keys:
                     if k in tag_key_value:
                         props[k] = tag_key_value[k]
