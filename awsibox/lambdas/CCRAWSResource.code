@@ -2,6 +2,7 @@
 # DOWNLOAD/USE UP TO DATE BOTO3 REMOVE IF
 # https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html >= 1.26.6
 import sys
+
 # from pprint import pprint
 from ast import literal_eval
 from functools import reduce
@@ -65,10 +66,12 @@ def do_action():
     # tag resource using arn/pid as tag name
     arn = data["Arn"]
     tag = TAG_PREFIX + arn.split(":")[-1]
+    tag_value = {n: data[n] for n in update_keys}
     response = tag_client.tag_resources(
         ResourceARNList=[arn],
         Tags={
-            tag: str(data),
+            # tag do not allow " or '
+            tag: str(tag_value).replace("'", ".."),
         },
     )
     if "FailedResourcesMap" in response:
@@ -83,7 +86,7 @@ def update_props_with_ids():
     if response["ResourceTagMappingList"]:
         for n in response["ResourceTagMappingList"][0]["Tags"]:
             if tag_key in n:
-                tag_key_value = literal_eval(n["Value"])
+                tag_key_value = literal_eval(n["Value"].replace("..", "'"))
                 for k in update_keys:
                     if k in tag_key_value:
                         props[k] = tag_key_value[k]
