@@ -4,6 +4,8 @@ IBoxLoader: !include
 global:
   Lambda:
     - CCRAWSResource:
+        IBOX_LINKED_OBJ:
+          Role**: {}
         Architectures:
           - arm64
         Code:
@@ -29,5 +31,6 @@ global:
                 Resource: '*'
   IAMRole:
     - LambdaCCRAWSResource:
-        ManagedPolicyArns++:
+        IBOX_SOURCE_OBJ: IAMRoleLambda
+        ManagedPolicyArns++++:
           - 'arn:aws:iam::aws:policy/ResourceGroupsTaggingAPITagUntagSupportedResources'
