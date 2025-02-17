@@ -33,8 +33,7 @@ def inject_in_RP_map(key_name, value):
 def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[], check_mapped=False):
     if hasattr(key, "items"):
         for k, v in key.items():
-            # remove both * and + that can be present for special IBOX usage
-            key_name = f"{prefix}{k}".translate("".maketrans({"*": None, "+": None}))
+            key_name = f"{prefix}{k}"
             try:
                 getattr(cfg, key_name)
                 exist = True
@@ -70,12 +69,12 @@ def merge_dict(base, work, keep=False):
     for k in keys:
         if k.endswith("**"):
             # ** is used to replace existing dict instead of merging it
-            base[k.replace("**", "")] = work[k]
+            base[k.replace("**", "", 1)] = work[k]
         elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
             base[k] = merge_dict(base[k], work[k], keep=keep)
         elif k.endswith("++"):
             # ++ is used to append elements to an existing key
-            k_clean = k.replace("++", "")
+            k_clean = k.replace("++", "", 1)
             if k in base:
                 base[k_clean] = base[k] + work.get(k_clean, [])
             else:
