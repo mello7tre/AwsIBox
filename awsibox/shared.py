@@ -360,6 +360,12 @@ def get_dictvalue(key, mapname=""):
             else:
                 value.append(prop_obj)
     elif isinstance(key, dict):
+        for i in list(key.keys()):
+            # parse IBOX_CODE key
+            ibox_code_key = f"{i}.IBOX_CODE"
+            if ibox_code_key in key:
+                key[i] = key[ibox_code_key]
+                del key[ibox_code_key]
         value = {
             i: get_dictvalue(k, mapname=f"{mapname}{i}" if mapname else "")
             for i, k in key.items()
