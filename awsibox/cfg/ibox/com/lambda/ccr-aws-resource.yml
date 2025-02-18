@@ -27,6 +27,7 @@ global:
                   - 'cloudfront:CreateVpcOrigin'
                   - 'cloudfront:DeleteVpcOrigin'
                   - 'cloudfront:UpdateVpcOrigin'
+                  - 'cloudfront:GetVpcOrigin'
                 Effect: Allow
                 Resource: '*'
   IAMRole:

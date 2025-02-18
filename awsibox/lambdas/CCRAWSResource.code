@@ -65,12 +65,12 @@ def do_action():
 
     # tag resource using arn/pid as tag name
     arn = data["Arn"]
-    tag = TAG_PREFIX + arn.split(":")[-1]
+    tag_key = TAG_PREFIX + arn.split(":")[-1]
     tag_value = " ".join([n + "==" + data[n] for n in update_keys])
     response = tag_client.tag_resources(
         ResourceARNList=[arn],
         Tags={
-            tag: tag_value,
+            tag_key: tag_value,
         },
     )
     if response.get("FailedResourcesMap"):
@@ -79,24 +79,38 @@ def do_action():
     return data, arn
 
 
-def update_props_with_ids():
-    tag_key = f"{TAG_PREFIX}{res_pid}"
+def update_props_from_tag():
+    tag_key = TAG_PREFIX + res_pid.split(":")[-1]
     response = tag_client.get_resources(TagFilters=[{"Key": tag_key}])
     if response["ResourceTagMappingList"]:
         for n in response["ResourceTagMappingList"][0]["Tags"]:
-            if tag_key in n:
-                tag_key_value = {
-                    t.split("==")[0]: t.split("==")[1] for t in n["Value"].split()
-                }
-                for k in update_keys:
-                    if k in tag_key_value:
-                        props[k] = tag_key_value[k]
+            if tag_key in n["Key"]:
+                for t in n["Value"].split():
+                    tag_name = t.split("==")[0]
+                    if tag_name in update_keys:
+                        props[tag_name] = t.split("==")[1]
+
+
+def update_props_from_get():
+    # need to remove object props for get
+    update_props = {n: props[n] for n in update_keys}
+    update_props.pop("IfMatch", "")
+    client_method = getattr(client, get_method)
+    reponse = client_method(**update_props)
+    for n, v in atts.items():
+        if n in update_keys:
+            props[n] = reduce(dict.get, v.split("."), reponse)
 
 
 @helper.create
 def create(event, context):
-    data, arn = do_action()
-    helper.Data.update(data)
+    try:
+        data, arn = do_action()
+    except Exception as e:
+        logger.error(e)
+        arn = res_pid
+    else:
+        helper.Data.update(data)
 
     logger.info(f"End -- Lid: {res_lid} Pid: {arn} Method: {method}")
     return arn
@@ -106,11 +120,12 @@ def create(event, context):
 def update(event, context):
     for n in create_keys:
         # delete keys used only for create
-        props.pop(n, _)
-    if props:
-        update_props_with_ids()
-        data, _ = do_action()
-        helper.Data.update(data)
+        props.pop(n, "")
+    update_props_from_tag()
+    if get_method:
+        update_props_from_get()
+    data, _ = do_action()
+    helper.Data.update(data)
 
     logger.info(f"End -- Lid: {res_lid} Pid: {res_pid} Method: {method}")
     return res_pid
@@ -119,7 +134,9 @@ def update(event, context):
 @helper.delete
 def delete(event, context):
     props.clear()
-    update_props_with_ids()
+    update_props_from_tag()
+    if get_method:
+        update_props_from_get()
     if props:
         do_action()
 
@@ -152,6 +169,7 @@ def lambda_handler(event, context):
     global create_keys
     global res_pid
     global res_lid
+    global get_method
 
     # stack_name = event["StackId"].split("/")[1]
     action = event["RequestType"]
@@ -170,6 +188,7 @@ def lambda_handler(event, context):
     replace_keys = res["ReplaceKeys"]
     atts = res["Atts"]
     methods = res["Methods"]
+    get_method = methods.get("Get")
 
     if service in SERVICES_GLOBAL:
         boto3_regional = boto3.session.Session(region_name="us-east-1")
@@ -182,20 +201,20 @@ def lambda_handler(event, context):
     method = methods.get(action)
 
     if action == "Update":
-        if res["Props"] == res_before["Props"]:
-            res["Props"].clear()
-        else:
-            for n in replace_keys:
-                # compare provious and current value using reduce
-                if reduce(dict.get, n.split("."), res["Props"]) != reduce(
-                    dict.get, n.split("."), res_before["Props"]
-                ):
-                    # update must become a create
-                    event["RequestType"] = "Create"
-                    method = methods["Create"]
-                    break
+        for n in replace_keys:
+            # compare provious and current value using reduce
+            if reduce(dict.get, n.split("."), res["Props"]) != reduce(
+                dict.get, n.split("."), res_before["Props"]
+            ):
+                # update must become a create
+                event["RequestType"] = "Create"
+                method = methods["Create"]
+                break
 
     props = parse_dict_for_int(res["Props"])
 
-    logger.info(f"Begin -- Lid: {res_lid} Service: {service} Method: {method}")
+    logger.info(
+        f"Begin -- Lid: {res_lid} Pid: {res_pid} "
+        f"Service: {service} Method: {method}"
+    )
     helper(event, context)

@@ -36,6 +36,7 @@ global:
           Create: create_vpc_origin
           Delete: delete_vpc_origin
           Update: update_vpc_origin
+          Get: get_vpc_origin
         Atts:
           Arn: VpcOrigin.Arn
           Id: VpcOrigin.Id
@@ -66,6 +67,7 @@ global:
           Create: create_vpc_origin
           Delete: delete_vpc_origin
           Update: update_vpc_origin
+          Get: get_vpc_origin
         Atts:
           Arn: VpcOrigin.Arn
           Id: VpcOrigin.Id
