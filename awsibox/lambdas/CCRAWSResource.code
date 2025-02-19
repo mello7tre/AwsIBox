@@ -52,7 +52,7 @@ helper = CfnResource(
 
 try:
     # Init code goes here
-    is_success = True
+    pass
 except Exception as e:
     helper.init_failure(e)
 
@@ -181,7 +181,7 @@ def parse_dict_for_int(data):
     return value
 
 
-def lambda_handler(event, context):
+def setup(event, context):
     global client
     global tag_client
     global atts
@@ -234,4 +234,12 @@ def lambda_handler(event, context):
         f"Begin -- Lid: {res_lid} Pid: {res_pid} "
         f"Service: {service} Method: {method}"
     )
-    helper(event, context)
+
+
+def lambda_handler(event, context):
+    try:
+        setup(event, context)
+    except Exception as e:
+        logger.error(e)
+    finally:
+        helper(event, context)

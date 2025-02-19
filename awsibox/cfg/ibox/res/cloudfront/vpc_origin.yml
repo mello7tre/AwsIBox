@@ -28,7 +28,7 @@ global:
         IBOX_ENABLED: False
         IBOX_OUTPUT:
           - _:
-              Value: GetAtt(IBOX_RESNAME, "Arn")
+              Value: GetAtt(IBOX_RESNAME, "Id")
               Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
         ServiceToken: ImportValue("LambdaCCRAWSResource")
         IBoxConf: &ccr_aws_ibox_conf_vpc_origin
@@ -69,7 +69,7 @@ global:
         IBOX_OUTPUT:
           - _:
               IBOX_ENABLED_IF: len(getattr(cfg, "CloudFrontDistribution", {})) == 0
-              Value: GetAtt(IBOX_RESNAME, "Arn")
+              Value: GetAtt(IBOX_RESNAME, "Id")
               Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
         ServiceToken: ImportValue("LambdaCCRAWSResource")
         IBoxConf: *ccr_aws_ibox_conf_vpc_origin
