@@ -31,22 +31,32 @@ global:
               Value: GetAtt(IBOX_RESNAME, "Arn")
               Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
         ServiceToken: ImportValue("LambdaCCRAWSResource")
-        Service: cloudfront
-        Methods: 
-          Create: create_vpc_origin
-          Delete: delete_vpc_origin
-          Update: update_vpc_origin
-          Get: get_vpc_origin
-        Atts:
-          Arn: VpcOrigin.Arn
-          Id: VpcOrigin.Id
-          IfMatch: ETag
-        UpdateKeys:
-          Id: Id
-          IfMatch: ETag
-        CreateKeys: []
-        ReplaceKeys:
-          - VpcOriginEndpointConfig.Name
+        IBoxConf: &ccr_aws_ibox_conf_vpc_origin
+          Service: cloudfront
+          Action:
+            Create:
+              Method: create_vpc_origin
+            Delete:
+              Method: delete_vpc_origin
+            Update:
+              Method: update_vpc_origin
+              Keys:
+                Id: Id
+                IfMatch: ETag
+              DenyKeys: []
+              ReplaceKeys:
+                - VpcOriginEndpointConfig.Name
+            Get:
+              Method: get_vpc_origin
+              Keys:
+                Id: Id
+            Wait:
+              For:
+                VpcOrigin.Status: Deployed
+          Atts:
+            Arn: VpcOrigin.Arn
+            Id: VpcOrigin.Id
+            IfMatch: ETag
         Props:
           VpcOriginEndpointConfig:
             Arn: Ref("LoadBalancerApplicationInternal")
@@ -62,22 +72,7 @@ global:
               Value: GetAtt(IBOX_RESNAME, "Arn")
               Export: Export(Sub(f"CloudFrontVpcOrigin{IBOX_LINKED_OBJ_INDEX}" "-${AWS::StackName}"))
         ServiceToken: ImportValue("LambdaCCRAWSResource")
-        Service: cloudfront
-        Methods:
-          Create: create_vpc_origin
-          Delete: delete_vpc_origin
-          Update: update_vpc_origin
-          Get: get_vpc_origin
-        Atts:
-          Arn: VpcOrigin.Arn
-          Id: VpcOrigin.Id
-          IfMatch: ETag
-        UpdateKeys:
-          Id: Id
-          IfMatch: ETag
-        CreateKeys: []
-        ReplaceKeys:
-          - VpcOriginEndpointConfig.Name
+        IBoxConf: *ccr_aws_ibox_conf_vpc_origin
         Props:
           VpcOriginEndpointConfig:
             Arn: get_expvalue('LoadBalancerApplicationInternal', 'LoadBalancerApplicationStack')

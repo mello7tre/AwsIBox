@@ -2,6 +2,7 @@
 # DOWNLOAD/USE UP TO DATE BOTO3 REMOVE IF
 # https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html >= 1.26.6
 import sys
+import time
 
 # from pprint import pprint
 from ast import literal_eval
@@ -56,29 +57,6 @@ except Exception as e:
     helper.init_failure(e)
 
 
-def do_action():
-    data = {}
-    client_method = getattr(client, method)
-    reponse = client_method(**props)
-    for n, v in atts.items():
-        data[n] = reduce(dict.get, v.split("."), reponse)
-
-    # tag resource using arn/pid as tag name
-    arn = data["Arn"]
-    tag_key = TAG_PREFIX + arn.split(":")[-1]
-    tag_value = " ".join([n + "==" + data[n] for n in update_keys])
-    response = tag_client.tag_resources(
-        ResourceARNList=[arn],
-        Tags={
-            tag_key: tag_value,
-        },
-    )
-    if response.get("FailedResourcesMap"):
-        logger.error(response)
-
-    return data, arn
-
-
 def update_props_from_tag():
     tag_key = TAG_PREFIX + res_pid.split(":")[-1]
     response = tag_client.get_resources(TagFilters=[{"Key": tag_key}])
@@ -91,26 +69,72 @@ def update_props_from_tag():
                         props[tag_name] = t.split("==")[1]
 
 
+def prepare_for_get(data):
+    get_conf = ibox_conf["Action"].get("Get", ibox_conf["Action"]["Wait"])
+
+    return getattr(client, get_conf["Method"]), {
+        n: data[v] for n, v in get_conf["Keys"].items()
+    }
+
+
 def update_props_from_get():
-    # need to remove object props for get
-    update_props = {n: props[n] for n in update_keys}
-    update_props.pop("IfMatch", "")
-    client_method = getattr(client, get_method)
-    reponse = client_method(**update_props)
+    if not ibox_conf["Action"].get("Get"):
+        return
+    get_method, props_get = prepare_for_get(props)
+    response = get_method(**props_get)
     for n, v in atts.items():
         if n in update_keys:
-            props[n] = reduce(dict.get, v.split("."), reponse)
+            props[n] = reduce(dict.get, v.split("."), response)
+
+
+def wait_for(data):
+    get_method, props_get = prepare_for_get(data)
+    while True:
+        response = get_method(**props_get)
+        for n, v in ibox_conf["Action"]["Wait"]["For"].items():
+            if reduce(dict.get, n.split("."), response) == v:
+                return
+            logger.info("Waiting for status....")
+            time.sleep(30)
+
+
+def do_action(tag=True, wait=True):
+    data = {}
+    action_method = getattr(client, method)
+    response = action_method(**props)
+    for n, v in atts.items():
+        data[n] = reduce(dict.get, v.split("."), response)
+
+    if wait and ibox_conf["Action"].get("Wait"):
+        wait_for(data)
+
+    if tag:
+        # tag resource using arn/pid as tag name
+        arn = data["Arn"]
+        tag_key = TAG_PREFIX + arn.split(":")[-1]
+        tag_value = " ".join([n + "==" + data[n] for n in update_keys])
+        response = tag_client.tag_resources(
+            ResourceARNList=[arn],
+            Tags={
+                tag_key: tag_value,
+            },
+        )
+        if response.get("FailedResourcesMap"):
+            logger.error(response)
+
+    return data
 
 
 @helper.create
 def create(event, context):
     try:
-        data, arn = do_action()
+        data = do_action()
     except Exception as e:
         logger.error(e)
         arn = res_pid
     else:
         helper.Data.update(data)
+        arn = data["Arn"]
 
     logger.info(f"End -- Lid: {res_lid} Pid: {arn} Method: {method}")
     return arn
@@ -118,13 +142,12 @@ def create(event, context):
 
 @helper.update
 def update(event, context):
-    for n in create_keys:
-        # delete keys used only for create
+    for n in ibox_conf["Action"]["Update"].get("DenyKeys", []):
+        # delete keys not used by update
         props.pop(n, "")
     update_props_from_tag()
-    if get_method:
-        update_props_from_get()
-    data, _ = do_action()
+    update_props_from_get()
+    data = do_action()
     helper.Data.update(data)
 
     logger.info(f"End -- Lid: {res_lid} Pid: {res_pid} Method: {method}")
@@ -135,10 +158,9 @@ def update(event, context):
 def delete(event, context):
     props.clear()
     update_props_from_tag()
-    if get_method:
-        update_props_from_get()
+    update_props_from_get()
     if props:
-        do_action()
+        do_action(tag=False, wait=False)
 
     logger.info(f"End -- Lid: {res_lid} Pid: {res_pid} Method: {method}")
     return res_pid
@@ -166,12 +188,10 @@ def lambda_handler(event, context):
     global method
     global props
     global update_keys
-    global create_keys
     global res_pid
     global res_lid
-    global get_method
+    global ibox_conf
 
-    # stack_name = event["StackId"].split("/")[1]
     action = event["RequestType"]
     res_lid = event["LogicalResourceId"]
     res = event["ResourceProperties"]
@@ -182,13 +202,10 @@ def lambda_handler(event, context):
 
     logger.info(f"RequestId: {req_id} - ResponseURL: {resp_url}")
 
-    service = res["Service"]
-    update_keys = res["UpdateKeys"]
-    create_keys = res["CreateKeys"]
-    replace_keys = res["ReplaceKeys"]
-    atts = res["Atts"]
-    methods = res["Methods"]
-    get_method = methods.get("Get")
+    ibox_conf = res["IBoxConf"]
+    service = ibox_conf["Service"]
+    atts = ibox_conf["Atts"]
+    update_keys = ibox_conf["Action"]["Update"]["Keys"]
 
     if service in SERVICES_GLOBAL:
         boto3_regional = boto3.session.Session(region_name="us-east-1")
@@ -198,17 +215,17 @@ def lambda_handler(event, context):
         client = boto3.client(service)
         tag_client = boto3.client("resourcegroupstaggingapi")
 
-    method = methods.get(action)
+    method = ibox_conf["Action"][action]["Method"]
 
     if action == "Update":
-        for n in replace_keys:
+        for n in ibox_conf["Action"][action].get("ReplaceKeys", []):
             # compare provious and current value using reduce
             if reduce(dict.get, n.split("."), res["Props"]) != reduce(
                 dict.get, n.split("."), res_before["Props"]
             ):
                 # update must become a create
                 event["RequestType"] = "Create"
-                method = methods["Create"]
+                method = ibox_conf["Action"]["Create"]["Method"]
                 break
 
     props = parse_dict_for_int(res["Props"])
