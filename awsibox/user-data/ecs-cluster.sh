@@ -26,12 +26,13 @@ SIGNAL(){
   fi
 
   # wait for instance to be attached to ASG
-  life_state=""
-  while [ "$life_state" != "InService" ];do
-    echo "Waiting for instance $instance_id to be attached to ASG and InService."
-    life_state=$(curl -s -H "X-aws-ec2-metadata-token: $IMDSv2_token" \
-      http://169.254.169.254/latest/meta-data/autoscaling/target-lifecycle-state)
-    sleep 5
+  while true;do
+    if [ $(curl -s -H "X-aws-ec2-metadata-token: $IMDSv2_token" \
+           http://169.254.169.254/latest/meta-data/autoscaling/target-lifecycle-state) != "InService" ];then
+      sleep 5
+    else
+      break
+    fi
   done
 }
 
