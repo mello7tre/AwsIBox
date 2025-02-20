@@ -31,6 +31,7 @@ SIGNAL(){
     echo "Waiting for instance $instance_id to be attached to ASG."
     http_code=$(curl -I -s -w "%{stderr}%{http_code}" -o /dev/null -H "X-aws-ec2-metadata-token: $IMDSv2_token" \
       http://169.254.169.254/latest/meta-data/autoscaling/target-lifecycle-state)
+    sleep 5
   done
 }
 
