@@ -27,8 +27,8 @@ SIGNAL(){
 
   # wait for instance to be attached to ASG
   while true;do
-    if [ $(curl -s -H "X-aws-ec2-metadata-token: $IMDSv2_token" \
-           http://169.254.169.254/latest/meta-data/autoscaling/target-lifecycle-state) != "InService" ];then
+    if [ $(curl -I -s -w "%{http_code}" -o /dev/null -H "X-aws-ec2-metadata-token: $IMDSv2_token" \
+           http://169.254.169.254/latest/meta-data/autoscaling/target-lifecycle-state) != "200" ];then
       sleep 5
     else
       break
