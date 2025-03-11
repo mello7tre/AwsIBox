@@ -4,7 +4,8 @@ import boto3
 import argparse
 from math import floor
 from pprint import pformat
-from datetime import datetime, timezone
+
+# from datetime import datetime, timezone
 from operator import itemgetter
 
 logging.basicConfig()
@@ -38,6 +39,22 @@ def get_args():
 
     args = parser.parse_args()
     return args
+
+
+def sort_container_instances(containerInstances, AZones):
+    # add the total number of instance in the same zone
+    for n in containerInstances:
+        n["nAZone"] = AZones.get(n["AZone"], 0)
+
+    # and sort first by runningTasksCount and registeredAt asc then nAZone desc
+    # this way the candidate to terminate is the instance in the zone with
+    # the greater number of instance running (primary condition)  with the less number of tasks and older (secondary ones)
+    i_sorted = sorted(
+        containerInstances, key=itemgetter("runningTasksCount", "registeredAt")
+    )
+    i_sorted = sorted(i_sorted, key=itemgetter("nAZone"), reverse=True)
+
+    return i_sorted
 
 
 def process_containers(cluster, containers, res):
@@ -76,24 +93,19 @@ def process_containers(cluster, containers, res):
             }
         )
 
-    # add the total number of instance in the same zone
-    for n in containerInstances:
-        n["nAZone"] = AZones.get(n["AZone"], 0)
-
-    # and sort first by runningTasksCount and registeredAt asc then nAZone desc
-    # this way the candidate to terminate is the instance in the zone with
-    # the greater number of instance running (primary condition)  with the less number of tasks and older (secondary ones)
-    i_sorted = sorted(
-        containerInstances, key=itemgetter("runningTasksCount", "registeredAt")
-    )
-    i_sorted = sorted(i_sorted, key=itemgetter("nAZone"), reverse=True)
-
-    for n in i_sorted[0:N_REDUCE_FOR_RUN]:
-        res["i_tasks"].append(n["runningTasksCount"])
-        res["i_id"].append(n["ec2InstanceId"])
-        res["i_date"].append(n["registeredAt"])
-        res["i_AZ"].append(n["AZone"])
-        res["n_i_in_AZ"].append(n["nAZone"])
+    i_len = len(containerInstances)
+    for _ in range(0, min(i_len, N_REDUCE_FOR_RUN)):
+        i_sorted = sort_container_instances(containerInstances, AZones)
+        i = i_sorted.pop(0)
+        res["i_tasks"].append(i["runningTasksCount"])
+        res["i_id"].append(i["ec2InstanceId"])
+        res["i_date"].append(i["registeredAt"])
+        res["i_AZ"].append(i["AZone"])
+        res["n_i_in_AZ"].append(i["nAZone"])
+        # remove processed instance
+        containerInstances.remove(i)
+        # and reduce relative AZone
+        AZones[i["AZone"]] -= 1
 
     res["net_free"] = net - res["net_used"]
 
@@ -177,7 +189,7 @@ def tag_ecs_count(cluster, c):
     )
 
 
-def terminate_instance(instance):
+def terminate_instance(instance, cluster):
     logger.info(f"Terminate {instance}")
     try:
         CLIENT_AUTOSCALING.terminate_instance_in_auto_scaling_group(
@@ -247,7 +259,7 @@ def process_cluster(c):
             logger.info(f"Skip terminate count={count}")
         else:
             for n in range(0, min(n_reduce, len(res["i_id"]))):
-                terminate_instance(res["i_id"][n])
+                terminate_instance(res["i_id"][n], cluster)
     else:
         tag_ecs_count(cluster, 0)
 
