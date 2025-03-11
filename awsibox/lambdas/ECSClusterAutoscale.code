@@ -15,6 +15,8 @@ logger.setLevel(logging.INFO)
 CLIENT_ECS = boto3.client("ecs")
 CLIENT_AUTOSCALING = boto3.client("autoscaling")
 
+N_REDUCE_FOR_RUN = 3
+
 
 # parse main argumets
 def get_args():
@@ -86,12 +88,12 @@ def process_containers(cluster, containers, res):
     )
     i_sorted = sorted(i_sorted, key=itemgetter("nAZone"), reverse=True)
 
-    canditate = i_sorted[0]
-    res["i_tasks"] = canditate["runningTasksCount"]
-    res["i_id"] = canditate["ec2InstanceId"]
-    res["i_date"] = canditate["registeredAt"]
-    res["i_AZ"] = canditate["AZone"]
-    res["n_instances_in_AZ"] = canditate["nAZone"]
+    for n in i_sorted[0:N_REDUCE_FOR_RUN]:
+        res["i_tasks"].append(n["runningTasksCount"])
+        res["i_id"].append(n["ec2InstanceId"])
+        res["i_date"].append(n["registeredAt"])
+        res["i_AZ"].append(n["AZone"])
+        res["n_i_in_AZ"].append(n["nAZone"])
 
     res["net_free"] = net - res["net_used"]
 
@@ -175,6 +177,17 @@ def tag_ecs_count(cluster, c):
     )
 
 
+def terminate_instance(instance):
+    logger.info(f"Terminate {instance}")
+    try:
+        CLIENT_AUTOSCALING.terminate_instance_in_auto_scaling_group(
+            InstanceId=instance, ShouldDecrementDesiredCapacity=True
+        )
+    except Exception as e:
+        logger.info(e)
+    tag_ecs_count(cluster, 0)
+
+
 def process_cluster(c):
     cluster = c["clusterArn"]
 
@@ -191,9 +204,14 @@ def process_cluster(c):
         "cluster": c_name,
         "n_instances": n_instances,
         "count": count,
-        "i_date": datetime.now(timezone.utc),
-        "i_id": None,
-        "i_tasks": 2000000,
+        "i_date": [],
+        "i_id": [],
+        "i_tasks": [],
+        "i_AZ": [],
+        "n_i_in_AZ": [],
+        #        "i_date": datetime.now(timezone.utc),
+        #        "i_id": None,
+        #        "i_tasks": 2000000,
         "cpu_free": 0,
         "ram_free": 0,
         "net_free": 0,
@@ -228,15 +246,8 @@ def process_cluster(c):
             tag_ecs_count(cluster, count)
             logger.info(f"Skip terminate count={count}")
         else:
-            instance = res["i_id"]
-            logger.info(f"Terminate {instance}")
-            try:
-                CLIENT_AUTOSCALING.terminate_instance_in_auto_scaling_group(
-                    InstanceId=instance, ShouldDecrementDesiredCapacity=True
-                )
-            except Exception as e:
-                logger.info(e)
-            tag_ecs_count(cluster, 0)
+            for n in range(0, min(n_reduce, len(res["i_id"]))):
+                terminate_instance(res["i_id"][n])
     else:
         tag_ecs_count(cluster, 0)
 
