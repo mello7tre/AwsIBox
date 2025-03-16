@@ -17,6 +17,7 @@ CLIENT_ECS = boto3.client("ecs")
 CLIENT_AUTOSCALING = boto3.client("autoscaling")
 
 N_REDUCE_FOR_RUN = 3
+N_PASS_SKIP_COUNT = 2
 
 
 # parse main argumets
@@ -254,12 +255,13 @@ def process_cluster(c):
 
     if cpu_extra > 0 and ram_extra > 0 and net_extra > 0:
         count += 1
-        if count < 2:
-            tag_ecs_count(cluster, count)
-            logger.info(f"Skip terminate count={count}")
-        else:
+        if count >= N_PASS_SKIP_COUNT or sum(res["i_tasks"]):
+            # if no tasks are running can terminate instance on the first pass too
             for n in range(0, min(n_reduce, len(res["i_id"]))):
                 terminate_instance(res["i_id"][n], cluster)
+        else:
+            tag_ecs_count(cluster, count)
+            logger.info(f"Skip terminate count={count}")
     else:
         tag_ecs_count(cluster, 0)
 
