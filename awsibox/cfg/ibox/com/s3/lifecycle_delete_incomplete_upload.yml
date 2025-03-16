@@ -1,0 +1,10 @@
+global:
+  S3Bucket:
+    - IBOX_BASE:
+        LifecycleConfiguration:
+          Rules:
+            - BaseCleanUp:
+                Id: BaseCleanUp
+                AbortIncompleteMultipartUpload:
+                  DaysAfterInitiation: 1
+                Status: Enabled
