@@ -245,10 +245,12 @@ def process_cluster(c):
 
     if cpu_extra > 0 and ram_extra > 0 and net_extra > 0:
         count += 1
-        if count >= N_PASS_SKIP_COUNT or sum(res["i_tasks"]):
-            # if no tasks are running can terminate instance on the first pass too
+        is_terminate_cycle = True if count >= N_PASS_SKIP_COUNT else False
+        if is_terminate_cycle or 0 in res["i_tasks"]:
+            # if no tasks are running can terminate instance on the first cycle
             for n in range(0, min(n_reduce, len(res["i_id"]))):
-                terminate_instance(res["i_id"][n], cluster)
+                if is_terminate_cycle or res["i_tasks"][n] == 0:
+                    terminate_instance(res["i_id"][n], cluster)
         else:
             tag_ecs_count(cluster, count)
             logger.info(f"Skip terminate count={count}")
