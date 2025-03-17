@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import logging
 import boto3
-import argparse
 from math import floor
 from pprint import pformat
 
-# from datetime import datetime, timezone
+from datetime import datetime, timezone
 from operator import itemgetter
 
 logging.basicConfig()
@@ -16,30 +15,12 @@ logger.setLevel(logging.INFO)
 CLIENT_ECS = boto3.client("ecs")
 CLIENT_AUTOSCALING = boto3.client("autoscaling")
 
+IS_LAMBDA = True
+DO_MANUAL_REDUCE = False
+
 N_REDUCE_FOR_RUN = 3
 N_PASS_SKIP_COUNT = 2
-
-
-# parse main argumets
-def get_args():
-    parser = argparse.ArgumentParser(
-        description="Autoscale ECS Cluster looking at running tasks"
-    )
-
-    parser.add_argument(
-        "--clusters",
-        "-c",
-        help="Cluster to process - default all",
-        default=[],
-        nargs="+",
-    )
-    parser.add_argument(
-        "--prefix", "-p", help="Find Cluster by prefix", action="store_true"
-    )
-    parser.add_argument("--reduce", "-r", help="Reduce Cluster", action="store_true")
-
-    args = parser.parse_args()
-    return args
+N_SKIP_INSTANCE_SECONDS = 150
 
 
 def sort_container_instances(containerInstances, AZones):
@@ -85,11 +66,22 @@ def process_containers(cluster, containers, res):
             if r["name"] == "MEMORY":
                 res["ram_free"] += r["integerValue"]
 
+        registered_at = n["registeredAt"]
+        ec2_instance_id = n["ec2InstanceId"]
+        registered_seconds_ago = datetime.now(timezone.utc) - registered_at
+        if registered_seconds_ago.total_seconds() < N_SKIP_INSTANCE_SECONDS:
+            # skip istance registered less than N_SKIP_INSTANCE_SECONDS
+            logger.info(
+                f"Instance {ec2_instance_id} registered at {registered_at} "
+                f"is too young and will be skipped {registered_seconds_ago.total_seconds()} < {N_SKIP_INSTANCE_SECONDS}"
+            )
+            continue
+
         containerInstances.append(
             {
                 "runningTasksCount": n["runningTasksCount"],
-                "registeredAt": n["registeredAt"],
-                "ec2InstanceId": n["ec2InstanceId"],
+                "registeredAt": registered_at,
+                "ec2InstanceId": ec2_instance_id,
                 "AZone": az,
             }
         )
@@ -206,7 +198,7 @@ def process_cluster(c):
 
     enabled, run, count, n_instances = need_to_run(c)
 
-    if not run and lambda_run:
+    if not run and IS_LAMBDA:
         if count > 0 and enabled:
             tag_ecs_count(cluster, 0)
         return
@@ -250,7 +242,7 @@ def process_cluster(c):
     n_reduce = min(cpu_extra, ram_extra, net_extra)
     logger.info(f"Cluster {c_name} can be reduced of {n_reduce}")
 
-    if not lambda_run and not args.reduce:
+    if not IS_LAMBDA and not DO_MANUAL_REDUCE:
         return
 
     if cpu_extra > 0 and ram_extra > 0 and net_extra > 0:
@@ -266,34 +258,13 @@ def process_cluster(c):
         tag_ecs_count(cluster, 0)
 
 
-def do_work():
-    if args.clusters and not args.prefix:
-        clusters = args.clusters
-    else:
-        # warning max 100 clusters are returned
-        clusters = CLIENT_ECS.list_clusters()["clusterArns"]
-
-    if args.clusters and args.prefix:
-        # if cluster and prefix options search only in the one matching
-        clusters = [
-            n for n in clusters if n.split("/")[1].startswith(tuple(args.clusters))
-        ]
+def lambda_handler(event=None, context=None):
+    # warning max 100 clusters are returned
+    clusters_list = CLIENT_ECS.list_clusters()["clusterArns"]
 
     clusters = CLIENT_ECS.describe_clusters(
-        clusters=clusters, include=["TAGS", "STATISTICS"]
+        clusters=clusters_list, include=["TAGS", "STATISTICS"]
     )["clusters"]
+
     for c in clusters:
         process_cluster(c)
-
-
-def lambda_handler(event=None, context=None):
-    global lambda_run
-    global args
-
-    lambda_run = True if event else False
-    args = get_args()
-    do_work()
-
-
-if __name__ == "__main__":
-    lambda_handler()
