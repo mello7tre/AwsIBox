@@ -72,7 +72,7 @@ def process_containers(cluster, containers, res):
         if registered_seconds_ago.total_seconds() < N_SKIP_INSTANCE_SECONDS:
             # skip istance registered less than N_SKIP_INSTANCE_SECONDS
             logger.info(
-                f"Instance {ec2_instance_id} registered at {registered_at} "
+                f"Cluster: {cluster}, Instance: {ec2_instance_id} registered at {registered_at} "
                 f"is too young and will be skipped {registered_seconds_ago.total_seconds()} < {N_SKIP_INSTANCE_SECONDS}"
             )
             continue
@@ -108,9 +108,7 @@ def populate_free_resources(cluster, res):
     paginator = CLIENT_ECS.get_paginator("list_container_instances")
     response_iterator = paginator.paginate(cluster=cluster, status="ACTIVE")
     for s in response_iterator:
-        container_instance_arns = s["containerInstanceArns"]
-        if not container_instance_arns:
-            continue
+        container_instance_arns = s.get("containerInstanceArns", [])
         ci_active += len(container_instance_arns)
         # describe_container_instances - only max 100 containerInstances
         while container_instance_arns:
