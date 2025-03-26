@@ -26,23 +26,69 @@ def find_cluster(asg):
         return
 
 
+def sort_container_instances(containerInstances, AZones):
+    # add the total number of instance in the same zone
+    for n in containerInstances:
+        n["nAZone"] = AZones.get(n["AZone"], 0)
+
+    # and sort first by runningTasksCount and registeredAt asc then nAZone desc
+    # this way the candidate to terminate is the instance in the zone with
+    # the greater number of instance running (primary condition)  with the less number of tasks and older (secondary ones)
+    i_sorted = sorted(
+        containerInstances, key=itemgetter("runningTasksCount", "registeredAt")
+    )
+    i_sorted = sorted(i_sorted, key=itemgetter("nAZone"), reverse=True)
+
+    return i_sorted
+
+
+def process_container_instances(container_instances):
+    AZones = {}
+    containerInstances = []
+    sorted_container_instances = []
+
+    for n in container_instances:
+        az = ""
+        for a in n["attributes"]:
+            if a["name"] == "ecs.availability-zone":
+                az = a["value"]
+                AZones[az] = AZones.get(az, 0) + 1
+                continue
+
+        containerInstances.append(
+            {
+                "runningTasksCount": n["runningTasksCount"],
+                "registeredAt": n["registeredAt"],
+                "ec2InstanceId": n["ec2InstanceId"],
+                "AZone": az,
+            }
+        )
+
+    for _ in range(0, len(containerInstances)):
+        i_sorted = sort_container_instances(containerInstances, AZones)
+        i = i_sorted.pop(0)
+        sorted_container_instances.append(i["ec2InstanceId"])
+        # remove processed instance
+        containerInstances.remove(i)
+        # and reduce relative AZone
+        AZones[i["AZone"]] -= 1
+
+    return sorted_container_instances
+
+
 def get_instance_to_terminate(cluster, containers):
-    terminate_instances = []
 
     response = CLIENT_ECS.describe_container_instances(
         cluster=cluster, containerInstances=containers
     )
     # Stop istance with less running tasks, for equals tasks stop the oldest one
     try:
-        i_sorted = sorted(
-            response.get("containerInstances", []),
-            key=itemgetter("runningTasksCount", "registeredAt"),
+        terminate_instances = process_container_instances(
+            response.get("containerInstances", [])
         )
     except Exception as e:
+        terminate_instances = []
         logger.errror(f"Error sorting instances: {e}")
-    else:
-        for n in i_sorted:
-            terminate_instances.append(n["ec2InstanceId"])
 
     return terminate_instances
 
