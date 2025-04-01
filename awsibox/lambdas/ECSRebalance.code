@@ -194,6 +194,8 @@ def is_cluster_enabled(c):
 
 
 def lambda_handler(event, context):
+    # reset log prefix if lambda hot start
+    set_log_prefix()
     table_data = {}
     clusters = CLIENT_ECS.list_clusters()["clusterArns"]
 
