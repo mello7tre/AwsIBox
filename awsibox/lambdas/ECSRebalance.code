@@ -108,21 +108,24 @@ def get_az_tasks(cluster, tasks_list):
 
 
 def update_service(cluster, service, running, desired):
-    response = CLIENT_ECS.describe_services(
-        cluster=cluster,
-        services=[service],
-    )
-    for n in response.get("services", []):
-        s_running = n["runningCount"]
-        s_pending = n.get("pending", 0)
+    service_now = CLIENT_ECS.describe_services(cluster=cluster, services=[service],)[
+        "services"
+    ][0]
 
-        if running == s_running and s_running != desired and s_pending == 0:
-            logger.warning(f"Service Running: {s_running} change to {desired}")
-            if not DRY_RUN:
-                CLIENT_ECS.update_service(
-                    cluster=cluster, service=service, desiredCount=desired
-                )
-                return True
+    s_running = service_now["runningCount"]
+    s_pending = service_now.get("pending", 0)
+
+    if running == s_running and s_running != desired and s_pending == 0:
+        logger.warning(f"Service Running: {s_running} change to {desired}")
+        if not DRY_RUN:
+            CLIENT_ECS.update_service(
+                cluster=cluster, service=service, desiredCount=desired
+            )
+            return True
+    else:
+        logger.warning(
+            f"Skip: Current={s_running}, Expected={running}, Desired={desired}, Pending={s_pending}"
+        )
 
     return False
 
