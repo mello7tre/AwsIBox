@@ -116,7 +116,7 @@ def update_service(cluster, service, running, desired):
         s_running = n["runningCount"]
         s_pending = n.get("pending", 0)
 
-        if s_running != desired and s_pending == 0:
+        if running == s_running and s_running != desired and s_pending == 0:
             logger.warning(f"Service Running: {s_running} change to {desired}")
             if not DRY_RUN:
                 CLIENT_ECS.update_service(
@@ -223,11 +223,19 @@ def lambda_handler(event, context):
             )
             continue
 
+        # build dict of unbalanced services to process later
+        services_unbalanced = {}
         for s, v in services.items():
             set_log_prefix(v["stack"])
             logger.info(pformat(v))
-            running = v["running"]
-            az_service = len(v["AZs"])
+            if is_service_unbalanced(len(v["AZs"]), n_instances, v["running"]):
+                services_unbalanced[s] = v
+
+        for s, v in services_unbalanced.items():
+            set_log_prefix(v["stack"])
+            logger.warning(pformat(v))
+            # as cycle run time can get long, retrieve everytime updated data
+            running, az_service = get_services_data(c_arn, s)
             running_desired = running
             now = datetime.utcnow()
             have_increased = False
