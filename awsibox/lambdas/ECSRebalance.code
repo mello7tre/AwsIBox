@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+import boto3
+import logging
+import time
+from datetime import datetime
+from pprint import pformat
+
+logging.basicConfig()
+logger = logging.getLogger("ECSRebalance")
+logging_handler = logging.StreamHandler()
+logger.addHandler(logging_handler)
+logger.setLevel(logging.INFO)
+logger.propagate = False
+
+
+CLIENT_ECS = boto3.client("ecs")
+
+N_AZs = 3
+SLEEP_TIME = 10
+IBOX_TAG = "IBOX_REBALANCE"
+
+CLUSTER_PREFIXES = []
+SERVICE_PREFIXES = []
+WAIT_SECONDS = 60
+DRY_RUN = False
+SHOW_TABLE = False
+
+
+def get_tasks(cluster, service):
+    tasks = []
+
+    kwarg = {
+        "cluster": cluster,
+        "desiredStatus": "RUNNING",
+    }
+
+    if service:
+        kwarg["serviceName"] = service
+
+    paginator_task = CLIENT_ECS.get_paginator("list_tasks")
+    response_iterator_task = paginator_task.paginate(**kwarg)
+    for t in response_iterator_task:
+        tasks.extend(t["taskArns"])
+
+    return tasks
+
+
+def get_az_tasks(cluster, tasks_list):
+    tasks_data = {}
+    tasks_id = list(tasks_list)
+    while tasks_id:
+        tasks_id_sub = tasks_id[0:100]
+        resp = CLIENT_ECS.describe_tasks(cluster=cluster, tasks=tasks_id_sub)
+        tasks = resp.get("tasks", [])
+
+        for t in tasks:
+            group_l = t["group"].split(":")
+            if (
+                group_l[0] == "service"
+                and t.get("lastStatus") == "RUNNING"
+                and (
+                    not SERVICE_PREFIXES
+                    or any(group_l[1].startswith(n) for n in SERVICE_PREFIXES)
+                )
+            ):
+                service = group_l[1]
+                az = t.get("availabilityZone")
+                service_data = tasks_data.get(service)
+            else:
+                continue
+
+            if service_data:
+                service_data["running"] += 1
+                service_data[az] = service_data.get(az, 0) + 1
+                service_data["AZs"].add(az)
+            else:
+                tasks_data.update(
+                    {
+                        service: {
+                            "stack": service[0:7],
+                            "cluster": cluster.split("/")[1],
+                            "running": tasks_data.get("running", 0) + 1,
+                            az: tasks_data.get(az, 0) + 1,
+                            "AZs": {az},
+                        }
+                    }
+                )
+
+        del tasks_id[0:100]
+
+    return tasks_data
+
+
+def update_service(cluster, service, running, desired):
+    response = CLIENT_ECS.describe_services(
+        cluster=cluster,
+        services=[service],
+    )
+    for n in response.get("services", []):
+        s_running = n["runningCount"]
+        s_pending = n.get("pending", 0)
+
+        if s_running != desired and s_pending == 0:
+            logger.info(f"Service Running: {s_running} change to {desired}")
+            if not DRY_RUN:
+                CLIENT_ECS.update_service(
+                    cluster=cluster, service=service, desiredCount=desired
+                )
+                return True
+
+    return False
+
+
+def get_services_data(cluster, service=None):
+    tasks = get_tasks(cluster, service)
+    tasks_data = get_az_tasks(cluster, tasks)
+
+    if service and service in tasks_data:
+        # return only data of specific service
+        running = tasks_data[service]["running"]
+        AZs = tasks_data[service]["AZs"]
+        logger.info(f"Service: {service}, Running: {running}, AZs: {AZs}")
+        return running, len(AZs)
+
+    return tasks_data
+
+
+def is_time_exausted(now, cause):
+    logger.info(f"Sleeping {SLEEP_TIME} seconds for rebalance {cause}")
+    time.sleep(SLEEP_TIME)
+
+    later = datetime.utcnow()
+    wait_seconds = later - now
+    if wait_seconds.total_seconds() > WAIT_SECONDS or DRY_RUN:
+        logger.info(f"Max wait time reached {wait_seconds} > {WAIT_SECONDS} ")
+        return True
+
+    return False
+
+
+def is_service_unbalanced(az_service, n_instances, running):
+    log_suffix = (
+        f"AZ: {az_service} [{N_AZs}], Instances {n_instances}, Running Tasks: {running}"
+    )
+
+    if az_service == N_AZs or n_instances < N_AZs or running <= az_service:
+        logger.info(f"Service is well balanced: {log_suffix}")
+        unbalanced = False
+    else:
+        logger.warning(f"Service is not balanced: {log_suffix}")
+        unbalanced = True
+
+    return unbalanced
+
+
+def add_log_prefix(service):
+    formatter = logging.Formatter(fmt=f"%(levelname)s:%(name)s:[{service}]:%(message)s")
+    logging_handler.setFormatter(formatter)
+
+
+def is_cluster_enabled(c):
+    enabled = False
+    for n in c["tags"]:
+        if n["key"] == IBOX_TAG:
+            if n["value"] == "yes":
+                enabled = True
+            break
+
+    return enabled
+
+
+def lambda_handler(event, context):
+    table_data = {}
+    clusters = CLIENT_ECS.list_clusters()["clusterArns"]
+
+    if CLUSTER_PREFIXES:
+        clusters = [
+            n for n in clusters if n.split("/")[1].startswith(tuple(CLUSTER_PREFIXES))
+        ]
+
+    clusters_info = CLIENT_ECS.describe_clusters(clusters=clusters, include=["TAGS"])[
+        "clusters"
+    ]
+    for c in clusters_info:
+        if not SHOW_TABLE and not CLUSTER_PREFIXES and not is_cluster_enabled(c):
+            # if cluster is not specified process only tagged clusters
+            continue
+
+        c_arn = c["clusterArn"]
+        n_instances = c["registeredContainerInstancesCount"]
+
+        services = get_services_data(c_arn)
+
+        if SHOW_TABLE:
+            table_data.update(
+                {c_arn: {"n_instances": n_instances, "services": services}}
+            )
+            continue
+
+        for s, v in services.items():
+            add_log_prefix(v["stack"])
+            logger.info(pformat(v))
+            running = v["running"]
+            az_service = len(v["AZs"])
+            running_desired = running
+            now = datetime.utcnow()
+            have_increased = False
+
+            # increase running by 1 task to begin re-balance
+            desired_up = running_desired + 1
+            while is_service_unbalanced(az_service, n_instances, running):
+                if not have_increased:
+                    have_increased = update_service(c_arn, s, running, desired_up)
+                if desired_up > running or is_time_exausted(now, "increase"):
+                    break
+                running, az_service = get_services_data(c_arn, s)
+
+            if have_increased and running == desired_up:
+                # if increased, return to previus desired
+                update_service(c_arn, s, running, running_desired)
+                now = datetime.utcnow()
+                while running > running_desired:
+                    if is_time_exausted(now, "reduce"):
+                        break
+                    running, az_service = get_services_data(c_arn, s)
+
+    return table_data
