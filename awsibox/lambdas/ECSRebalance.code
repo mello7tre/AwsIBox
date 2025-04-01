@@ -7,9 +7,10 @@ from pprint import pformat
 
 
 # begin setup logging
+logging.getLogger("botocore").setLevel("CRITICAL")
+logging_handler = logging.StreamHandler()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-logging_handler = logging.StreamHandler()
 logger.addHandler(logging_handler)
 logger.propagate = False
 
