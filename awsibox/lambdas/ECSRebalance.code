@@ -5,12 +5,27 @@ import time
 from datetime import datetime
 from pprint import pformat
 
-logging.basicConfig()
-logger = logging.getLogger("ECSRebalance")
+
+# begin setup logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 logging_handler = logging.StreamHandler()
 logger.addHandler(logging_handler)
-logger.setLevel(logging.INFO)
 logger.propagate = False
+
+HANDLER_FMT_LEVEL_STRING = "[%(levelname)s]"
+AWS_HANDLER_FORMATTER = AWS_HANDLER_FMT_NO_LEVEL = None
+
+for handler in logger.handlers:
+    # get AWS Handler Formatter, so i can change it later
+    formatter = handler.formatter
+    if handler.formatter is not None and "aws_request_id" in formatter._fmt:
+        AWS_HANDLER_FORMATTER = formatter
+        AWS_HANDLER_FMT_NO_LEVEL = AWS_HANDLER_FORMATTER._style._fmt.replace(
+            HANDLER_FMT_LEVEL_STRING, ""
+        )
+        break
+# end setup logging
 
 
 CLIENT_ECS = boto3.client("ecs")
@@ -101,7 +116,7 @@ def update_service(cluster, service, running, desired):
         s_pending = n.get("pending", 0)
 
         if s_running != desired and s_pending == 0:
-            logger.info(f"Service Running: {s_running} change to {desired}")
+            logger.warning(f"Service Running: {s_running} change to {desired}")
             if not DRY_RUN:
                 CLIENT_ECS.update_service(
                     cluster=cluster, service=service, desiredCount=desired
@@ -126,13 +141,13 @@ def get_services_data(cluster, service=None):
 
 
 def is_time_exausted(now, cause):
-    logger.info(f"Sleeping {SLEEP_TIME} seconds for rebalance {cause}")
+    logger.warning(f"Sleeping {SLEEP_TIME} seconds for rebalance {cause}")
     time.sleep(SLEEP_TIME)
 
     later = datetime.utcnow()
     wait_seconds = later - now
     if wait_seconds.total_seconds() > WAIT_SECONDS or DRY_RUN:
-        logger.info(f"Max wait time reached {wait_seconds} > {WAIT_SECONDS} ")
+        logger.warning(f"Max wait time reached {wait_seconds} > {WAIT_SECONDS} ")
         return True
 
     return False
@@ -153,9 +168,17 @@ def is_service_unbalanced(az_service, n_instances, running):
     return unbalanced
 
 
-def add_log_prefix(service):
-    formatter = logging.Formatter(fmt=f"%(levelname)s:%(name)s:[{service}]:%(message)s")
-    logging_handler.setFormatter(formatter)
+def set_log_prefix(service=None):
+    if AWS_HANDLER_FORMATTER:
+        service = f"[{service}]" if service else ""
+        AWS_HANDLER_FORMATTER._style._fmt = (
+            f"{HANDLER_FMT_LEVEL_STRING}{service}{AWS_HANDLER_FMT_NO_LEVEL}"
+        )
+    else:
+        formatter = logging.Formatter(
+            fmt=f"%(levelname)s:%(name)s:[{service}]:%(message)s"
+        )
+        logging_handler.setFormatter(formatter)
 
 
 def is_cluster_enabled(c):
@@ -198,7 +221,7 @@ def lambda_handler(event, context):
             continue
 
         for s, v in services.items():
-            add_log_prefix(v["stack"])
+            set_log_prefix(v["stack"])
             logger.info(pformat(v))
             running = v["running"]
             az_service = len(v["AZs"])
