@@ -234,7 +234,11 @@ def lambda_handler(event, context):
             while is_service_unbalanced(az_service, n_instances, running):
                 if not have_increased:
                     have_increased = update_service(c_arn, s, running, desired_up)
-                if running >= desired_up or is_time_exausted(now, "increase"):
+                if (
+                    DRY_RUN
+                    or running >= desired_up
+                    or is_time_exausted(now, "increase")
+                ):
                     break
                 running, az_service = get_services_data(c_arn, s)
 
