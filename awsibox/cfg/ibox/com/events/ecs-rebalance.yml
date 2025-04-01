@@ -1,0 +1,36 @@
+global:
+  EventsRule:
+    - ECSRebalance:
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
+        Description: "Schedule LambdaECSRebalance"
+        State: 'DISABLED'
+        ScheduleExpression: 'cron(07 * * * ? *)'
+        Targets:
+          - Lambda0:
+              Arn: GetAtt('LambdaECSRebalance', 'Arn')
+              Id: 'TargetFunction-01'
+  Lambda:
+    - ECSRebalance:
+        Architectures:
+          - arm64
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
+        Description: 'Rebalance ECS Service tasks'
+        Runtime: python3.11
+        Timeout: 300
+  IAMPolicy:
+    - LambdaECSRebalance:
+        Roles:
+          - Ref('RoleLambdaECSRebalance')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:ListClusters'
+                  - 'ecs:ListTasks'
+                  - 'ecs:DescribeClusters'
+                  - 'ecs:DescribeTasks'
+                  - 'ecs:DescribeServices'
+                  - 'ecs:UpdateService'
+                Effect: Allow
+                Resource: '*'
