@@ -2,6 +2,9 @@ global:
   ECSService:
     - Base:
         IBOX_TITLE: Service
+        AvailabilityZoneRebalancing.IBOX_AUTO_PO:
+          AllowedValues: ['', 'DISABLED', 'ENABLED']
+        AvailabilityZoneRebalancing: DISABLED
         DesiredCount: get_endvalue('CapacityDesired')
         DeploymentConfiguration:
           DeploymentCircuitBreaker:
