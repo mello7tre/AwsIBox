@@ -10,7 +10,7 @@ global:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Lambda to serve resource-unavailable pages'
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 65
         Environment:
           Variables:

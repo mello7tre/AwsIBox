@@ -14,7 +14,7 @@ global:
         Export: True
         Layers:
           - LambdaLayerVersionPython39CRHelper
-        Runtime: python3.11
+        Runtime: python3.13
         Timeout: 600
   IAMPolicy:
     - LambdaCCRAWSResource:

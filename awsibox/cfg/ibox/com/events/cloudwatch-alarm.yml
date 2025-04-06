@@ -39,7 +39,7 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         Layers:
           - LambdaLayerVersionPython37SSM
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 30
         Environment:
           Variables:
@@ -52,7 +52,7 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         Layers:
           - LambdaLayerVersionPython37SSM
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 30
   IAMPolicy:
     - LambdaCloudWatchRepeatedNotify:

@@ -23,7 +23,7 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Lambda for Custom Autoscaling Termination Policy to terminate ECS Instances with the less number of tasks'
         MemorySize: 256
-        Runtime: python3.11
+        Runtime: python3.13
         Timeout: 2
   LambdaPermission:
     - ASGTerminationPolicyECS:

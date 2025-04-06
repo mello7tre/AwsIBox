@@ -28,7 +28,7 @@ global:
         Description: 'ECSRaiseASGAlarm'
         Code:
           ZipFile: str(IBOX_INDEXNAME)
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 30
   IAMPolicy:
     - LambdaECSRaiseASGAlarm:

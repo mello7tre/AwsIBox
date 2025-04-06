@@ -17,7 +17,7 @@ global:
           S3Bucket: Sub(cfg.BucketNameAppRepository)
           S3Key: ibox-tools/spot-advisor/spot-advisor.zip
         Description: 'Advise if ASG is using a spot instance type with a high frequency of interruption'
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 300
         Environment:
           Variables:

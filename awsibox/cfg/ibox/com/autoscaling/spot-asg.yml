@@ -66,7 +66,7 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Rebalance Spot and OnDeman AutoScalingGroup'
         ReservedConcurrentExecutions: 1
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 60
         Environment:
           Variables:

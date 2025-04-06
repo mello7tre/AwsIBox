@@ -37,7 +37,7 @@ global:
           - LambdaLayerVersionPythonArm64IboxStacksOps
           - LambdaLayerVersionPythonArm64SlackClient
         MemorySize: 512
-        Runtime: python3.9
+        Runtime: python3.13
         Environment:
           Variables:
             - CloudFormationNotificationArn: ImportValue('SNSTopicCloudFormationNotification')

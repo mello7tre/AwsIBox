@@ -17,7 +17,7 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         Export: True
         Description: 'Lambda to automatically reduce and ECS Cluster'
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 65
   IAMPolicy:
     - LambdaECSClusterAutoscale:

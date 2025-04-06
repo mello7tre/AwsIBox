@@ -60,7 +60,7 @@ global:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Start and Stop EC2 Tagged Instances'
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 10
         Environment:
           Variables:
@@ -71,7 +71,7 @@ global:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Drain and stop Tasks from ECS container spot instances scheduled for termination'
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 300
     - ServiceDiscovery:
         Architectures:
@@ -85,7 +85,7 @@ global:
             - PublicDnsNamespaceName: Sub(f'find.{cfg.HostedZoneNameEnv}')
             - HostedZoneId: ImportValue('HostedZoneIdEnv')
         MemorySize: 256
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 30
     - R53RecordInstanceId:
         Architectures:
@@ -99,7 +99,7 @@ global:
             - HostedZoneId: ImportValue('HostedZoneIdPrivate')
             - Topic: Ref('SNSTopicASGNotificationR53')
         MemorySize: 256
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 30
   LambdaPermission:
     - EC2StartStopTaggedEventsRuleEC2StartTagged:

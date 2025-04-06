@@ -11,7 +11,7 @@ global:
             - BUCKET: Sub(cfg.BucketNameAppRepository)
         Description: 'Lambda to create packages for Arm based LambdaLayers'
         MemorySize: 1024
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 120
   IAMPolicy:
     - LambdaPyPackager:

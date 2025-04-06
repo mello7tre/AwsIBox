@@ -19,7 +19,7 @@ global:
           ZipFile: str(IBOX_INDEXNAME)
         AtEdge: True
         Description: 'Lambda@Edge add Headers'
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 10
         Version: True
         CacheControl: 31536000

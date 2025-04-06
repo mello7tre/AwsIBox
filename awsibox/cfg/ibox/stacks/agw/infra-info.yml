@@ -81,5 +81,5 @@ global:
         Layers:
           - LambdaLayerVersionPythonArm64IboxStacksOps
         MemorySize: 512
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 60

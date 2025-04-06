@@ -56,7 +56,7 @@ global:
         Environment:
           Variables:
             - SQSQueue: Ref("SQSQueueECSDrainInstance")
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 29
   LambdaEventSourceMapping:
     - ECSDrainInstance:

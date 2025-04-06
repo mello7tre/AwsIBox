@@ -30,5 +30,5 @@ global:
         Code:
           ZipFile: str(IBOX_INDEXNAME)
         Description: 'Replicate Stacks'
-        Runtime: python3.9
+        Runtime: python3.13
         Timeout: 300
