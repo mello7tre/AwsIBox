@@ -1022,7 +1022,7 @@ def auto_get_props(
                             },
                         )
                         condition_and_name = (
-                            f"{condition_name_linked_obj}Or{source_meta_prop_name}"
+                            f"{condition_name_linked_obj}And{source_meta_prop_name}"
                         )
                         cfg.Conditions[condition_and_name] = And(
                             Condition(source_meta_prop_name),
