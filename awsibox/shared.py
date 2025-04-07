@@ -1008,9 +1008,27 @@ def auto_get_props(
                 # automatically add Meta Properties like Condition and UpdateReplacePolicy..
                 for meta_prop in ["Condition", "UpdateReplacePolicy"]:
                     source_meta_prop = key.get(meta_prop, getattr(obj, meta_prop, None))
+                    source_meta_prop_name = parse_ibox_key(source_meta_prop)
                     if source_meta_prop and not meta_prop in linked_obj:
                         # ..if source obj have it and target not
-                        linked_obj[meta_prop] = parse_ibox_key(source_meta_prop)
+                        linked_obj[meta_prop] = source_meta_prop_name
+                    elif source_meta_prop and meta_prop == "Condition":
+                        # if both have Condition create a new condition that AND source and linked ones
+                        condition_name_linked_obj = parse_ibox_key(
+                            linked_obj[meta_prop],
+                            conf={
+                                "IBOX_RESNAME": linked_obj["IBOX_RESNAME"],
+                                "IBOX_LINKED_OBJ_NAME": linked_obj_key_name,
+                            },
+                        )
+                        condition_and_name = (
+                            f"{condition_name_linked_obj}Or{source_meta_prop_name}"
+                        )
+                        cfg.Conditions[condition_and_name] = And(
+                            Condition(source_meta_prop_name),
+                            Condition(condition_name_linked_obj),
+                        )
+                        linked_obj[meta_prop] = condition_and_name
 
                 # assign to louc_cfg lo_key
                 louc_cfg[target_name] = linked_obj
