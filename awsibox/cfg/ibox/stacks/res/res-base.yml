@@ -20,3 +20,6 @@ global:
         OutputValueRegion: 'AWSRegion'
         VersioningConfiguration:
           Status: Enabled
+  CloudWatchAlarm:
+    - Lambda:
+        AlarmActions: [Ref('SNSTopicCloudWatchAlarm')]
