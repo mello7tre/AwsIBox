@@ -246,3 +246,16 @@ global:
         Statistic: Average
         Threshold: '0'
         TreatMissingData: 'notBreaching'
+    - Lambda:
+        AlarmActions: [ImportValue('SNSTopicCloudWatchAlarm')]
+        EvaluationPeriods: 1
+        ComparisonOperator: GreaterThanThreshold
+        Dimensions:
+          - LambdaErrors:
+              Name: FunctionName
+              Value: Ref(IBOX_LINKED_OBJ_NAME)
+        MetricName: Errors
+        Namespace: AWS/Lambda
+        Statistic: Sum
+        Threshold: '0'
+        TreatMissingData: 'notBreaching'

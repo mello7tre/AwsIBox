@@ -22,6 +22,11 @@ global:
             Type: Lambda
             Conf:
               IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
+          Alarm:
+            Key: CloudWatchAlarm
+            Type: Lambda
+            Conf:
+              IBOX_LINKED_OBJ_NAME: IBOX_RESNAME
         IBOX_OUTPUT:
           - _:
               IBOX_ENABLED_IF: get_endvalue(f"{IBOX_RESNAME}Export") == True
