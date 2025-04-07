@@ -18,6 +18,7 @@ DIST_PY = f"{WORK_DIR}/dist/python"
 PY_VERSION = "%s%s" % (sys.version_info[0], sys.version_info[1])
 S3_CLIENT = boto3.client("s3")
 BUCKET = os.environ.get("BUCKET")
+ARCH = os.uname().machine
 PKG_TO_REMOVE = [
     "urllib3",
     "boto3",
@@ -63,7 +64,7 @@ def get_s3key_and_module_to_remove(module):
     from pkg_resources import get_distribution
 
     mod_version = get_distribution(module).version
-    s3key = f"python{PY_VERSION}-arm64-{module}-{mod_version}.zip"
+    s3key = f"python{PY_VERSION}-{ARCH}-{module}-{mod_version}.zip"
     to_remove_mod = []
     for pkg in PKG_TO_REMOVE:
         mod = get_distribution(pkg)
