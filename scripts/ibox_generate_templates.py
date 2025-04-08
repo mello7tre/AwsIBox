@@ -44,6 +44,7 @@ def get_template():
     cfg_base_yaml_common_no_brand = cfg.YAML_COMMON_NO_BRAND
 
     cfg.template = Template()
+    cfg.BUILD_ENVS = cfg.BuildEnvs({})
     RP.build_RP()
 
     try:

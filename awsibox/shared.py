@@ -26,6 +26,14 @@ class IBOX_Custom_Obj(AWSProperty):
     }
 
 
+def ibox_eval(code, conf={}):
+    # ALL cfg.BUILD_ENVS keys can be used in yaml and resolved inside get_endvalue
+    if "__builtins__" not in cfg.BUILD_ENVS:
+        cfg.BUILD_ENVS.update(globals())
+
+    return eval(code, cfg.BUILD_ENVS, conf)
+
+
 def stack_add_res():
     for n, v in cfg.Parameters.items():
         # Automatically create override conditions for parameters
@@ -123,7 +131,7 @@ def add_objoutput(res):
                             n_list.append(i)
                         n = Join(",", n_list)
                 elif n.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
-                    n = eval(n, globals(), {"IBOX_MAPNAME": mapname})
+                    n = ibox_eval(n, {"IBOX_MAPNAME": mapname})
                 join_list.append(n)
 
             res.Value = Join("", join_list)
@@ -198,12 +206,12 @@ def get_endvalue(
             # check if value start with method and use eval to run code
             if isinstance(value, list):
                 value = [
-                    eval(r) if str(r).startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else r
+                    ibox_eval(r) if str(r).startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else r
                     for r in value
                 ]
             if isinstance(value, str):
                 value = (
-                    eval(value.replace("\n", ""))
+                    ibox_eval(value.replace("\n", ""))
                     if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
                     else value
                 )
@@ -320,7 +328,7 @@ def iboxif(if_wrapper, mapname, value):
     condvalues = []
     for i in if_wrapper[1:3]:
         if isinstance(i, str) and i.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
-            v = eval(i)
+            v = ibox_eval(i)
         else:
             v = i
         condvalues.append(v)
@@ -334,9 +342,8 @@ def iboxif(if_wrapper, mapname, value):
 
 
 def get_dictvalue(key, mapname=""):
-    global IBOX_INDEXNAME
     # save value
-    ibox_indexname = IBOX_INDEXNAME
+    ibox_indexname = cfg.BUILD_ENVS.IBOX_INDEXNAME
 
     if isinstance(key, list):
         value = [get_dictvalue(k) for k in key]
@@ -352,7 +359,7 @@ def get_dictvalue(key, mapname=""):
             prop_obj = {j: get_dictvalue(w) for j, w in k.items()}
             if isinstance(key_iboxlist, dict):
                 # temporay replace IBOX_INDEXNAME with the key name of each element
-                IBOX_INDEXNAME = i
+                cfg.BUILD_ENVS.IBOX_INDEXNAME = i
                 # update every element in the list with the content of dict IBOX_LIST
                 prop_obj.update(get_dictvalue(key_iboxlist))
             if if_wrapper:
@@ -372,7 +379,7 @@ def get_dictvalue(key, mapname=""):
         }
     elif isinstance(key, str):
         if key.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
-            value = eval(key)
+            value = ibox_eval(key)
         elif mapname and mapname in cfg.mappedvalues:
             value = get_endvalue(mapname)
         else:
@@ -381,7 +388,7 @@ def get_dictvalue(key, mapname=""):
         value = key
 
     # restore value
-    IBOX_INDEXNAME = ibox_indexname
+    cfg.BUILD_ENVS.IBOX_INDEXNAME = ibox_indexname
 
     return value
 
@@ -497,7 +504,7 @@ def import_user_data(name):
             # parse code for Token IBOX CODE
             for x in code_lines:
                 if x.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
-                    value = eval(x)
+                    value = ibox_eval(x)
                 elif x.startswith(TK_IN_UDATA):
                     value = '"'
                 elif TK_IN_UDATA in x:
@@ -553,7 +560,7 @@ def import_lambda(name):
             # parse lambda code for Token IBOX CODE
             for x in code_lines:
                 if x.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
-                    value = eval(x)
+                    value = ibox_eval(x)
                 elif x.startswith(TK_IN_LBD):
                     value = '"'
                 elif TK_IN_LBD in x:
@@ -586,27 +593,24 @@ def auto_get_props(
     linked_obj_index="",
     res_obj_type=None,
 ):
-    # IBOX_RESNAME can be used in yaml and resolved inside get_endvalue
-    global IBOX_RESNAME, IBOX_MAPNAME, IBOX_INDEXNAME, IBOX_REMAPNAME, IBOX_PROPNAME
-    global IBOX_LINKED_OBJ_NAME, IBOX_LINKED_OBJ_INDEX
-    IBOX_RESNAME = obj.title
-    IBOX_PROPNAME = ""
-    if not "IBOX_MAPNAME" in globals() or mapname:
-        IBOX_MAPNAME = mapname
-    if not "IBOX_REMAPNAME" in globals() or remapname:
-        IBOX_REMAPNAME = remapname
-    if not "IBOX_INDEXNAME" in globals() or indexname:
-        IBOX_INDEXNAME = indexname
-    if not "IBOX_LINKED_OBJ_NAME" in globals() or linked_obj_name:
-        IBOX_LINKED_OBJ_NAME = linked_obj_name
-    if not "IBOX_LINKED_OBJ_INDEX" in globals() or linked_obj_index:
-        IBOX_LINKED_OBJ_INDEX = linked_obj_index
+    cfg.BUILD_ENVS.IBOX_RESNAME = obj.title
+    cfg.BUILD_ENVS.IBOX_PROPNAME = ""
+    if not "IBOX_MAPNAME" in cfg.BUILD_ENVS or mapname:
+        cfg.BUILD_ENVS.IBOX_MAPNAME = mapname
+    if not "IBOX_REMAPNAME" in cfg.BUILD_ENVS or remapname:
+        cfg.BUILD_ENVS.IBOX_REMAPNAME = remapname
+    if not "IBOX_INDEXNAME" in cfg.BUILD_ENVS or indexname:
+        cfg.BUILD_ENVS.IBOX_INDEXNAME = indexname
+    if not "IBOX_LINKED_OBJ_NAME" in cfg.BUILD_ENVS or linked_obj_name:
+        cfg.BUILD_ENVS.IBOX_LINKED_OBJ_NAME = linked_obj_name
+    if not "IBOX_LINKED_OBJ_INDEX" in cfg.BUILD_ENVS or linked_obj_index:
+        cfg.BUILD_ENVS.IBOX_LINKED_OBJ_INDEX = linked_obj_index
 
     # create a dict where i will put all property with a flat hierarchy
     # with the name equals to the mapname and the relative value.
     # Later i will assign this dict to the relative output object using
     # IBOX_OUTPUT
-    if not "IBOX_PROPS" in globals():
+    if not "IBOX_PROPS" in cfg.BUILD_ENVS:
         IBOX_PROPS = {"MAP": {}, "OBJ": obj}
 
     res_obj_type = getattr(obj, "resource_type", res_obj_type)
@@ -614,7 +618,6 @@ def auto_get_props(
     def _get_obj(obj, key, obj_propname, mapname):
         props = obj.props
         mapname_obj = f"{mapname}{obj_propname}"
-        global IBOX_PROPNAME, IBOX_REFNAME
 
         def _get_obj_tags():
             prop_list = []
@@ -758,8 +761,12 @@ def auto_get_props(
             prop_class = prop_class[0]
 
             # save IBOX_REFNAME
-            if "IBOX_REFNAME" in globals():
-                globals()[f"IBOX_REFNAME@{mapname}"] = globals()["IBOX_REFNAME"]
+            if "IBOX_REFNAME" in cfg.BUILD_ENVS:
+                setattr(
+                    cfg.BUILD_ENVS,
+                    f"IBOX_REFNAME@{mapname}",
+                    cfg.BUILD_ENVS["IBOX_REFNAME"],
+                )
 
             for o, v in key[obj_propname].items():
                 # skip processing disabled sub-objects
@@ -767,7 +774,7 @@ def auto_get_props(
                     continue
 
                 # for a list of properties set IBOX_PROPNAME to the name of property
-                IBOX_PROPNAME = o
+                cfg.BUILD_ENVS.IBOX_PROPNAME = o
 
                 if o == "IBOX_IF":
                     # element named IBOX_IF must no be parsed
@@ -788,8 +795,8 @@ def auto_get_props(
                     prop_list.append(iboxif(if_wrapper, mapname, prop_obj))
 
             # restore IBOX_REFNAME
-            if f"IBOX_REFNAME@{mapname}" in globals():
-                IBOX_REFNAME = globals()[f"IBOX_REFNAME@{mapname}"]
+            if f"IBOX_REFNAME@{mapname}" in cfg.BUILD_ENVS:
+                cfg.BUILD_ENVS.IBOX_REFNAME = cfg.BUILD_ENVS[f"IBOX_REFNAME@{mapname}"]
 
             if prop_list:
                 return prop_list
@@ -806,8 +813,6 @@ def auto_get_props(
             return get_dictvalue(key[obj_propname])
 
     def _populate(obj, key=None, mapname=None, rootdict=None):
-        global IBOX_RESNAME, IBOX_CURNAME, IBOX_CURMAP, IBOX_REFNAME, IBOX_TITLE
-
         if not mapname:
             mapname = obj.title
         if rootdict:
@@ -817,12 +822,12 @@ def auto_get_props(
             key = getattr(cfg, mapname)
 
         if key.get("IBOX_TITLE"):
-            IBOX_TITLE = parse_ibox_key(key["IBOX_TITLE"])
+            cfg.BUILD_ENVS.IBOX_TITLE = parse_ibox_key(key["IBOX_TITLE"])
 
         def _try_PCO_in_obj(key):
             def _parameter(k):
                 for n, v in k.items():
-                    if not eval(v.get("IBOX_ENABLED_IF", "True")):
+                    if not ibox_eval(v.get("IBOX_ENABLED_IF", "True")):
                         continue
                     n = parse_ibox_key(n)
                     parameter = Parameter(n)
@@ -834,13 +839,13 @@ def auto_get_props(
                     n = parse_ibox_key(n)
                     if v == "IBOX_SKIP":
                         continue
-                    condition = {n: eval(v)}
+                    condition = {n: ibox_eval(v)}
                     add_obj(condition)
 
             def _output(k):
                 for n, v in k.items():
                     n = parse_ibox_key(n)
-                    if not eval(v.get("IBOX_ENABLED_IF", "True")):
+                    if not ibox_eval(v.get("IBOX_ENABLED_IF", "True")):
                         continue
                     output = Output(n)
                     _populate(output, rootdict=v)
@@ -886,7 +891,7 @@ def auto_get_props(
                     # Output value must be a string
                     value = str(value)
                 elif isinstance(value, str) and value.startswith("get_endvalue"):
-                    value = eval(value)
+                    value = ibox_eval(value)
                 output_base = {"Value": value}
                 output_base.update(conf)
                 if output_base["Value"] != "IBOX_SKIP":
@@ -910,8 +915,6 @@ def auto_get_props(
                 _try_PCO_in_obj(key[ibox_pco])
 
         def _proc_custom_obj(base_rootdict, key_value, mapname, propname):
-            global IBOX_RESNAME, IBOX_MAPNAME
-
             values = []
             if not base_rootdict:
                 base_rootdict = getattr(cfg, f"{mapname}IBOX_CUSTOM_OBJ{propname}")
@@ -941,16 +944,16 @@ def auto_get_props(
                 )
 
                 # save IBOX_RESNAME and IBOX_MAPNAME
-                IBOX_RESNAME_SAVE = IBOX_RESNAME
-                IBOX_MAPNAME_SAVE = IBOX_MAPNAME
+                IBOX_RESNAME_SAVE = cfg.BUILD_ENVS.IBOX_RESNAME
+                IBOX_MAPNAME_SAVE = cfg.BUILD_ENVS.IBOX_MAPNAME
                 # set IBOX_RESNAME and IBOX_MAPNAME to call _populate like auto_get_props
-                IBOX_RESNAME = obj_title
-                IBOX_MAPNAME = f"{mapname}{propname}"
+                cfg.BUILD_ENVS.IBOX_RESNAME = obj_title
+                cfg.BUILD_ENVS.IBOX_MAPNAME = f"{mapname}{propname}"
                 # populate OBJ
-                _populate(obj, rootdict=rootdict, mapname=IBOX_MAPNAME)
+                _populate(obj, rootdict=rootdict, mapname=cfg.BUILD_ENVS.IBOX_MAPNAME)
                 # restore IBOX_RESNAME and IBOX_MAPNAME
-                IBOX_RESNAME = IBOX_RESNAME_SAVE
-                IBOX_MAPNAME = IBOX_MAPNAME_SAVE
+                cfg.BUILD_ENVS.IBOX_RESNAME = IBOX_RESNAME_SAVE
+                cfg.BUILD_ENVS.IBOX_MAPNAME = IBOX_MAPNAME_SAVE
 
                 value = getattr(obj, "Value")
                 if v == "IBOX_IFCONDVALUE":
@@ -963,7 +966,9 @@ def auto_get_props(
 
         def _linked_obj(linked_obj_data):
             # need to parse them here to have the right values
-            lo_name = parse_ibox_key(linked_obj_data.get("Name", IBOX_RESNAME))
+            lo_name = parse_ibox_key(
+                linked_obj_data.get("Name", cfg.BUILD_ENVS.IBOX_RESNAME)
+            )
             lo_key = parse_ibox_key(linked_obj_data["Key"])
             lo_type = parse_ibox_key(linked_obj_data["Type"])
             if not lo_type:
@@ -975,7 +980,9 @@ def auto_get_props(
             for lo_for_index in lo_for_cycle:
                 # need to copy it because it's updated
                 lo_conf = copy.deepcopy(
-                    linked_obj_data.get("Conf", {"IBOX_LINKED_OBJ_NAME": IBOX_RESNAME})
+                    linked_obj_data.get(
+                        "Conf", {"IBOX_LINKED_OBJ_NAME": cfg.BUILD_ENVS.IBOX_RESNAME}
+                    )
                 )
                 lo_conf["IBOX_ENABLED"] = True
                 # for all lo_conf entries, if their value is a string parse it using parse_ibox_key
@@ -1051,11 +1058,11 @@ def auto_get_props(
 
         # needed by IBOX_BASE used on Resource Properties
         if key.get("IBOX_BASE_REF"):
-            IBOX_REFNAME = mapname
+            cfg.BUILD_ENVS.IBOX_REFNAME = mapname
 
         # set mapname before processing Parameters, Conditions, Outputs
         if mapname:
-            IBOX_CURMAP = mapname
+            cfg.BUILD_ENVS.IBOX_CURMAP = mapname
 
         # Parameters, Conditions, Outputs in yaml cfg
         _try_PCO_in_obj(key)
@@ -1102,7 +1109,7 @@ def auto_get_props(
             custom_key_only = propname.replace(".IBOX_AUTO_PO", "")
 
             if not isinstance(obj, (Output, Parameter, Condition)):
-                IBOX_CURNAME = f"{mapname}{propname}"
+                cfg.BUILD_ENVS.IBOX_CURNAME = f"{mapname}{propname}"
 
             # IBOX_PCO and IBOX_AUTO_PO for Custom Key ONLY
             if (
@@ -1128,7 +1135,7 @@ def auto_get_props(
                 # If there is a key ending with {prop}.IBOX_CODE  eval it and use it as prop value.
                 # First process IBOX_AUTO_PO and IBOX_PCO keys
                 _process_ibox_auto_pco_key(propname)
-                value = eval(key[ibox_code])
+                value = ibox_eval(key[ibox_code])
             elif propname in key and (
                 propname in props
                 or ibox_custom_obj in key
@@ -1149,7 +1156,7 @@ def auto_get_props(
 
                 # IBOX_CODE_KEY - like IBOX_CODE but only if propname is in key too
                 if ibox_code_key in key:
-                    value = eval(key[ibox_code_key])
+                    value = ibox_eval(key[ibox_code_key])
                 # set value
                 elif isinstance(key_value, (list, dict)) and ibox_custom_obj in key:
                     # to process a list like a custom obj
@@ -1179,7 +1186,7 @@ def auto_get_props(
                 ):
                     # Usefull to migrate code in yaml using auto_get_props
                     # get_endvalue is used only when migrating code
-                    value = eval(key_value)
+                    value = ibox_eval(key_value)
                 else:
                     value = get_endvalue(f"{mapname}{propname}")
 
@@ -1227,8 +1234,8 @@ def auto_get_props(
 
         # need to redefine it here because it's has been changed by nested supprop
         if not isinstance(obj, (Output, Parameter, Condition)):
-            IBOX_CURNAME = mapname
-            IBOX_CURMAP = mapname
+            cfg.BUILD_ENVS.IBOX_CURNAME = mapname
+            cfg.BUILD_ENVS.IBOX_CURMAP = mapname
 
         # title override
         try:
@@ -1295,15 +1302,15 @@ def parse_ibox_key(value, conf={}):
     if not isinstance(value, str):
         return value
     if value.startswith(cfg.EVAL_PYTHON_FUNCTIONS_IN_CFG):
-        return eval(value, globals(), conf)
+        return ibox_eval(value, conf)
     for key in IBOX_SPECIAL_KEYS:
         if key in value:
             if key in conf:
                 value = value.replace(key, str(conf[key]))
             else:
-                value = value.replace(key, globals().get(key, ""))
-    if "IBOX_RESNAME" in globals():
-        value = value.replace("_", IBOX_RESNAME)
+                value = value.replace(key, cfg.BUILD_ENVS.get(key, ""))
+    if "IBOX_RESNAME" in cfg.BUILD_ENVS:
+        value = value.replace("_", cfg.BUILD_ENVS.IBOX_RESNAME)
     value = value.replace(".", "")
 
     return value

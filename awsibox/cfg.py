@@ -144,6 +144,20 @@ try:
 except FileNotFoundError:
     pass
 
+
+class BuildEnvs(dict):
+    def __init__(self, *arg, **kw):
+        super().__init__(*arg, **kw)
+
+    def clear(self):
+        self.__dict__.clear()
+        return super().clear()
+
+    def __setattr__(self, key, item):
+        super().__setattr__(key, item)
+        super().__setitem__(key, item)
+
+
 CFG_TO_FUNC_RENAME = {
     "lambda": "awslambda",
     "AutoScalingAutoScalingGroup": "AutoScalingGroup",
