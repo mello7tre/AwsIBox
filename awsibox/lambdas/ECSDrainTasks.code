@@ -212,7 +212,8 @@ def lambda_handler(event, context):
         for tg, tg_tasks in target_groups.items():
             deregister_targets(tg, tg_tasks, tg_targets, tasks_to_stop)
 
-        stop_tasks(cluster, tasks_to_stop)
+        if tasks_to_stop:
+            stop_tasks(cluster, tasks_to_stop)
 
 
 # test by cmd line
