@@ -1026,6 +1026,9 @@ def auto_get_props(
                             conf={
                                 "IBOX_RESNAME": linked_obj["IBOX_RESNAME"],
                                 "IBOX_LINKED_OBJ_NAME": linked_obj_key_name,
+                                "IBOX_LINKED_OBJ_INDEX": lo_conf.get(
+                                    "IBOX_LINKED_OBJ_INDEX"
+                                ),
                             },
                         )
                         condition_and_name = (
