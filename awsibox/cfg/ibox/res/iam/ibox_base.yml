@@ -53,6 +53,13 @@ global:
           Statement:
             - IBOX_LIST: {}
           Version: "2012-10-17"
+  IAMRolePolicy:
+    - IBOX_BASE:
+        PolicyName: IBOX_INDEXNAME
+        PolicyDocument:
+          Statement:
+            - IBOX_LIST: {}
+          Version: "2012-10-17"
   IAMUser:
     - IBOX_BASE:
         IBOX_LINKED_OBJ:
