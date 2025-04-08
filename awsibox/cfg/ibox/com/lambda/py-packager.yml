@@ -1,5 +1,5 @@
 global:
-  IBOX_CONDITION:
+  Condition:
     - LambdaPyPackager:
         Or(Condition('LambdaPyPackagerARM'),Condition('LambdaPyPackagerAMD'))
   Lambda:
