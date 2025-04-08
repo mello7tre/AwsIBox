@@ -61,15 +61,15 @@ def remove_boto(to_remove_mod):
 
 
 def get_s3key_and_module_to_remove(module):
-    from pkg_resources import get_distribution
+    from importlib.metadata import distribution
 
-    mod_version = get_distribution(module).version
+    mod_version = distribution(module).version
     s3key = f"python{PY_VERSION}-{ARCH}-{module}-{mod_version}.zip"
     to_remove_mod = []
     for pkg in PKG_TO_REMOVE:
-        mod = get_distribution(pkg)
-        if mod.location == DIST_PY:
-            to_remove_mod.append(mod.project_name)
+        mod = distribution(pkg)
+        if os.path.dirname(mod._path) == DIST_PY:
+            to_remove_mod.append(mod.name)
     return s3key, to_remove_mod
 
 
