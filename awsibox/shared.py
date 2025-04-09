@@ -58,6 +58,12 @@ class IBOX_Custom_Obj(AWSProperty):
     }
 
 
+def fake_func_to_avoid_flake8_error_for_unused_import_of_method_used_in_eval():
+    Export
+    GetAtt
+    GetAZs
+
+
 def ibox_eval(code, conf={}):
     # ALL cfg.BUILD_ENVS keys can be used in yaml and resolved inside get_endvalue
     if "__builtins__" not in cfg.BUILD_ENVS:
