@@ -1,7 +1,12 @@
 import os
 import sys
 from functools import reduce
-from .cfg_instance_types import INSTANCE_LIST, INSTANCE_LIST_RDS, EPHEMERAL_MAP
+from .mod import (
+    autoscaling,
+    cloudformation,
+    cloudfront,
+    ec2,
+)
 
 cwd = os.getcwd()
 sys.path.append(os.path.join(cwd, "lib"))
@@ -172,22 +177,20 @@ CFG_TO_FUNC_RENAME = {
 # Order is VERY important do not CHANGE it!
 CFG_TO_FUNC_OVERRIDE = {
     "Parameter": {
-        "module": "joker",
         "func": (None, "Parameter"),
     },
     "Condition": {
-        "module": "joker",
         "func": (None, "Condition"),
     },
     "Mapping": {
-        "module": "cloudformation",
+        "module": cloudformation,
         "func": "CFM_Mappings",
     },
     "ApiGatewayDeployment": {
         "dep": ["ApiGatewayStage"],
     },
     "AutoScalingGroup": {
-        "module": "autoscaling",
+        "module": autoscaling,
         "func": "AS_Autoscaling",
         "dep": ["SecurityGroups", "ECSCapacityProvider"],
     },
@@ -195,7 +198,7 @@ CFG_TO_FUNC_OVERRIDE = {
         "dep": ["ECSService", "ElasticLoadBalancingV2Listener"],
     },
     "CloudFrontDistribution": {
-        "module": "cloudfront",
+        "module": cloudfront,
         "func": "CF_CloudFront",
         "dep": [
             "ElasticLoadBalancingV2Listener",
@@ -208,24 +211,22 @@ CFG_TO_FUNC_OVERRIDE = {
     },
     # This is not a resource but a sub-resource
     "CloudFrontLambdaFunctionAssociation": {
-        "module": "joker",
         "func": ("cloudfront", "LambdaFunctionAssociation"),
     },
     "CloudFrontVpcOrigin": {
         "func": ("cloudfront", "VpcOrigin"),
-        "module": "joker",
         "dep": ["ElasticLoadBalancingV2Listener"],
     },
     "CloudWatchAlarm": {
         "dep": ["ElasticLoadBalancingLoadBalancer", "SQSQueue", "Lambda"],
     },
     "EC2SecurityGroup": {
-        "module": "ec2",
+        "module": ec2,
         "func": "SG_SecurityGroup",
         "dep": ["ECSTaskDefinition", "EFSFileSystem"],
     },
     "EC2SecurityGroupIngress": {
-        "module": "ec2",
+        "module": ec2,
         "func": "SG_SecurityGroupIngresses",
         "dep": [
             "ElasticLoadBalancingV2Listener",
@@ -254,7 +255,6 @@ CFG_TO_FUNC_OVERRIDE = {
     },
     "IAMPolicy": {
         "func": ("iam", "PolicyType"),
-        "module": "joker",
         "dep": ["S3Bucket"],
     },
     "IAMRole": {
@@ -277,7 +277,6 @@ CFG_TO_FUNC_OVERRIDE = {
     },
     "Route53RecordSet": {
         "func": ("route53", "RecordSetType"),
-        "module": "joker",
         "dep": [
             "ApiGatewayDomainName",
             "DBInstance",
@@ -290,7 +289,7 @@ CFG_TO_FUNC_OVERRIDE = {
         "dep": ["S3Bucket"],
     },
     "SecurityGroups": {
-        "module": "ec2",
+        "module": ec2,
         "func": "SG_SecurityGroups",
         "dep": ["ElasticLoadBalancingLoadBalancer"],
     },
@@ -302,12 +301,11 @@ CFG_TO_FUNC_OVERRIDE = {
     },
     # ReplicateRegions need to be the last one
     "CCRReplicateRegions": {
-        "module": "cloudformation",
+        "module": cloudformation,
         "func": "CFM_CustomResourceReplicator",
     },
     # Output need to be last line
     "Output": {
-        "module": "joker",
         "func": (None, "Output"),
     },
 }

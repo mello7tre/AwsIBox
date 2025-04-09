@@ -1,21 +1,14 @@
 from . import cfg, __version__
 from .shared import stack_add_res
-from .mod import (
-    autoscaling,
-    cloudformation,
-    cloudfront,
-    ec2,
-    joker,
-)
+from .mod import joker
 
 
 def execute_method(RP_cmm):
     processed = []
 
     def _process(k, v):
+        module = v.get("module", joker)
         func_name = v["func"]
-        module_name = v["module"]
-        module = globals()[module_name]
         dep = v.get("dep", [])
 
         if k in list(RP_cmm.keys()):
@@ -37,7 +30,7 @@ def execute_method(RP_cmm):
                 getattr(module, stacktype_func)(key=k)
             elif func_name in dir(module):
                 getattr(module, func_name)(key=k)
-            elif module_name == "joker":
+            elif module.__name__ == "awsibox.mod.joker":
                 # for resources that can be built using only auto_get_props
                 joker.Joker(key=k, module=func_name[0], cls=func_name[1])
             processed.append(k)

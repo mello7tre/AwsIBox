@@ -107,7 +107,6 @@ def generate_cfg_to_func():
                 res_func = cfg.CFG_TO_FUNC_RENAME[res_func]
             #
             d[res_name] = {
-                "module": "joker",
                 "func": (res_mod, res_func),
             }
             # conf overrides

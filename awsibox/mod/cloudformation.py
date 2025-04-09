@@ -1,6 +1,7 @@
 import copy
 from troposphere import cloudformation, Ref
 from awsibox import cfg
+from ..cfg_instance_types import INSTANCE_LIST, EPHEMERAL_MAP
 from ..shared import get_endvalue, add_obj, auto_get_props
 
 
@@ -30,18 +31,18 @@ def mapping_EC2():
     mappings = {}
     mappings["InstanceTypes"] = {}
 
-    for i in cfg.INSTANCE_LIST:
+    for i in INSTANCE_LIST:
         mappings["InstanceTypes"].update(
             {
                 i: {
                     "InstaceEphemeral0": "1"
-                    if i in cfg.EPHEMERAL_MAP["InstaceEphemeral0"]
+                    if i in EPHEMERAL_MAP["InstaceEphemeral0"]
                     else "0",
                     "InstaceEphemeral1": "1"
-                    if i in cfg.EPHEMERAL_MAP["InstaceEphemeral1"]
+                    if i in EPHEMERAL_MAP["InstaceEphemeral1"]
                     else "0",
                     "InstaceEphemeral2": "1"
-                    if i in cfg.EPHEMERAL_MAP["InstaceEphemeral2"]
+                    if i in EPHEMERAL_MAP["InstaceEphemeral2"]
                     else "0",
                 }
             }
