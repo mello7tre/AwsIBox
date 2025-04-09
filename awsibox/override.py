@@ -1,59 +1,20 @@
-import os
-import sys
-import random
-import string
-import copy
-import json
-import logging
-from pprint import pprint, pformat
-from pathlib import PurePath
-from troposphere import validators
-from troposphere.autoscaling import Tags as asgTags
-import troposphere.ssm as ssm
-import troposphere.sso as sso
-import troposphere.rds as rds
-import troposphere.ec2 as ec2
-import troposphere.elasticloadbalancing as elb
-import troposphere.elasticloadbalancingv2 as elbv2
-
 from troposphere import (
-    And,
+    sso,
+    rds,
+    ec2,
+    elasticloadbalancing,
+    elasticloadbalancingv2,
+    validators,
     AWSHelperFn,
-    AWSObject,
-    AWSProperty,
-    PropsDictType,
-    Base64,
-    BaseAWSObject,
-    Condition,
-    Equals,
-    Export,
-    FindInMap,
-    GetAtt,
-    GetAZs,
     If,
-    ImportValue,
-    Join,
-    Not,
-    Or,
-    Output,
     Parameter,
-    Ref,
-    Select,
-    Split,
-    Sub,
     Tags,
-    Template,
-)
-
-from . import cfg
-
-from .cfg import (
-    MAX_SECURITY_GROUPS,
-    SECURITY_GROUPS_DEFAULT,
 )
 
 
-### BEGIN TROPOSPHERE OVERRIDE ###
+# Temporary fix for https://github.com/cloudtools/troposphere/issues/2146
+sso.PermissionSet.props["InlinePolicy"] = (str, False)
+
 
 # set Parameter default values
 def my_parameter_init(self, title, **kwargs):
@@ -66,8 +27,6 @@ def my_parameter_init(self, title, **kwargs):
 
 Parameter.__init__ = my_parameter_init
 
-# Temporary fix for https://github.com/cloudtools/troposphere/issues/2146
-sso.PermissionSet.props["InlinePolicy"] = (str, False)
 
 # Temporary fix for https://github.com/cloudtools/troposphere/issues/1474
 def my_one_of(class_name, properties, property, conditionals):
@@ -85,14 +44,17 @@ def my_one_of(class_name, properties, property, conditionals):
         )
 
 
-elbv2.one_of = my_one_of
+elasticloadbalancingv2.one_of = my_one_of
 
 # Fix troposphere/elasticloadbalancing.py LBCookieStickinessPolicy is a List and do not use class LBCookieStickinessPolicy
-elb.LoadBalancer.props["LBCookieStickinessPolicy"] = (
-    [elb.LBCookieStickinessPolicy],
+elasticloadbalancing.LoadBalancer.props["LBCookieStickinessPolicy"] = (
+    [elasticloadbalancing.LBCookieStickinessPolicy],
     False,
 )
-elb.LoadBalancer.props["Listeners"] = ([elb.Listener], False)
+elasticloadbalancing.LoadBalancer.props["Listeners"] = (
+    [elasticloadbalancing.Listener],
+    False,
+)
 
 
 # Fix to avoid setting OS variable TROPO_REAL_BOOL

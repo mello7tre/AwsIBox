@@ -1,11 +1,7 @@
-import troposphere.cloudformation as cfm
-
-from ..common import *
-from ..shared import (
-    get_endvalue,
-    add_obj,
-    auto_get_props
-)
+import copy
+from troposphere import cloudformation, Ref
+from awsibox import cfg
+from ..shared import get_endvalue, add_obj, auto_get_props
 
 
 def mapping_EnvRegion():
@@ -94,7 +90,9 @@ def CFM_Mappings(key):
 
 
 def CFM_CustomResourceReplicator(key):
-    R_Replicator = cfm.CustomResource("CloudFormationCustomResourceStackReplicator")
+    R_Replicator = cloudformation.CustomResource(
+        "CloudFormationCustomResourceStackReplicator"
+    )
     auto_get_props(R_Replicator)
 
     for p, v in cfg.Parameters.items():

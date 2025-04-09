@@ -1,7 +1,39 @@
+import copy
+import os
+import sys
+import logging
+import random
+import string
+import json
 import python_minifier
-from troposphere import policies
-
-from .common import *
+from pathlib import PurePath
+from pprint import pprint
+from awsibox import cfg
+from troposphere import (
+    policies,
+    And,
+    AWSProperty,
+    PropsDictType,
+    Condition,
+    Equals,
+    Export,
+    FindInMap,
+    GetAtt,
+    GetAZs,
+    If,
+    ImportValue,
+    Join,
+    Not,
+    Or,
+    Output,
+    Parameter,
+    Ref,
+    Select,
+    Split,
+    Sub,
+    Tags,
+)
+from troposphere.autoscaling import Tags as asgTags
 from .RP import RP_to_cfg
 
 IBOX_SPECIAL_KEYS = (

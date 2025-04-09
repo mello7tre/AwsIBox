@@ -1,7 +1,4 @@
-import sys
 import os
-import mmap
-
 from . import cfg
 
 

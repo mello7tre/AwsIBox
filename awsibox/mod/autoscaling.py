@@ -1,7 +1,5 @@
-import troposphere.autoscaling as asg
-import troposphere.ec2 as ec2
-
-from ..common import *
+from awsibox import cfg
+from troposphere import autoscaling, ec2, Sub, Join, Base64, If, Ref
 from ..shared import (
     get_endvalue,
     auto_get_props,
@@ -105,7 +103,7 @@ def AS_Autoscaling(key):
     # Resources
     AS_LaunchTemplate()
 
-    R_ASG = asg.AutoScalingGroup(
+    R_ASG = autoscaling.AutoScalingGroup(
         "AutoScalingGroupBase",
         LoadBalancerNames=LoadBalancers,
     )

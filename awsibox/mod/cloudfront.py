@@ -1,6 +1,5 @@
-import troposphere.cloudfront as clf
-
-from ..common import *
+from troposphere import cloudfront
+from awsibox import cfg
 from ..shared import (
     auto_get_props,
     add_obj,
@@ -24,7 +23,7 @@ def CF_CloudFront(key):
             continue
         resname = f"{key}{n}"
         # Resources
-        R_CloudFrontDistribution = clf.Distribution(resname)
+        R_CloudFrontDistribution = cloudfront.Distribution(resname)
         distribution_config = v["DistributionConfig"]
 
         # process cache behaviors

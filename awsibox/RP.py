@@ -1,13 +1,8 @@
 import yaml
 import yaml.constructor
-import sys
 import os
 import copy
-import json
-import logging
-from yaml.resolver import Resolver
-from pprint import pprint, pformat
-
+from pprint import pprint
 from . import cfg
 
 # Un comment to stop PyYAML from automatically converting certain keys to boolean values

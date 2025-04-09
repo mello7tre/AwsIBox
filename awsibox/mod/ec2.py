@@ -1,6 +1,19 @@
-import troposphere.ec2 as ec2
-
-from ..common import *
+from awsibox import cfg
+from ..override import Parameter
+from troposphere import (
+    ec2,
+    Select,
+    Split,
+    Not,
+    Ref,
+    If,
+    Output,
+    Sub,
+    GetAtt,
+    Export,
+    And,
+    Condition,
+)
 from ..shared import (
     get_endvalue,
     get_expvalue,
@@ -14,16 +27,16 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
     # Parameters
     P_SecurityGroups = Parameter(
         "SecurityGroups",
-        Description=f"SecurityGroups List Extra - {SECURITY_GROUPS_DEFAULT} for default based on env/role",
-        AllowedPattern=r"^(\w*,\w*){%s}$" % (MAX_SECURITY_GROUPS - 1),
-        Default=SECURITY_GROUPS_DEFAULT,
+        Description=f"SecurityGroups List Extra - {cfg.SECURITY_GROUPS_DEFAULT} for default based on env/role",
+        AllowedPattern=r"^(\w*,\w*){%s}$" % (cfg.MAX_SECURITY_GROUPS - 1),
+        Default=cfg.SECURITY_GROUPS_DEFAULT,
     )
 
     add_obj([P_SecurityGroups])
 
     SecurityGroups = []
 
-    for n in range(MAX_SECURITY_GROUPS):
+    for n in range(cfg.MAX_SECURITY_GROUPS):
         name = f"SecurityGroup{n}"  # Ex SecurityGroup1
         value = Select(n, Split(",", get_endvalue("SecurityGroups")))
         outnamename = f"SecurityGroupName{n}"
@@ -69,14 +82,14 @@ def SG_SecurityGroupsEC2(key):
     Out_String = ["Rules=${SecurityGroupInstancesRules}"]
     Out_Map = {"SecurityGroupInstancesRules": {"Ref": "SecurityGroupInstancesRules"}}
 
-    SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
+    SG_SecurityGroupsExtra(Out_String, Out_Map)
 
 
 def SG_SecurityGroupsECS(key):
     Out_String = ["Service=${SecurityGroupEcsService}"]
     Out_Map = {"SecurityGroupEcsService": {"Ref": "SecurityGroupEcsService"}}
 
-    SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
+    SG_SecurityGroupsExtra(Out_String, Out_Map)
     # add Condition to Output created by SG_SecurityGroupsExtra
     try:
         cfg.Outputs[
@@ -90,7 +103,7 @@ def SG_SecurityGroupsTSK(key):
     Out_String = []
     Out_Map = {}
 
-    SecurityGroups = SG_SecurityGroupsExtra(Out_String, Out_Map)
+    SG_SecurityGroupsExtra(Out_String, Out_Map)
     # add Condition to Output created by SG_SecurityGroupsExtra
     try:
         cfg.Outputs[

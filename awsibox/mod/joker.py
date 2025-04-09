@@ -1,13 +1,20 @@
-from ..common import *
+import logging
+import copy
+from awsibox import cfg
+from ..RP import RP_to_cfg, merge_dict
+from troposphere import (
+    Parameter,
+    Output,
+    Ref,
+)
 from ..shared import (
     auto_get_props,
     add_obj,
     do_no_override,
     get_condition,
-    get_endvalue,
     parse_ibox_key,
+    ibox_eval,
 )
-from ..RP import RP_to_cfg, merge_dict
 
 
 def Joker(key, module, cls):
@@ -15,13 +22,13 @@ def Joker(key, module, cls):
         if key == "Condition":
             # Condition are just dict, directly add them
             do_no_override(True)
-            add_obj({n: eval(v)})
+            add_obj({n: ibox_eval(v)})
             do_no_override(False)
             continue
 
         if not v.get("IBOX_ENABLED", True):
             continue
-        if not eval(v.get("IBOX_ENABLED_IF", "True")):
+        if not ibox_eval(v.get("IBOX_ENABLED_IF", "True")):
             continue
 
         parse_ibox_key_conf = {"IBOX_INDEXNAME": n}
@@ -78,6 +85,8 @@ def Joker(key, module, cls):
                     f"{resname}Create",
                     Description=f"Create {resname}",
                     AllowedValues=["", "yes", "no"],
+                    Type="String",
+                    Default="",
                 )
             )
             if "Create.IBOX_AUTO_PO" not in v:
