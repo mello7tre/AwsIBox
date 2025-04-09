@@ -135,6 +135,7 @@ EPHEMERAL_MAP = {
     "InstaceEphemeral2": [""],
 }
 
+
 # build instances list
 def build_instance_list():
     family_instances_list = []
