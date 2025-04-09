@@ -1,5 +1,5 @@
 import python_minifier
-from troposphere import policies, ssm
+from troposphere import policies
 
 from .common import *
 from .RP import RP_to_cfg
@@ -547,8 +547,7 @@ def import_lambda(name):
                     code = python_minifier.minify(
                         fdata, rename_globals=True, preserve_globals=["lambda_handler"]
                     )
-            except Exception as e:
-                # logging.error(f"Failed minifying: {e}")
+            except Exception:
                 code = fdata
 
             if len(code) > 4096:
@@ -595,22 +594,22 @@ def auto_get_props(
 ):
     cfg.BUILD_ENVS.IBOX_RESNAME = obj.title
     cfg.BUILD_ENVS.IBOX_PROPNAME = ""
-    if not "IBOX_MAPNAME" in cfg.BUILD_ENVS or mapname:
+    if "IBOX_MAPNAME" not in cfg.BUILD_ENVS or mapname:
         cfg.BUILD_ENVS.IBOX_MAPNAME = mapname
-    if not "IBOX_REMAPNAME" in cfg.BUILD_ENVS or remapname:
+    if "IBOX_REMAPNAME" not in cfg.BUILD_ENVS or remapname:
         cfg.BUILD_ENVS.IBOX_REMAPNAME = remapname
-    if not "IBOX_INDEXNAME" in cfg.BUILD_ENVS or indexname:
+    if "IBOX_INDEXNAME" not in cfg.BUILD_ENVS or indexname:
         cfg.BUILD_ENVS.IBOX_INDEXNAME = indexname
-    if not "IBOX_LINKED_OBJ_NAME" in cfg.BUILD_ENVS or linked_obj_name:
+    if "IBOX_LINKED_OBJ_NAME" not in cfg.BUILD_ENVS or linked_obj_name:
         cfg.BUILD_ENVS.IBOX_LINKED_OBJ_NAME = linked_obj_name
-    if not "IBOX_LINKED_OBJ_INDEX" in cfg.BUILD_ENVS or linked_obj_index:
+    if "IBOX_LINKED_OBJ_INDEX" not in cfg.BUILD_ENVS or linked_obj_index:
         cfg.BUILD_ENVS.IBOX_LINKED_OBJ_INDEX = linked_obj_index
 
     # create a dict where i will put all property with a flat hierarchy
     # with the name equals to the mapname and the relative value.
     # Later i will assign this dict to the relative output object using
     # IBOX_OUTPUT
-    if not "IBOX_PROPS" in cfg.BUILD_ENVS:
+    if "IBOX_PROPS" not in cfg.BUILD_ENVS:
         IBOX_PROPS = {"MAP": {}, "OBJ": obj}
 
     res_obj_type = getattr(obj, "resource_type", res_obj_type)
@@ -724,8 +723,7 @@ def auto_get_props(
                 # Check for incomplete AWSProperty object and set obj to None to skip it
                 try:
                     prop_obj.to_dict()
-                except Exception as e:
-                    # logging.warning(f"Resource with missing properties: {obj_propname}\n\t\t{e}")
+                except Exception:
                     prop_obj = None
             elif prop_class.__name__ == "dict":
                 prop_obj = get_dictvalue(key[obj_propname])
@@ -1016,7 +1014,7 @@ def auto_get_props(
                 for meta_prop in ["Condition", "UpdateReplacePolicy"]:
                     source_meta_prop = key.get(meta_prop, getattr(obj, meta_prop, None))
                     source_meta_prop_name = parse_ibox_key(source_meta_prop)
-                    if source_meta_prop and not meta_prop in linked_obj:
+                    if source_meta_prop and meta_prop not in linked_obj:
                         # ..if source obj have it and target not
                         linked_obj[meta_prop] = source_meta_prop_name
                     elif source_meta_prop and meta_prop == "Condition":
