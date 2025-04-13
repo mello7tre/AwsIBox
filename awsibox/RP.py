@@ -122,7 +122,7 @@ def build_RP():
 
     RP_base_keys = _get_RP_base_keys()
 
-    class Loader(yaml.Loader):
+    class Loader(yaml.CSafeLoader):
         def __init__(self, stream):
             #            # This way for include relative to file with include statement
             #            self._root_current = os.path.split(stream.name)[0]
@@ -144,7 +144,7 @@ def build_RP():
             #            self.root_current_suffix = os.path.basename(suffix)
 
             self.stream = stream
-            super(Loader, self).__init__(stream)
+            super().__init__(stream)
             Loader.add_constructor("!include", Loader.include)
             Loader.add_constructor("!exclude", Loader.exclude)
 
