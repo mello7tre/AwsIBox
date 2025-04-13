@@ -1,12 +1,9 @@
 import logging
 import copy
-from awsibox import cfg
+from troposphere import Parameter, Output, Ref
+
+from .. import cfg
 from ..RP import RP_to_cfg, merge_dict
-from troposphere import (
-    Parameter,
-    Output,
-    Ref,
-)
 from ..shared import (
     auto_get_props,
     add_obj,

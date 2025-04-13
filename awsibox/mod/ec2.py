@@ -1,5 +1,3 @@
-from awsibox import cfg
-from ..override import Parameter
 from troposphere import (
     ec2,
     Select,
@@ -14,6 +12,9 @@ from troposphere import (
     And,
     Condition,
 )
+
+from .. import cfg
+from ..override import Parameter
 from ..shared import (
     get_endvalue,
     get_expvalue,

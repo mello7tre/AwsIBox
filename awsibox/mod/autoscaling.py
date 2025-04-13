@@ -1,5 +1,6 @@
-from awsibox import cfg
 from troposphere import autoscaling, ec2, Sub, Join, Base64, If, Ref
+
+from .. import cfg
 from ..shared import (
     get_endvalue,
     auto_get_props,

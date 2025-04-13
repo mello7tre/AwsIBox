@@ -1,6 +1,7 @@
 import copy
 from troposphere import cloudformation, Ref
-from awsibox import cfg
+
+from .. import cfg
 from ..cfg_instance_types import INSTANCE_LIST, EPHEMERAL_MAP
 from ..shared import get_endvalue, add_obj, auto_get_props
 

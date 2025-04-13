@@ -1,10 +1,7 @@
 from troposphere import cloudfront
-from awsibox import cfg
-from ..shared import (
-    auto_get_props,
-    add_obj,
-    clf_compute_order,
-)
+
+from .. import cfg
+from ..shared import auto_get_props, add_obj, clf_compute_order
 
 
 def process_cache_policy(v):

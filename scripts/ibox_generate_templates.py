@@ -3,8 +3,8 @@ import os
 import json
 import concurrent.futures
 from traceback import print_exc
-
 from troposphere import Template
+
 from awsibox import args, cfg, RP, discover, generate
 
 args = args.get_args()

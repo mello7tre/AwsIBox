@@ -8,7 +8,6 @@ import json
 import python_minifier
 from pathlib import PurePath
 from pprint import pprint
-from awsibox import cfg
 from troposphere import (
     policies,
     And,
@@ -34,6 +33,8 @@ from troposphere import (
     Tags,
 )
 from troposphere.autoscaling import Tags as asgTags
+
+from . import cfg
 from .RP import RP_to_cfg
 
 IBOX_SPECIAL_KEYS = (
