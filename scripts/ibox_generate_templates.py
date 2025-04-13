@@ -39,12 +39,13 @@ def output_template(template, brand=None, envrole=None):
 def get_template():
     # save base cfg ..
     cfg_base = cfg.__dict__.copy()
-    # ..and common no brand parsed yaml cfg
-    cfg_base_yaml_common_no_brand = cfg.YAML_COMMON_NO_BRAND
 
     cfg.template = Template()
     cfg.BUILD_ENVS = cfg.BuildEnvs({})
     RP.build_RP()
+
+    # ..and common no brand parsed yaml cfg
+    cfg_base_yaml_common_no_brand = cfg.YAML_COMMON_NO_BRAND
 
     try:
         template = generate.generate()
