@@ -1,7 +1,6 @@
 import yaml
-import yaml.constructor
 import os
-import copy
+from copy import deepcopy
 from pprint import pprint
 
 from . import cfg
@@ -319,7 +318,7 @@ def build_RP():
                         continue
                     # inject in existing structure
                     RP[main_key][resource_key] = merge_dict(
-                        copy.deepcopy(base_key_value), resource_key_value
+                        deepcopy(base_key_value), resource_key_value
                     )
                 # delete IBOX_BASE in RP structure
                 del RP[main_key][base_key]
@@ -359,7 +358,7 @@ def build_RP():
             return RP
 
         def get_RP_map():
-            RP = copy.deepcopy(RP_base)
+            RP = deepcopy(RP_base)
             mapped_keys = []
 
             # I build the cfg to build the mappings for env/region
@@ -372,12 +371,12 @@ def build_RP():
                         env_cfg.update(_parse_yaml(read_yaml, cfg_keys + [env]))
                 # then the one under region + env keys
                 for region in list(rvalue.keys()):
-                    RP[env][region] = copy.deepcopy(env_cfg)
+                    RP[env][region] = deepcopy(env_cfg)
                     for cfg_type, ctv in yaml_cfg.items():
                         for read_yaml in ctv:
                             RP[env][region].update(
                                 _parse_yaml(
-                                    copy.deepcopy(read_yaml), cfg_keys + [env, region]
+                                    deepcopy(read_yaml), cfg_keys + [env, region]
                                 )
                             )
                     # create list of all mapped keys

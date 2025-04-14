@@ -1,11 +1,11 @@
-import copy
 import os
 import sys
 import logging
-import random
 import string
 import json
 import python_minifier
+from copy import deepcopy
+from random import SystemRandom
 from pathlib import PurePath
 from pprint import pprint
 from troposphere import (
@@ -390,7 +390,7 @@ def get_dictvalue(key, mapname=""):
         # Usefull for KMS policy and other generic dict properties
         value = []
         key_iboxlist = key["IBOX_LIST"]
-        for i, k in copy.deepcopy(key).items():
+        for i, k in deepcopy(key).items():
             if i == "IBOX_LIST":
                 continue
             # parse IBOX_IF
@@ -1016,7 +1016,7 @@ def auto_get_props(
             louc_cfg = {}
             for lo_for_index in lo_for_cycle:
                 # need to copy it because it's updated
-                lo_conf = copy.deepcopy(
+                lo_conf = deepcopy(
                     linked_obj_data.get(
                         "Conf", {"IBOX_LINKED_OBJ_NAME": cfg.BUILD_ENVS.IBOX_RESNAME}
                     )
@@ -1041,7 +1041,7 @@ def auto_get_props(
                     linked_obj = getattr(cfg, linked_obj_key_name)
                 else:
                     # copy it, first search for the full name including for index
-                    linked_obj = copy.deepcopy(getattr(cfg, linked_obj_key_name))
+                    linked_obj = deepcopy(getattr(cfg, linked_obj_key_name))
 
                 # update it with config from IBOX_LINKED_OBJ Conf
                 linked_obj.update(lo_conf)
@@ -1305,7 +1305,7 @@ def gen_random_string():
     char_set = f"{string.ascii_letters}{string.digits}"
     if not hasattr(gen_random_string, "rng"):
         # Create a static variable
-        gen_random_string.rng = random.SystemRandom()
+        gen_random_string.rng = SystemRandom()
     secret_string = "".join(
         [gen_random_string.rng.choice(char_set) for _ in range(length)]
     )

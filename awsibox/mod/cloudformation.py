@@ -1,4 +1,4 @@
-import copy
+from copy import deepcopy
 from troposphere import cloudformation, Ref
 
 from .. import cfg
@@ -7,7 +7,7 @@ from ..shared import get_endvalue, add_obj, auto_get_props
 
 
 def mapping_EnvRegion():
-    RP = copy.deepcopy(cfg.RP_map)
+    RP = deepcopy(cfg.RP_map)
 
     for env in list(RP):
         rvalue = RP[env]

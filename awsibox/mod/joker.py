@@ -1,5 +1,5 @@
 import logging
-import copy
+from copy import deepcopy
 from troposphere import Parameter, Output, Ref
 
 from .. import cfg
@@ -60,7 +60,7 @@ def Joker(key, module, cls):
             ibox_source_obj = [ibox_source_obj]
         for source_obj in ibox_source_obj:
             source_obj = parse_ibox_key(source_obj, parse_ibox_key_conf)
-            source_obj_conf = copy.deepcopy(getattr(cfg, source_obj))
+            source_obj_conf = deepcopy(getattr(cfg, source_obj))
             RP_to_cfg(
                 source_obj_conf,
                 prefix=mapname,

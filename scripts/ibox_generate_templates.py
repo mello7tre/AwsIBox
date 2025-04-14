@@ -124,32 +124,38 @@ def generate_cfg_to_func():
     cfg.CFG_TO_FUNC = d
 
 
-# read CloudFormationResourceSpecification to get CloudFormation Resources Properties
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-resource-specification.html
-with open(
-    os.path.join(cfg.APP_DIR, "aws", "CloudFormationResourceSpecification.json"), "r"
-) as cfm_res_spec_json:
-    cfg.cfm_res_spec = json.load(cfm_res_spec_json)
+def main():
+    # read CloudFormationResourceSpecification to get CloudFormation Resources Properties
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-resource-specification.html
+    with open(
+        os.path.join(cfg.APP_DIR, "aws", "CloudFormationResourceSpecification.json"),
+        "r",
+    ) as cfm_res_spec_json:
+        cfg.cfm_res_spec = json.load(cfm_res_spec_json)
 
-generate_cfg_to_func()
+    generate_cfg_to_func()
 
-if args.action == "view":
-    discover_map = discover.discover([args.Brand], [args.EnvRole], [])
+    if args.action == "view":
+        discover_map = discover.discover([args.Brand], [args.EnvRole], [])
 
-    cfg.brand = args.Brand
-    try:
-        role = discover_map[cfg.brand][0]
-    except Exception:
-        pass
-    else:
-        do_process(role[0], role[1])
-elif args.action == "write":
-    discover_map = discover.discover(args.Brands, args.EnvRoles, args.StackTypes)
-
-    for brand, roles in discover_map.items():
-        cfg.brand = brand
-        if args.jobs:
-            kwargs = {"max_workers": args.jobs}
+        cfg.brand = args.Brand
+        try:
+            role = discover_map[cfg.brand][0]
+        except Exception:
+            pass
         else:
-            kwargs = {}
-        concurrent_exec(set(roles), kwargs)
+            do_process(role[0], role[1])
+    elif args.action == "write":
+        discover_map = discover.discover(args.Brands, args.EnvRoles, args.StackTypes)
+
+        for brand, roles in discover_map.items():
+            cfg.brand = brand
+            if args.jobs:
+                kwargs = {"max_workers": args.jobs}
+            else:
+                kwargs = {}
+            concurrent_exec(set(roles), kwargs)
+
+
+if __name__ == "__main__":
+    main()
