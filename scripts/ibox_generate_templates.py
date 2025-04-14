@@ -67,6 +67,7 @@ def do_process(stacktype, envrole):
 
 
 def concurrent_exec(roles, kwargs):
+    exit_with_error = False
     with concurrent.futures.ProcessPoolExecutor(**kwargs) as executor:
         data = {}
         future_to_role = {}
@@ -83,9 +84,13 @@ def concurrent_exec(roles, kwargs):
             except Exception as e:
                 print(f"{role} generated an exception: {e}")
                 print_exc()
+                exit_with_error = True
                 break
         for future in future_to_role:
             future.cancel()
+
+    if exit_with_error:
+        exit(1)
 
 
 # use CloudFormationResourceSpecification.json to generate cfg.CFG_TO_FUNC
@@ -154,7 +159,7 @@ def main():
                 kwargs = {"max_workers": args.jobs}
             else:
                 kwargs = {}
-            concurrent_exec(set(roles), kwargs)
+            concurrent_exec(sorted(set(roles)), kwargs)
 
 
 if __name__ == "__main__":
