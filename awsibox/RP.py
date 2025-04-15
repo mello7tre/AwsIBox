@@ -1,6 +1,6 @@
 import yaml
 import os
-from copy import deepcopy
+from copy import deepcopy, copy
 from pprint import pprint
 
 from . import cfg
@@ -358,7 +358,7 @@ def build_RP():
             return RP
 
         def get_RP_map():
-            RP = deepcopy(RP_base)
+            RP = RP_base
             mapped_keys = []
 
             # I build the cfg to build the mappings for env/region
@@ -371,13 +371,12 @@ def build_RP():
                         env_cfg.update(_parse_yaml(read_yaml, cfg_keys + [env]))
                 # then the one under region + env keys
                 for region in list(rvalue.keys()):
-                    RP[env][region] = deepcopy(env_cfg)
+                    RP[env][region] = copy(env_cfg)
                     for cfg_type, ctv in yaml_cfg.items():
                         for read_yaml in ctv:
+                            # i switched to faster copy, if arise problem go back to deepcopy
                             RP[env][region].update(
-                                _parse_yaml(
-                                    deepcopy(read_yaml), cfg_keys + [env, region]
-                                )
+                                _parse_yaml(copy(read_yaml), cfg_keys + [env, region])
                             )
                     # create list of all mapped keys
                     for key in list(RP[env][region]):
@@ -390,6 +389,10 @@ def build_RP():
                             cfg, key
                         ):
                             # if value is equal to the global one, delete the key
+                            del RP[env][region][key]
+                        elif key in cfg.regions and not RP[env][region][key]:
+                            # remove empty keys named like region,
+                            # they are present when i switched from deecopy to copy in previous for cycle (RP[env][region].update)
                             del RP[env][region][key]
                         elif key not in mapped_keys:
                             # only add if not already present
