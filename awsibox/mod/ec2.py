@@ -14,7 +14,7 @@ from troposphere import (
 )
 
 from .. import cfg
-from ..override import Parameter
+from ..tropo_override import Parameter
 from ..shared import (
     get_endvalue,
     get_expvalue,

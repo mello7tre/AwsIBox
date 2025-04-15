@@ -3,9 +3,8 @@ import os
 import json
 import concurrent.futures
 from traceback import print_exc
-from troposphere import Template
 
-from awsibox import args, cfg, RP, discover, generate
+from awsibox import override, args, cfg, RP, discover, generate
 
 args = args.get_args()
 
@@ -40,7 +39,6 @@ def get_template():
     # save base cfg ..
     cfg_base = cfg.__dict__.copy()
 
-    cfg.template = Template()
     cfg.BUILD_ENVS = cfg.BuildEnvs({})
     RP.build_RP()
 

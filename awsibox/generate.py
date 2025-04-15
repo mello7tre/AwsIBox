@@ -1,3 +1,5 @@
+from troposphere import Template
+
 from . import cfg, __version__
 from .shared import stack_add_res
 from .mod import joker
@@ -45,6 +47,8 @@ def execute_method(RP_cmm):
 
 
 def generate():
+    cfg.template = Template()
+
     try:
         execute_method(cfg.RP_tree)
     except Exception:
