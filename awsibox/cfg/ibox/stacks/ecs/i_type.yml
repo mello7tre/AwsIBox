@@ -63,6 +63,13 @@ global:
     - IBOX_BASE:
         ContainerDefinitions:
           - IBOX_BASE:
+              Cpu.IBOX_CODE: If(
+                f"{IBOX_REFNAME}UseTaskDefinitionCpu",
+                get_endvalue(f"{IBOX_RESNAME}Cpu"),
+                If(
+                  f"{IBOX_CURNAME}Override",
+                  Ref(f"{IBOX_CURNAME}Override"),
+                  If("CapacityMinEqualsMax", 2, get_endvalue(IBOX_CURNAME, add_override=False))))
               RestartPolicy:
                 Enabled.IBOX_AUTO_PO: {}
                 Enabled: False
