@@ -433,55 +433,104 @@ def get_dictvalue(key, mapname=""):
 
 
 def get_condition(
-    cond_name, cond, value2, key=None, OrExtend=[], mapinlist=False, nomap=None
+    cond_name,
+    cond,
+    value2,
+    key=None,
+    OrExtend=[],
+    mapinlist=False,
+    nomap=None,
+    parse_value=True,
 ):
+    def _get_value_data(cond_name, value, mapinlist, nomap):
+        key_name = value
+
+        if isinstance(value, FindInMap):
+            map_name = value.data["Fn::FindInMap"][0]
+            key_name = value.data["Fn::FindInMap"][1]
+            value_name = value.data["Fn::FindInMap"][2]
+            if not value_name and cond_name:
+                value_name = cond_name
+
+            value_param = FindInMap(map_name, Ref(key_name), value_name)
+            value_map = FindInMap(map_name, get_endvalue(key_name), value_name)
+        elif isinstance(value, Select):
+            select_index = value.data["Fn::Select"][0]
+            select_list = value.data["Fn::Select"][1]
+
+            if "Fn::Split" in select_list.data:
+                split_sep = select_list.data["Fn::Split"][0]
+                key_name = select_list.data["Fn::Split"][1]
+                select_value_param = Split(split_sep, Ref(key_name))
+                select_value_map = Split(split_sep, get_endvalue(key_name))
+            else:
+                select_value_param = select_list
+                select_value_map = get_endvalue(select_list)
+
+            value_param = Select(select_index, select_value_param)
+            value_map = Select(select_index, select_value_map)
+        elif value in list(cfg.fixedvalues) + cfg.mappedvalues:
+            value_param = Ref(value)
+            # Used new param "mapinlist" when you have a mapped value in a list
+            # but multiple values as override parameters
+            if mapinlist:
+                value_map = get_endvalue(mapinlist[0], mapinlist=mapinlist[1])
+            elif nomap:
+                # if nomap need to avoid checking that value does exist in mappedvalues
+                value_map = get_endvalue(value, no_check_for_mappedvalues=True)
+            else:
+                value_map = get_endvalue(value)
+        elif value in cfg.Parameters:
+            value_param = Ref(value)
+            value_map = get_endvalue(value)
+        else:
+            value_param = value_map = value
+
+        return key_name, value_param, value_map
+
+    def _get_value_override_condition(key_name):
+        override_list = []
+        if (
+            key_name in cfg.Parameters
+            and key_name in list(cfg.fixedvalues) + cfg.mappedvalues
+            and not nomap
+        ):
+            key_override = f"{key_name}Override"
+            override_list = [
+                And(
+                    Condition(key_override),
+                    cond_param,
+                ),
+                And(
+                    Not(Condition(key_override)),
+                    cond_map,
+                ),
+            ]
+
+        return override_list
+
+    if not key:
+        key = cond_name
+
     # record current state
     override_state = cfg.no_override
     do_no_override(True)
 
-    key_name = key if key else cond_name
-    if isinstance(key, FindInMap):
-        map_name = key.data["Fn::FindInMap"][0]
-        key_name = key.data["Fn::FindInMap"][1]
-        value_name = key.data["Fn::FindInMap"][2]
-        if not value_name and cond_name:
-            value_name = cond_name
+    key, value1_param, value1_map = _get_value_data(cond_name, key, mapinlist, nomap)
 
-        value1_param = FindInMap(map_name, Ref(key_name), value_name)
-        value1_map = FindInMap(map_name, get_endvalue(key_name), value_name)
-    elif isinstance(key, Select):
-        select_index = key.data["Fn::Select"][0]
-        select_list = key.data["Fn::Select"][1]
-
-        if "Fn::Split" in select_list.data:
-            split_sep = select_list.data["Fn::Split"][0]
-            key_name = select_list.data["Fn::Split"][1]
-            select_value_param = Split(split_sep, Ref(key_name))
-            select_value_map = Split(split_sep, get_endvalue(key_name))
-        else:
-            select_value_param = select_list
-            select_value_map = get_endvalue(select_list)
-
-        value1_param = Select(select_index, select_value_param)
-        value1_map = Select(select_index, select_value_map)
+    if parse_value:
+        value2, value2_param, value2_map = _get_value_data(
+            cond_name, value2, mapinlist=False, nomap=None
+        )
     else:
-        value1_param = Ref(key_name)
-        # Used new param "mapinlist" when you have a mapped value in a list
-        # but multiple values as override parameters
-        if mapinlist:
-            value1_map = get_endvalue(mapinlist[0], mapinlist=mapinlist[1])
-        elif nomap:
-            # if nomap need to avoid checking that value does exist in mappedvalues
-            value1_map = get_endvalue(key_name, no_check_for_mappedvalues=True)
-        else:
-            value1_map = get_endvalue(key_name)
+        value2_param = value2_map = value2
 
     # if beginning state was False set it back
     if not override_state:
         do_no_override(False)
 
-    eq_param = Equals(value1_param, value2)
-    eq_map = Equals(value1_map, value2)
+    eq_param = Equals(value1_param, value2_param)
+    eq_map = Equals(value1_map, value2_map)
 
     if cond == "equals":
         cond_param = eq_param
@@ -490,22 +539,15 @@ def get_condition(
         cond_param = Not(eq_param)
         cond_map = Not(eq_map)
 
-    if (
-        key_name in cfg.Parameters
-        and key_name in list(cfg.fixedvalues) + cfg.mappedvalues
-        and not nomap
-    ):
-        key_override = f"{key_name}Override"
-        condition = Or(
-            And(
-                Condition(key_override),
-                cond_param,
-            ),
-            And(
-                Not(Condition(key_override)),
-                cond_map,
-            ),
-        )
+    condition_list = []
+
+    condition_list.extend(_get_value_override_condition(key))
+
+    if parse_value:
+        condition_list.extend(_get_value_override_condition(value2))
+
+    if condition_list:
+        condition = Or(*condition_list)
         if OrExtend:
             condition.data["Fn::Or"].extend(OrExtend)
     elif nomap:

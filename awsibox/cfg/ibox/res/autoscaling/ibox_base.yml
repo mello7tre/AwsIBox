@@ -38,11 +38,11 @@ global:
           - _KeepMaxSize:
               get_condition('', 'equals', 'k', f'{IBOX_RESNAME}MaxSize')
           - _CapacityDesiredSize:
-              get_condition('', 'equals', 'CapacityDesired', f'{IBOX_RESNAME}DesiredSize')
+              get_condition('', 'equals', 'CapacityDesired', f'{IBOX_RESNAME}DesiredSize', parse_value=False)
           - _CapacityMinSize:
-              get_condition('', 'equals', 'CapacityMin', f'{IBOX_RESNAME}MinSize')
+              get_condition('', 'equals', 'CapacityMin', f'{IBOX_RESNAME}MinSize', parse_value=False)
           - _CapacityMaxSize:
-              get_condition('', 'equals', 'CapacityMax', f'{IBOX_RESNAME}MaxSize')
+              get_condition('', 'equals', 'CapacityMax', f'{IBOX_RESNAME}MaxSize', parse_value=False)
           - _:
               get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}Recurrence')
         IBOX_OUTPUT:

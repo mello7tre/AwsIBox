@@ -28,9 +28,9 @@ global:
                 - IBOX_REFNAME.KeepMaxSize:
                     get_condition('', 'equals', 'k', f'{IBOX_REFNAME}CapacityMax')
                 - IBOX_REFNAME.CapacityMinSize:
-                    get_condition('', 'equals', 'CapacityMin', f'{IBOX_REFNAME}CapacityMin')
+                    get_condition('', 'equals', 'CapacityMin', f'{IBOX_REFNAME}CapacityMin', parse_value=False)
                 - IBOX_REFNAME.CapacityMaxSize:
-                    get_condition('', 'equals', 'CapacityMax', f'{IBOX_REFNAME}CapacityMax')
+                    get_condition('', 'equals', 'CapacityMax', f'{IBOX_REFNAME}CapacityMax', parse_value=False)
                 - IBOX_REFNAME.Enabled:
                     get_condition('', 'equals', 'yes', f'{IBOX_REFNAME}Enabled')
               IBOX_OUTPUT:
