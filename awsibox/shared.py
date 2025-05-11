@@ -488,7 +488,7 @@ def get_condition(
 
         return key_name, value_param, value_map
 
-    def _get_value_override_condition(key_name):
+    def _get_value_override_condition(key_name, value):
         override_list = []
         if (
             key_name in cfg.Parameters
@@ -499,11 +499,11 @@ def get_condition(
             override_list = [
                 And(
                     Condition(key_override),
-                    cond_param,
+                    cond_param_param,
                 ),
                 And(
                     Not(Condition(key_override)),
-                    cond_map,
+                    cond_map_map,
                 ),
             ]
 
@@ -529,31 +529,73 @@ def get_condition(
     if not override_state:
         do_no_override(False)
 
-    eq_param = Equals(value1_param, value2_param)
-    eq_map = Equals(value1_map, value2_map)
+    cond_param_param = Equals(value1_param, value2_param)
+    cond_map_map = Equals(value1_map, value2_map)
+    cond_map_param = cond_param_map = None
 
-    if cond == "equals":
-        cond_param = eq_param
-        cond_map = eq_map
-    elif cond == "not_equals":
-        cond_param = Not(eq_param)
-        cond_map = Not(eq_map)
+    if value1_param != value1_map and value2_param != value2_map:
+        cond_map_param = Equals(value1_map, value2_param)
+        cond_param_map = Equals(value1_param, value2_map)
 
-    condition_list = []
+    if cond == "not_equals":
+        cond_param_param = Not(cond_param_param)
+        cond_map_map = Not(cond_map_map)
+        if cond_map_param and cond_param_map:
+            cond_map_param = Not(cond_map_param)
+            cond_param_map = Not(cond_param_map)
 
-    condition_list.extend(_get_value_override_condition(key))
-
-    if parse_value:
-        condition_list.extend(_get_value_override_condition(value2))
-
-    if condition_list:
-        condition = Or(*condition_list)
+    if (
+        key in cfg.Parameters
+        and key in list(cfg.fixedvalues) + cfg.mappedvalues
+        and not nomap
+    ):
+        key_override = f"{key}Override"
+        condition = Or(
+            And(
+                Condition(key_override),
+                cond_param_param,
+            ),
+            And(
+                Not(Condition(key_override)),
+                cond_map_map,
+            ),
+        )
+        if (
+            value2 in cfg.Parameters
+            and value2 in list(cfg.fixedvalues) + cfg.mappedvalues
+            and parse_value
+            and cond_map_param
+            and cond_param_map
+        ):
+            value2_override = f"{value2}Override"
+            condition = Or(
+                And(
+                    Condition(key_override),
+                    Condition(value2_override),
+                    cond_param_param,
+                ),
+                And(
+                    Condition(key_override),
+                    Not(Condition(value2_override)),
+                    cond_param_map,
+                ),
+                And(
+                    Not(Condition(key_override)),
+                    Condition(value2_override),
+                    cond_map_param,
+                ),
+                And(
+                    Not(Condition(key_override)),
+                    Not(Condition(value2_override)),
+                    cond_map_map,
+                ),
+            )
         if OrExtend:
             condition.data["Fn::Or"].extend(OrExtend)
     elif nomap:
-        condition = cond_param
+        condition = cond_param_param
     else:
-        condition = cond_map
+        condition = cond_map_map
 
     if cond_name:
         condition = {cond_name: condition}
