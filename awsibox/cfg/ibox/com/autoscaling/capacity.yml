@@ -6,6 +6,9 @@ global:
         Description: 'Min Autoscaling Capacity - empty for default based on env/role'
     - CapacityMax:
         Description: 'Max Autoscaling Capacity - empty for default based on env/role'
+  Condition:
+    - CapacityMinEqualsMax:
+        get_condition('', 'equals', 'CapacityMin', 'CapacityMax')
   Output:
     - Capacity:
         Value: get_subvalue('Desired=${1M},Min=${2M},Max=${3M}',['CapacityDesired', 'CapacityMin', 'CapacityMax'])
