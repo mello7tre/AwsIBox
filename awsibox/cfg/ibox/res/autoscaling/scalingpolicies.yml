@@ -5,11 +5,11 @@ Tracking: &tracking
         Description: '0 to disable - empty for mapped value'
   IBOX_CONDITION:
     - _:
-        Or(
+        And(
           get_condition('', 'not_equals', '0', f'{IBOX_RESNAME}TargetTrackingConfigurationTargetValue'),
-          And(
-            Not(Condition(f'{IBOX_RESNAME}TargetTrackingConfigurationTargetValueOverride')),
-            Condition('CapacityMinEqualsMax')))
+          Or(
+            Condition(f'{IBOX_RESNAME}TargetTrackingConfigurationTargetValueOverride'),
+            Not(Condition('CapacityMinEqualsMax'))))
   EstimatedInstanceWarmup: 120
   PolicyType: TargetTrackingScaling
 
