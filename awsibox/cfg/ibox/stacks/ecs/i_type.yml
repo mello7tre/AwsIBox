@@ -68,7 +68,7 @@ global:
                 get_endvalue(f"{IBOX_RESNAME}Cpu"),
                 If(
                   f"{IBOX_CURNAME}Override",
-                  Ref(f"{IBOX_CURNAME}Override"),
+                  Ref(IBOX_CURNAME),
                   If("CapacityMinEqualsMax", 2, get_endvalue(IBOX_CURNAME, add_override=False))))
               RestartPolicy:
                 Enabled.IBOX_AUTO_PO: {}
