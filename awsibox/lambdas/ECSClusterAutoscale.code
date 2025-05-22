@@ -230,7 +230,7 @@ def process_cluster(c):
 
     logger.info(pformat(res))
 
-    if n_instances == 0:
+    if res["n_instances"] == 0:
         return
 
     cpu_extra = floor(res["cpu_free"] / res["cpu_base"])
