@@ -23,9 +23,13 @@ def Joker(key, module, cls):
             do_no_override(False)
             continue
 
-        if not v.get("IBOX_ENABLED", True):
-            continue
-        if not ibox_eval(v.get("IBOX_ENABLED_IF", "True")):
+        # IBOX_ENABLED_IF have precedence over IBOX_ENABLED
+        # if it does exist skip testing IBOX_ENABLED
+        ibox_enabled_if = v.get("IBOX_ENABLED_IF")
+        if ibox_enabled_if:
+            if not ibox_eval(ibox_enabled_if):
+                continue
+        elif not v.get("IBOX_ENABLED", True):
             continue
 
         parse_ibox_key_conf = {"IBOX_INDEXNAME": n}
