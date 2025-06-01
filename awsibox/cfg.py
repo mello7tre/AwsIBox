@@ -224,7 +224,11 @@ CFG_TO_FUNC_OVERRIDE = {
     "EC2SecurityGroup": {
         "module": ec2,
         "func": "SG_SecurityGroup",
-        "dep": ["ECSTaskDefinition", "EFSFileSystem"],
+        "dep": [
+            "ECSTaskDefinition",
+            "EFSFileSystem",
+            "ElasticLoadBalancingV2Listener",
+        ],
     },
     "EC2SecurityGroupIngress": {
         "module": ec2,
@@ -293,7 +297,10 @@ CFG_TO_FUNC_OVERRIDE = {
     "SecurityGroups": {
         "module": ec2,
         "func": "SG_SecurityGroups",
-        "dep": ["ElasticLoadBalancingLoadBalancer"],
+        "dep": [
+            "ElasticLoadBalancingLoadBalancer",
+            "ElasticLoadBalancingV2Listener",
+        ],
     },
     "SchedulerSchedule": {
         "dep": ["SecurityGroups"],
