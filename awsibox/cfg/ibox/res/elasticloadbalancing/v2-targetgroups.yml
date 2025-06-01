@@ -30,7 +30,6 @@ global:
         IBOX_ENABLED: False
         IBOX_LINKED_OBJ:
           Key: EC2SecurityGroupIngress
-          Name: LoadBalancerApplicationExternal
           Type: EC2LoadBalancerApplicationInstancesRule
         <<: *base
         Port: 80
@@ -38,7 +37,6 @@ global:
         IBOX_ENABLED: False
         IBOX_LINKED_OBJ:
           Key: EC2SecurityGroupIngress
-          Name: LoadBalancerApplicationInternal
           Type: EC2LoadBalancerApplicationInstancesRule
         <<: *base
         Port: 80

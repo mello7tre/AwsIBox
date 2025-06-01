@@ -231,6 +231,7 @@ CFG_TO_FUNC_OVERRIDE = {
         "func": "SG_SecurityGroupIngresses",
         "dep": [
             "ElasticLoadBalancingV2Listener",
+            "ElasticLoadBalancingV2TargetGroup",
             "ElasticLoadBalancingLoadBalancer",
             "EFSFileSystem",
         ],
