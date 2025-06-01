@@ -74,6 +74,9 @@ def Joker(key, module, cls):
             )
             v = merge_dict(v, source_obj_conf, keep=True)
 
+            # Always enable obj, as source obj can have key IBOX_ENABLED False
+            v["IBOX_ENABLED"] = True
+
             # Uncomment to use old method: auto_get_props
             # auto_get_props(obj, mapname=source_obj, indexname=n)
             # #reset obj title, if changed by IBOX_TITLE key
