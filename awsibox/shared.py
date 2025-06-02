@@ -56,6 +56,7 @@ IBOX_SPECIAL_KEYS = (
 class IBOX_Custom_Obj(AWSProperty):
     props: PropsDictType = {
         "Value": (str, True),
+        "ValuePrepend": (str, False),
     }
 
 
@@ -458,13 +459,14 @@ def get_condition(
             select_index = value.data["Fn::Select"][0]
             select_list = value.data["Fn::Select"][1]
 
-            if "Fn::Split" in select_list.data:
+            if hasattr(select_list, "data") and "Fn::Split" in select_list.data:
                 split_sep = select_list.data["Fn::Split"][0]
                 key_name = select_list.data["Fn::Split"][1]
                 select_value_param = Split(split_sep, Ref(key_name))
                 select_value_map = Split(split_sep, get_endvalue(key_name))
             else:
-                select_value_param = select_list
+                key_name = select_list
+                select_value_param = Ref(select_list)
                 select_value_map = get_endvalue(select_list)
 
             value_param = Select(select_index, select_value_param)
@@ -1067,16 +1069,25 @@ def auto_get_props(
                 # save IBOX_RESNAME and IBOX_MAPNAME
                 IBOX_RESNAME_SAVE = cfg.BUILD_ENVS.IBOX_RESNAME
                 IBOX_MAPNAME_SAVE = cfg.BUILD_ENVS.IBOX_MAPNAME
+                IBOX_INDEXNAME_SAVE = cfg.BUILD_ENVS.IBOX_INDEXNAME
                 # set IBOX_RESNAME and IBOX_MAPNAME to call _populate like auto_get_props
                 cfg.BUILD_ENVS.IBOX_RESNAME = obj_title
                 cfg.BUILD_ENVS.IBOX_MAPNAME = f"{mapname}{propname}"
+                cfg.BUILD_ENVS.IBOX_INDEXNAME = n
                 # populate OBJ
                 _populate(obj, rootdict=rootdict, mapname=cfg.BUILD_ENVS.IBOX_MAPNAME)
                 # restore IBOX_RESNAME and IBOX_MAPNAME
                 cfg.BUILD_ENVS.IBOX_RESNAME = IBOX_RESNAME_SAVE
                 cfg.BUILD_ENVS.IBOX_MAPNAME = IBOX_MAPNAME_SAVE
+                cfg.BUILD_ENVS.IBOX_INDEXNAME = IBOX_INDEXNAME_SAVE
 
                 value = getattr(obj, "Value")
+
+                # trick to prepend a value
+                value_ex = getattr(obj, "ValuePrepend", None)
+                if value_ex:
+                    values.append(value_ex)
+
                 if v == "IBOX_IFCONDVALUE":
                     condname = f"{mapname}{propname}{n}"
                     add_obj(get_condition(condname, "not_equals", "IBOX_IFCONDVALUE"))
@@ -1434,7 +1445,7 @@ def parse_ibox_key(value, conf={}):
             if key in conf:
                 value = value.replace(key, str(conf[key]))
             else:
-                value = value.replace(key, cfg.BUILD_ENVS.get(key, ""))
+                value = value.replace(key, str(cfg.BUILD_ENVS.get(key, "")))
     if "IBOX_RESNAME" in cfg.BUILD_ENVS:
         value = value.replace("_", cfg.BUILD_ENVS.IBOX_RESNAME)
     value = value.replace(".", "")
