@@ -34,6 +34,20 @@ global:
                 - IBOX_IFVALUE
                 - Ref("AWS::NoValue")
               AwsvpcConfiguration:
+                SecurityGroups.IBOX_AUTO_PO_NO:
+                  Type: CommaDelimitedList
+                  Value: ${SecurityGroups} - get_endvalue(f"{IBOX_MAPNAME}SecurityGroups",nolist=True)
+                SecurityGroups.IBOX_CUSTOM_OBJ_NO:
+                  IBOX_CONDITION:
+                    - IBOX_MAPNAME.IBOX_CUSTOM_OBJ_INDEX:
+                        Not(get_condition("", "equals", "none", Select(IBOX_CUSTOM_OBJ_INDEX, IBOX_MAPNAME)))
+                  Value: >-
+                    If(
+                      f"{IBOX_MAPNAME}{IBOX_CUSTOM_OBJ_INDEX}",
+                      get_expvalue(
+                        Select(IBOX_CUSTOM_OBJ_INDEX, get_endvalue(IBOX_MAPNAME)),
+                        prefix="SecurityGroup"),
+                      Ref("AWS::NoValue"))
                 SecurityGroups: cfg.SecurityGroupsImport
                 Subnets: Split(",", ImportValue("SubnetsPrivate"))
             TaskDefinitionArn: Ref("TaskDefinition")

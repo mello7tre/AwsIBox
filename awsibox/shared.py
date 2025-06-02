@@ -50,6 +50,7 @@ IBOX_SPECIAL_KEYS = (
     "IBOX_LINKED_OBJ_NAME",
     "IBOX_LINKED_OBJ_INDEX",
     "IBOX_LINKED_OBJ_FOR",
+    "IBOX_CUSTOM_OBJ_INDEX"
 )
 
 
@@ -1069,17 +1070,15 @@ def auto_get_props(
                 # save IBOX_RESNAME and IBOX_MAPNAME
                 IBOX_RESNAME_SAVE = cfg.BUILD_ENVS.IBOX_RESNAME
                 IBOX_MAPNAME_SAVE = cfg.BUILD_ENVS.IBOX_MAPNAME
-                IBOX_INDEXNAME_SAVE = cfg.BUILD_ENVS.IBOX_INDEXNAME
                 # set IBOX_RESNAME and IBOX_MAPNAME to call _populate like auto_get_props
                 cfg.BUILD_ENVS.IBOX_RESNAME = obj_title
                 cfg.BUILD_ENVS.IBOX_MAPNAME = f"{mapname}{propname}"
-                cfg.BUILD_ENVS.IBOX_INDEXNAME = n
+                cfg.BUILD_ENVS.IBOX_CUSTOM_OBJ_INDEX = n
                 # populate OBJ
                 _populate(obj, rootdict=rootdict, mapname=cfg.BUILD_ENVS.IBOX_MAPNAME)
                 # restore IBOX_RESNAME and IBOX_MAPNAME
                 cfg.BUILD_ENVS.IBOX_RESNAME = IBOX_RESNAME_SAVE
                 cfg.BUILD_ENVS.IBOX_MAPNAME = IBOX_MAPNAME_SAVE
-                cfg.BUILD_ENVS.IBOX_INDEXNAME = IBOX_INDEXNAME_SAVE
 
                 value = getattr(obj, "Value")
 
