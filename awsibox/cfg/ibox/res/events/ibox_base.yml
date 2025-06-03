@@ -36,7 +36,27 @@ global:
                     - IBOX_IFVALUE
                     - Ref("AWS::NoValue")
                   AwsVpcConfiguration:
-                    SecurityGroups: cfg.SecurityGroupsImport
+                    SecurityGroups.IBOX_AUTO_PO:
+                      Description: EventsRule Target EcsParameters SecurityGroups comma delimited list - empty for default based on env/role
+                      Type: CommaDelimitedList
+                      Value: ${SecurityGroups}
+                    SecurityGroups.IBOX_PCO:
+                      IBOX_OUTPUT:
+                        - IBOX_CURNAME.Names:
+                            Value: get_endvalue(IBOX_CURNAME, nolist=True)
+                    SecurityGroups.IBOX_CUSTOM_OBJ:
+                      IBOX_CONDITION:
+                        - IBOX_MAPNAME.IBOX_CUSTOM_OBJ_INDEX:
+                            Not(get_condition("", "equals", "none", Select(IBOX_CUSTOM_OBJ_INDEX, IBOX_MAPNAME)))
+                      Value: >-
+                        If(
+                          f"{IBOX_MAPNAME}{IBOX_CUSTOM_OBJ_INDEX}",
+                          get_expvalue(
+                            Select(IBOX_CUSTOM_OBJ_INDEX, get_endvalue(IBOX_MAPNAME)),
+                            prefix="SecurityGroup"),
+                          Ref("AWS::NoValue"))
+                    SecurityGroups:
+                      - none
                     Subnets: Split(",", ImportValue("SubnetsPrivate"))
                 TaskDefinitionArn: Ref("TaskDefinition")
               RoleArn: ImportValue("RoleECSEvents")

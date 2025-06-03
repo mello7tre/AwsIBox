@@ -53,7 +53,8 @@ global:
                         Select(IBOX_CUSTOM_OBJ_INDEX, get_endvalue(IBOX_MAPNAME)),
                         prefix="SecurityGroup"),
                       Ref("AWS::NoValue"))
-                SecurityGroups: cfg.SecurityGroupsImport
+                SecurityGroups:
+                  - none
                 Subnets: Split(",", ImportValue("SubnetsPrivate"))
             TaskDefinitionArn: Ref("TaskDefinition")
           RoleArn: ImportValue("RoleECSEvents")
