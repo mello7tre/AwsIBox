@@ -209,6 +209,7 @@ global:
           AwsvpcConfiguration:
             SecurityGroups.IBOX_AUTO_PO_NO:
               Description: ECS Service SecurityGroups comma delimited list - empty for default based on env/role
+              Default: cfg.SECURITY_GROUPS_DEFAULT
               Type: CommaDelimitedList
               Value: ${SecurityGroups} - get_endvalue(f"{IBOX_MAPNAME}SecurityGroups",nolist=True)
             SecurityGroups.IBOX_PCO_NO:

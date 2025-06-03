@@ -37,6 +37,7 @@ global:
                 SecurityGroups.IBOX_AUTO_PO:
                   Description: Scheduler Target EcsParameters SecurityGroups comma delimited list - empty for default based on env/role
                   Type: CommaDelimitedList
+                  Default: cfg.SECURITY_GROUPS_DEFAULT
                   Value: ${SecurityGroups}
                 SecurityGroups.IBOX_PCO:
                   IBOX_OUTPUT:

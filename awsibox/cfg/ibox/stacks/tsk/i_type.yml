@@ -22,6 +22,7 @@ global:
           IBOX_PARAMETER:
             - IBOX_MAPNAME.Names:
                 Description: ECSRunTask SecurityGroups comma delimited list - empty for default based on env/role
+                Default: cfg.SECURITY_GROUPS_DEFAULT
                 Type: CommaDelimitedList
           IBOX_OUTPUT:
             - IBOX_INDEXNAME.Names:
