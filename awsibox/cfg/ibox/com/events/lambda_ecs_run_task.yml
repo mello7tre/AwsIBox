@@ -1,0 +1,34 @@
+global:
+  EventsRule:
+    - ECSRunTask:
+        IBOX_ENABLED: False
+        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
+        Description: 'Periodically invoke LambdaECSRunTask'
+        LaunchType.IBOX_PCO:
+          IBOX_PARAMETER:
+            - IBOX_CURNAME:
+                Description: Empty for mapped value
+                AllowedValues: ['', 'EC2', 'FARGATE']
+          IBOX_CONDITION:
+            - ECSTasksLaunchOnFargate:
+                get_condition('', 'equals', 'FARGATE', IBOX_CURNAME)
+          IBOX_OUTPUT:
+            - IBOX_CURNAME:
+                Value: get_endvalue(IBOX_CURNAME)
+        LaunchType: FARGATE
+        State: 'ENABLED'
+        Targets:
+          - Lambda0:
+              Arn: ImportValue('LambdaECSRunTaskArn')
+              Id: 'TargetFunction-01'
+              Input: Join('"', [
+                  '{',
+                  'Cluster":', get_expvalue('Cluster', 'ECSRunTaskClusterStackName'), ',',
+                  'ECSInstancesStackName":', get_endvalue('ECSRunTaskClusterStackName'), ',',
+                  'LaunchType":', get_endvalue(f'{IBOX_RESNAME}LaunchType'), ',',
+                  If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'NetworkModeAwsVpc":"awsvpc",', Ref('AWS::NoValue')),
+                  'TaskDefinition":', Ref('TaskDefinition'), ',',
+                  'Subnets":', ImportValue('SubnetsPrivate'), ',',
+                  'SecurityGroups":', Join(' ', cfg.SecurityGroupsImport),
+                  '}',
+                ])

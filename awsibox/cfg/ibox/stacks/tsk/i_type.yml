@@ -38,45 +38,12 @@ global:
                 prefix="SecurityGroup"),
               Ref("AWS::NoValue"))
         Names:
-          - gatto
-          - pesce
+          - none
         Value: Join(",", IBOX_CUSTOM_OBJ_RESULT)
   ECSRunTaskClusterStackName: ecs-a
   ECSTaskDefinition:
     - Base:
         NetworkMode: awsvpc
-  EventsRule:
-    - ECSRunTask:
-        IBOX_SOURCE_OBJ: EventsRuleTargetLambda
-        Description: 'Periodically invoke LambdaECSRunTask'
-        LaunchType.IBOX_PCO: &ecs_run_task_launch_type
-          IBOX_PARAMETER:
-            - _LaunchType:
-                Description: Empty for mapped value
-                AllowedValues: ['', 'EC2', 'FARGATE']
-          IBOX_CONDITION:
-            - ECSTasksLaunchOnFargate:
-                get_condition('', 'equals', 'FARGATE', f'{IBOX_RESNAME}LaunchType')
-          IBOX_OUTPUT:
-            - _LaunchType:
-                Value: get_endvalue(IBOX_CURNAME)
-        LaunchType: FARGATE
-        State: 'ENABLED'
-        Targets:
-          - Lambda0: &ecs_run_task_target
-              Arn: ImportValue('LambdaECSRunTaskArn')
-              Id: 'TargetFunction-01'
-              Input: Join('"', [
-                  '{',
-                  'Cluster":', get_expvalue('Cluster', 'ECSRunTaskClusterStackName'), ',',
-                  'ECSInstancesStackName":', get_endvalue('ECSRunTaskClusterStackName'), ',',
-                  'LaunchType":', get_endvalue(f'{IBOX_RESNAME}LaunchType'), ',',
-                  If('ECSTaskDefinitionBaseNetworkModeAwsVpc', 'NetworkModeAwsVpc":"awsvpc",', Ref('AWS::NoValue')),
-                  'TaskDefinition":', Ref('TaskDefinition'), ',',
-                  'Subnets":', ImportValue('SubnetsPrivate'), ',',
-                  'SecurityGroups":', Join(' ', cfg.SecurityGroupsImport),
-                  '}',
-                ])
   IAMPolicy:
     - LambdaECSRunTaskTrigger:
         PolicyName: Sub('LambdaECSRunTaskTrigger_${AWS::StackName}')
@@ -99,13 +66,26 @@ global:
                   - GetAtt('RoleTask', 'Arn')
                   - ImportValue('RoleECSTaskExecution')
   SchedulerSchedule:
-    - ECSRunTask:
+    - ECSCluster:
         IBOX_ENABLED: False
-        Description: 'Periodically invoke LambdaECSRunTask'
+        IBOX_SOURCE_OBJ: SchedulerScheduleTargetECSCluster
+        Description: 'Periodically run task on ECS Cluster'
         FlexibleTimeWindow:
           Mode: "OFF"
-        LaunchType.IBOX_PCO: *ecs_run_task_launch_type
-        LaunchType: FARGATE
+        ClusterStackName: get_endvalue("ECSRunTaskClusterStackName")
         ScheduleExpressionTimezone: Europe/Rome
-        State: 'ENABLED'
-        Target: *ecs_run_task_target
+        State: 'DISABLED'
+        Target:
+          EcsParameters:
+            LaunchType.IBOX_PCO:
+              IBOX_PARAMETER:
+                - IBOX_CURNAME:
+                    Description: Empty for mapped value
+                    AllowedValues: ['', 'EC2', 'FARGATE']
+              IBOX_CONDITION:
+                - ECSTasksLaunchOnFargate:
+                    get_condition('', 'equals', 'FARGATE', IBOX_CURNAME)
+              IBOX_OUTPUT:
+                - IBOX_CURNAME:
+                    Value: get_endvalue(IBOX_CURNAME)
+            LaunchType: FARGATE

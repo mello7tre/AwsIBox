@@ -100,7 +100,7 @@ def SG_SecurityGroupsECS(key):
         pass
 
 
-def SG_SecurityGroupsTSK(key):
+def SG_SecurityGroupsTSKNO(key):
     Out_String = []
     Out_Map = {}
 
