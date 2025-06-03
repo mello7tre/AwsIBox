@@ -35,11 +35,12 @@ global:
                 - Ref("AWS::NoValue")
               AwsvpcConfiguration:
                 SecurityGroups.IBOX_AUTO_PO_NO:
+                  Description: Scheduler Target EcsParameters SecurityGroups comma delimited list - empty for default based on env/role
                   Type: CommaDelimitedList
                   Value: ${SecurityGroups}
                 SecurityGroups.IBOX_PCO_NO:
                   IBOX_OUTPUT:
-                    - IBOX_CURNAME.Name:
+                    - IBOX_CURNAME.Names:
                         Value: get_endvalue(IBOX_CURNAME, nolist=True)
                 SecurityGroups.IBOX_CUSTOM_OBJ_NO:
                   IBOX_CONDITION:

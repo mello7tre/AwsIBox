@@ -50,7 +50,8 @@ IBOX_SPECIAL_KEYS = (
     "IBOX_LINKED_OBJ_NAME",
     "IBOX_LINKED_OBJ_INDEX",
     "IBOX_LINKED_OBJ_FOR",
-    "IBOX_CUSTOM_OBJ_INDEX"
+    "IBOX_CUSTOM_OBJ_INDEX",
+    "IBOX_CUSTOM_OBJ_RESULT",
 )
 
 
@@ -1093,6 +1094,10 @@ def auto_get_props(
                     values.append(If(condname, value, Ref("AWS::NoValue")))
                 else:
                     values.append(value)
+
+            # save result in env variable for later use
+            cfg.BUILD_ENVS.IBOX_CUSTOM_OBJ_RESULT = values
+
             return values
 
         def _linked_obj(linked_obj_data):

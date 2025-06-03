@@ -16,6 +16,31 @@ global:
         Value: get_endvalue("ECSRunTaskClusterStackName")
     - ECSRunTaskSubnetsPrivate:
         Value: ImportValue("SubnetsPrivate")
+    - ECSRunTaskSecurityGroups:
+        IBOX_ENABLED: False
+        Names.IBOX_PCO:
+          IBOX_PARAMETER:
+            - IBOX_MAPNAME.Names:
+                Description: ECSRunTask SecurityGroups comma delimited list - empty for default based on env/role
+                Type: CommaDelimitedList
+          IBOX_OUTPUT:
+            - IBOX_INDEXNAME.Names:
+                Value: get_endvalue(f"{IBOX_MAPNAME}Names", nolist=True)
+        Names.IBOX_CUSTOM_OBJ:
+          IBOX_CONDITION:
+            - IBOX_MAPNAME.IBOX_CUSTOM_OBJ_INDEX:
+                Not(get_condition("", "equals", "none", Select(IBOX_CUSTOM_OBJ_INDEX, IBOX_MAPNAME)))
+          Value: >-
+            If(
+              f"{IBOX_MAPNAME}{IBOX_CUSTOM_OBJ_INDEX}",
+              get_expvalue(
+                Select(IBOX_CUSTOM_OBJ_INDEX, get_endvalue(IBOX_MAPNAME)),
+                prefix="SecurityGroup"),
+              Ref("AWS::NoValue"))
+        Names:
+          - gatto
+          - pesce
+        Value: Join(",", IBOX_CUSTOM_OBJ_RESULT)
   ECSRunTaskClusterStackName: ecs-a
   ECSTaskDefinition:
     - Base:
