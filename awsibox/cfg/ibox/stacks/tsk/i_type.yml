@@ -17,7 +17,7 @@ global:
     - ECSRunTaskSubnetsPrivate:
         Value: ImportValue("SubnetsPrivate")
     - ECSRunTaskSecurityGroups:
-        IBOX_ENABLED: False
+        IBOX_ENABLED_IF: "cfg.SchedulerSchedule['ECSRunTask']['IBOX_ENABLED'] == False"
         Names.IBOX_PCO:
           IBOX_PARAMETER:
             - IBOX_MAPNAME.Names:
