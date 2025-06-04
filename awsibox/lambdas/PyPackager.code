@@ -118,7 +118,7 @@ def lambda_handler(events, context):
     module = events["module"]
     modules_ex = events.get("modules_ex", [])
     for n in modules_ex:
-        install_module(module_ex)
+        install_module(n)
     install_module(module)
     s3_key, to_remove_mod = get_s3key_and_module_to_remove(module)
     remove_boto(to_remove_mod)
