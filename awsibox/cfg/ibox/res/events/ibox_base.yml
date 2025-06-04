@@ -44,7 +44,7 @@ global:
                     SecurityGroups.IBOX_PCO:
                       IBOX_OUTPUT:
                         - IBOX_CURNAME.Names:
-                            Value: get_endvalue(IBOX_CURNAME, nolist=True)
+                            Value: Join(",", get_endvalue(IBOX_CURNAME))
                     SecurityGroups.IBOX_CUSTOM_OBJ:
                       IBOX_CONDITION:
                         - IBOX_MAPNAME.IBOX_CUSTOM_OBJ_INDEX:
