@@ -35,22 +35,42 @@ except Exception:
     PIP = pip.main
 
 
-def install_module(module):
+def init():
     subprocess.check_call(
         [
             sys.executable,
             "-m",
             "pip",
             "install",
-            "-I",
-            "-q",
-            "--target",
-            DIST_PY,
+            "setuptools",
             "--no-cache-dir",
             "--disable-pip-version-check",
-            module,
         ]
     )
+
+
+def install_module(module):
+    CMD = [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "-I",
+        "-q",
+        "--target",
+        DIST_PY,
+        "--no-cache-dir",
+        "--disable-pip-version-check",
+        module,
+    ]
+
+    if isinstance(module, list):
+        CMD.extend(module)
+    else:
+        CMD += module
+
+    logger.info(CMD)
+    subprocess.check_call(CMD)
     sys.path.insert(0, DIST_PY)
 
 
@@ -95,7 +115,11 @@ def upload_to_s3(s3_key):
 
 
 def lambda_handler(events, context):
+    init()
     module = events["module"]
+    modules_ex = events.get("modules_ex", [])
+    for n in modules_ex:
+        install_module(module_ex)
     install_module(module)
     s3_key, to_remove_mod = get_s3key_and_module_to_remove(module)
     remove_boto(to_remove_mod)
