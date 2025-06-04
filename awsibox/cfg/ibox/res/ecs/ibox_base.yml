@@ -228,7 +228,11 @@ global:
                     prefix="SecurityGroup"),
                   Ref("AWS::NoValue"))
               ValuePrepend: GetAtt('SecurityGroupEcsService', 'GroupId') if IBOX_CUSTOM_OBJ_INDEX == 0 else ""
-            SecurityGroups: list([GetAtt('SecurityGroupEcsService', 'GroupId')]) + cfg.SecurityGroupsImport
+            SecurityGroups:
+              - none
+              - none
+              - none
+              - none
             Subnets: Split(',', ImportValue('SubnetsPrivate'))
         PlatformVersion: If('ECSTasksLaunchOnFargate', 'LATEST', Ref('AWS::NoValue'))
         TaskDefinition: Ref('TaskDefinition')

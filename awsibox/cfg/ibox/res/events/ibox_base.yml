@@ -58,6 +58,9 @@ global:
                           Ref("AWS::NoValue"))
                     SecurityGroups:
                       - none
+                      - none
+                      - none
+                      - none
                     Subnets: Split(",", ImportValue("SubnetsPrivate"))
                 TaskDefinitionArn: Ref("TaskDefinition")
               RoleArn: ImportValue("RoleECSEvents")

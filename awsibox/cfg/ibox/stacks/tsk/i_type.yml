@@ -40,6 +40,9 @@ global:
               Ref("AWS::NoValue"))
         Names:
           - none
+          - none
+          - none
+          - none
         Value: Join(",", IBOX_CUSTOM_OBJ_RESULT)
   ECSRunTaskClusterStackName: ecs-a
   ECSTaskDefinition:
