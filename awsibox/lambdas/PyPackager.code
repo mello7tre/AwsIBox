@@ -35,18 +35,19 @@ except Exception:
     PIP = pip.main
 
 
-def init():
-    subprocess.check_call(
-        [
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "setuptools",
-            "--no-cache-dir",
-            "--disable-pip-version-check",
-        ]
-    )
+PIP(
+    [
+        "install",
+        "-I",
+        "-q",
+        "setuptools",
+        "--target",
+        "/tmp/",
+        "--no-cache-dir",
+        "--disable-pip-version-check",
+    ]
+)
+sys.path.insert(0, "/tmp/")
 
 
 def install_module(module):
@@ -112,7 +113,6 @@ def upload_to_s3(s3_key):
 
 
 def lambda_handler(events, context):
-    init()
     module = events["module"]
     modules_ex = events.get("modules_ex", [])
     for n in modules_ex:
