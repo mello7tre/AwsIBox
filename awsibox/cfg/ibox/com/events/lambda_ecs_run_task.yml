@@ -1,6 +1,6 @@
 global:
   EventsRule:
-    - ECSRunTask:
+    - LambdaECSRunTask:
         IBOX_ENABLED: False
         IBOX_SOURCE_OBJ: EventsRuleTargetLambda
         Description: 'Periodically invoke LambdaECSRunTask'

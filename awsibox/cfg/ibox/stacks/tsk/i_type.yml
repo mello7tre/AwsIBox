@@ -70,7 +70,7 @@ global:
                   - GetAtt('RoleTask', 'Arn')
                   - ImportValue('RoleECSTaskExecution')
   SchedulerSchedule:
-    - ECSCluster:
+    - ECSRunTask:
         IBOX_ENABLED: False
         IBOX_SOURCE_OBJ: SchedulerScheduleTargetECSCluster
         Description: 'Periodically run task on ECS Cluster'
