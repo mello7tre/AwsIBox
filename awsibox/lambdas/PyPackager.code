@@ -64,10 +64,7 @@ def install_module(module):
         module,
     ]
 
-    if isinstance(module, list):
-        CMD.extend(module)
-    else:
-        CMD += module
+    CMD += module
 
     logger.info(CMD)
     subprocess.check_call(CMD)
