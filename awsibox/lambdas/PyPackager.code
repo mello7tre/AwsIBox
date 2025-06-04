@@ -34,20 +34,28 @@ try:
 except Exception:
     PIP = pip.main
 
+TARGET_DIR = WORK_DIR
 
-PIP(
+# Step 1: Install build dependencies into the target dir
+subprocess.check_call(
     [
-        "install",
-        "-I",
+        sys.executable,
+        "-m",
+        "pip",
         "-q",
+        "install",
         "setuptools",
+        "wheel",
         "--target",
-        "/tmp/",
+        TARGET_DIR,
         "--no-cache-dir",
         "--disable-pip-version-check",
     ]
 )
-sys.path.insert(0, "/tmp/")
+
+# Step 2: Set PYTHONPATH to make setuptools visible in subprocess
+ENV = os.environ.copy()
+ENV["PYTHONPATH"] = TARGET_DIR + os.pathsep + ENV.get("PYTHONPATH", "")
 
 
 def install_module(module):
@@ -70,7 +78,7 @@ def install_module(module):
         CMD.append(module)
 
     logger.info(CMD)
-    subprocess.check_call(CMD)
+    subprocess.check_call(CMD, env=ENV)
     sys.path.insert(0, DIST_PY)
 
 
