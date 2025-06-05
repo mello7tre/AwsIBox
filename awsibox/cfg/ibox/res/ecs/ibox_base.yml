@@ -228,7 +228,7 @@ global:
                     prefix="SecurityGroup"),
                   Ref("AWS::NoValue"))
               ValuePrepend: GetAtt('SecurityGroupEcsService', 'GroupId') if IBOX_CUSTOM_OBJ_INDEX == 0 else ""
-            SecurityGroups:
+            SecurityGroups+*:
               - none
               - none
               - none

@@ -25,6 +25,13 @@ def inject_in_RP_map(key_name, value):
                 w[key_name] = value
 
 
+def merge_list(source, insert):
+    dest = list(source)
+    dest[0 : len(insert)] = insert
+
+    return dest
+
+
 def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[], check_mapped=False):
     if hasattr(key, "items"):
         for k, v in key.items():
@@ -38,6 +45,12 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[], check_mapped=Fals
                 # needed to merge list for sourced IBOX_SOURCE_OBJ resource
                 # in the key need to use ++++ to propagate it
                 v += getattr(cfg, f"{key_name}++")
+            if isinstance(v, list) and key_name.endswith("+*"):
+                # +* in used in lists to replace overlapping (for index) element
+                # this section is needed for IBOX_SOURCE_OBJ resource
+                key_name = key_name.replace("+*", "", 1)
+                if hasattr(cfg, key_name):
+                    v = merge_list(v, getattr(cfg, key_name))
             if not exist or overwrite:
                 setattr(cfg, key_name, v)
                 if key_name not in mappedvalues:
@@ -78,6 +91,15 @@ def merge_dict(base, work, keep=False):
                 base[k_clean] = base[k] + work.get(k_clean, [])
             else:
                 base[k_clean] = base.get(k_clean, []) + work[k]
+        elif k.endswith("+*"):
+            # +* in used in lists to replace overlapping (for index) element
+            k_clean = k.replace("+*", "", 1)
+            if k in base:
+                base[k_clean] = base[k] = merge_list(base[k], work.get(k_clean, []))
+            else:
+                base[k_clean] = work[k_clean] = work[k] = merge_list(
+                    work[k], base.get(k_clean, [])
+                )
         elif k in base and keep:
             # key is in base and want to keep that value
             pass
