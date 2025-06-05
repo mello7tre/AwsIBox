@@ -42,6 +42,7 @@ global:
                   - 'waf:GetWebACL'
                   - 'waf:ListWebACLs'
                   - 'servicediscovery:GetService'
+                  - 'scheduler:*'
                 Effect: Allow
                 Resource: '*'
             - SSMAmi:
