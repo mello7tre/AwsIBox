@@ -7,7 +7,7 @@ global:
         Description: "Empty for mapped value"
   Condition:
     - EnableExecuteCommand: Equals(True, False)
-      # Need to create a "dummy" Condition for tasks that do not use EventsRuleECSRunTask, where there is the "right" one
+      # Need to create a "dummy" Condition for tasks that do not use SchedulerScheduleECSRunTask, where there is the "right" one
     - ECSTasksLaunchOnFargate: Equals(True, True)
   Output:
     - ECSRunTaskClusterName:
