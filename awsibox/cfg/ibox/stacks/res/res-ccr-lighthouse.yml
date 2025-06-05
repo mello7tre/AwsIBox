@@ -32,7 +32,9 @@ global:
                   - ImportValue('RoleECSTaskExecution')
             - 3:
                 Action:
-                  - 'events:ListTargetsByRule'
+                  - 'cloudformation:Describe*'
+                  - 'cloudformation:List*'
+                  - 'cloudformation:Get*'
                 Effect: Allow
                 Resource: '*'
   Lambda:

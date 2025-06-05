@@ -2,14 +2,12 @@
 import boto3
 import os
 import logging
-from pprint import pprint, pformat
+from pprint import pprint
 from crhelper import CfnResource
 
 logger = logging.getLogger(__name__)
 
-EventsRuleECSRunTaskSuffix = "-lighthouse-task-RuleECSRunTask"
-
-CLIENT_EVENTS = boto3.client("events")
+CLIENT_CLOUDFORMATION = boto3.client("cloudformation")
 CLIENT_ECS = boto3.client("ecs")
 
 # Initialise the helper
@@ -28,27 +26,66 @@ except Exception as e:
     helper.init_failure(e)
 
 
-def get_event_target(name):
-    response = CLIENT_EVENTS.list_targets_by_rule(Rule=f"{name}{EventsRuleECSRunTaskSuffix}")
+def parse_sg(outputs):
+    sg = outputs.get("ECSRunTaskSecurityGroups", "")
+    logger.info(f"SecurityGroups: {sg}")
 
-    if response["Targets"]:
-        return eval(response["Targets"][0]["Input"])
+    return sg.split(",") if sg else []
 
 
-def run_task(ti, role, appversion, reponame):
+def get_outputs(name):
+    outputs = {}
+    resp = CLIENT_CLOUDFORMATION.describe_stacks(StackName=name)
+    for o in resp["Stacks"][0].get("Outputs", []):
+        name = o["OutputKey"]
+        value = o["OutputValue"]
+        outputs[name] = value
+    return outputs
+
+
+def get_resources(name):
+    resources = {}
+    resp = CLIENT_CLOUDFORMATION.list_stack_resources(StackName=name)
+    for r in resp["StackResourceSummaries"]:
+        name = r["LogicalResourceId"]
+        value = r["PhysicalResourceId"]
+        resources[name] = value
+    return resources
+
+
+def get_kwargs(name):
+    stack_resources = get_resources(name)
+    stack_outputs = get_outputs(name)
+
+    try:
+        task_def = stack_resources["TaskDefinitionFargate"]
+    except Exception:
+        task_def = stack_resources["TaskDefinition"]
+
+    sg = parse_sg(stack_outputs)
+
+    cluster_name = stack_outputs["ECSRunTaskClusterName"]
+    subnets = stack_outputs["ECSRunTaskSubnetsPrivate"]
+
     kwargs = {
-        "taskDefinition": ti["TaskDefinition"],
-        "cluster": ti["Cluster"],
+        "cluster": cluster_name,
+        "count": 1,
+        "launchType": "FARGATE",
+        "networkConfiguration": {
+            "awsvpcConfiguration": {
+                "subnets": subnets.split(","),
+                "securityGroups": sg,
+                "assignPublicIp": "DISABLED",
+            },
+        },
+        "taskDefinition": task_def.split("/")[1],
     }
 
-    if "NetworkModeAwsVpc" in ti:
-        kwargs["networkConfiguration"] = {
-            "awsvpcConfiguration": {
-                "subnets": ti["Subnets"].split(","),
-                "securityGroups": ti["SecurityGroups"].split(),
-                "assignPublicIp": "DISABLED",
-            }
-        }
+    return kwargs
+
+
+def do_run_task(role, appversion, reponame, stackname):
+    kwargs = get_kwargs(stackname)
 
     kwargs["overrides"] = {
         "containerOverrides": [
@@ -63,9 +100,6 @@ def run_task(ti, role, appversion, reponame):
         ]
     }
 
-    kwargs["count"] = 1
-    kwargs["launchType"] = ti["LaunchType"]
-
     pprint(kwargs)
     response = CLIENT_ECS.run_task(**kwargs)
 
@@ -73,11 +107,6 @@ def run_task(ti, role, appversion, reponame):
         logger.info(response)
     else:
         return True
-
-
-def do_run_task(role, appversion, reponame, stackname):
-    target_input = get_event_target(stackname)
-    run_task(target_input, role, appversion, reponame)
 
 
 @helper.update
