@@ -207,16 +207,16 @@ global:
             - IBOX_IFVALUE
             - Ref('AWS::NoValue')
           AwsvpcConfiguration:
-            SecurityGroups.IBOX_AUTO_PO_NO:
+            SecurityGroups.IBOX_AUTO_PO:
               Description: ECS Service SecurityGroups comma delimited list - empty for default based on env/role
               Default: cfg.SECURITY_GROUPS_DEFAULT
               Type: CommaDelimitedList
               Value: ${SecurityGroups} - get_endvalue(f"{IBOX_MAPNAME}SecurityGroups",nolist=True)
-            SecurityGroups.IBOX_PCO_NO:
+            SecurityGroups.IBOX_PCO:
               IBOX_OUTPUT:
                 - IBOX_CURNAME.Names:
                     Value: Join(",", get_endvalue(IBOX_CURNAME))
-            SecurityGroups.IBOX_CUSTOM_OBJ_NO:
+            SecurityGroups.IBOX_CUSTOM_OBJ:
               IBOX_CONDITION:
                 - IBOX_MAPNAME.IBOX_CUSTOM_OBJ_INDEX:
                     Not(get_condition("", "equals", "none", Select(IBOX_CUSTOM_OBJ_INDEX, IBOX_MAPNAME)))

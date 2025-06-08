@@ -86,7 +86,7 @@ def SG_SecurityGroupsEC2(key):
     SG_SecurityGroupsExtra(Out_String, Out_Map)
 
 
-def SG_SecurityGroupsECS(key):
+def SG_SecurityGroupsECS_DISABLED(key):
     Out_String = ["Service=${SecurityGroupEcsService}"]
     Out_Map = {"SecurityGroupEcsService": {"Ref": "SecurityGroupEcsService"}}
 
@@ -100,7 +100,7 @@ def SG_SecurityGroupsECS(key):
         pass
 
 
-def SG_SecurityGroupsTSKNO(key):
+def SG_SecurityGroupsTSK_DISABLED(key):
     Out_String = []
     Out_Map = {}
 
