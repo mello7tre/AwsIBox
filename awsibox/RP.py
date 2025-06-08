@@ -100,8 +100,9 @@ def merge_dict(base, work, keep=False):
                 base[k_clean] = work[k_clean] = work[k] = merge_list(
                     work[k], base.get(k_clean, [])
                 )
-        elif k in base and keep:
+        elif (k in base and keep) or f"{k}+*" in keys:
             # key is in base and want to keep that value
+            # or key with suffix +* is present (and probably has been already processed)
             pass
         elif k in work:
             base[k] = work[k]
