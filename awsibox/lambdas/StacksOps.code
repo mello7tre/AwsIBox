@@ -20,7 +20,7 @@ i_cfg.topics = [notificationarn]
 i_cfg.msg_channel = i_cfg.MSG_CHANNEL
 
 # Init Clients out of lambda_handler to speed it up
-i_cfg.MSG = msg()
+i_cfg.MSG = i_msg()
 myboto3 = i_myboto3()
 myboto3.init_resources(["cloudformation"])
 myboto3.init_clients(["cloudformation", "s3", "sts", "ecr"])
