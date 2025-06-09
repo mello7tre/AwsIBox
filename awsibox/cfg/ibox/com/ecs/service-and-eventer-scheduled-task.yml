@@ -25,7 +25,7 @@ global:
           - ECSRunTaskSubnetsPrivate:
               Value: ImportValue("SubnetsPrivate")
           - ECSRunTaskSecurityGroups:
-              Condition: ECSTaskDefinitionBaseNetworkModeStandard
+              # Condition: ECSTaskDefinitionBaseNetworkModeStandard
               # ugly trick to remove SecurityGroupEcsService from SecurityGroups - no more needed
               # Value: >-
               #  Sub(
