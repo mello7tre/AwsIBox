@@ -1,8 +1,5 @@
 from troposphere import (
     ec2,
-    Select,
-    Split,
-    Not,
     Ref,
     If,
     Output,
@@ -14,104 +11,12 @@ from troposphere import (
 )
 
 from .. import cfg
-from ..tropo_override import Parameter
 from ..shared import (
-    get_endvalue,
     get_expvalue,
     auto_get_props,
     get_condition,
     add_obj,
 )
-
-
-def SG_SecurityGroupsExtra(Out_String, Out_Map):
-    # Parameters
-    P_SecurityGroups = Parameter(
-        "SecurityGroups",
-        Description=f"SecurityGroups List Extra - {cfg.SECURITY_GROUPS_DEFAULT} for default based on env/role",
-        AllowedPattern=r"^(\w*,\w*){%s}$" % (cfg.MAX_SECURITY_GROUPS - 1),
-        Default=cfg.SECURITY_GROUPS_DEFAULT,
-    )
-
-    add_obj([P_SecurityGroups])
-
-    SecurityGroups = []
-
-    for n in range(cfg.MAX_SECURITY_GROUPS):
-        name = f"SecurityGroup{n}"  # Ex SecurityGroup1
-        value = Select(n, Split(",", get_endvalue("SecurityGroups")))
-        outnamename = f"SecurityGroupName{n}"
-        outvaluename = f"SecurityGroupValue{n}"
-
-        # conditions
-        add_obj(
-            {
-                name: Not(
-                    get_condition(
-                        "", "equals", "none", Select(n, Split(",", "SecurityGroups"))
-                    )
-                )
-            }
-        )
-
-        SecurityGroups.append(
-            If(name, get_expvalue(value, prefix="SecurityGroup"), Ref("AWS::NoValue"))
-        )
-
-        # outputs
-        Out_String.append("${%s}=${%s}" % (outnamename, outvaluename))
-        Out_Map.update(
-            {
-                outnamename: value,
-                outvaluename: If(
-                    name, get_expvalue(value, prefix="SecurityGroup"), "none"
-                ),
-            }
-        )
-
-    # Outputs
-    O_SecurityGroups = Output(
-        "SecurityGroups", Value=Sub(",".join(Out_String), **Out_Map)
-    )
-
-    add_obj(O_SecurityGroups)
-
-    cfg.SecurityGroupsImport = SecurityGroups
-
-
-def SG_SecurityGroupsEC2_DISABLED(key):
-    Out_String = ["Rules=${SecurityGroupInstancesRules}"]
-    Out_Map = {"SecurityGroupInstancesRules": {"Ref": "SecurityGroupInstancesRules"}}
-
-    SG_SecurityGroupsExtra(Out_String, Out_Map)
-
-
-def SG_SecurityGroupsECS_DISABLED(key):
-    Out_String = ["Service=${SecurityGroupEcsService}"]
-    Out_Map = {"SecurityGroupEcsService": {"Ref": "SecurityGroupEcsService"}}
-
-    SG_SecurityGroupsExtra(Out_String, Out_Map)
-    # add Condition to Output created by SG_SecurityGroupsExtra
-    try:
-        cfg.Outputs[
-            "SecurityGroups"
-        ].Condition = "ECSTaskDefinitionBaseNetworkModeAwsVpc"
-    except Exception:
-        pass
-
-
-def SG_SecurityGroupsTSK_DISABLED(key):
-    Out_String = []
-    Out_Map = {}
-
-    SG_SecurityGroupsExtra(Out_String, Out_Map)
-    # add Condition to Output created by SG_SecurityGroupsExtra
-    try:
-        cfg.Outputs[
-            "SecurityGroups"
-        ].Condition = "ECSTaskDefinitionBaseNetworkModeAwsVpc"
-    except Exception:
-        pass
 
 
 def SG_SecurityGroupRules(groupname, ingresses):

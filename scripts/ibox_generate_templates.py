@@ -119,7 +119,6 @@ def generate_cfg_to_func():
     for n in [
         "CloudFrontVpcOrigin",
         "CloudFrontLambdaFunctionAssociation",
-        "SecurityGroups",
         "CCRReplicateRegions",
         "Output",
     ]:

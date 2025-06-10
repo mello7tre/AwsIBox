@@ -21,20 +21,16 @@ def execute_method(RP_cmm):
                     processed.append(m)
 
             RP_value = RP_cmm[k]
+
             if isinstance(RP_value, str) and RP_value == "IBOX_SKIP_FUNC":
                 return
-            if isinstance(func_name, list):
-                for n in func_name:
-                    getattr(module, n)(key=k)
-                return
-            stacktype_func = f"{func_name}{cfg.stacktype.upper()}"
-            if stacktype_func in dir(module):
-                getattr(module, stacktype_func)(key=k)
-            elif func_name in dir(module):
+
+            if func_name in dir(module):
                 getattr(module, func_name)(key=k)
             elif module.__name__ == "awsibox.mod.joker":
                 # for resources that can be built using only auto_get_props
                 joker.Joker(key=k, module=func_name[0], cls=func_name[1])
+
             processed.append(k)
 
     for k, v in cfg.CFG_TO_FUNC.items():

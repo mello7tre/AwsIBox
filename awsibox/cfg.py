@@ -193,7 +193,7 @@ CFG_TO_FUNC_OVERRIDE = {
     "AutoScalingGroup": {
         "module": autoscaling,
         "func": "AS_Autoscaling",
-        "dep": ["SecurityGroups", "ECSCapacityProvider"],
+        "dep": ["ECSCapacityProvider"],
     },
     "CloudFormationCustomResource": {
         "dep": ["ECSService", "ElasticLoadBalancingV2Listener"],
@@ -247,7 +247,7 @@ CFG_TO_FUNC_OVERRIDE = {
         "dep": ["EC2VPC"],
     },
     "ECSService": {
-        "dep": ["SecurityGroups", "ECSTaskDefinition"],
+        "dep": ["ECSTaskDefinition"],
     },
     "ElasticLoadBalancingV2Listener": {
         "dep": ["ElasticLoadBalancingLoadBalancer"],
@@ -255,9 +255,6 @@ CFG_TO_FUNC_OVERRIDE = {
     "ElasticLoadBalancingV2TargetGroup": {
         # need this for override on ContainerDefinitions1ContainerPort
         "dep": ["ECSTaskDefinition"],
-    },
-    "EventsRule": {
-        "dep": ["SecurityGroups"],
     },
     "IAMPolicy": {
         "func": ("iam", "PolicyType"),
@@ -293,17 +290,6 @@ CFG_TO_FUNC_OVERRIDE = {
     },
     "S3BucketPolicy": {
         "dep": ["S3Bucket"],
-    },
-    "SecurityGroups": {
-        "module": ec2,
-        "func": "SG_SecurityGroups",
-        "dep": [
-            "ElasticLoadBalancingLoadBalancer",
-            "ElasticLoadBalancingV2Listener",
-        ],
-    },
-    "SchedulerSchedule": {
-        "dep": ["SecurityGroups"],
     },
     "SQSQueuePolicy": {
         "dep": ["SNSSubscription"],

@@ -40,8 +40,6 @@ def build_discover_map(brand, stacktypes, envroles):
 
 
 def add_to_map(brand, roles):
-    global discover_map
-
     try:
         discover_map[brand].extend(roles)
     except Exception:

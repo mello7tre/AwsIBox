@@ -1,9 +1,10 @@
 import logging
 from copy import deepcopy
-from troposphere import Parameter, Output, Ref
+from troposphere import Output, Ref
 
 from .. import cfg
 from ..RP import RP_to_cfg, merge_dict
+from ..tropo_override import Parameter
 from ..shared import (
     auto_get_props,
     add_obj,
