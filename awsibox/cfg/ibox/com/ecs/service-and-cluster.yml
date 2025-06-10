@@ -79,13 +79,6 @@ global:
     - ParameterStore:
         Roles:
           - Ref('RoleTask')
-  LaunchTemplate:
-    - Data:
-        NetworkInterfaces:
-          - eth0:
-              Groups:
-                - GetAtt('SecurityGroupInstancesRules', 'GroupId')
-                - ImportValue('SecurityGroupBaseInstance')
   LoadBalancerType: Application
   ECSService:
     - Base:
