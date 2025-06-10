@@ -93,3 +93,7 @@ global:
                 - IBOX_CURNAME:
                     Value: get_endvalue(IBOX_CURNAME)
             LaunchType: FARGATE
+            NetworkConfiguration:
+              AwsvpcConfiguration:
+                SecurityGroups:
+                  - none
