@@ -74,7 +74,8 @@ global:
     - Data:
         NetworkInterfaces:
           - eth0:
-              Groups: list([GetAtt('SecurityGroupInstancesRules', 'GroupId')]) + cfg.SecurityGroupsImport
+              Groups:
+                - BaseInstance
   LoadBalancerType: Classic
   IAMPolicy:
     - CloudFormation:

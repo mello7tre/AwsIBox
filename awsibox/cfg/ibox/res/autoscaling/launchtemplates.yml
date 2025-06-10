@@ -97,6 +97,33 @@ global:
           - eth0:
               AssociatePublicIpAddress: false
               DeviceIndex: 0
+              Groups.IBOX_AUTO_PO:
+                Description: EC2 Instance SecurityGroups comma delimited list - empty for default based on env/role
+                Default: cfg.SECURITY_GROUPS_DEFAULT
+                Type: CommaDelimitedList
+                Value: ${Groups}
+              Groups.IBOX_PCO:
+                IBOX_OUTPUT:
+                  - IBOX_CURNAME.Names:
+                      Value: Join(",", get_endvalue(IBOX_CURNAME))
+              Groups.IBOX_CUSTOM_OBJ:
+                IBOX_CONDITION:
+                  - IBOX_MAPNAME.IBOX_CUSTOM_OBJ_INDEX:
+                      Not(get_condition("", "equals", "none", Select(IBOX_CUSTOM_OBJ_INDEX, IBOX_MAPNAME)))
+                Value: >-
+                  If(
+                    f"{IBOX_MAPNAME}{IBOX_CUSTOM_OBJ_INDEX}",
+                    get_expvalue(
+                      Select(IBOX_CUSTOM_OBJ_INDEX, get_endvalue(IBOX_MAPNAME)),
+                      prefix="SecurityGroup"),
+                    Ref("AWS::NoValue"))
+                ValuePrepend: >-
+                    GetAtt('SecurityGroupInstancesRules', 'GroupId') if IBOX_CUSTOM_OBJ_INDEX == 0 else ""
+              Groups+*:
+                - none
+                - none
+                - none
+                - none
         TagSpecifications:
           - instance:
               ResourceType: instance

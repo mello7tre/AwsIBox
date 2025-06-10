@@ -79,7 +79,7 @@ def SG_SecurityGroupsExtra(Out_String, Out_Map):
     cfg.SecurityGroupsImport = SecurityGroups
 
 
-def SG_SecurityGroupsEC2(key):
+def SG_SecurityGroupsEC2_DISABLED(key):
     Out_String = ["Rules=${SecurityGroupInstancesRules}"]
     Out_Map = {"SecurityGroupInstancesRules": {"Ref": "SecurityGroupInstancesRules"}}
 

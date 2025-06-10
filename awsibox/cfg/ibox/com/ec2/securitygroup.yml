@@ -6,4 +6,3 @@ global:
               get_condition('', 'equals', 'yes', f'{IBOX_MAPNAME}Enabled')
         Enabled: 'yes'
         CidrIp: '127.0.0.1/32'
-  SecurityGroups: 'BaseInstance,none,none,none'
