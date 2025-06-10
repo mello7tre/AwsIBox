@@ -54,6 +54,10 @@ global:
   ECSService:
     - Base:
         IBOX_ENABLED: True
+        NetworkConfiguration:
+          AwsvpcConfiguration:
+            SecurityGroups:
+              - none
         LaunchType.IBOX_AUTO_PO:
           AllowedValues: ['', 'EC2', 'FARGATE']
           Value: get_endvalue(IBOX_CURNAME)
