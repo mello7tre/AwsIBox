@@ -2,24 +2,24 @@ import setuptools
 
 setuptools.setup(
     packages=[
-        'awsibox',
+        "awsibox",
     ],
     package_data={
-        'awsibox': ['cfg/*'],
-        'awsibox': ['aws/*'],
-        'awsibox': ['mod/*'],
-        'awsibox': ['templates/*'],
-        'awsibox': ['lambdas/*'],
-        'awsibox': ['user-data/*'],
+        "awsibox": ["cfg/*"],
+        "awsibox": ["aws/*"],
+        "awsibox": ["mod/*"],
+        "awsibox": ["templates/*"],
+        "awsibox": ["lambdas/*"],
+        "awsibox": ["user-data/*"],
     },
     install_requires=[
-        'troposphere',
-        'PyYAML>=5,==5.*',
-        'python_minifier',
+        "troposphere",
+        "PyYAML>=5,==5.*",
+        "python_minifier",
     ],
-    python_requires='>=3.7',
+    python_requires=">=3.7",
     scripts=[
-        'scripts/ibox_generate_templates.py',
+        "scripts/ibox_generate_templates.py",
     ],
     include_package_data=True,
 )
