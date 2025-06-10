@@ -28,7 +28,7 @@ def Joker(key, module, cls):
         # if it does exist skip testing IBOX_ENABLED
         ibox_enabled_if = v.get("IBOX_ENABLED_IF")
         if ibox_enabled_if:
-            if not ibox_eval(ibox_enabled_if):
+            if not ibox_eval(str(ibox_enabled_if)):
                 continue
         elif not v.get("IBOX_ENABLED", True):
             continue

@@ -219,7 +219,12 @@ CFG_TO_FUNC_OVERRIDE = {
         "dep": ["ElasticLoadBalancingV2Listener"],
     },
     "CloudWatchAlarm": {
-        "dep": ["ElasticLoadBalancingLoadBalancer", "SQSQueue", "Lambda"],
+        "dep": [
+            "ElasticLoadBalancingLoadBalancer",
+            "ElasticLoadBalancingV2LoadBalancer",
+            "SQSQueue",
+            "Lambda",
+        ],
     },
     "EC2SecurityGroup": {
         "module": ec2,
