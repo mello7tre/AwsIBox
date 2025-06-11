@@ -80,7 +80,7 @@ def lambda_handler(event, context):
             and lastStatus == desiredStatus
             and "OutOfMemoryError" in reason
         ):
-            icon = " :fire:" if ENV == "prd" else ""
+            icon = " :warning:" if ENV == "prd" else ""
             subj = f"Task {task_prefix} [{name}] OOM ({ENV}){icon}"
             msg = (
                 f"*Env*: {ENV}\n"
@@ -97,7 +97,6 @@ def lambda_handler(event, context):
 
             sns_msg = {
                 "default": msg,
-                "email": json.dumps({"email": msg}),
                 "https": json.dumps(
                     {
                         "version": "1.0",
