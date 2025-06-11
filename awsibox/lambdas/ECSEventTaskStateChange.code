@@ -71,7 +71,7 @@ def lambda_handler(event, context):
             cluster = c_arn[1]
             t_id = c_arn[2]
             c_id = c_arn[3]
-        except Exception as e:
+        except Exception:
             continue
 
         if (
@@ -107,15 +107,15 @@ def lambda_handler(event, context):
                     },
                     "metadata": {
                         "enableCustomActions": False,
-                    }
-                }
+                    },
+                },
             }
 
             logger.info(subj)
 
             if ENV == "prd":
                 pub_result = CLIENT_SNS.publish(
-                    TopicArn=SNS_TOPIC, Subject=subj, Message=sns_msg
+                    TopicArn=SNS_TOPIC, Subject=subj, Message=json.dumps(sns_msg)
                 )
                 logger.info(pub_result)
             if HAVE_MSG:
