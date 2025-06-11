@@ -83,16 +83,16 @@ def lambda_handler(event, context):
             icon = " :warning:" if ENV == "prd" else ""
             subj = f"Task {task_prefix} [{name}] OOM ({ENV}){icon}"
             msg = (
-                f"*Env*: {ENV}\n"
-                f"*TaskPrefix*: {task_prefix}\n"
-                f"*Cluster*: {cluster}\n"
-                f"*ContainerName*: {name}\n"
-                f"*Reason*: {reason}\n"
-                f"*Image*: {image}\n"
-                f"*Memory*: {memory}\n"
-                f"*TaskId*: {t_id}\n"
-                f"*ContainerId*: {c_id}\n"
-                f"*StoppedAt*: {executionStoppedAt}\n"
+                f"**Env**: {ENV}\n"
+                f"**TaskPrefix**: {task_prefix}\n"
+                f"**Cluster**: {cluster}\n"
+                f"**ContainerName**: {name}\n"
+                f"**Reason**: {reason}\n"
+                f"**Image**: {image}\n"
+                f"**Memory**: {memory}\n"
+                f"**TaskId**: {t_id}\n"
+                f"**ContainerId**: {c_id}\n"
+                f"**StoppedAt**: {executionStoppedAt}\n"
             )
 
             sns_msg = {
