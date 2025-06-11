@@ -97,18 +97,20 @@ def lambda_handler(event, context):
 
             sns_msg = {
                 "default": msg,
-                "email": msg,
-                "https": {
-                    "version": "1.0",
-                    "source": "custom",
-                    "content": {
-                        "title": subj,
-                        "description": msg,
-                    },
-                    "metadata": {
-                        "enableCustomActions": False,
-                    },
-                },
+                "email": json.dumps({"email": msg}),
+                "https": json.dumps(
+                    {
+                        "version": "1.0",
+                        "source": "custom",
+                        "content": {
+                            "title": subj,
+                            "description": msg,
+                        },
+                        "metadata": {
+                            "enableCustomActions": False,
+                        },
+                    }
+                ),
             }
 
             logger.info(subj)
