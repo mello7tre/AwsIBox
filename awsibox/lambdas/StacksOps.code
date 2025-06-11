@@ -10,13 +10,14 @@ from iboxstacksops.aws import myboto3 as i_myboto3
 app_cfg.envRole = "buildkite"
 app_cfg.set({})
 
-os.environ["IBOX_SLACK_USER"] = app_cfg.SLACK_USER
-os.environ["IBOX_SLACK_TOKEN"] = app_cfg.SLACK_TOKEN
+os.environ["IBOX_SLACK_USER"] = getattr(app_cfg, "SLACK_USER", None)
+os.environ["IBOX_SLACK_TOKEN"] = getattr(app_cfg, "SLACK_TOKEN", None)
 notificationarn = os.environ["CloudFormationNotificationArn"]
 
 i_cfg.nochangeset = True
 i_cfg.nowait = True
 i_cfg.topics = [notificationarn]
+i_cfg.msg_channel = getattr(app_cfg, "IBOX_MSG_CHANNEL", None)
 
 # Init Clients out of lambda_handler to speed it up
 i_cfg.MSG = i_msg.msg()
@@ -48,9 +49,9 @@ def update(event):
                 i_cfg.EnvServiceRestartTime = str(datetime.now())
                 i_cfg.DockerLabelLastUpdate = str(datetime.now())
             elif appversion == "start":
-                i_cfg.CapacityDesired = ''
-                i_cfg.CapacityMax = ''
-                i_cfg.CapacityMin = ''
+                i_cfg.CapacityDesired = ""
+                i_cfg.CapacityMax = ""
+                i_cfg.CapacityMin = ""
             elif appversion == "stop":
                 i_cfg.CapacityDesired = 0
                 i_cfg.CapacityMax = 0
