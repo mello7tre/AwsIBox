@@ -1,6 +1,7 @@
 # vim: ft=python
 import os
 import logging
+import json
 import boto3
 import slack
 import cfg as app_cfg
@@ -94,11 +95,27 @@ def lambda_handler(event, context):
                 f"*StoppedAt*: {executionStoppedAt}\n"
             )
 
+            sns_msg = {
+                "default": msg,
+                "email": msg,
+                "https": {
+                    "version": "1.0",
+                    "source": "custom",
+                    "content": {
+                        "title": subj,
+                        "description": msg,
+                    },
+                    "metadata": {
+                        "enableCustomActions": False,
+                    }
+                }
+            }
+
             logger.info(subj)
 
             if ENV == "prd":
                 pub_result = CLIENT_SNS.publish(
-                    TopicArn=SNS_TOPIC, Subject=subj, Message=msg
+                    TopicArn=SNS_TOPIC, Subject=subj, Message=sns_msg
                 )
                 logger.info(pub_result)
             if HAVE_MSG:
