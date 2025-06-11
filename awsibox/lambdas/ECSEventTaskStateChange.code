@@ -115,7 +115,10 @@ def lambda_handler(event, context):
 
             if ENV == "prd":
                 pub_result = CLIENT_SNS.publish(
-                    TopicArn=SNS_TOPIC, Subject=subj, Message=json.dumps(sns_msg)
+                    TopicArn=SNS_TOPIC,
+                    Subject=subj,
+                    Message=json.dumps(sns_msg),
+                    MessageStructure="json",
                 )
                 logger.info(pub_result)
             if HAVE_MSG:
