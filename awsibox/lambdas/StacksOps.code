@@ -17,7 +17,6 @@ notificationarn = os.environ["CloudFormationNotificationArn"]
 i_cfg.nochangeset = True
 i_cfg.nowait = True
 i_cfg.topics = [notificationarn]
-i_cfg.msg_channel = i_cfg.MSG_CHANNEL
 
 # Init Clients out of lambda_handler to speed it up
 i_cfg.MSG = i_msg.msg()
