@@ -8,6 +8,10 @@ STACKNAME=_IBOX_CODE_Ref('AWS::StackName')_IBOX_CODE_
 REGION=_IBOX_CODE_Ref('AWS::Region')_IBOX_CODE_
 SIGNAL=_IBOX_CODE_If('DoNotSignal', '', 'yes')_IBOX_CODE_
 
+IMDSV2_TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $IMDSV2_TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id)
+
+
 SIGNAL(){
   case $? in
     0)
@@ -17,10 +21,8 @@ SIGNAL(){
      status=FAILURE
      ;;
   esac
-  IMDSv2_token=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-  instance_id=$(curl -H "X-aws-ec2-metadata-token: $IMDSv2_token" -s http://169.254.169.254/latest/meta-data/instance-id)
   # avoid exiting with error if stack is in UPDATE_COMPLETE state and cannot be signaled
-  aws --region $REGION cloudformation signal-resource --stack-name $STACKNAME --logical-resource-id AutoScalingGroup --unique-id $instance_id --status $status || :
+  aws --region $REGION cloudformation signal-resource --stack-name $STACKNAME --logical-resource-id AutoScalingGroup --unique-id $INSTANCE_ID --status $status || :
   if [ "$status" = "FAILURE" ];then
     shutdown -h now
   fi
