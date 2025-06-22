@@ -45,6 +45,7 @@ global:
         LaunchTemplate:
           LaunchTemplateId: Ref('LaunchTemplate')
           Version: GetAtt('LaunchTemplate', 'LatestVersionNumber')
+        LoadBalancerNames: []
         MaxInstanceLifetime.IBOX_AUTO_PO:
           Description: 'Empty for mapped value - 0 to disable'
           CONDITION: get_condition('', 'not_equals', '0', IBOX_CURNAME)
@@ -64,6 +65,7 @@ global:
               Key: EnvStackName
               Value: Ref('AWS::StackName')
               PropagateAtLaunch: true
+        TargetGroupARNs: []
         TerminationPolicies:
           - OldestInstance
         UpdatePolicy:

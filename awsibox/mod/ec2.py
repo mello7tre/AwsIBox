@@ -8,6 +8,8 @@ from troposphere import (
     Export,
     And,
     Condition,
+    Join,
+    Base64,
 )
 
 from .. import cfg
@@ -16,7 +18,97 @@ from ..shared import (
     auto_get_props,
     get_condition,
     add_obj,
+    import_user_data,
+    get_dictvalue,
+    get_endvalue,
 )
+
+
+def EC2_LaunchTemplate(key):
+    # Set cfg attributes used in user-data ELB Checks
+    if cfg.LoadBalancerType == "Classic":
+        for n in cfg.LoadBalancer.replace(",", " ").split():
+            setattr(
+                cfg,
+                "EC2InstanceUserDataELBClassicCheckLoadBalancerName",
+                Ref(f"LoadBalancerClassic{n}"),
+            )
+    if cfg.LoadBalancerType in ["Application", "Network"]:
+        for n, v in getattr(cfg, "ElasticLoadBalancingV2TargetGroup", {}).items():
+            # check for enabled only for EC2 ones
+            if n.startswith("EC2") and v.get("IBOX_ENABLED", True):
+                setattr(
+                    cfg,
+                    "EC2InstanceUserDataELBV2CheckTargetGroupArn",
+                    Ref(f"ElasticLoadBalancingV2TargetGroup{n}"),
+                )
+
+    # Resources
+    R_LaunchTemplate = ec2.LaunchTemplate(
+        "LaunchTemplate",
+        LaunchTemplateName=Sub("${AWS::StackName}-${EnvRole}"),
+    )
+
+    LaunchTemplateData = ec2.LaunchTemplateData("LaunchTemplateData")
+    auto_get_props(
+        LaunchTemplateData,
+        "LaunchTemplateData",
+        res_obj_type="AWS::EC2::LaunchTemplate",
+    )
+
+    R_LaunchTemplate.LaunchTemplateData = LaunchTemplateData
+
+    ud_envrole = getattr(cfg, "IBOX_ROLE_EX", getattr(cfg, "envrole"))
+    # try to get a complete user-data conf in package or in Ext dir
+    user_data = import_user_data(ud_envrole)
+
+    if not user_data:
+        # if not found build a dynamic one
+        for user_data_section in [
+            "INIT",
+            "PACKAGE",
+            "SETUP",
+            "APPS",
+            "SERVICE",
+            "ELBCHECK",
+            ud_envrole,
+            "END",
+        ]:
+            user_data.extend(import_user_data(f"SCRIPTS/{user_data_section}"))
+
+    user_data = Join("", user_data)
+    LaunchTemplateData.UserData = Base64(user_data)
+
+    if getattr(cfg, "BottleRocket", False):
+        # use if condition with both bottlerocket custom and standard cfg
+        LaunchTemplateData.UserData = Base64(
+            If(
+                "BottleRocket",
+                Join(
+                    "\n",
+                    [
+                        get_endvalue(f"BottleRocketUserData{n}Line")
+                        for n in cfg.BottleRocketUserData
+                    ],
+                ),
+                user_data,
+            ),
+        )
+
+    add_obj(R_LaunchTemplate)
+
+    # add Medata Tags to LaunchTemplate TagSpecifications
+    if hasattr(cfg, "MetadataTags"):
+        for n in R_LaunchTemplate.LaunchTemplateData.TagSpecifications:
+            if n.ResourceType in ["instance", "volume"]:
+                n.Tags.tags.extend(
+                    [
+                        {"Key": n, "Value": v}
+                        for n, v in get_dictvalue(
+                            cfg.MetadataTags, mapname="MetadataTags"
+                        ).items()
+                    ],
+                )
 
 
 def SG_SecurityGroupRules(groupname, ingresses):

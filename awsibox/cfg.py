@@ -167,6 +167,7 @@ class BuildEnvs(dict):
 CFG_TO_FUNC_RENAME = {
     "lambda": "awslambda",
     "AutoScalingAutoScalingGroup": "AutoScalingGroup",
+    "EC2LaunchTemplate": "LaunchTemplate",
     "LambdaFunction": "Lambda",
     "CloudFrontOriginAccessControl": "CloudFrontOriginOriginAccessControl",
     "Subscription": "SubscriptionResource",
@@ -191,8 +192,6 @@ CFG_TO_FUNC_OVERRIDE = {
         "dep": ["ApiGatewayStage"],
     },
     "AutoScalingGroup": {
-        "module": autoscaling,
-        "func": "AS_Autoscaling",
         "dep": ["ECSCapacityProvider"],
     },
     "CloudFormationCustomResource": {
@@ -276,6 +275,10 @@ CFG_TO_FUNC_OVERRIDE = {
     },
     "LambdaVersion": {
         "dep": ["Lambda"],
+    },
+    "LaunchTemplate": {
+        "module": ec2,
+        "func": "EC2_LaunchTemplate",
     },
     "LogsLogGroup": {
         "dep": ["Lambda"],
