@@ -17,13 +17,13 @@ notificationarn = os.environ["CloudFormationNotificationArn"]
 i_cfg.nochangeset = True
 i_cfg.nowait = True
 i_cfg.topics = [notificationarn]
-i_cfg.msg_channel = getattr(app_cfg, "IBOX_MSG_CHANNEL", None)
+i_cfg.msg_topic = getattr(app_cfg, "IBOX_MSG_CHANNEL", None)
 
 # Init Clients out of lambda_handler to speed it up
 i_cfg.MSG = i_msg.msg()
 myboto3 = i_myboto3()
 myboto3.init_resources(["cloudformation"])
-myboto3.init_clients(["cloudformation", "s3", "sts", "ecr"])
+myboto3.init_clients(["cloudformation", "s3", "sts", "ecr", "sns"])
 
 
 def update(event):
