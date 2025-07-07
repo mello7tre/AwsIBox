@@ -16,6 +16,7 @@ setuptools.setup(
         "troposphere",
         "PyYAML>=5,==5.*",
         "python_minifier",
+        "tqdm",
     ],
     python_requires=">=3.7",
     scripts=[
