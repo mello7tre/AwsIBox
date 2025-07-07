@@ -3,8 +3,13 @@ import os
 import json
 import concurrent.futures
 from traceback import print_exc
+from tqdm import tqdm
 
 from awsibox import override, args, cfg, RP, discover, generate
+
+
+# to avoid flake8 complain about not used imported override
+override.yaml.Dumper
 
 args = args.get_args()
 
@@ -32,7 +37,7 @@ def output_template(template, brand=None, envrole=None):
         with open(file_name, "w") as f:
             f.write(output + "\n")
 
-        print(f"Brand: {brand} - EnvRole: {envrole}")
+        return f"Brand: {brand} - EnvRole: {envrole}"
 
 
 def get_template():
@@ -61,7 +66,7 @@ def do_process(stacktype, envrole):
     cfg.envrole = envrole
     cfg.stacktype = stacktype
     template = get_template()
-    output_template(template, cfg.brand, envrole)
+    return output_template(template, cfg.brand, envrole)
 
 
 def concurrent_exec(roles, kwargs):
@@ -75,15 +80,21 @@ def concurrent_exec(roles, kwargs):
             ex_sub = executor.submit(do_process, stacktype, envrole)
             future_to_role[ex_sub] = envrole
 
-        for future in concurrent.futures.as_completed(future_to_role):
+        for future in tqdm(
+            concurrent.futures.as_completed(future_to_role),
+            total=len(future_to_role),
+            desc="Generating templates",
+        ):
             role = future_to_role[future]
             try:
                 data[role] = future.result()
             except Exception as e:
-                print(f"{role} generated an exception: {e}")
+                tqdm.write(f"{role} generated an exception: {e}")
                 print_exc()
                 exit_with_error = True
                 break
+            else:
+                tqdm.write(data[role])
         for future in future_to_role:
             future.cancel()
 
