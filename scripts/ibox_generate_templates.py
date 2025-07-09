@@ -80,10 +80,14 @@ def concurrent_exec(roles, kwargs):
             ex_sub = executor.submit(do_process, stacktype, envrole)
             future_to_role[ex_sub] = envrole
 
-        for future in tqdm(
-            concurrent.futures.as_completed(future_to_role),
-            total=len(future_to_role),
-            desc="Generating templates",
+        for future in (
+            tqdm(
+                concurrent.futures.as_completed(future_to_role),
+                total=len(future_to_role),
+                desc="Generating templates",
+            )
+            if len(roles) > 1
+            else concurrent.futures.as_completed(future_to_role)
         ):
             role = future_to_role[future]
             try:
