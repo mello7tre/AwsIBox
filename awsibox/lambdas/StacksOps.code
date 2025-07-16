@@ -29,6 +29,8 @@ myboto3.init_clients(["cloudformation", "s3", "sts", "ecr", "sns"])
 def update(event):
     # required because lambda do not clear module in successive (2,3min) runs.
     i_cfg.EnvApp1Version = i_cfg.DockerLabelLastUpdate = None
+    # for the same cause, need to re-generate msg() thread_id
+    i_cfg.MSG.generate_thread_id()
 
     result = {}
     for stack, appversion in event.items():
