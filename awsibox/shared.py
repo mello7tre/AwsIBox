@@ -970,8 +970,14 @@ def auto_get_props(
             def _output(k):
                 for n, v in k.items():
                     n = parse_ibox_key(n)
+
+                    # if ojbect have Condition and output not propagate it
+                    if "Condition" in key and "Condition" not in v:
+                        v["Condition"] = key["Condition"]
+
                     if not ibox_eval(v.get("IBOX_ENABLED_IF", "True")):
                         continue
+
                     output = Output(n)
                     _populate(output, rootdict=v)
                     # alter troposphere obj and add IBOX property
