@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "awsibox"
+description = "AWS Infrastructure in a Box"
+readme = "README.md"
+authors = [
+    { name = "Mello", email = "mello+python@ankot.org" }
+]
+license = { text = "OSI Approved :: Open Software License 3.0 (OSL-3.0)" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent"
+]
+requires-python = ">=3.7"
+dependencies = [
+    "troposphere",
+    "PyYAML>=5,==5.*",
+    "python_minifier",
+    "tqdm"
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/mello7tre/AwsIBox"
+
+[project.scripts]
+ibox_stacksops = "awsibox.__main__:main"
+
+[tool.setuptools]
+packages = ["awsibox"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+awsibox = [
+    "cfg/*",
+    "aws/*",
+    "mod/*",
+    "templates/*",
+    "lambdas/*",
+    "user-data/*",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "awsibox.__version__" }
