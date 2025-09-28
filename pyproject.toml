@@ -27,7 +27,7 @@ dynamic = ["version"]
 Homepage = "https://github.com/mello7tre/AwsIBox"
 
 [project.scripts]
-ibox_stacksops = "awsibox.__main__:main"
+ibox_generate_templates = "awsibox.__main__:main"
 
 [tool.setuptools]
 packages = ["awsibox"]
