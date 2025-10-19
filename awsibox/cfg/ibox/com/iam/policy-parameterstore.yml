@@ -14,7 +14,11 @@ global:
             - Get:
                 Action: 'ssm:GetParameters'
                 Effect: Allow
-                Resource:
+                Resource: '*'
+            - GetDenyNotUsedOne:
+                Action: 'ssm:GetParameter*'
+                Effect: Deny
+                NotResource:
                   - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${EnvRole}/*')
                   - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/${EnvRole}/*')
                   - Sub('arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/EnvAppVersions/*')

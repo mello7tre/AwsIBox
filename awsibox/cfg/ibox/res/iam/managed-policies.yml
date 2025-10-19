@@ -61,7 +61,7 @@ global:
                 Effect: Allow
                 Resource: '*'
     - SSM:
-        Description: "Policy to let Instances Manage SSM"
+        Description: "Policy to let Instances Manage SSM - Derived from AmazonEC2RoleforSSM"
         PolicyDocument:
           Statement:
             - 1:
