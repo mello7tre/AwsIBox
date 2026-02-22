@@ -33,6 +33,8 @@ global:
                     get_condition('', 'equals', 'CapacityMin', f'{IBOX_REFNAME}CapacityMin', parse_value=False)
                 - IBOX_REFNAME.CapacityMaxSize:
                     get_condition('', 'equals', 'CapacityMax', f'{IBOX_REFNAME}CapacityMax', parse_value=False)
+                - IBOX_REFNAME.CapacityDesiredSize:
+                    get_condition('', 'equals', 'CapacityDesired', 'CapacityDesired', parse_value=False)
                 - IBOX_REFNAME.Enabled:
                     get_condition('', 'equals', 'yes', f'{IBOX_REFNAME}Enabled')
               IBOX_OUTPUT:
@@ -48,7 +50,9 @@ global:
               ScalableTargetAction:
                 MinCapacity: If(f'{IBOX_REFNAME}CapacityMinSize',
                                 get_endvalue('CapacityMin'),
-                                get_endvalue(f'{IBOX_REFNAME}CapacityMin', nocondition=f'{IBOX_REFNAME}KeepMinSize'))
+                                If(f'{IBOX_REFNAME}CapacityDesiredSize',
+                                  get_endvalue(f'CapacityDesired'),
+                                  get_endvalue(f'{IBOX_REFNAME}CapacityMin', nocondition=f'{IBOX_REFNAME}KeepMinSize')))
                 MaxCapacity: If(f'{IBOX_REFNAME}CapacityMaxSize',
                                 get_endvalue('CapacityMax'),
                                 get_endvalue(f'{IBOX_REFNAME}CapacityMax', nocondition=f'{IBOX_REFNAME}KeepMaxSize'))
