@@ -13,12 +13,12 @@ global:
               Enabled: 'no'
               CapacityMax: k
               CapacityMin: CapacityMin
-              Schedule: 'cron(00 22 * * ? *)'
+              Schedule: 'cron(00 23 * * ? *)'
           - Up:
               Enabled: 'no'
               CapacityMax: k
               CapacityMin: CapacityMin
-              Schedule: 'cron(00 06 * * ? *)'
+              Schedule: 'cron(00 07 * * ? *)'
   ApplicationAutoScalingScalingPolicy:
     - Cpu:
         IBOX_ENABLED: True

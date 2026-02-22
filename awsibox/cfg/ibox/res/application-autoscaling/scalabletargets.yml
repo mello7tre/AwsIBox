@@ -22,6 +22,8 @@ global:
                     Description: 'empty for mapped value'
                 - IBOX_REFNAME.StartTime:
                     Description: ''
+                - IBOX_REFNAME.Timezone:
+                    Description: 'empty for mapped value'
               IBOX_CONDITION:
                 - IBOX_REFNAME.KeepMinSize:
                     get_condition('', 'equals', 'k', f'{IBOX_REFNAME}CapacityMin')
@@ -37,7 +39,7 @@ global:
                 - IBOX_REFNAME:
                     Value: >-
                       CapacityMin= ${ScalableTargetActionMinCapacity} ,CapacityMax= ${ScalableTargetActionMaxCapacity}
-                      ,Schedule= ${Schedule} ,StartTime= ${StartTime}
+                      ,Schedule= ${Schedule} ,StartTime= ${StartTime} ,Timezone= ${Timezone}
               IBOX_IF:
                 - IBOX_REFNAME.Enabled
                 - IBOX_IFVALUE
@@ -52,6 +54,7 @@ global:
                                 get_endvalue(f'{IBOX_REFNAME}CapacityMax', nocondition=f'{IBOX_REFNAME}KeepMaxSize'))
               ScheduledActionName: IBOX_REFNAME
               StartTime: Ref('AWS::NoValue')
+              Timezone: Europe/Rome
         SuspendedState:
           ScheduledScalingSuspended.IBOX_AUTO_PO: {}
           ScheduledScalingSuspended: True
