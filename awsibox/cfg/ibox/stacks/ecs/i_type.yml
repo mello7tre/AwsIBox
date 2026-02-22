@@ -10,12 +10,10 @@ global:
         IBOX_ENABLED: True
         ScheduledActions:
           - Down:
-              Enabled: 'no'
               CapacityMax: k
               CapacityMin: CapacityMin
               Schedule: 'cron(00 23 * * ? *)'
           - Up:
-              Enabled: 'no'
               CapacityMax: k
               CapacityMin: CapacityMin
               Schedule: 'cron(00 07 * * ? *)'
@@ -89,11 +87,6 @@ dev: &cfg_dev
       EvaluationPeriods: 0
     TargetInternal5XX:
       EvaluationPeriods: 0
-  ApplicationAutoScalingScalableTargetECSServiceScheduledActions:
-    Down:
-      Enabled: 'yes'
-    Up:
-      Enabled: 'yes'
 
 stg: *cfg_dev
 
