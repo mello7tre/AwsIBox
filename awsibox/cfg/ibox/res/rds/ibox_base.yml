@@ -159,6 +159,8 @@ global:
           If(f'{IBOX_MAPNAME}PerformanceInsights', get_endvalue(f'{IBOX_MAPNAME}PerformanceInsights'), Ref('AWS::NoValue'))
         SourceDBInstanceIdentifier.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref("AWS::NoValue"))
         SourceDBInstanceIdentifier: none
+        StorageEncrypted.IBOX_AUTO_PO: {}
+        StorageEncrypted: false
         StorageThroughput.IBOX_CODE:
           If(f'{IBOX_MAPNAME}StorageThroughput', get_endvalue(f'{IBOX_MAPNAME}StorageThroughput'), Ref('AWS::NoValue'))
         StorageThroughput: 0
