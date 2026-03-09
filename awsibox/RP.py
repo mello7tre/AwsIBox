@@ -51,6 +51,10 @@ def RP_to_cfg(key, prefix="", overwrite=True, mappedvalues=[], check_mapped=Fals
                 key_name = key_name.replace("+*", "", 1)
                 if hasattr(cfg, key_name):
                     v = merge_list(v, getattr(cfg, key_name))
+            if isinstance(v, dict) and hasattr(cfg, f"{key_name}**"):
+                # needed to replace existing dict for sourced IBOX_SOURCE_OBJ resource
+                # in the key need to use **** to propagate it
+                v = getattr(cfg, f"{key_name}**")
             if not exist or overwrite:
                 setattr(cfg, key_name, v)
                 if key_name not in mappedvalues:
@@ -81,7 +85,11 @@ def merge_dict(base, work, keep=False):
     for k in keys:
         if k.endswith("**"):
             # ** is used to replace existing dict instead of merging it
-            base[k.replace("**", "", 1)] = work[k]
+            k_clean = k.replace("**", "", 1)
+            if k in base:
+                base[k_clean] = base[k]
+            else:
+                base[k_clean] = work[k]
         elif isinstance(base.get(k), dict) and isinstance(work.get(k), dict):
             base[k] = merge_dict(base[k], work[k], keep=keep)
         elif k.endswith("++"):
