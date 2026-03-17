@@ -15,4 +15,4 @@ global:
           CustomizedMetricSpecification.IBOX_PCO:
             IBOX_OUTPUT:
               - _:
-                  Value: MetricName= ${CustomizedMetricSpecificationMetricName} ,Statistic= ${CustomizedMetricSpecificationStatistic} ,TargetValue= ${TargetValue}
+                  Value: Namespace= ${CustomizedMetricSpecificationNamespace} ,MetricName= ${CustomizedMetricSpecificationMetricName} ,Statistic= ${CustomizedMetricSpecificationStatistic} ,TargetValue= ${TargetValue}
