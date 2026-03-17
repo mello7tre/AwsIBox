@@ -21,14 +21,15 @@ global:
         IBOX_ENABLED: True
         TargetTrackingScalingPolicyConfiguration:
           CustomizedMetricSpecification:
-            Dimensions:
-              - Cluster:
-                  Name: ClusterName
-                  Value: Ref('Cluster')
+            Dimensions**:
+              - AutoScaling:
+                  Name: AutoScalingGroupName
+                  Value: Ref('AutoScalingGroup')
             MetricName: CPUUtilization
-            Statistic: Average
+            Namespace: 'AWS/EC2'
+            Statistic: Maximum
             Unit: Percent
-          TargetValue: 70
+          TargetValue: 60
   AutoScalingGroup:
     - Base:
         DesiredCapacity.IBOX_AUTO_P: {}
