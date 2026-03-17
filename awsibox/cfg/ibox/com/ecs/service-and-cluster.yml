@@ -29,6 +29,10 @@ global:
             Namespace: 'AWS/EC2'
             Statistic: Maximum
             Unit: Percent
+          TargetValue.IBOX_CODE: If(
+            f'{IBOX_CURNAME}Override',
+            Ref(IBOX_CURNAME),
+            get_endvalue('AutoScalingScalingPolicyCustomTargetTrackingConfigurationTargetValue'))
           TargetValue: 60
   AutoScalingGroup:
     - Base:

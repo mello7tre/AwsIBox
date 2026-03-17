@@ -191,6 +191,9 @@ CFG_TO_FUNC_OVERRIDE = {
     "ApiGatewayDeployment": {
         "dep": ["ApiGatewayStage"],
     },
+    "ApplicationAutoScalingScalingPolicy": {
+        "dep": ["AutoScalingGroup", "AutoScalingScalingPolicy"],
+    },
     "AutoScalingGroup": {
         "dep": ["ECSCapacityProvider"],
     },
