@@ -858,6 +858,8 @@ def auto_get_props(
                 prop_obj = _get_obj_tags()
             elif prop_class.__name__ == "str" and obj_propname in [
                 "LifecyclePolicyText",
+                "LifecyclePolicy",
+                "RepositoryPolicy",
                 "InlinePolicy",
             ]:
                 # str but can be represented as dict Ex. ECR LifecyclePolicyText, SSO InlinePolicy
