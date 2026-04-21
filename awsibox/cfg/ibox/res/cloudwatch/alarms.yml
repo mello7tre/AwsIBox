@@ -219,6 +219,7 @@ global:
             Label: OnDemandInExcess
         Threshold: -1
     - DiskUsed:
+        AlarmActions: [ImportValue('SNSTopicCloudWatchAlarm')]
         ComparisonOperator: GreaterThanOrEqualToThreshold
         Dimensions:
           - RootDisk:
