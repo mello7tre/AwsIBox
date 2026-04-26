@@ -124,8 +124,8 @@ global:
                     Value: cfg.BrandDomain
                 - EnvAppXVersion:
                     IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_REFNAME}ImageSuffix")
-                    Name: str(f"EnvApp{IBOX_CUSTOM_OBJ_INDEX}Version")
-                    Value: Ref(f"EnvApp{IBOX_CUSTOM_OBJ_INDEX}Version")
+                    Name: str(f"EnvApp{IBOX_BASE_KEYNAME}Version")
+                    Value: Ref(f"EnvApp{IBOX_BASE_KEYNAME}Version")
               Essential: true
               HostPort: none
               Image: Join('', [

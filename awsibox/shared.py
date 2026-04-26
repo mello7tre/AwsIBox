@@ -47,6 +47,7 @@ IBOX_SPECIAL_KEYS = (
     "IBOX_CURMAP",
     "IBOX_REFNAME",
     "IBOX_TITLE",
+    "IBOX_BASE_KEYNAME",
     "IBOX_LINKED_OBJ_NAME",
     "IBOX_LINKED_OBJ_INDEX",
     "IBOX_LINKED_OBJ_FOR",
@@ -897,11 +898,25 @@ def auto_get_props(
 
             for o, v in key[obj_propname].items():
                 # skip processing disabled sub-objects
-                if isinstance(v, dict) and not v.get("IBOX_ENABLED", True):
-                    continue
+                if isinstance(v, dict):
+                    if not all(
+                        [
+                            ibox_eval(v.get("IBOX_ENABLED_IF", "True")),
+                            v.get("IBOX_ENABLED", True),
+                        ]
+                    ):
+                        continue
 
                 # for a list of properties set IBOX_PROPNAME to the name of property
                 cfg.BUILD_ENVS.IBOX_PROPNAME = o
+
+                # set IBOX_BASE_KEYNAME to the key name of the more recent (in tree) IBOX_BASE object/resource
+                try:
+                    v["IBOX_BASE_REF"]
+                except Exception:
+                    pass
+                else:
+                    cfg.BUILD_ENVS.IBOX_BASE_KEYNAME = o
 
                 if o == "IBOX_IF":
                     # element named IBOX_IF must no be parsed
@@ -1473,7 +1488,7 @@ def camel_to_snake(data):
             skip_next = False
             continue
         if v.isupper() and data[n + 1].isupper():
-            out += f"_{v}{data[n+1]}"
+            out += f"_{v}{data[n + 1]}"
             skip_next = True
         elif v.isupper():
             out += f"_{v}" if out else v
