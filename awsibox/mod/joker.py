@@ -1,6 +1,6 @@
 import logging
 from copy import deepcopy
-from troposphere import Output, Ref
+from troposphere import Output, Ref, And
 
 from .. import cfg
 from ..RP import RP_to_cfg, merge_dict
@@ -95,7 +95,20 @@ def Joker(key, module, cls):
                 )
             )
             if "Create.IBOX_AUTO_PO" not in v:
-                add_obj(get_condition(resname, "equals", "yes", f"{resname}Create"))
+                current_condition_name = v.get("Condition")
+                create_condition = get_condition(
+                    "", "equals", "yes", f"{resname}Create"
+                )
+
+                if current_condition_name:
+                    create_condition = {
+                        resname: And(current_condition_name, create_condition)
+                    }
+                    del v["Condition"]
+                else:
+                    create_condition = {resname: create_condition}
+
+                add_obj(create_condition)
                 add_obj(
                     Output(
                         resname,
@@ -103,8 +116,7 @@ def Joker(key, module, cls):
                         Value=Ref(v.get("IBOX_TITLE", resname)),
                     )
                 )
-                if not hasattr(obj, "Condition"):
-                    obj.Condition = resname
+                obj.Condition = resname
 
         # populate obj
         auto_get_props(
