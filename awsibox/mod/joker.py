@@ -1,6 +1,6 @@
 import logging
 from copy import deepcopy
-from troposphere import Output, Ref, And
+from troposphere import Output, Ref, And, Condition
 
 from .. import cfg
 from ..RP import RP_to_cfg, merge_dict
@@ -102,7 +102,9 @@ def Joker(key, module, cls):
 
                 if current_condition_name:
                     create_condition = {
-                        resname: And(current_condition_name, create_condition)
+                        resname: And(
+                            Condition(current_condition_name), create_condition
+                        )
                     }
                     del v["Condition"]
                 else:
