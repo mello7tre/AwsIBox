@@ -79,6 +79,9 @@ global:
               AllowedValues: ['', 'true', 'false']
           - IBOX_MAPNAME.PerformanceInsights:
               Description: 'The amount of time, in days, to retain Performance Insights data - empty for mapped value - 0 to disable'
+          - IBOX_MAPNAME.StorageEncrypted:
+              Description: 'StorageEncrypted - empty for mapped value'
+              AllowedValues: ['', 'true', 'false']
           - IBOX_MAPNAME.StorageType:
               Description: 'empty for mapped value'
               AllowedValues: ['', 'standard', 'io1', 'gp2', 'gp3']
@@ -99,6 +102,8 @@ global:
               get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}PerformanceInsights')
           - IBOX_MAPNAME.StorageAutoScaling:
               get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}MaxAllocatedStorage')
+          - IBOX_MAPNAME.StorageEncrypted:
+              get_condition('', 'not_equals', 'false', f'{IBOX_MAPNAME}StorageEncrypted')
           - IBOX_MAPNAME.StorageThroughput:
               get_condition('', 'not_equals', '0', f'{IBOX_MAPNAME}StorageThroughput')
           - IBOX_MAPNAME.Iops:
@@ -132,6 +137,8 @@ global:
               Value: ${PubliclyAccessible}
           - IBOX_MAPNAME.SourceDBInstanceIdentifier:
               Value: ${SourceDBInstanceIdentifier}
+          - IBOX_MAPNAME.StorageEncrypted:
+              Value: ${StorageEncrypted}
           - IBOX_MAPNAME.StorageType:
               Value: ${StorageType}
           - IBOX_MAPNAME.StorageThroughput:
@@ -167,7 +174,7 @@ global:
           If(f'{IBOX_MAPNAME}PerformanceInsights', get_endvalue(f'{IBOX_MAPNAME}PerformanceInsights'), Ref('AWS::NoValue'))
         SourceDBInstanceIdentifier.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref("AWS::NoValue"))
         SourceDBInstanceIdentifier: none
-        StorageEncrypted.IBOX_AUTO_PO: {}
+        StorageEncrypted.IBOX_CODE: If(IBOX_CURNAME, get_endvalue(IBOX_CURNAME), Ref("AWS::NoValue"))
         StorageEncrypted: false
         StorageThroughput.IBOX_CODE:
           If(f'{IBOX_MAPNAME}StorageThroughput', get_endvalue(f'{IBOX_MAPNAME}StorageThroughput'), Ref('AWS::NoValue'))
