@@ -27,6 +27,14 @@ global:
             Conf:
               IBOX_TITLE: DBParameterGroup1
               IBOX_LINKED_OBJ_NAME: IBOX_REFNAME
+          ParameterGroupExt:
+            Name: IBOX_MAPNAME.Ext
+            Key: RDSDBParameterGroup
+            Type: Ext
+            Conf:
+              IBOX_RESNAME: RDSDBParameterGroupExt.IBOX_MAPNAME
+              IBOX_TITLE: DBParameterGroup1Ex
+              IBOX_LINKED_OBJ_NAME: IBOX_MAPNAME
           RecordSet:
             Key: Route53RecordSet
             Conf:

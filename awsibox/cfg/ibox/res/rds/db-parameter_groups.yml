@@ -12,3 +12,23 @@ global:
               Select(0, Split(".", get_endvalue(f"{IBOX_LINKED_OBJ_NAME}EngineVersion"))),
               Select(1, Split(".", get_endvalue(f"{IBOX_LINKED_OBJ_NAME}EngineVersion"))),
             ])})
+    - Ext:
+        IBOX_SOURCE_OBJ: RDSDBParameterGroupBase
+        IBOX_PARAMETER:
+          IBOX_RESNAME.FamilyVersion:
+            Description: "Empty for mapped value"
+        IBOX_CONDITION:
+          _:
+            get_condition("", "not_equals", "", f"{IBOX_RESNAME}FamilyVersion")
+        IBOX_OUTPUT:
+          _.FamilyVersion:
+            Value: Ref(f"{IBOX_RESNAME}FamilyVersion")
+        Condition: IBOX_RESNAME
+        Description: >-
+          Sub("%s %s - ${AWS::StackName}" % (
+          getattr(cfg, f"{IBOX_LINKED_OBJ_NAME}Engine").upper(), IBOX_TITLE))
+        Family: >-
+          Sub("${Engine}${EngineVersion}",
+          **{
+            "Engine": get_endvalue(f"{IBOX_LINKED_OBJ_NAME}Engine"),
+            "EngineVersion": Ref(f"{IBOX_RESNAME}FamilyVersion")})
