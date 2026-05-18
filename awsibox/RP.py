@@ -152,6 +152,21 @@ def build_RP():
 
     RP_base_keys = _get_RP_base_keys()
 
+    def get_loader_exclude():
+        def _exclude(self, node):
+            if isinstance(node, yaml.SequenceNode):
+                for filename in self.construct_sequence(node):
+                    LD_EXCLUDED.append(filename)
+
+        def _include(self, node):
+            pass
+
+        loader = yaml.CSafeLoader
+        loader.add_constructor("!exclude", _exclude)
+        loader.add_constructor("!include", _include)
+
+        return loader
+
     class Loader(yaml.CSafeLoader):
         def __init__(self, stream):
             #            # This way for include relative to file with include statement
@@ -321,13 +336,29 @@ def build_RP():
 
         return _recurse(data)
 
+    # extract only IBoxLoader header and use custom loader to parse !include !exclude
+    def parse_yaml_header(file_type, brand, base_dir, stacktype="", prefix=""):
+        cfg_file = os.path.join(base_dir, brand, prefix, stacktype, f"{file_type}.yml")
+        yaml_header = ""
+
+        try:
+            with open(cfg_file, "r") as f:
+                for line in f:
+                    if line == "global:\n":
+                        break
+                    yaml_header += line
+                cfg = yaml.load(yaml_header, Loader=get_loader_exclude())
+                return cfg
+        except IOError:
+            return {}
+
+    # Parse full yaml file using custom Loader
     def read_yaml(file_type, brand, base_dir, stacktype="", prefix=""):
         cfg_file = os.path.join(base_dir, brand, prefix, stacktype, f"{file_type}.yml")
 
         try:
             with open(cfg_file, "r") as ymlfile:
                 cfg = yaml.load(ymlfile, Loader=Loader)
-
                 return cfg
         except IOError:
             return {}
@@ -453,6 +484,9 @@ def build_RP():
         return RP_tree, RP_map
 
     # End inner methods and begin of main code.
+
+    # read envrole type files populating only LD_EXCLUDED, this way i can override envrole CFG_FILE_INT
+    parse_yaml_header(envrole, brand, CFG_FILE_EXT, stacktype, cfg.STACKS_DIR)
 
     # envrole type files must be read first to parse IBoxLoader include/exclude
     yaml_role = [
