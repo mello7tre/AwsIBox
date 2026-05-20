@@ -123,9 +123,14 @@ global:
                     Name: EnvBrand
                     Value: cfg.BrandDomain
                 - EnvAppXVersion:
-                    IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_REFNAME}ImageSuffix")
-                    Name: str(f"EnvApp{IBOX_BASE_KEYNAME}Version")
-                    Value: Ref(f"EnvApp{IBOX_BASE_KEYNAME}Version")
+                    # Create only if does exist key ImageSuffix and value is composed by name:EnvAppXVersion
+                    IBOX_ENABLED_IF: >-
+                      len(getattr(cfg, f"{IBOX_REFNAME}ImageSuffix", "").split(":")) > 1
+                    # To find out EnvAppXVersion X number i need to get ImageSuffix value and filter char on isdigit
+                    Name: >-
+                      str(f"EnvApp{''.join(list(filter(lambda x: x.isdigit(),[n for n in getattr(cfg, IBOX_REFNAME + 'ImageSuffix').split(':')[1]])))}Version")
+                    Value: >-
+                      Ref(f"EnvApp{''.join(list(filter(lambda x: x.isdigit(),[n for n in getattr(cfg, IBOX_REFNAME + 'ImageSuffix').split(':')[1]])))}Version")
               Essential: true
               HostPort: none
               Image: Join('', [
