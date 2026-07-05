@@ -31,8 +31,10 @@ global:
         Line: enable-spot-instance-draining = true
     - ecs3:
         Line: image-pull-behavior = "once"
-    - ecs4:
-        Line: warm-pools-check = true
+    - asg0:
+        Line: '[settings.autoscaling]'
+    - asg1:
+        Line: should-wait = true
     - clf0:
         Line: '[settings.cloudformation]'
     - clf1:
