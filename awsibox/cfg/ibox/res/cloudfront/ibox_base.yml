@@ -50,15 +50,15 @@ global:
                 CustomOriginConfig:
                   IBOX_ENABLED_IF: not hasattr(cfg, f"{IBOX_REFNAME}S3OriginConfig")
                   IBOX_IF:
-                    - str(IBOX_REFNAME + "UseVPCOrigin" if hasattr(cfg, f"{IBOX_REFNAME}VpcOriginConfigVpcOriginId") else "UseCustomOriginConfig")
+                    - IBOX_REFNAME.UseVPCOrigin
                     - Ref('AWS::NoValue')
                     - IBOX_IFVALUE
                   IBOX_PARAMETER:
                     - IBOX_REFNAME.CustomOriginConfigHTTPSPort:
                         Description: 'empty for mapped value'
                   IBOX_CONDITION:
-                    - IBOX_REFNAME.UseCustomOriginConfig:
-                        get_condition('', 'equals', 'yes', 'yes')
+                    - IBOX_REFNAME.UseVPCOrigin:
+                        get_condition('', 'equals', 'yes', 'no')
                   OriginProtocolPolicy: https-only
                 OriginAccessControlId.IBOX_AUTO_P:
                   AllowedValues: ["", "Always", "Conditional", "Never"]
