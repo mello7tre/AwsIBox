@@ -746,6 +746,15 @@ def auto_get_props(
         props = obj.props
         mapname_obj = f"{mapname}{obj_propname}"
 
+        def _skip_by_ibox_enabled_key(v):
+            if isinstance(v, dict):
+                if v.get("IBOX_ENABLED") is False:
+                    return True
+                if ibox_eval(v.get("IBOX_ENABLED_IF", "True")) is False:
+                    return True
+
+            return False
+
         def _get_obj_tags():
             prop_list = []
             for k, v in key[obj_propname].items():
@@ -843,6 +852,10 @@ def auto_get_props(
                 prop_obj = prop_class()
 
             if prop_class.__bases__[0].__name__ in ["AWSProperty", "AWSAttribute"]:
+                # skip processing disabled sub-objects
+                if _skip_by_ibox_enabled_key(key[obj_propname]):
+                    return
+
                 _populate(
                     prop_obj,
                     key=key[obj_propname],
@@ -898,14 +911,8 @@ def auto_get_props(
 
             for o, v in key[obj_propname].items():
                 # skip processing disabled sub-objects
-                if isinstance(v, dict):
-                    if not all(
-                        [
-                            ibox_eval(v.get("IBOX_ENABLED_IF", "True")),
-                            v.get("IBOX_ENABLED", True),
-                        ]
-                    ):
-                        continue
+                if _skip_by_ibox_enabled_key(v):
+                    continue
 
                 # for a list of properties set IBOX_PROPNAME to the name of property
                 cfg.BUILD_ENVS.IBOX_PROPNAME = o
