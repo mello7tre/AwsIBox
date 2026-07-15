@@ -48,9 +48,21 @@ global:
                   - IBOX_REFNAME.DomainName:
                       Description: 'empty for mapped value'
                 CustomOriginConfig:
+                  IBOX_ENABLED_IF: not hasattr(cfg, f"{IBOX_REFNAME}S3OriginConfig")
+                  IBOX_IF:
+                    - IBOX_REFNAME.UseVPCOrigin
+                    - Ref('AWS::NoValue')
+                    - IBOX_IFVALUE
                   IBOX_PARAMETER:
                     - IBOX_REFNAME.CustomOriginConfigHTTPSPort:
                         Description: 'empty for mapped value'
+                    - IBOX_REFNAME.UseVPCOrigin:
+                        Description: 'UseVPCOrigin - yes/no'
+                        AllowedValues: ['yes', 'no']
+                        Default: 'yes'
+                  IBOX_CONDITION:
+                    - IBOX_REFNAME.UseVPCOrigin:
+                        get_condition('', 'equals', 'yes', f'{IBOX_REFNAME}UseVPCOrigin')
                   OriginProtocolPolicy: https-only
                 OriginAccessControlId.IBOX_AUTO_P:
                   AllowedValues: ["", "Always", "Conditional", "Never"]
@@ -74,6 +86,10 @@ global:
                       Ref("AWS::NoValue")))
                 OriginPath: ''
                 VpcOriginConfig:
+                  IBOX_IF:
+                    - IBOX_REFNAME.UseVPCOrigin
+                    - IBOX_IFVALUE
+                    - Ref('AWS::NoValue')
                   VpcOriginId.IBOX_AUTO_PO: {}
                   VpcOriginId.IBOX_CODE_KEY: >-
                     If(f"{IBOX_REFNAME}VpcOriginConfigVpcOriginIdOverride",

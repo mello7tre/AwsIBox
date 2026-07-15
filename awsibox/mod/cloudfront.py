@@ -28,13 +28,6 @@ def CF_CloudFront(key):
         for m, w in distribution_config["CacheBehaviors"].items():
             process_cache_policy(w)
 
-        # process origins
-        for m, w in distribution_config["Origins"].items():
-            if "VpcOriginId" not in w["VpcOriginConfig"]:
-                del w["VpcOriginConfig"]
-            if any(n in w for n in ["S3OriginConfig", "VpcOriginConfig"]):
-                del w["CustomOriginConfig"]
-
         # Automatically compute Behaviour Order based on PathPattern
         cfg.dbg_clf_compute_order = {}
         sortedcachebehaviors = sorted(
