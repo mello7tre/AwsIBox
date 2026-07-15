@@ -50,19 +50,15 @@ global:
                 CustomOriginConfig:
                   IBOX_ENABLED_IF: not hasattr(cfg, f"{IBOX_REFNAME}S3OriginConfig")
                   IBOX_IF:
-                    - IBOX_REFNAME.UseVPCOrigin
+                    - str(IBOX_REFNAME + "UseVPCOrigin" if hasattr(cfg, f"{IBOX_REFNAME}VpcOriginConfigVpcOriginId") else "UseCustomOriginConfig")
                     - Ref('AWS::NoValue')
                     - IBOX_IFVALUE
                   IBOX_PARAMETER:
                     - IBOX_REFNAME.CustomOriginConfigHTTPSPort:
                         Description: 'empty for mapped value'
-                    - IBOX_REFNAME.UseVPCOrigin:
-                        Description: 'UseVPCOrigin - yes/no'
-                        AllowedValues: ['yes', 'no']
-                        Default: 'yes'
                   IBOX_CONDITION:
-                    - IBOX_REFNAME.UseVPCOrigin:
-                        get_condition('', 'equals', 'yes', f'{IBOX_REFNAME}UseVPCOrigin')
+                    - IBOX_REFNAME.UseCustomOriginConfig:
+                        get_condition('', 'equals', 'yes', 'yes')
                   OriginProtocolPolicy: https-only
                 OriginAccessControlId.IBOX_AUTO_P:
                   AllowedValues: ["", "Always", "Conditional", "Never"]
@@ -86,10 +82,19 @@ global:
                       Ref("AWS::NoValue")))
                 OriginPath: ''
                 VpcOriginConfig:
+                  IBOX_ENABLED_IF: hasattr(cfg, f"{IBOX_REFNAME}VpcOriginConfigVpcOriginId")
                   IBOX_IF:
                     - IBOX_REFNAME.UseVPCOrigin
                     - IBOX_IFVALUE
                     - Ref('AWS::NoValue')
+                  IBOX_PARAMETER:
+                    - IBOX_REFNAME.UseVPCOrigin:
+                        Description: 'UseVPCOrigin - yes/no'
+                        AllowedValues: ['yes', 'no']
+                        Default: 'yes'
+                  IBOX_CONDITION:
+                    - IBOX_REFNAME.UseVPCOrigin:
+                        get_condition('', 'equals', 'yes', f'{IBOX_REFNAME}UseVPCOrigin')
                   VpcOriginId.IBOX_AUTO_PO: {}
                   VpcOriginId.IBOX_CODE_KEY: >-
                     If(f"{IBOX_REFNAME}VpcOriginConfigVpcOriginIdOverride",
