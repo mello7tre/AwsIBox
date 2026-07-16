@@ -27,7 +27,9 @@ global:
           CacheBehaviors:
             - IBOX_BASE: &cache_behavior
                 Compress: True
+                DefaultTTL.IBOX_CODE_KEY: get_endvalue(IBOX_CURNAME) if not hasattr(cfg, f"{IBOX_CURMAP}CachePolicyId") else Ref("AWS::NoValue")
                 ForwardedValues:
+                  IBOX_ENABLED_IF: not hasattr(cfg, f"{IBOX_CURMAP}CachePolicyId")
                   QueryString: True
                   Headers: []
                 ViewerProtocolPolicy: redirect-to-https
