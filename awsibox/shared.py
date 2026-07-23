@@ -654,8 +654,35 @@ def import_user_data(name):
         exit(1)
 
 
-def import_lambda(name):
+def import_lambda(name, code=None):
     TK_IN_LBD = "IBOX_CODE_IN_LAMBDA"
+
+    def _parse_lambda(data):
+        code_lines = data.splitlines(keepends=True)
+
+        file_lines = []
+        # parse lambda code for Token IBOX CODE
+        for x in code_lines:
+            if x.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
+                value = ibox_eval(x)
+            elif x.startswith(TK_IN_LBD):
+                value = '"'
+            elif TK_IN_LBD in x:
+                # parse minified code
+                tks = x.split(TK_IN_LBD)
+                file_lines.extend([f"{tks[0]}", eval(tks[1]), tks[2]])
+                continue
+            else:
+                value = "".join(x)
+
+            file_lines.append(value)
+
+        return file_lines
+
+    # inline code (Ex cloudfront functions)
+    if code:
+        return _parse_lambda(code)
+
     parent_dir_name = os.path.dirname(os.path.realpath(__file__))
     lambda_file = os.path.join(os.getcwd(), "lib/lambdas/%s.code" % name)
     if not os.path.exists(lambda_file):
@@ -681,26 +708,7 @@ def import_lambda(name):
             if len(code) > 4096:
                 logging.warning(f"Inline lambda {lambda_file_trunk} {len(code)} > 4096")
 
-            code_lines = code.splitlines(keepends=True)
-
-            file_lines = []
-            # parse lambda code for Token IBOX CODE
-            for x in code_lines:
-                if x.startswith(cfg.EVAL_FUNCTIONS_IN_CFG):
-                    value = ibox_eval(x)
-                elif x.startswith(TK_IN_LBD):
-                    value = '"'
-                elif TK_IN_LBD in x:
-                    # parse minified code
-                    tks = x.split(TK_IN_LBD)
-                    file_lines.extend([f"{tks[0]}", eval(tks[1]), tks[2]])
-                    continue
-                else:
-                    value = "".join(x)
-
-                file_lines.append(value)
-
-            return file_lines
+            return _parse_lambda(code)
 
     except IOError:
         logging.warning(f"Lambda code {name} not found")
