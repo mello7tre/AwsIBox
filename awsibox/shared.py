@@ -668,9 +668,13 @@ def import_lambda(name, code=None):
             elif x.startswith(TK_IN_LBD):
                 value = '"'
             elif TK_IN_LBD in x:
-                # parse minified code
+                # parse minified/inline code
                 tks = x.split(TK_IN_LBD)
-                file_lines.extend([f"{tks[0]}", eval(tks[1]), tks[2]])
+                for n, l in enumerate(tks):
+                    if n % 2 == 0:
+                        file_lines.append(tks[n])
+                    else:
+                        file_lines.append(eval(tks[n]))
                 continue
             else:
                 value = "".join(x)
