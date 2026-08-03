@@ -24,7 +24,11 @@ def send_notification(alarms):
     now = datetime.now(timezone.utc)
     for a in alarms:
         name = a["AlarmName"]
+        # skip excluded alarms (by ParameterStore Param)
         if any(x in name for x in EXCLUDE.split()):
+            continue
+        # skip action disabled alarms
+        if not a["ActionsEnabled"]:
             continue
         state_update_time = a["StateUpdatedTimestamp"]
         # Notify only for alarms already triggered
