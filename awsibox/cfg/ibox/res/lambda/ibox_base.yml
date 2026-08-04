@@ -55,10 +55,13 @@ global:
           Variables.IBOX_PCO:
             IBOX_PARAMETER:
               - EnvServiceRestartTime:
-                  Description: 'Use to force service restart - can use: $(date +%F_%T)'
+                  Description: 'Use to force All Service Lambdas to ColdStart - can use: $(date +%F_%T)'
+              - _RestartTime:
+                  Description: 'Use to force Lambda to ColdStart - can use: $(date +%F_%T)'
           Variables:
             - Env: Ref('EnvShort')
             - EnvRole: Ref('EnvRole')
+            - IBox_LambdaRestartTime: Ref(f"{IBOX_RESNAME}RestartTime")
             - IBox_EnvServiceRestartTime: Ref("EnvServiceRestartTime")
 
   LambdaLayerVersion:
