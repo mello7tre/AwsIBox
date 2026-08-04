@@ -2,6 +2,7 @@
 import os
 import boto3
 import logging
+import json
 import cfg as app_cfg
 from datetime import datetime, timezone
 
@@ -45,8 +46,29 @@ def send_notification(alarms):
         notification_body = "\n".join(alarms_list)
 
         logger.info(f"Alarms in ALARM: {alarms_list}")
+
+        sns_msg = {
+            "default": notification_body,
+            "https": json.dumps(
+                {
+                    "version": "1.0",
+                    "source": "custom",
+                    "content": {
+                        "title": notification_subject,
+                        "description": notification_body,
+                    },
+                    "metadata": {
+                        "enableCustomActions": False,
+                    },
+                }
+            ),
+        }
+
         result = CLIENT_SNS.publish(
-            TopicArn=TOPIC, Subject=notification_subject, Message=notification_body
+            TopicArn=TOPIC,
+            Subject=notification_subject,
+            Message=json.dumps(sns_msg),
+            MessageStructure="json",
         )
 
         logger.info(result)
