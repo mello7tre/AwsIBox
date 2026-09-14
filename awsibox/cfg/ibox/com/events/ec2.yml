@@ -37,7 +37,7 @@ global:
           - LambdaR53RecordInstanceId:
               Arn: GetAtt('LambdaR53RecordInstanceId', 'Arn')
               Id: 'TargetFunction-02'
-   - EC2NotificationInstanceStopped:
+    - EC2NotificationInstanceStopped:
         Description: 'EC2 Instance State-change Notification for stopped State'
         State: 'ENABLED'
         EventPattern:
