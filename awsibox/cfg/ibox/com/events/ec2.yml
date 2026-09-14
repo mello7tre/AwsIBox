@@ -37,6 +37,21 @@ global:
           - LambdaR53RecordInstanceId:
               Arn: GetAtt('LambdaR53RecordInstanceId', 'Arn')
               Id: 'TargetFunction-02'
+   - EC2NotificationInstanceStopped:
+        Description: 'EC2 Instance State-change Notification for stopped State'
+        State: 'ENABLED'
+        EventPattern:
+          detail:
+            state:
+              - stopped
+          detail-type:
+            - EC2 Instance State-change Notification
+          source:
+            - aws.ec2
+        Targets:
+          - LambdaECSDeregisterInstance:
+              Arn: GetAtt('LambdaECSDeregisterInstance', 'Arn')
+              Id: 'TargetFunction-03'
     - EC2SpotInterruption:
         Description: 'EC2 Spot Instance Interruption Warning'
         State: 'DISABLED'
@@ -65,6 +80,15 @@ global:
         Environment:
           Variables:
             - TagName: 'AutoStartStop'
+    - ECSDeregisterInstance:
+        Architectures:
+          - arm64
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
+        Description: 'Deregister ECS Container Instance on shutdown'
+        MemorySize: 256
+        Runtime: python3.13
+        Timeout: 30
     - ECSDrainTasks:
         Architectures:
           - arm64
@@ -122,6 +146,10 @@ global:
         FunctionName: GetAtt('LambdaECSDrainTasks', 'Arn')
         Principal: events.amazonaws.com
         SourceArn: GetAtt("EventsRuleEC2SpotInterruption", 'Arn')
+    - ECSDeregisterInstanceEventsRuleEC2NotificationInstanceStopped:
+        FunctionName: GetAtt('LambdaECSDeregisterInstance', 'Arn')
+        Principal: events.amazonaws.com
+        SourceArn: GetAtt("EventsRuleEC2NotificationInstanceStopped", 'Arn')
   IAMPolicy:
     - LambdaEC2StartStopTagged:
         Roles:
@@ -134,6 +162,17 @@ global:
                   - 'ec2:StopInstances'
                 Effect: Allow
                 Resource: 'arn:aws:ec2:*:*:instance/*'
+    - LambdaECSDeregisterInstance:
+        Roles:
+          - Ref('RoleLambdaECSDeregisterInstance')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:ListContainerInstances'
+                  - 'ecs:UpdateContainerInstancesState'
+                Effect: Allow
+                Resource: '*'
     - LambdaECSDrainTasks:
         Roles:
           - Ref('RoleLambdaECSDrainTasks')
