@@ -171,6 +171,7 @@ global:
                 Action:
                   - 'ecs:ListContainerInstances'
                   - 'ecs:UpdateContainerInstancesState'
+                  - 'ecs:DeregisterContainerInstance'
                 Effect: Allow
                 Resource: '*'
     - LambdaECSDrainTasks:
