@@ -48,7 +48,7 @@ def lambda_handler(event, context):
 
     logger.info("%s %s" % (e_state, instance_id))
 
-    if e_state != "shutting-down":
+    if e_state != "stopped":
         return
 
     cluster = find_cluster(instance_id)
