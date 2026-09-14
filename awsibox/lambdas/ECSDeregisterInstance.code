@@ -67,4 +67,5 @@ def lambda_handler(event, context):
                 f"{instance_id} - Error Deregistering from Cluster {cluster}: {e}"
             )
         else:
-            logger.info(resp)
+            status = resp.get("containerInstance", {}).get("status")
+            logger.info(f"{instance_id} status is: {status}")
