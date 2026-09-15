@@ -72,6 +72,11 @@ EOF
 IS_SYSTEM_RUNNING(){
   echo "Waiting for systemctl to complete boot before finding out the system status."
   if !(systemctl is-system-running --wait);then
+    # Service that we can allow to be in failed state (retried later) - DISABLED FOR NOW
+    # SERVICES_THAN_CAN_FAIL="policy-routes|another-service-that-can-fail"
+    # failed_services=$(systemctl --failed | grep failed | egrep -v "\b(${SERVICES_THAN_CAN_FAIL})\b")
+    # if [ -n "$failed_services" ];then
+    #   echo -e "Failed services:\n${failed_services}"
     echo "System is degraded shutting down!"
     shutdown -h now
   else
