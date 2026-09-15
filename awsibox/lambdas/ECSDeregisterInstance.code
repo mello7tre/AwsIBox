@@ -48,8 +48,8 @@ def lambda_handler(event, context):
 
     logger.info("%s %s" % (e_state, instance_id))
 
-    # manage only stopped and terminated states
-    if e_state not in ["stopped", "terminated"]:
+    # manage only stopped states
+    if e_state not in ["stopped"]:
         return
 
     cluster = find_cluster(instance_id)
@@ -71,9 +71,7 @@ def lambda_handler(event, context):
             force=True,
         )
     except Exception as e:
-        logger.error(
-            f"{instance_id} - Error Deregistering from Cluster {cluster}: {e}"
-        )
+        logger.error(f"{instance_id} - Error Deregistering from Cluster {cluster}: {e}")
     else:
         status = resp.get("containerInstance", {}).get("status")
         logger.info(
