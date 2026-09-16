@@ -1,11 +1,14 @@
 global:
   EventsRule:
-    - ASGLifecycleActionTerminate:
-        Description: 'EC2 Instance-terminate Lifecycle Action - Invoke Lambda: ASGCompleteLifecycleECSDeregister'
+    - ASGLifecycleActionTerminateECSDraining:
+        Description: 'EC2 Instance-terminate Lifecycle Action for ECSDraining - Invoke Lambda: ASGCompleteLifecycleECSDeregister'
         State: 'ENABLED'
         EventPattern:
           detail-type:
             - EC2 Instance-terminate Lifecycle Action
+          detail:
+            LifecycleHookName:
+              - ecs-managed-draining-termination-hook
           source:
             - aws.autoscaling
         Targets:
@@ -23,10 +26,10 @@ global:
         Runtime: python3.13
         Timeout: 30
   LambdaPermission:
-    - ASGCompleteLifecycleECSDeregisterEventsRuleASGLifecycleActionTerminate:
+    - ASGCompleteLifecycleECSDeregisterEventsRuleASGLifecycleActionTerminateECSDraining:
         FunctionName: GetAtt('LambdaASGCompleteLifecycleECSDeregister', 'Arn')
         Principal: events.amazonaws.com
-        SourceArn: GetAtt("EventsRuleASGLifecycleActionTerminate", 'Arn')
+        SourceArn: GetAtt("EventsRuleASGLifecycleActionTerminateECSDraining", 'Arn')
   IAMPolicy:
     - LambdaASGCompleteLifecycleECSDeregister:
         Roles:
