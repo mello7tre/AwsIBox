@@ -1,6 +1,6 @@
 global:
   EventsRule:
-    - ASGLifecycleActionTerminateECSDraining:
+    - ASGLifecycleTerminateECSDrain:
         Description: 'EC2 Instance-terminate Lifecycle Action for ECSDraining - Invoke Lambda: ASGCompleteLifecycleECSDeregister'
         State: 'ENABLED'
         EventPattern:
@@ -26,10 +26,10 @@ global:
         Runtime: python3.13
         Timeout: 30
   LambdaPermission:
-    - ASGCompleteLifecycleECSDeregisterEventsRuleASGLifecycleActionTerminateECSDraining:
+    - ASGCompleteLifecycleECSDeregisterEventsRuleASGLifecycleTerminateECSDrain:
         FunctionName: GetAtt('LambdaASGCompleteLifecycleECSDeregister', 'Arn')
         Principal: events.amazonaws.com
-        SourceArn: GetAtt("EventsRuleASGLifecycleActionTerminateECSDraining", 'Arn')
+        SourceArn: GetAtt("EventsRuleASGLifecycleTerminateECSDrain", 'Arn')
   IAMPolicy:
     - LambdaASGCompleteLifecycleECSDeregister:
         Roles:
