@@ -74,7 +74,10 @@ IS_SYSTEM_RUNNING(){
   if !(systemctl is-system-running --wait);then
     # Service that we can allow to be in failed state (retried later) - DISABLED FOR NOW
     # SERVICES_THAN_CAN_FAIL="policy-routes|another-service-that-can-fail"
-    # failed_services=$(systemctl --failed | grep failed | egrep -v "\b(${SERVICES_THAN_CAN_FAIL})\b")
+    # systemctl_failed=$(systemctl --failed)
+    # echo "$systemctl_failed"
+    # echo -e "Ignoring services:\n\t${SERVICES_THAN_CAN_FAIL}"
+    # failed_services=$(echo "$systemctl_failed" | grep failed | egrep -v "\b(${SERVICES_THAN_CAN_FAIL})\b")
     # if [ -n "$failed_services" ];then
     #   echo -e "Failed services:\n${failed_services}"
     echo "System is degraded shutting down!"
