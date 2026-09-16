@@ -10,15 +10,13 @@ logger.setLevel(logging.INFO)
 logger.propagate = False
 
 
-CLIENT_EC2 = boto3.client("ec2")
+RESOURCE_EC2 = boto3.resource("ec2")
 CLIENT_ECS = boto3.client("ecs")
+CLIENT_AUTOSCALING = boto3.client("autoscaling")
 
 
-def find_cluster(instance_id):
-    instance_tags = CLIENT_EC2.describe_tags(
-        Filters=[{"Name": "resource-id", "Values": [instance_id]}]
-    )
-    for n in instance_tags["Tags"]:
+def find_cluster(tags):
+    for n in tags:
         if n["Key"] == "ECSCluster":
             return n["Value"]
 
@@ -42,23 +40,7 @@ def find_container_instance(cluster, instance_id, status=None):
         return False
 
 
-def lambda_handler(event, context):
-    e_state = event["detail"]["state"]
-    instance_id = event["detail"]["instance-id"]
-
-    logger.info("%s %s" % (e_state, instance_id))
-
-    # manage only stopped states
-    if e_state not in ["stopped"]:
-        return
-
-    cluster = find_cluster(instance_id)
-
-    if not cluster:
-        return
-
-    logger.info(f"{instance_id} - Found Cluster ECS: {cluster}")
-
+def deregister_container_instance(cluster, instance_id):
     instance_arn = find_container_instance(cluster, instance_id)
 
     if not instance_arn:
@@ -77,3 +59,42 @@ def lambda_handler(event, context):
         logger.info(
             f"{instance_id} deregistered from cluster {cluster}, current status is: {status}"
         )
+
+
+def complete_lifecycle(asg_name, instance_id, lifecyclehook_name):
+    try:
+        CLIENT_AUTOSCALING.complete_lifecycle_action(
+            LifecycleHookName=lifecyclehook_name,
+            AutoScalingGroupName=asg_name,
+            LifecycleActionResult="ABANDON",
+            InstanceId=instance_id,
+        )
+    except Exception as e:
+        logger.error(
+            f"{asg_name} {instance_id} Error completing lifecycle {lifecyclehook_name}: {e}"
+        )
+    else:
+        logger.info(
+            "{asg_name} {instance_id} - Completed lifecycle {lifecyclehook_name}"
+        )
+
+
+def lambda_handler(event, context):
+    instance_id = event["detail"]["EC2InstanceId"]
+    asg_name = event["detail"]["AutoScalingGroupName"]
+    lifecyclehook_name = event["detail"]["LifecycleHookName"]
+    lifecyclehook_action = event["detail"]["LifecycleTransition"]
+
+    logger.info(f"{asg_name} - {instance_id} - {lifecyclehook_action}")
+
+    instance = RESOURCE_EC2.Instance(instance_id)
+
+    cluster = find_cluster(instance.tags)
+
+    if not cluster or instance.state["Name"] != "stopped":
+        return
+
+    logger.info(f"{instance_id} - Found Cluster ECS: {cluster}")
+
+    complete_lifecycle(asg_name, instance_id, lifecyclehook_name)
+    deregister_container_instance(cluster, instance_id)

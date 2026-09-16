@@ -2,6 +2,7 @@ IBoxLoader: !include [
   com/iam/policy-parameterstore.yml,
   com/events/ec2.yml,
   com/events/ecs.yml,
+  com/events/asg_lifecyclehooks.yml,
 ]
 
 global:

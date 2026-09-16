@@ -1,0 +1,42 @@
+global:
+  EventsRule:
+    - ASGLifecycleActionTerminate:
+        Description: 'EC2 Instance-terminate Lifecycle Action - Invoke Lambda: ECSTerminateStoppedInstance'
+        State: 'ENABLED'
+        EventPattern:
+          detail-type:
+            - EC2 Instance-terminate Lifecycle Action
+          source:
+            - aws.autoscaling
+        Targets:
+          - LambdaECSTerminateStoppedInstance:
+              Arn: GetAtt('LambdaECSTerminateStoppedInstance', 'Arn')
+              Id: 'TargetFunction-01'
+  Lambda:
+    - ECSTerminateStoppedInstance:
+        Architectures:
+          - arm64
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
+        Description: 'Terminate Stopped ECS Container Instances and Deregister from Cluster'
+        MemorySize: 256
+        Runtime: python3.13
+        Timeout: 30
+  LambdaPermission:
+    - ECSTerminateStoppedInstanceEventsRuleASGLifecycleActionTerminate:
+        FunctionName: GetAtt('LambdaECSTerminateStoppedInstance', 'Arn')
+        Principal: events.amazonaws.com
+        SourceArn: GetAtt("EventsRuleASGLifecycleActionTerminate", 'Arn')
+  IAMPolicy:
+    - LambdaECSTerminateStoppedInstance:
+        Roles:
+          - Ref('RoleLambdaECSTerminateStoppedInstance')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:ListContainerInstances'
+                  - 'ecs:DeregisterContainerInstance'
+                  - 'autoscaling:CompleteLifecycleAction'
+                Effect: Allow
+                Resource: '*'
