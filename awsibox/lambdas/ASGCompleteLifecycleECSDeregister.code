@@ -75,7 +75,7 @@ def complete_lifecycle(asg_name, instance_id, lifecyclehook_name):
         )
     else:
         logger.info(
-            "{asg_name} {instance_id} - Completed lifecycle {lifecyclehook_name}"
+            f"{asg_name} {instance_id} - Completed lifecycle {lifecyclehook_name}"
         )
 
 
