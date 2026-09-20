@@ -1,0 +1,44 @@
+global:
+  EventsRule:
+    - EC2NotificationInstanceStopped:
+        Description: 'EC2 Instance State-change Notification for stopped State - Invoke Lambda: ECSDeregisterInstance'
+        State: 'ENABLED'
+        EventPattern:
+          detail-type:
+            - EC2 Instance State-change Notification
+          detail:
+            state:
+              - stopped
+          source:
+            - aws.ec2
+        Targets:
+          - LambdaASGCompleteLifecycleECSDeregister:
+              Arn: GetAtt('LambdaECSDeregisterInstance', 'Arn')
+              Id: 'TargetFunction-01'
+  Lambda:
+    - ECSDeregisterInstance:
+        Architectures:
+          - arm64
+        Code:
+          ZipFile: str(IBOX_INDEXNAME)
+        Description: 'Deregister ECS Container stopped Instance'
+        MemorySize: 256
+        Runtime: python3.13
+        Timeout: 30
+  LambdaPermission:
+    - ECSDeregisterInstanceEventsRuleEC2NotificationInstanceStopped:
+        FunctionName: GetAtt('LambdaECSDeregisterInstance', 'Arn')
+        Principal: events.amazonaws.com
+        SourceArn: GetAtt("EventsRuleEC2NotificationInstanceStopped", 'Arn')
+  IAMPolicy:
+    - LambdaECSDeregisterInstance:
+        Roles:
+          - Ref('RoleLambdaECSDeregisterInstance')
+        PolicyDocument:
+          Statement:
+            - 1:
+                Action:
+                  - 'ecs:ListContainerInstances'
+                  - 'ecs:DeregisterContainerInstance'
+                Effect: Allow
+                Resource: '*'

@@ -12,7 +12,6 @@ logger.propagate = False
 
 RESOURCE_EC2 = boto3.resource("ec2")
 CLIENT_ECS = boto3.client("ecs")
-CLIENT_AUTOSCALING = boto3.client("autoscaling")
 
 
 def find_cluster(tags):
@@ -61,40 +60,18 @@ def deregister_container_instance(cluster, instance_id):
         )
 
 
-def complete_lifecycle(asg_name, instance_id, lifecyclehook_name):
-    try:
-        CLIENT_AUTOSCALING.complete_lifecycle_action(
-            LifecycleHookName=lifecyclehook_name,
-            AutoScalingGroupName=asg_name,
-            LifecycleActionResult="CONTINUE",
-            InstanceId=instance_id,
-        )
-    except Exception as e:
-        logger.error(
-            f"{asg_name} {instance_id} Error completing lifecycle {lifecyclehook_name}: {e}"
-        )
-    else:
-        logger.info(
-            f"{asg_name} {instance_id} - Completed lifecycle {lifecyclehook_name}"
-        )
-
-
 def lambda_handler(event, context):
-    instance_id = event["detail"]["EC2InstanceId"]
-    asg_name = event["detail"]["AutoScalingGroupName"]
-    lifecyclehook_name = event["detail"]["LifecycleHookName"]
-    lifecyclehook_action = event["detail"]["LifecycleTransition"]
+    instance_id = event["detail"]["instance-id"]
 
-    logger.info(f"{asg_name} - {instance_id} - {lifecyclehook_action}")
+    logger.info(f"{instance_id}")
 
     instance = RESOURCE_EC2.Instance(instance_id)
 
     cluster = find_cluster(instance.tags)
 
-    if not cluster or instance.state["Name"] != "stopped":
+    if not cluster:
         return
 
     logger.info(f"{instance_id} - Found Cluster ECS: {cluster}")
 
-    complete_lifecycle(asg_name, instance_id, lifecyclehook_name)
     deregister_container_instance(cluster, instance_id)
