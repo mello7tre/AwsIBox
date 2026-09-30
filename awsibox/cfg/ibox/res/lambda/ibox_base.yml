@@ -61,6 +61,7 @@ global:
           Variables:
             - Env: Ref('EnvShort')
             - EnvRole: Ref('EnvRole')
+            - EnvStackName: Ref('AWS::StackName')
             - IBox_LambdaRestartTime: Ref(f"{IBOX_RESNAME}RestartTime")
             - IBox_EnvServiceRestartTime: Ref("EnvServiceRestartTime")
 
