@@ -96,8 +96,9 @@ global:
                         Default: 'yes'
                   IBOX_CONDITION:
                     - IBOX_REFNAME.UseVPCOrigin:
-                        get_condition('', 'equals', 'yes', f'{IBOX_REFNAME}UseVPCOrigin')
-                  VpcOriginId.IBOX_AUTO_PO: {}
+                        And(Condition(f"{IBOX_RESNAME}Create"), get_condition('', 'equals', 'yes', f'{IBOX_REFNAME}UseVPCOrigin'))
+                  VpcOriginId.IBOX_AUTO_PO:
+                    Condition: IBOX_REFNAME.UseVPCOrigin
                   VpcOriginId.IBOX_CODE_KEY: >-
                     If(f"{IBOX_REFNAME}VpcOriginConfigVpcOriginIdOverride",
                        Ref(f"{IBOX_REFNAME}VpcOriginConfigVpcOriginId"),
