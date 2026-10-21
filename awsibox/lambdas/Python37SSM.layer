@@ -2,6 +2,7 @@
 import boto3
 import os
 import logging
+from botocore.config import Config
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -19,7 +20,9 @@ def set(config={}, env=env, envRole=envRole):
 
 def set_ssm(envRole):
     pList = []
-    client = boto3.client("ssm")
+    client = boto3.client(
+        "ssm", config=Config(retries={"max_attempts": 5, "mode": "adaptive"})
+    )
     paginator = client.get_paginator("describe_parameters")
     response_iterator = paginator.paginate(
         ParameterFilters=[
