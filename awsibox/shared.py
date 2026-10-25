@@ -207,6 +207,23 @@ def do_no_override(action):
         cfg.no_override = False
 
 
+# check if value start with python method and use ibox_eval to run code
+def value_by_ibox_eval(value):
+    if isinstance(value, list):
+        value = [
+            ibox_eval(r) if str(r).startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else r
+            for r in value
+        ]
+    if isinstance(value, str):
+        value = (
+            ibox_eval(value.replace("\n", ""))
+            if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
+            else value
+        )
+
+    return value
+
+
 def get_endvalue(
     param,
     ssm=False,
@@ -245,19 +262,7 @@ def get_endvalue(
         # if param in fixedvalues means its value do not changes
         # based on Env/Region so hardcode the value.
         if param in fixedvalues:
-            value = fixedvalues[param]
-            # check if value start with method and use eval to run code
-            if isinstance(value, list):
-                value = [
-                    ibox_eval(r) if str(r).startswith(cfg.EVAL_FUNCTIONS_IN_CFG) else r
-                    for r in value
-                ]
-            if isinstance(value, str):
-                value = (
-                    ibox_eval(value.replace("\n", ""))
-                    if value.startswith(cfg.EVAL_FUNCTIONS_IN_CFG)
-                    else value
-                )
+            value = value_by_ibox_eval(fixedvalues[param])
         # ... otherway use mapping
         elif no_check_for_mappedvalues or param in cfg.mappedvalues:
             value = FindInMap(Ref("EnvShort"), Ref("AWS::Region"), param)

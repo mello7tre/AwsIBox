@@ -3,7 +3,7 @@ from troposphere import cloudformation, Ref
 
 from .. import cfg
 from ..cfg_instance_types import INSTANCE_LIST, EPHEMERAL_MAP
-from ..shared import get_endvalue, add_obj, auto_get_props
+from ..shared import get_endvalue, add_obj, auto_get_props, value_by_ibox_eval
 
 
 def mapping_EnvRegion():
@@ -14,9 +14,9 @@ def mapping_EnvRegion():
         for region in list(rvalue.keys()):
             for key in cfg.mappedvalues:
                 if key not in RP[env][region]:
-                    # get base/global value
+                    # get base/global value and eval it if start with python code
                     try:
-                        RP[env][region][key] = getattr(cfg, key)
+                        RP[env][region][key] = value_by_ibox_eval(getattr(cfg, key))
                     except Exception:
                         pass
             # delete empty mappings CF do not like them
@@ -36,15 +36,15 @@ def mapping_EC2():
         mappings["InstanceTypes"].update(
             {
                 i: {
-                    "InstaceEphemeral0": "1"
-                    if i in EPHEMERAL_MAP["InstaceEphemeral0"]
-                    else "0",
-                    "InstaceEphemeral1": "1"
-                    if i in EPHEMERAL_MAP["InstaceEphemeral1"]
-                    else "0",
-                    "InstaceEphemeral2": "1"
-                    if i in EPHEMERAL_MAP["InstaceEphemeral2"]
-                    else "0",
+                    "InstaceEphemeral0": (
+                        "1" if i in EPHEMERAL_MAP["InstaceEphemeral0"] else "0"
+                    ),
+                    "InstaceEphemeral1": (
+                        "1" if i in EPHEMERAL_MAP["InstaceEphemeral1"] else "0"
+                    ),
+                    "InstaceEphemeral2": (
+                        "1" if i in EPHEMERAL_MAP["InstaceEphemeral2"] else "0"
+                    ),
                 }
             }
         )
