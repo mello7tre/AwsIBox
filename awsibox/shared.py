@@ -1359,6 +1359,8 @@ def auto_get_props(
                         # key value is a dict, get populated object
                         value = _get_obj(obj, key, propname, mapname)
                     if value is None:
+                        if cfg.debug:
+                            logging.error(f"Error processing KEY: {mapname}{propname}")
                         continue
                 elif isinstance(key_value, str) and key_value.startswith(
                     IBOX_SPECIAL_KEYS

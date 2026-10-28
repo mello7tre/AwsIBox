@@ -3,7 +3,6 @@ import sys
 from functools import reduce
 
 from .mod import (
-    autoscaling,
     cloudformation,
     cloudfront,
     ec2,
@@ -90,6 +89,9 @@ VPC_DEFAULT_SUBNETS_CIDR_BLOCK_PUBLIC = [
 TROPO_CLASS_TO_CFM = {
     "AWS::WAFv2::WebACL": {
         "WebACLRule": "Rule",
+    },
+    "AWS::WAFv2::RuleGroup": {
+        "RuleGroupRule": "Rule",
     },
     "AWS::ECR::ReplicationConfiguration": {
         "ReplicationConfigurationProperty": "ReplicationConfiguration"
