@@ -78,7 +78,7 @@ def register_instance(serviceid, instance):
 
 
 def do_upsert_record_set(aliasname, namespace_hostedzoneid, action):
-    response = CLIENT_ROUTE53.change_resource_record_sets(
+    CLIENT_ROUTE53.change_resource_record_sets(
         HostedZoneId=HOSTEDZONEID,
         ChangeBatch={
             "Changes": [
@@ -133,12 +133,15 @@ def lambda_handler(event, context):
 
         do_upsert_record_set(aliasname, namespace_hostedzoneid, "UPSERT")
 
-        registration = register_instance(serviceid, instance)
-
-        response = CLIENT_SERVICEDISCOVERY.get_operation(
-            OperationId=registration["OperationId"]
-        )
-        logger.info(response)
+        try:
+            registration = register_instance(serviceid, instance)
+        except Exception as e:
+            logger.error(f"Error registering instance {instance}: {e}")
+        else:
+            response = CLIENT_SERVICEDISCOVERY.get_operation(
+                OperationId=registration["OperationId"]
+            )
+            logger.info(response)
 
     if service and e_state == "shutting-down":
         CLIENT_SERVICEDISCOVERY.deregister_instance(
