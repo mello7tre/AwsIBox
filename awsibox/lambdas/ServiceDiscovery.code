@@ -77,6 +77,16 @@ def register_instance(serviceid, instance):
     return response
 
 
+def deregister_instance(service, instance, aliasname, namespace_hostedzoneid):
+    CLIENT_SERVICEDISCOVERY.deregister_instance(
+        ServiceId=service["Id"], InstanceId=instance.instance_id
+    )
+    if service.get("InstanceCount", 1) == 0:
+        do_upsert_record_set(aliasname, namespace_hostedzoneid, "DELETE")
+
+        CLIENT_SERVICEDISCOVERY.delete_service(Id=service["Id"])
+
+
 def do_upsert_record_set(aliasname, namespace_hostedzoneid, action):
     CLIENT_ROUTE53.change_resource_record_sets(
         HostedZoneId=HOSTEDZONEID,
@@ -144,15 +154,7 @@ def lambda_handler(event, context):
             logger.info(response)
 
     if service and e_state == "shutting-down":
-        CLIENT_SERVICEDISCOVERY.deregister_instance(
-            ServiceId=service["Id"], InstanceId=instance.instance_id
-        )
-        return
-
-        # disabled until service['InstanceCount'] will be updated by AWS
-        service = get_service(servicename)
-
-        if service["InstanceCount"] == 0:
-            do_upsert_record_set(aliasname, namespace_hostedzoneid, "DELETE")
-
-            CLIENT_SERVICEDISCOVERY.delete_service(Id=service["Id"])
+        try:
+            deregister_instance(service, instance, aliasname, namespace_hostedzoneid)
+        except Exception as e:
+            logger.error(f"Error deregistering instance {instance.instance_id}: {e}")
