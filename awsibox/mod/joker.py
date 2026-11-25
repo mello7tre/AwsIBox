@@ -1,8 +1,7 @@
-import logging
 from copy import deepcopy
 from troposphere import Output, Ref, And, Condition
 
-from .. import cfg
+from .. import cfg, logger
 from ..RP import RP_to_cfg, merge_dict
 from ..tropo_override import Parameter
 from ..shared import (
@@ -43,7 +42,7 @@ def Joker(key, module, cls):
             resname = parse_ibox_key(ibox_resname, parse_ibox_key_conf)
 
         if cfg.debug:
-            logging.error(f"Joker processing: {resname}")
+            logger.info(f"Joker processing: {resname}")
 
         # get IBOX_LINKED_OBJ keys
         linked_obj_name = v.get("IBOX_LINKED_OBJ_NAME", "")

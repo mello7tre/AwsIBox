@@ -96,6 +96,9 @@ TROPO_CLASS_TO_CFM = {
     "AWS::ECR::ReplicationConfiguration": {
         "ReplicationConfigurationProperty": "ReplicationConfiguration"
     },
+    "AWS::ECS::Service NetworkConfiguration": {
+        "AwsvpcConfiguration": "AwsVpcConfiguration"
+    }
 }
 
 EVAL_TROPO_FUNCTIONS_IN_CFG = (

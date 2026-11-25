@@ -1411,7 +1411,9 @@ def auto_get_props(
             except AttributeError:
                 setattr(cfg, f"{mapname}{propname}", value)
                 pass
-            except TypeError:
+            except TypeError as e:
+                if cfg.debug:
+                    logging.error(f"Error processing KEY {mapname}{propname}: {e}")
                 pass
             else:
                 # populate IBOX_PROPS dict
