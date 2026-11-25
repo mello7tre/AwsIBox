@@ -2,7 +2,7 @@ import logging
 
 logging.basicConfig()
 logging.getLogger("botocore").setLevel("CRITICAL")
-logger = logging.getLogger("stacksops")
+logger = logging.getLogger("awsibox")
 logger.setLevel(logging.INFO)
 logger.propagate = False
 

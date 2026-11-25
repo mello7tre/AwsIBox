@@ -1,6 +1,5 @@
 import os
 import sys
-import logging
 import string
 import json
 import python_minifier
@@ -34,7 +33,7 @@ from troposphere import (
 )
 from troposphere.autoscaling import Tags as asgTags
 
-from . import cfg
+from . import cfg, logger
 from .RP import RP_to_cfg
 
 IBOX_SPECIAL_KEYS = (
@@ -655,7 +654,7 @@ def import_user_data(name):
     except IOError:
         raise
     except Exception as e:
-        logging.error(f"Error importing user-data {name}: {e}")
+        logger.error(f"Error importing user-data {name}: {e}")
         exit(1)
 
 
@@ -705,7 +704,7 @@ def import_lambda(name, code=None):
                 # try to minify using python_minifier
                 code = python_minifier.minify(fdata, preserve_shebang=False)
                 if len(code) > 4096:
-                    logging.debug(
+                    logger.debug(
                         f"{lambda_file_trunk} > 4096, trying to minify it using a more aggressive option [rename_globals=True]"
                     )
                     code = python_minifier.minify(
@@ -715,15 +714,15 @@ def import_lambda(name, code=None):
                 code = fdata
 
             if len(code) > 4096:
-                logging.warning(f"Inline lambda {lambda_file_trunk} {len(code)} > 4096")
+                logger.warning(f"Inline lambda {lambda_file_trunk} {len(code)} > 4096")
 
             return _parse_lambda(code)
 
     except IOError:
-        logging.warning(f"Lambda code {name} not found")
+        logger.warning(f"Lambda code {name} not found")
         exit(1)
     except Exception as e:
-        logging.error(e)
+        logger.error(e)
 
 
 def auto_get_props(
@@ -1360,7 +1359,7 @@ def auto_get_props(
                         value = _get_obj(obj, key, propname, mapname)
                     if value is None:
                         if cfg.debug:
-                            logging.error(f"Error processing KEY: {mapname}{propname}")
+                            logger.error(f"Error processing KEY: {mapname}{propname}")
                         continue
                 elif isinstance(key_value, str) and key_value.startswith(
                     IBOX_SPECIAL_KEYS
@@ -1413,7 +1412,7 @@ def auto_get_props(
                 pass
             except TypeError as e:
                 if cfg.debug:
-                    logging.error(f"Error processing KEY {mapname}{propname}: {e}")
+                    logger.error(f"Error processing KEY {mapname}{propname}: {e}")
                 pass
             else:
                 # populate IBOX_PROPS dict
