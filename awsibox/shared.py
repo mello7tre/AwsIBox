@@ -813,7 +813,13 @@ def auto_get_props(
 
             if obj_class in tropo_class_map:
                 # obj_class is tropo class and i need to found out cfm class
-                obj_class = tropo_class_map[obj_class]
+                tropo_class = tropo_class_map[obj_class]
+                if isinstance(tropo_class, list) and obj_propname in tropo_class:
+                    # trick to skip processing using CloudFormationResourceSpecification
+                    # need this for tropo AwsvpcConfiguration as real class name is AwsVpcConfiguration [upper V]
+                    obj_mod_name = None
+                else:
+                    obj_class = tropo_class
                 tropo_to_cfm = True
             else:
                 tropo_to_cfm = False
