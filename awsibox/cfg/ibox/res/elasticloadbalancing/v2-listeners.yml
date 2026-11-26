@@ -28,8 +28,19 @@ MutualAuthentication: &mutual_authentication
     IgnoreClientCertificateExpiry: False
     Mode.IBOX_AUTO_PO:
       AllowedValues: ['', 'off', ' passthrough', 'verify']
+    Mode.IBOX_PCO:
+      IBOX_CONDITION:
+        - IBOX_CURNAME:
+            And(
+              Condition('LoadBalancerApplicationExternal'),
+              get_condition('', 'equals', 'verify', IBOX_CURNAME))
     Mode: 'off'
-    TrustStoreArn.IBOX_AUTO_PO: {}
+    TrustStoreArn.IBOX_AUTO_PO:
+      Condition: IBOX_CURMAP.Mode
+    TrustStoreArn.IBOX_CODE: If(
+      f"{IBOX_CURMAP}Mode",
+      get_endvalue(IBOX_CURNAME),
+      Ref("AWS::NoValue"))
     TrustStoreArn: ImportValue('ElasticLoadBalancingV2TrustStoreListernerMutualAuthentication')
 
 Internal: &internal
