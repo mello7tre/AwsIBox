@@ -6,7 +6,7 @@ global:
           - _:
               Value: Ref(IBOX_RESNAME)
               Export: Export(IBOX_RESNAME)
-        CaCertificatesBundleS3Bucket: Sub(cfg.BucketNameAppRepository)
+        CaCertificatesBundleS3Bucket: ImportValue('BucketAppRepository')
         CaCertificatesBundleS3Key.IBOX_AUTO_PO: {}
         CaCertificatesBundleS3Key: "alb-mtls-ca/aws-alb-mtls-ca.pem"
         CaCertificatesBundleS3ObjectVersion.IBOX_AUTO_PO: {}
