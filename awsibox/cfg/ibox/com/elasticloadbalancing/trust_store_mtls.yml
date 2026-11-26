@@ -2,6 +2,9 @@ global:
   ElasticLoadBalancingV2TrustStore:
     - ListernerMutualAuthentication:
         Create: 'no'
+        IBOX_CONDITION:
+          - _CaCertificatesBundleS3ObjectVersion:
+              get_condition('', 'not_equals', 'none', f"{IBOX_RESNAME}CaCertificatesBundleS3ObjectVersion")
         IBOX_OUTPUT:
           - _:
               Value: Ref(IBOX_RESNAME)
@@ -10,5 +13,9 @@ global:
         CaCertificatesBundleS3Key.IBOX_AUTO_PO: {}
         CaCertificatesBundleS3Key: "alb-mtls-ca/aws-alb-mtls-ca.pem"
         CaCertificatesBundleS3ObjectVersion.IBOX_AUTO_PO: {}
+        CaCertificatesBundleS3ObjectVersion.IBOX_CODE: If(
+          IBOX_CURNAME,
+          get_endvalue(IBOX_CURNAME),
+          Ref("AWS::NoValue"))
         CaCertificatesBundleS3ObjectVersion: 'Bg3cREbwt3TTfHQ.oseaiPy2WKk45V.u'
         Name: Sub("${AWS::StackName}-alb-mtls")
