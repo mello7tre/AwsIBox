@@ -1,6 +1,7 @@
-gloabal:
+global:
   ElasticLoadBalancingV2TrustStore:
     - ListernerMutualAuthentication:
+        Create: 'no'
         IBOX_OUTPUT:
           - _:
               Value: Ref(IBOX_RESNAME)
