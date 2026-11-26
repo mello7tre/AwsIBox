@@ -17,7 +17,21 @@ External: &external
         Type: forward
         TargetGroupArn: Ref(f'TargetGroupExternal')
   LoadBalancerArn: Ref(f'LoadBalancerApplicationExternal')
-  
+
+MutualAuthentication: &mutual_authentication
+  MutualAuthentication:
+    AdvertiseTrustStoreCaNames.IBOX_AUTO_PO:
+      AllowedValues: ['', 'on', 'off']
+    AdvertiseTrustStoreCaNames: 'off'
+    IgnoreClientCertificateExpiry.IBOX_AUTO_PO:
+      AllowedValues: ['', 'true', 'false']
+    IgnoreClientCertificateExpiry: False
+    Mode.IBOX_AUTO_PO:
+      AllowedValues: ['', 'off', ' passthrough', 'verify']
+    Mode: 'off'
+    TrustStoreArn.IBOX_AUTO_PO: {}
+    TrustStoreArn: ImportValue('ElasticLoadBalancingV2TrustStoreListernerMutualAuthentication')
+
 Internal: &internal
   DefaultActions:
     - TG:
@@ -32,7 +46,7 @@ HttpInternal: &http_internal
   <<: [*internal, *http]
 
 HttpsExternal: &https_external
-  <<: [*external, *https]
+  <<: [*external, *https, *mutual_authentication]
 
 HttpsInternal: &https_internal
   <<: [*internal, *https]
