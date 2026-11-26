@@ -11,3 +11,4 @@ global:
         CaCertificatesBundleS3Key: "alb-mtls-ca/aws-alb-mtls-ca.pem"
         CaCertificatesBundleS3ObjectVersion.IBOX_AUTO_PO: {}
         CaCertificatesBundleS3ObjectVersion: 'Bg3cREbwt3TTfHQ.oseaiPy2WKk45V.u'
+        Name: Sub("${AWS::StackName}-alb-mtls")
