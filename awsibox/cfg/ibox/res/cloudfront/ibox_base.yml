@@ -77,7 +77,7 @@ global:
                       - Ref('AWS::NoValue')
                     ClientCertificateArn: If(
                       f"{IBOX_RESNAME}OriginMtlsCertificateOverride",
-                      Ref(f"{IBOX_RESNAME}OriginMtlsCertificateOverride"),
+                      Ref(f"{IBOX_RESNAME}OriginMtlsCertificate"),
                       get_endvalue('CloudFrontmTLSCertificateArn'))
                 OriginAccessControlId.IBOX_AUTO_P:
                   AllowedValues: ["", "Always", "Conditional", "Never"]
