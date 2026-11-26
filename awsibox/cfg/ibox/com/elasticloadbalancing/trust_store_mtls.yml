@@ -9,7 +9,8 @@ global:
         CaCertificatesBundleS3Bucket: Sub(cfg.BucketNameAppRepository)
         CaCertificatesBundleS3Key.IBOX_AUTO_PO: {}
         CaCertificatesBundleS3Key: "alb-mtls-ca/aws-alb-mtls-ca.pem"
-        CaCertificatesBundleS3ObjectVersion.IBOX_AUTO_PO: {}
+        CaCertificatesBundleS3ObjectVersion.IBOX_AUTO_PO:
+          Condition: IBOX_CURNAME
         CaCertificatesBundleS3ObjectVersion.IBOX_PCO:
           IBOX_CONDITION:
             - IBOX_CURNAME:
