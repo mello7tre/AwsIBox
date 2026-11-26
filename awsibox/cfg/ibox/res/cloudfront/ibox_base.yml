@@ -7,11 +7,14 @@ global:
           IBOX_CONDITION:
             - _AcmCertificate:
                 get_condition('', 'equals', 'yes', f'{IBOX_RESNAME}AcmCertificate')
-#        OriginMtlsCertificate.IBOX_PCO:
-#          IBOX_CONDITION:
-#            - _OriginMtlsCertificate:
-#                get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}OriginMtlsCertificate')
-#        OriginMtlsCertificate: 'none'
+        OriginMtlsCertificate.IBOX_PCO:
+          IBOX_PARAMETER:
+            - _OriginMtlsCertificate:
+                Description: 'empty for mapped value - none to disable'
+          IBOX_CONDITION:
+            - _OriginMtlsCertificate:
+                get_condition('', 'not_equals', 'none', f'{IBOX_RESNAME}OriginMtlsCertificate')
+        OriginMtlsCertificate: 'none'
         AcmCertificate: 'yes'
         Create.IBOX_AUTO_PO:
           AllowedValues: ['', 'yes', 'no']
@@ -67,15 +70,15 @@ global:
                     - IBOX_REFNAME.UseVPCOrigin:
                         get_condition('', 'equals', 'yes', 'no')
                   OriginProtocolPolicy: https-only
-#                  OriginMtlsConfig:
-#                    IBOX_IF:
-#                      - _OriginMtlsCertificate
-#                      - IBOX_IFVALUE
-#                      - Ref('AWS::NoValue')
-#                    ClientCertificateArn: If(
-#                      f"{IBOX_RESNAME}OriginMtlsCertificateOverride",
-#                      Ref(f"{IBOX_RESNAME}OriginMtlsCertificateOverride"),
-#                      get_endvalue('CloudFrontmTLSCertificateArn'))
+                  OriginMtlsConfig:
+                    IBOX_IF:
+                      - _OriginMtlsCertificate
+                      - IBOX_IFVALUE
+                      - Ref('AWS::NoValue')
+                    ClientCertificateArn: If(
+                      f"{IBOX_RESNAME}OriginMtlsCertificateOverride",
+                      Ref(f"{IBOX_RESNAME}OriginMtlsCertificateOverride"),
+                      get_endvalue('CloudFrontmTLSCertificateArn'))
                 OriginAccessControlId.IBOX_AUTO_P:
                   AllowedValues: ["", "Always", "Conditional", "Never"]
                 OriginAccessControlId.IBOX_PCO:
