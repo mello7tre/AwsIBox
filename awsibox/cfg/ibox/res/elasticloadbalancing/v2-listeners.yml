@@ -22,6 +22,11 @@ MutualAuthentication: &mutual_authentication
   MutualAuthentication:
     AdvertiseTrustStoreCaNames.IBOX_AUTO_PO:
       AllowedValues: ['', 'on', 'off']
+      Condition: IBOX_CURMAP.Mode
+    AdvertiseTrustStoreCaNames.IBOX_CODE: If(
+      f"{IBOX_CURMAP}Mode",
+      get_endvalue(IBOX_CURNAME),
+      Ref("AWS::NoValue"))
     AdvertiseTrustStoreCaNames: 'off'
     IgnoreClientCertificateExpiry.IBOX_AUTO_PO:
       AllowedValues: ['', 'true', 'false']
